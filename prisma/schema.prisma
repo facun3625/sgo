@@ -11,12 +11,51 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  password  String
-  role      String   @default("user")
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          Int      @id @default(autoincrement())
+  apellido    String
+  nombre      String
+  expediente  String?  @unique
+  cod         String?  @unique
+  email       String   @unique
+  password    String
+  status      String   @default("active")
+  accessLevel String   @default("user") @map("access_level")
+  registered  Int      @default(1)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("users")
 }
+
+model Dato {
+  id                 Int       @id @default(autoincrement())
+  cod                String    @unique
+  apellido           String
+  nombre             String
+  domicilioLegal     String?   @map("domicilio_legal")
+  postalLegal        String?   @map("postal_legal")
+  localidadLegal     String?   @map("localidad_legal")
+  telefonosLegal     String?   @map("telefonos_legal")
+  emailLegal         String?   @map("email_legal")
+  expediente         String?
+  folio              String?
+  tipo               String?
+  documento          String?
+  tomo               String?
+  domicilioReal      String?   @map("domicilio_real")
+  postalReal         String?   @map("postal_real")
+  localidadReal      String?   @map("localidad_real")
+  codMovilLegal      String?   @map("cod_movil_legal")
+  movilLegal         String?   @map("movil_legal")
+  telefonosReal      String?   @map("telefonos_real")
+  codMovilReal       String?   @map("cod_movil_real")
+  movilReal          String?   @map("movil_real")
+  emailReal          String?   @map("email_real")
+  provinciaReal      String?   @map("provincia_real")
+  fechaMatriculacion DateTime? @map("fecha_matriculacion")
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@map("datos")
+}
+
