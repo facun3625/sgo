@@ -34,7 +34,13 @@ export default function TopNav({ user }: TopNavProps) {
 
     return (
         <nav className="h-16 bg-[#063f68] text-white px-8 flex items-center justify-end sticky top-0 z-40 shadow-md">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-4">
+                {/* Status Badge */}
+                <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-full border border-white/20">
+                    <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse shadow-[0_0_8px_rgba(74,222,128,0.5)]"></div>
+                    <span className="text-[10px] font-bold text-white uppercase tracking-widest">Matrícula Activa</span>
+                </div>
+
                 {/* Dark mode toggle */}
                 <button
                     onClick={() => setIsDarkMode(!isDarkMode)}

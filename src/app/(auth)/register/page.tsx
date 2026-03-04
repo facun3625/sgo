@@ -23,7 +23,6 @@ export default function RegisterPage() {
     // Paso 2: Completar registro (modal)
     const [showModal, setShowModal] = useState(false);
     const [datoEncontrado, setDatoEncontrado] = useState<DatoEncontrado | null>(null);
-    const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
@@ -48,7 +47,7 @@ export default function RegisterPage() {
             const data = await res.json();
 
             if (!res.ok) {
-                setError(data.error);
+                setError(data.details ? `${data.error}: ${data.details}` : data.error);
                 return;
             }
 
@@ -86,7 +85,6 @@ export default function RegisterPage() {
                     apellido: datoEncontrado?.apellido,
                     nombre: datoEncontrado?.nombre,
                     expediente: datoEncontrado?.expediente,
-                    email,
                     password,
                 }),
             });
@@ -282,17 +280,6 @@ export default function RegisterPage() {
 
                         {/* Form de completar registro */}
                         <form onSubmit={handleRegister} className="space-y-4">
-                            <input
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                placeholder="Email"
-                                required
-                                className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 text-gray-800 text-[14px]
-                           placeholder:text-gray-400 bg-white
-                           focus:outline-none focus:border-[#063f68] focus:ring-1 focus:ring-[#063f68]/20
-                           transition-all duration-200"
-                            />
                             <div className="relative">
                                 <input
                                     type={showPassword ? "text" : "password"}

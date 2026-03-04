@@ -5,12 +5,12 @@ import bcrypt from "bcryptjs";
 export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
-        const { cod, apellido, nombre, expediente, email, password } = body;
+        const { cod, apellido, nombre, expediente, password } = body;
 
         // Validar campos requeridos
-        if (!expediente || !email || !password) {
+        if (!expediente || !password) {
             return NextResponse.json(
-                { error: "Email y contraseña son obligatorios" },
+                { error: "Contraseña es obligatoria" },
                 { status: 400 }
             );
         }
@@ -37,7 +37,6 @@ export async function POST(req: NextRequest) {
                 nombre: nombre || "",
                 expediente,
                 cod: cod || null,
-                email,
                 password: hashedPassword,
                 status: "active",
                 accessLevel: "user",

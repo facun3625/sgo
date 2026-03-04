@@ -54,10 +54,10 @@ export async function POST(req: NextRequest) {
                 expediente: dato.expediente,
             },
         });
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error en verificación:", error);
         return NextResponse.json(
-            { error: "Error interno del servidor" },
+            { error: "Error interno del servidor", details: error.message || String(error) },
             { status: 500 }
         );
     }

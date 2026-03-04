@@ -16,7 +16,6 @@ model User {
   nombre      String
   expediente  String?  @unique
   cod         String?  @unique
-  email       String   @unique
   password    String
   status      String   @default("active")
   accessLevel String   @default("user") @map("access_level")
