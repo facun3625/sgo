@@ -20,6 +20,7 @@ model User {
   status      String   @default("active")
   accessLevel String   @default("user") @map("access_level")
   registered  Int      @default(1)
+  image       String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

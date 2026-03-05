@@ -20,15 +20,25 @@ import {
     FolderOpen
 } from "lucide-react";
 
+interface SidebarProps {
+    user: {
+        nombre: string;
+        apellido: string;
+        expediente: string;
+        image: string | null;
+    };
+}
+
 interface SidebarItemProps {
     icon: React.ReactNode;
     label: string;
     href?: string;
     active?: boolean;
     children?: { label: string; href: string }[];
+    color?: string;
 }
 
-const SidebarItem = ({ icon, label, href, active, children }: SidebarItemProps) => {
+const SidebarItem = ({ icon, label, href, active, children, color }: SidebarItemProps) => {
     const [isOpen, setIsOpen] = useState(false);
     const hasChildren = children && children.length > 0;
 
@@ -41,21 +51,21 @@ const SidebarItem = ({ icon, label, href, active, children }: SidebarItemProps) 
             ${isOpen ? "bg-gray-50 text-[#063f68]" : "text-gray-500 hover:bg-gray-50 hover:text-[#063f68]"}`}
                 >
                     <div className="flex items-center gap-2.5">
-                        <span className={`transition-all duration-200 ${isOpen ? "text-[#063f68] scale-110" : "group-hover:text-[#063f68] group-hover:scale-110"}`}>
+                        <span className={`transition-all duration-200 ${isOpen ? "text-[#063f68] scale-110" : `group-hover:scale-110 ${color || "text-gray-400"}`}`}>
                             {React.isValidElement(icon) ? React.cloneElement(icon as React.ReactElement<any>, { size: 18 }) : icon}
                         </span>
-                        <span className="text-[13px] font-semibold tracking-tight">{label}</span>
+                        <span className="text-[13px] font-normal tracking-tight">{label}</span>
                     </div>
                     {isOpen ? <ChevronDown size={14} className="text-gray-400" /> : <ChevronRight size={14} className="text-gray-400 group-hover:text-[#063f68]" />}
                 </button>
                 <div className={`grid transition-all duration-300 ease-in-out ${isOpen ? "grid-rows-[1fr] opacity-100 mt-1" : "grid-rows-[0fr] opacity-0"}`}>
                     <div className="overflow-hidden">
-                        <div className="ml-5 border-l border-gray-100 pl-4 space-y-0.5">
+                        <div className="ml-5 border-l border-slate-200 pl-4 space-y-0.5">
                             {children.map((child, index) => (
                                 <Link
                                     key={index}
                                     href={child.href}
-                                    className="block py-1.5 text-[12px] font-medium text-gray-400 hover:text-[#063f68] transition-all duration-200 hover:translate-x-1"
+                                    className="block py-1.5 text-[12px] font-normal text-gray-400 hover:text-[#063f68] transition-all duration-200 hover:translate-x-1"
                                 >
                                     {child.label}
                                 </Link>
@@ -72,28 +82,29 @@ const SidebarItem = ({ icon, label, href, active, children }: SidebarItemProps) 
             href={href || "#"}
             className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg mb-0.5 transition-all duration-200 group
         ${active
-                    ? "bg-[#063f68] text-white shadow-lg shadow-[#063f68]/20"
-                    : "text-gray-500 hover:bg-gray-50 hover:text-[#063f68] hover:shadow-sm"}`}
+                    ? "bg-[#063f68] text-white"
+                    : "text-gray-500 hover:bg-gray-50 hover:text-[#063f68]"}`}
         >
-            <span className={`transition-all duration-200 ${active ? "text-white scale-110" : "group-hover:text-[#063f68] group-hover:scale-110"}`}>
+            <span className={`transition-all duration-200 ${active ? "text-white scale-110" : `group-hover:scale-110 ${color || "text-gray-400"}`}`}>
                 {React.isValidElement(icon) ? React.cloneElement(icon as React.ReactElement<any>, { size: 18 }) : icon}
             </span>
-            <span className={`text-[13px] font-semibold tracking-tight ${active ? "text-white" : ""}`}>{label}</span>
+            <span className={`text-[13px] ${active ? "font-semibold text-white" : "font-normal"}`}>{label}</span>
         </Link>
     );
 };
 
-export default function Sidebar() {
+export default function Sidebar({ user }: SidebarProps) {
     const pathname = usePathname();
 
     const menuItems = [
-        { icon: <CreditCard size={20} />, label: "Tarjeta de beneficios", href: "/dashboard/beneficios" },
-        { icon: <IdCard size={20} />, label: "Credencia digital", href: "/dashboard/credencial" },
-        { icon: <User size={20} />, label: "Mis datos", href: "/dashboard/mis-datos" },
-        { icon: <Wallet size={20} />, label: "Estado de matricula y Pagos", href: "/dashboard/pagos" },
+        { icon: <CreditCard size={20} />, label: "Tarjeta de beneficios", href: "/dashboard/beneficios", color: "text-blue-500" },
+        { icon: <IdCard size={20} />, label: "Credencia digital", href: "/dashboard/credencial", color: "text-amber-500" },
+        { icon: <User size={20} />, label: "Mis datos", href: "/dashboard/mis-datos", color: "text-indigo-500" },
+        { icon: <Wallet size={20} />, label: "Estado de matricula y Pagos", href: "/dashboard/pagos", color: "text-emerald-500" },
         {
             icon: <FileText size={20} />,
             label: "Solicitudes",
+            color: "text-purple-500",
             children: [
                 { label: "Certificado de matriculacion", href: "/dashboard/solicitudes/certificado" },
                 { label: "Clave Sistema SISFE", href: "/dashboard/solicitudes/sisfe" },
@@ -101,17 +112,17 @@ export default function Sidebar() {
                 { label: "Jurisprudencia", href: "/dashboard/solicitudes/jurisprudencia" },
             ]
         },
-        { icon: <XOctagon size={20} />, label: "Solicitud de suspensión/cancelación", href: "/dashboard/suspension" },
-        { icon: <Banknote size={20} />, label: "Adehesion a debito automatico", href: "/dashboard/debito" },
-        { icon: <GraduationCap size={20} />, label: "Cursos", href: "/dashboard/cursos" },
-        { icon: <Calendar size={20} />, label: "Calendario", href: "/dashboard/calendario" },
-        { icon: <HelpCircle size={20} />, label: "Preguntas Frecuentes", href: "/dashboard/faq" },
-        { icon: <FolderOpen size={20} />, label: "Repositorio de Archivos", href: "/dashboard/archivos" },
+        { icon: <XOctagon size={20} />, label: "Solicitud de suspensión/cancelación", href: "/dashboard/suspension", color: "text-rose-500" },
+        { icon: <Banknote size={20} />, label: "Adehesion a debito automatico", href: "/dashboard/debito", color: "text-cyan-500" },
+        { icon: <GraduationCap size={20} />, label: "Cursos", href: "/dashboard/cursos", color: "text-pink-500" },
+        { icon: <Calendar size={20} />, label: "Calendario", href: "/dashboard/calendario", color: "text-orange-500" },
+        { icon: <HelpCircle size={20} />, label: "Preguntas Frecuentes", href: "/dashboard/faq", color: "text-slate-400" },
+        { icon: <FolderOpen size={20} />, label: "Repositorio de Archivos", href: "/dashboard/archivos", color: "text-[#063f68]" },
     ];
 
     return (
         <aside className="w-72 bg-white flex flex-col h-screen sticky top-0 overflow-y-auto">
-            <div className="px-6 py-5 bg-[#063f68] flex items-center h-16 shadow-sm">
+            <div className="px-6 py-5 bg-[#063f68] flex items-center h-16">
                 <div className="flex items-center gap-3">
                     <Image src="/sgo.png" alt="SGO CASF" width={48} height={48} className="object-contain" />
                     <div>
@@ -131,21 +142,32 @@ export default function Sidebar() {
                             href={item.href}
                             active={pathname === item.href}
                             children={item.children}
+                            color={item.color}
                         />
                     ))}
                 </nav>
             </div>
 
-            <div className="mt-auto p-6 border-t border-gray-50">
-                <div className="bg-gray-50 rounded-2xl p-4 flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-[#063f68]/10 text-[#063f68] flex items-center justify-center font-bold">
-                        JU
+            <div className="mt-auto p-5 border-t border-slate-100">
+                <Link
+                    href="/dashboard/perfil"
+                    className="flex items-center gap-3 p-3 rounded-2xl border border-slate-100 bg-slate-50/30 hover:bg-slate-50 hover:border-slate-200 transition-all duration-300 group"
+                >
+                    <div className="w-10 h-10 rounded-xl bg-[#063f68]/5 text-[#063f68] flex items-center justify-center font-bold text-sm overflow-hidden border border-slate-200 relative">
+                        {user.image ? (
+                            <img src={user.image} alt="Profile" className="w-full h-full object-cover animate-fade-in" />
+                        ) : (
+                            <span className="opacity-80 font-bold">{user.nombre[0]}{user.apellido[0]}</span>
+                        )}
+                        <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white"></div>
                     </div>
                     <div className="overflow-hidden">
-                        <p className="text-sm font-semibold text-gray-800 truncate">Juan Mario Q.</p>
-                        <p className="text-[11px] text-gray-400">Matrícula 564</p>
+                        <p className="text-[13px] font-bold text-slate-700 truncate group-hover:text-[#063f68] transition-colors">
+                            {user.nombre} {user.apellido[0]}.
+                        </p>
+                        <p className="text-[10px] text-slate-400 font-medium">Matrícula {user.expediente}</p>
                     </div>
-                </div>
+                </Link>
             </div>
         </aside>
     );

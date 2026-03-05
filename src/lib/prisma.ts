@@ -1,3 +1,4 @@
+// SGO - Prisma Client (updated field support)
 import { Pool } from "pg";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@/generated/prisma/client";

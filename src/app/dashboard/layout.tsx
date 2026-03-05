@@ -2,6 +2,7 @@ import Sidebar from "@/components/dashboard/Sidebar";
 import TopNav from "@/components/dashboard/TopNav";
 import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import prisma from "@/lib/prisma";
 
 export default async function DashboardLayout({
     children,
@@ -14,18 +15,27 @@ export default async function DashboardLayout({
         redirect("/login");
     }
 
+    const dbUser = await prisma.user.findUnique({
+        where: { expediente: session.expediente }
+    });
+
+    if (!dbUser) {
+        redirect("/login");
+    }
+
     const user = {
-        nombre: session.nombre,
-        apellido: session.apellido,
-        expediente: session.expediente,
+        nombre: dbUser.nombre,
+        apellido: dbUser.apellido,
+        expediente: dbUser.expediente || "",
+        image: dbUser.image
     };
 
     return (
-        <div className="flex min-h-screen bg-gray-50/50">
-            <Sidebar />
+        <div className="flex min-h-screen bg-white">
+            <Sidebar user={user} />
             <div className="flex-1 flex flex-col">
                 <TopNav user={user} />
-                <main className="p-8 animate-fade-in overflow-y-auto">
+                <main className="p-4 animate-fade-in">
                     {children}
                 </main>
             </div>

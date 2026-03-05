@@ -9,6 +9,7 @@ import {
     History,
     IdCard
 } from "lucide-react";
+import Link from "next/link";
 
 interface SessionPayload {
     id: number;
@@ -37,9 +38,12 @@ export default function DashboardClient({ session }: { session: SessionPayload }
                     </div>
 
                     <div className="relative z-10 flex items-center gap-4 mt-4">
-                        <button className="bg-white text-[#063f68] px-10 py-4 rounded-2xl font-bold text-sm shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-3">
+                        <Link
+                            href="/dashboard/beneficios"
+                            className="bg-white text-[#063f68] px-10 py-4 rounded-2xl font-bold text-sm shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-3"
+                        >
                             Ver Beneficios <ArrowRight size={20} />
-                        </button>
+                        </Link>
                     </div>
                 </div>
 
