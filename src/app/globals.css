@@ -5,9 +5,15 @@
 }
 
 body {
-  font-family: var(--font-sans, 'Montserrat', system-ui, sans-serif);
+  font-family: var(--font-montserrat), sans-serif;
+  background-color: #ffffff;
+  transition: background-color 0.3s ease;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.dark body {
+  background-color: #02182b;
 }
 
 /* ===== Animations ===== */

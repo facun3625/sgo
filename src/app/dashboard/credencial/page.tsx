@@ -29,28 +29,28 @@ export default async function CredencialPage() {
     const vCardValue = `BEGIN:VCARD\nVERSION:3.0\nFN:${user.nombre} ${user.apellido}\nORG:Colegio de la Abogacía de Santa Fe\nTITLE:Abogado/a - Mat. ${user.expediente}\nTEL;TYPE=WORK:${dato?.movilLegal || dato?.telefonosLegal || ""}\nEMAIL:${dato?.emailLegal || ""}\nURL:https://casf.org.ar\nEND:VCARD`;
 
     return (
-        <div className="bg-white p-0 space-y-0 pb-12">
+        <div className="bg-white dark:bg-[#02182b] p-0 space-y-0 pb-12 transition-colors duration-300">
             <div className="w-full pt-0">
 
                 {/* SECCIÓN FRENTE */}
-                <div className="bg-white">
+                <div className="bg-white dark:bg-[#02182b]">
 
                     {/* Header Compacto Unificado Sticky */}
-                    <div className="sticky top-16 z-10 bg-white flex items-center justify-between px-8 py-3.5 border-b border-[#f1f5f9]">
+                    <div className="sticky top-16 z-10 bg-white dark:bg-[#02182b] flex items-center justify-between px-8 py-3.5 border-b border-[#f1f5f9] dark:border-slate-800 transition-colors duration-300">
                         <div className="flex items-center gap-6">
                             <Link
                                 href="/dashboard"
-                                className="flex items-center gap-2 text-black hover:text-slate-700 transition-all duration-300 group"
+                                className="flex items-center gap-2 text-black dark:text-white hover:text-slate-700 dark:hover:text-slate-300 transition-all duration-300 group"
                             >
                                 <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
                                 <span className="text-[12px] font-medium tracking-tight">Volver</span>
                             </Link>
-                            <div className="h-4 w-px bg-slate-200"></div>
-                            <h1 className="text-[14px] font-medium text-black tracking-tight">Credencial Digital - Frente</h1>
+                            <div className="h-4 w-px bg-slate-200 dark:bg-slate-700"></div>
+                            <h1 className="text-[14px] font-medium text-black dark:text-white tracking-tight">Credencial Digital - Frente</h1>
                         </div>
                     </div>
 
-                    <div className="p-6 md:p-10 border-b border-[#f1f5f9] animate-fade-in">
+                    <div className="p-6 md:p-10 border-b border-[#f1f5f9] dark:border-slate-800 animate-fade-in">
                         <div className="flex flex-col lg:flex-row gap-10 items-start lg:items-center">
 
                             {/* Columna del Carnet (Frente) */}
@@ -118,8 +118,8 @@ export default async function CredencialPage() {
 
                             {/* Columna de Acciones Lateral */}
                             <div className="w-full lg:w-64 space-y-4">
-                                <div className="p-5 rounded-[24px] bg-slate-50 border border-slate-100">
-                                    <p className="text-slate-500 text-[11px] font-medium leading-relaxed">
+                                <div className="p-5 rounded-[24px] bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                                    <p className="text-slate-500 dark:text-slate-400 text-[11px] font-medium leading-relaxed">
                                         Identificación oficial del Colegio de la Abogacía de Santa Fe.
                                     </p>
                                 </div>
@@ -135,10 +135,10 @@ export default async function CredencialPage() {
                 </div>
 
                 {/* SECCIÓN DORSO (Separada por la línea del anterior) */}
-                <div className="bg-white">
+                <div className="bg-white dark:bg-[#02182b]">
                     {/* Header Dorso Sticky */}
-                    <div className="sticky top-16 z-10 bg-white flex items-center justify-between px-8 py-3.5 border-b border-[#f1f5f9]">
-                        <h2 className="text-[14px] font-medium text-black tracking-tight">Credencial Digital - Dorso</h2>
+                    <div className="sticky top-16 z-10 bg-white dark:bg-[#02182b] flex items-center justify-between px-8 py-3.5 border-b border-[#f1f5f9] dark:border-slate-800 transition-colors duration-300">
+                        <h2 className="text-[14px] font-medium text-black dark:text-white tracking-tight">Credencial Digital - Dorso</h2>
                     </div>
 
                     <div className="p-6 md:p-10 animate-fade-in">

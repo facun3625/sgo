@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTheme } from "next-themes";
 
 interface TopNavProps {
     user: {
@@ -25,7 +26,7 @@ interface TopNavProps {
 
 export default function TopNav({ user }: TopNavProps) {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
-    const [isDarkMode, setIsDarkMode] = useState(false);
+    const { theme, setTheme } = useTheme();
     const router = useRouter();
 
     const handleLogout = async () => {
@@ -53,11 +54,11 @@ export default function TopNav({ user }: TopNavProps) {
 
                 {/* Dark mode toggle */}
                 <button
-                    onClick={() => setIsDarkMode(!isDarkMode)}
+                    onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
                     className="p-2 text-white/70 hover:bg-white/10 hover:text-white rounded-xl transition-all duration-200"
                     title="Modo oscuro/dia"
                 >
-                    {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+                    {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
                 </button>
 
                 {/* Notifications */}

@@ -48,7 +48,7 @@ const SidebarItem = ({ icon, label, href, active, children, color }: SidebarItem
                 <button
                     onClick={() => setIsOpen(!isOpen)}
                     className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-all duration-200 group
-            ${isOpen ? "bg-gray-50 text-[#063f68]" : "text-gray-500 hover:bg-gray-50 hover:text-[#063f68]"}`}
+            ${isOpen ? "bg-gray-50 dark:bg-slate-800/50 text-[#063f68] dark:text-blue-400" : "text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50 hover:text-[#063f68] dark:hover:text-blue-400"}`}
                 >
                     <div className="flex items-center gap-2.5">
                         <span className={`transition-all duration-200 ${isOpen ? "text-[#063f68] scale-110" : `group-hover:scale-110 ${color || "text-gray-400"}`}`}>
@@ -60,12 +60,12 @@ const SidebarItem = ({ icon, label, href, active, children, color }: SidebarItem
                 </button>
                 <div className={`grid transition-all duration-300 ease-in-out ${isOpen ? "grid-rows-[1fr] opacity-100 mt-1" : "grid-rows-[0fr] opacity-0"}`}>
                     <div className="overflow-hidden">
-                        <div className="ml-5 border-l border-slate-200 pl-4 space-y-0.5">
+                        <div className="ml-5 border-l border-slate-200 dark:border-slate-800 pl-4 space-y-0.5">
                             {children.map((child, index) => (
                                 <Link
                                     key={index}
                                     href={child.href}
-                                    className="block py-1.5 text-[12px] font-normal text-gray-400 hover:text-[#063f68] transition-all duration-200 hover:translate-x-1"
+                                    className="block py-1.5 text-[12px] font-normal text-gray-400 dark:text-slate-500 hover:text-[#063f68] dark:hover:text-blue-400 transition-all duration-200 hover:translate-x-1"
                                 >
                                     {child.label}
                                 </Link>
@@ -83,7 +83,7 @@ const SidebarItem = ({ icon, label, href, active, children, color }: SidebarItem
             className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg mb-0.5 transition-all duration-200 group
         ${active
                     ? "bg-[#063f68] text-white"
-                    : "text-gray-500 hover:bg-gray-50 hover:text-[#063f68]"}`}
+                    : "text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50 hover:text-[#063f68] dark:hover:text-blue-400"}`}
         >
             <span className={`transition-all duration-200 ${active ? "text-white scale-110" : `group-hover:scale-110 ${color || "text-gray-400"}`}`}>
                 {React.isValidElement(icon) ? React.cloneElement(icon as React.ReactElement<any>, { size: 18 }) : icon}
@@ -117,11 +117,11 @@ export default function Sidebar({ user }: SidebarProps) {
         { icon: <GraduationCap size={20} />, label: "Cursos", href: "/dashboard/cursos", color: "text-pink-500" },
         { icon: <Calendar size={20} />, label: "Calendario", href: "/dashboard/calendario", color: "text-orange-500" },
         { icon: <HelpCircle size={20} />, label: "Preguntas Frecuentes", href: "/dashboard/faq", color: "text-slate-400" },
-        { icon: <FolderOpen size={20} />, label: "Repositorio de Archivos", href: "/dashboard/archivos", color: "text-[#063f68]" },
+        { icon: <FolderOpen size={20} />, label: "Repositorio de Archivos", href: "/dashboard/archivos", color: "text-[#063f68] dark:text-blue-400" },
     ];
 
     return (
-        <aside className="w-72 bg-white flex flex-col h-screen sticky top-0 overflow-y-auto">
+        <aside className="w-72 bg-white dark:bg-[#02182b] flex flex-col h-screen sticky top-0 overflow-y-auto border-r border-transparent dark:border-slate-800">
             <div className="px-6 py-5 bg-[#063f68] flex items-center h-16">
                 <div className="flex items-center gap-3">
                     <Image src="/sgo.png" alt="SGO CASF" width={48} height={48} className="object-contain" />
@@ -148,24 +148,24 @@ export default function Sidebar({ user }: SidebarProps) {
                 </nav>
             </div>
 
-            <div className="mt-auto p-5 border-t border-slate-100">
+            <div className="mt-auto p-5 border-t border-slate-100 dark:border-slate-800">
                 <Link
                     href="/dashboard/perfil"
-                    className="flex items-center gap-3 p-3 rounded-2xl border border-slate-100 bg-slate-50/30 hover:bg-slate-50 hover:border-slate-200 transition-all duration-300 group"
+                    className="flex items-center gap-3 p-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-800/20 hover:bg-slate-50 dark:hover:bg-slate-800/40 hover:border-slate-200 dark:hover:border-slate-700 transition-all duration-300 group"
                 >
-                    <div className="w-10 h-10 rounded-xl bg-[#063f68]/5 text-[#063f68] flex items-center justify-center font-bold text-sm overflow-hidden border border-slate-200 relative">
+                    <div className="w-10 h-10 rounded-xl bg-[#063f68]/5 dark:bg-blue-400/10 text-[#063f68] dark:text-blue-400 flex items-center justify-center font-bold text-sm overflow-hidden border border-slate-200 dark:border-slate-700 relative">
                         {user.image ? (
                             <img src={user.image} alt="Profile" className="w-full h-full object-cover animate-fade-in" />
                         ) : (
                             <span className="opacity-80 font-bold">{user.nombre[0]}{user.apellido[0]}</span>
                         )}
-                        <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white"></div>
+                        <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white dark:border-[#02182b]"></div>
                     </div>
                     <div className="overflow-hidden">
-                        <p className="text-[13px] font-bold text-slate-700 truncate group-hover:text-[#063f68] transition-colors">
+                        <p className="text-[13px] font-bold text-slate-700 dark:text-slate-200 truncate group-hover:text-[#063f68] dark:group-hover:text-blue-400 transition-colors">
                             {user.nombre} {user.apellido[0]}.
                         </p>
-                        <p className="text-[10px] text-slate-400 font-medium">Matrícula {user.expediente}</p>
+                        <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">Matrícula {user.expediente}</p>
                     </div>
                 </Link>
             </div>

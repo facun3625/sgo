@@ -9,7 +9,7 @@ interface QRComponentProps {
 
 export default function QRComponent({ value, size = 120 }: QRComponentProps) {
     return (
-        <div className="bg-white p-1.5 rounded-xl border border-[#f1f5f9] shadow-sm flex items-center justify-center">
+        <div className="bg-white dark:bg-slate-100 p-1.5 rounded-xl border border-[#f1f5f9] dark:border-slate-800 shadow-sm flex items-center justify-center">
             <QRCodeSVG
                 value={value}
                 size={size}

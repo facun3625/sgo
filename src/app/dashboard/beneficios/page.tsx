@@ -19,28 +19,28 @@ export default async function BeneficiosPage() {
     });
 
     return (
-        <div className="bg-white p-0">
+        <div className="bg-white dark:bg-[#02182b] p-0 pb-12 transition-colors duration-300">
             <div className="w-full pt-0">
 
                 {/* SECCIÓN BENEFICIOS */}
-                <div className="bg-white">
+                <div className="bg-white dark:bg-[#02182b]">
 
                     {/* Header Compacto Sticky */}
-                    <div className="sticky top-16 z-10 bg-white flex items-center justify-between px-8 py-3.5 border-b border-[#f1f5f9]">
+                    <div className="sticky top-16 z-10 bg-white dark:bg-[#02182b] flex items-center justify-between px-8 py-3.5 border-b border-[#f1f5f9] dark:border-slate-800 transition-colors duration-300">
                         <div className="flex items-center gap-6">
                             <Link
                                 href="/dashboard"
-                                className="flex items-center gap-2 text-black hover:text-slate-700 transition-all duration-300 group"
+                                className="flex items-center gap-2 text-black dark:text-white hover:text-slate-700 dark:hover:text-slate-300 transition-all duration-300 group"
                             >
                                 <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
                                 <span className="text-[12px] font-medium tracking-tight">Volver</span>
                             </Link>
-                            <div className="h-4 w-px bg-slate-200"></div>
-                            <h1 className="text-[14px] font-medium text-black tracking-tight">Tarjeta de Beneficios</h1>
+                            <div className="h-4 w-px bg-slate-200 dark:bg-slate-700"></div>
+                            <h1 className="text-[14px] font-medium text-black dark:text-white tracking-tight uppercase">Tarjeta de Beneficios</h1>
                         </div>
                     </div>
 
-                    <div className="p-6 md:p-10 border-b border-[#f1f5f9] animate-fade-in">
+                    <div className="p-6 md:p-10 border-b border-[#f1f5f9] dark:border-slate-800 animate-fade-in">
                         {/* Layout de Contenido: Carnet + Acciones Lateral */}
                         <div className="flex flex-col lg:flex-row gap-10 items-start">
 
@@ -100,9 +100,9 @@ export default async function BeneficiosPage() {
 
                             {/* Columna de Acciones Lateral Compacta */}
                             <div className="w-full lg:w-64 space-y-4">
-                                <div className="p-5 rounded-[24px] bg-white border border-slate-200 mb-2">
-                                    <p className="text-black text-[11px] font-medium leading-relaxed">
-                                        Identificación válida para convenios institucionales vigentes.
+                                <div className="p-5 rounded-[24px] bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                                    <p className="text-slate-500 dark:text-slate-400 text-[11px] font-medium leading-relaxed">
+                                        Presentá esta tarjeta en los comercios adheridos para acceder a los beneficios exclusivos.
                                     </p>
                                 </div>
 
