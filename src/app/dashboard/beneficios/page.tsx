@@ -73,15 +73,15 @@ export default async function BeneficiosPage() {
 
                                         <div className="flex gap-10">
                                             <div className="flex flex-col">
-                                                <p className="text-[8px] font-normal opacity-30 uppercase tracking-[0.2em] mb-1.5 text-white/30">Matrícula</p>
+                                                <p className="text-[8px] font-normal text-white/50 uppercase tracking-[0.2em] mb-1.5">Matrícula</p>
                                                 <p className="text-[14px] font-light tracking-[0.15em] text-white">{session.expediente}</p>
                                             </div>
                                             <div className="flex flex-col">
-                                                <p className="text-[8px] font-normal opacity-30 uppercase tracking-[0.2em] mb-1.5 text-white/30">Folio</p>
+                                                <p className="text-[8px] font-normal text-white/50 uppercase tracking-[0.2em] mb-1.5">Folio</p>
                                                 <p className="text-[14px] font-light tracking-[0.15em] text-white">{dato?.folio || "--"}</p>
                                             </div>
                                             <div className="flex flex-col">
-                                                <p className="text-[8px] font-normal opacity-30 uppercase tracking-[0.2em] mb-1.5 text-white/30">Tomo</p>
+                                                <p className="text-[8px] font-normal text-white/50 uppercase tracking-[0.2em] mb-1.5">Tomo</p>
                                                 <p className="text-[14px] font-light tracking-[0.15em] text-white">{dato?.tomo || "--"}</p>
                                             </div>
                                         </div>
@@ -116,14 +116,14 @@ export default async function BeneficiosPage() {
 
                         <div className="mt-10 pt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div>
-                                <h4 className="text-[10px] font-bold text-black uppercase tracking-widest mb-2 leading-none">Alcance</h4>
-                                <p className="text-black text-[11px] font-medium leading-relaxed">
+                                <h4 className="text-[10px] font-bold text-black dark:text-white/40 uppercase tracking-widest mb-2 leading-none">Alcance</h4>
+                                <p className="text-black dark:text-white/80 text-[11px] font-medium leading-relaxed">
                                     Documento personal de la 1era Circunscripción del CASF.
                                 </p>
                             </div>
                             <div className="md:text-right">
-                                <h4 className="text-[10px] font-bold text-black uppercase tracking-widest mb-2 leading-none">Actualización</h4>
-                                <p className="text-black text-[11px] font-medium leading-relaxed font-mono">
+                                <h4 className="text-[10px] font-bold text-black dark:text-white/40 uppercase tracking-widest mb-2 leading-none">Actualización</h4>
+                                <p className="text-black dark:text-white/80 text-[11px] font-medium leading-relaxed font-mono">
                                     Legajo actualizado en tiempo real.
                                 </p>
                             </div>

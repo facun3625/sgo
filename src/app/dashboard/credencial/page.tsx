@@ -182,8 +182,8 @@ export default async function CredencialPage() {
 
                             {/* Columna de Acciones Lateral */}
                             <div className="w-full lg:w-64 space-y-4">
-                                <div className="p-5 rounded-[24px] bg-slate-50 border border-slate-100">
-                                    <p className="text-slate-500 text-[11px] font-medium leading-relaxed">
+                                <div className="p-5 rounded-[24px] bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                                    <p className="text-slate-500 dark:text-slate-400 text-[11px] font-medium leading-relaxed">
                                         Leyenda legal y firmas de las autoridades institucionales.
                                     </p>
                                 </div>

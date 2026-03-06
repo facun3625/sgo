@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
     Bell,
     Mail,
@@ -26,8 +26,44 @@ interface TopNavProps {
 
 export default function TopNav({ user }: TopNavProps) {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
-    const { theme, setTheme } = useTheme();
+    const [mounted, setMounted] = useState(false);
+    const { theme, setTheme, resolvedTheme } = useTheme();
     const router = useRouter();
+    const menuRef = useRef<HTMLDivElement>(null);
+
+    // Evitar errores de hidratación
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    // Cerrar menú al hacer clic fuera
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+                setIsProfileOpen(false);
+            }
+        }
+
+        if (isProfileOpen) {
+            document.addEventListener("mousedown", handleClickOutside);
+        } else {
+            document.removeEventListener("mousedown", handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [isProfileOpen]);
+
+    if (!mounted) {
+        return (
+            <header className="h-16 bg-[#063f68] flex items-center justify-between px-8 sticky top-0 z-50">
+                <div className="flex items-center gap-4 text-white/50 animate-pulse text-[12px] font-medium tracking-wide italic">
+                    Cargando sistema...
+                </div>
+            </header>
+        );
+    }
 
     const handleLogout = async () => {
         await fetch("/api/auth/logout", { method: "POST" });
@@ -54,11 +90,15 @@ export default function TopNav({ user }: TopNavProps) {
 
                 {/* Dark mode toggle */}
                 <button
-                    onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                    onClick={() => {
+                        const newTheme = resolvedTheme === "dark" ? "light" : "dark";
+                        console.log("🌓 Cambiando tema de:", resolvedTheme, "a:", newTheme);
+                        setTheme(newTheme);
+                    }}
                     className="p-2 text-white/70 hover:bg-white/10 hover:text-white rounded-xl transition-all duration-200"
                     title="Modo oscuro/dia"
                 >
-                    {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+                    {resolvedTheme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
                 </button>
 
                 {/* Notifications */}
@@ -74,7 +114,7 @@ export default function TopNav({ user }: TopNavProps) {
                 </button>
 
                 {/* Profile menu */}
-                <div className="relative">
+                <div className="relative" ref={menuRef}>
                     <button
                         onClick={() => setIsProfileOpen(!isProfileOpen)}
                         className="flex items-center gap-3 p-1.5 rounded-2xl hover:bg-white/10 transition-all duration-300 group"
@@ -99,23 +139,23 @@ export default function TopNav({ user }: TopNavProps) {
                     </button>
 
                     {isProfileOpen && (
-                        <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl border border-gray-100 p-2 animate-fade-in z-50">
+                        <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-2 shadow-xl animate-fade-in z-50">
                             <Link
                                 href="/dashboard/perfil"
-                                className="flex items-center gap-3 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-xl transition-all duration-200"
+                                className="flex items-center gap-3 px-3 py-2 text-sm text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-xl transition-all duration-200"
                                 onClick={() => setIsProfileOpen(false)}
                             >
-                                <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-500">
+                                <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-slate-800 flex items-center justify-center text-gray-500 dark:text-slate-400">
                                     <User size={16} />
                                 </div>
                                 Mi Perfil
                             </Link>
-                            <div className="h-px bg-gray-50 my-2 mx-1"></div>
+                            <div className="h-px bg-gray-50 dark:bg-slate-800 my-2 mx-1"></div>
                             <button
                                 onClick={handleLogout}
-                                className="w-full flex items-center gap-3 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200"
+                                className="w-full flex items-center gap-3 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all duration-200"
                             >
-                                <div className="w-8 h-8 rounded-lg bg-red-100/50 flex items-center justify-center text-red-600">
+                                <div className="w-8 h-8 rounded-lg bg-red-100/50 dark:bg-red-900/30 flex items-center justify-center text-red-600 dark:text-red-400">
                                     <LogOut size={16} />
                                 </div>
                                 Cerrar sesión
