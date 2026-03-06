@@ -98,3 +98,18 @@ model PagoAnual {
   @@map("pago_anual")
 }
 
+model Solicitud {
+  id              Int      @id @default(autoincrement())
+  expediente      String
+  tipo            String // Ejemplo: "Certificado de Matriculación", "SISFE", etc.
+  fecha           DateTime @default(now())
+  estado          String   @default("pendiente") // pendiente, completada, rechazada
+  presentarAnte   String?
+  emailLegal      String?
+  adjunto         String?  // Ruta o URL del archivo adjunto (PDF/Imagen)
+  detalles        Json?    // Para guardar datos específicos como CUIT
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("solicitudes")
+}

@@ -18,7 +18,9 @@ import {
     Calendar,
     HelpCircle,
     FolderOpen,
-    Home
+    Home,
+    Clock,
+    Lock
 } from "lucide-react";
 
 interface SidebarProps {
@@ -99,14 +101,15 @@ export default function Sidebar({ user }: SidebarProps) {
 
     const menuItems = [
         { icon: <Home size={20} />, label: "Inicio", href: "/dashboard", color: "text-slate-400" },
+        { icon: <Clock size={20} />, label: "Solicitudes enviadas", href: "/dashboard/solicitudes/enviadas", color: "text-orange-500" },
         { icon: <CreditCard size={20} />, label: "Tarjeta de beneficios", href: "/dashboard/beneficios", color: "text-blue-500" },
         { icon: <IdCard size={20} />, label: "Credencia digital", href: "/dashboard/credencial", color: "text-amber-500" },
         { icon: <User size={20} />, label: "Mis datos", href: "/dashboard/mis-datos", color: "text-indigo-500" },
         { icon: <Wallet size={20} />, label: "Estado de matricula y Pagos", href: "/dashboard/pagos", color: "text-emerald-500" },
         {
             icon: <FileText size={20} />,
-            label: "Solicitudes",
-            color: "text-purple-500",
+            label: "Trámites",
+            color: "text-blue-600",
             children: [
                 { label: "Certificado de matriculacion", href: "/dashboard/solicitudes/certificado" },
                 { label: "Clave Sistema SISFE", href: "/dashboard/solicitudes/sisfe" },
