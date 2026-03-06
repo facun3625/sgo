@@ -121,7 +121,7 @@ export default function Sidebar({ user }: SidebarProps) {
     ];
 
     return (
-        <aside className="w-72 bg-white dark:bg-[#02182b] flex flex-col h-screen sticky top-0 overflow-y-auto border-r border-transparent dark:border-slate-800">
+        <aside className="w-72 bg-white dark:bg-[#02182b] flex flex-col h-screen sticky top-0 overflow-y-auto border-r border-slate-100 dark:border-slate-800/50">
             <div className="px-6 py-5 bg-[#063f68] flex items-center h-16">
                 <div className="flex items-center gap-3">
                     <Image src="/sgo.png" alt="SGO CASF" width={48} height={48} className="object-contain" />
