@@ -60,3 +60,41 @@ model Dato {
   @@map("datos")
 }
 
+model Deuda {
+  id         Int    @id @default(autoincrement())
+  expediente String
+  monto      Float
+
+  @@map("deudas")
+}
+
+model MatriculaAnual {
+  id         Int    @id @default(autoincrement())
+  expediente String
+  monto      Float
+
+  @@map("matricula_anual")
+}
+
+model MatriculaMensual {
+  id         Int    @id @default(autoincrement())
+  expediente String
+  monto      Float
+
+  @@map("matricula_mensual")
+}
+
+model DebitoAutomatico {
+  id         Int    @id @default(autoincrement())
+  expediente String
+
+  @@map("debito_automatico")
+}
+
+model PagoAnual {
+  id         Int    @id @default(autoincrement())
+  expediente String
+
+  @@map("pago_anual")
+}
+

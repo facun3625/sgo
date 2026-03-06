@@ -9,7 +9,8 @@ import {
     ChevronDown,
     User, // Keep User as is, or change to UserIcon if intended to be renamed
     LogOut,
-    Settings
+    Settings,
+    ArrowRight
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -21,6 +22,7 @@ interface TopNavProps {
         apellido: string;
         expediente: string;
         image: string | null;
+        hasDebt: boolean;
     };
 }
 
@@ -71,7 +73,7 @@ export default function TopNav({ user }: TopNavProps) {
     };
 
     return (
-        <nav className="h-16 bg-[#063f68] text-white px-8 flex items-center justify-end sticky top-0 z-40">
+        <nav className="h-16 bg-[#063f68] text-white px-8 flex items-center justify-end sticky top-0 z-40 border-0">
             <div className="flex items-center gap-4">
                 {/* Status Badges */}
                 <div className="hidden lg:flex items-center gap-3">
@@ -82,10 +84,21 @@ export default function TopNav({ user }: TopNavProps) {
                     </div>
 
                     {/* Debt Status */}
-                    <div className="h-8 flex items-center gap-2 px-3 bg-white/10 rounded-lg backdrop-blur-sm">
-                        <div className="w-1.5 h-1.5 bg-green-400 rounded-full"></div>
-                        <span className="text-[10px] font-extrabold text-white uppercase tracking-widest leading-none">No posee deudas</span>
-                    </div>
+                    {user.hasDebt ? (
+                        <Link
+                            href="/dashboard/pagos"
+                            className="h-8 flex items-center gap-2 px-3 bg-red-500/20 border border-red-500/30 rounded-lg backdrop-blur-sm hover:bg-red-500/30 transition-all group animate-pulse"
+                        >
+                            <div className="w-1.5 h-1.5 bg-red-500 rounded-full shadow-[0_0_8px_rgba(239,68,68,0.8)]"></div>
+                            <span className="text-[10px] font-extrabold text-white uppercase tracking-widest leading-none">Usted posee deuda</span>
+                            <ArrowRight size={12} className="text-white/50 group-hover:text-white transition-colors" />
+                        </Link>
+                    ) : (
+                        <div className="h-8 flex items-center gap-2 px-3 bg-white/10 rounded-lg backdrop-blur-sm">
+                            <div className="w-1.5 h-1.5 bg-green-400 rounded-full"></div>
+                            <span className="text-[10px] font-extrabold text-white uppercase tracking-widest leading-none">No posee deudas</span>
+                        </div>
+                    )}
                 </div>
 
                 {/* Dark mode toggle */}

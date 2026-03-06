@@ -17,7 +17,8 @@ import {
     GraduationCap,
     Calendar,
     HelpCircle,
-    FolderOpen
+    FolderOpen,
+    Home
 } from "lucide-react";
 
 interface SidebarProps {
@@ -97,6 +98,7 @@ export default function Sidebar({ user }: SidebarProps) {
     const pathname = usePathname();
 
     const menuItems = [
+        { icon: <Home size={20} />, label: "Inicio", href: "/dashboard", color: "text-slate-400" },
         { icon: <CreditCard size={20} />, label: "Tarjeta de beneficios", href: "/dashboard/beneficios", color: "text-blue-500" },
         { icon: <IdCard size={20} />, label: "Credencia digital", href: "/dashboard/credencial", color: "text-amber-500" },
         { icon: <User size={20} />, label: "Mis datos", href: "/dashboard/mis-datos", color: "text-indigo-500" },
@@ -121,8 +123,8 @@ export default function Sidebar({ user }: SidebarProps) {
     ];
 
     return (
-        <aside className="w-72 bg-white dark:bg-[#02182b] flex flex-col h-screen sticky top-0 overflow-y-auto border-r border-slate-100 dark:border-slate-800/50">
-            <div className="px-6 py-5 bg-[#063f68] flex items-center h-16">
+        <aside className="w-72 bg-white dark:bg-[#02182b] flex flex-col h-screen sticky top-0 overflow-y-auto border-0">
+            <div className="px-6 py-5 bg-[#063f68] flex items-center h-16 border-0">
                 <div className="flex items-center gap-3">
                     <Image src="/sgo.png" alt="SGO CASF" width={48} height={48} className="object-contain" />
                     <div>

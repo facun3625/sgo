@@ -23,11 +23,16 @@ export default async function DashboardLayout({
         redirect("/login");
     }
 
+    const hasDeuda = await prisma.deuda.findFirst({
+        where: { expediente: session.expediente }
+    });
+
     const user = {
         nombre: dbUser.nombre,
         apellido: dbUser.apellido,
         expediente: dbUser.expediente || "",
-        image: dbUser.image
+        image: dbUser.image,
+        hasDebt: !!hasDeuda
     };
 
     return (

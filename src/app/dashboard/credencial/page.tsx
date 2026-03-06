@@ -1,7 +1,7 @@
 import prisma from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import QRComponent from "@/components/dashboard/QRComponent";
 import CardActions from "@/components/dashboard/CardActions";
@@ -37,16 +37,14 @@ export default async function CredencialPage() {
 
                     {/* Header Compacto Unificado Sticky */}
                     <div className="sticky top-16 z-10 bg-white dark:bg-[#02182b] flex items-center justify-between px-8 py-3.5 border-b border-[#f1f5f9] dark:border-slate-800 transition-colors duration-300">
-                        <div className="flex items-center gap-6">
+                        <div className="flex items-center gap-4">
                             <Link
                                 href="/dashboard"
-                                className="flex items-center gap-2 text-black dark:text-white hover:text-slate-700 dark:hover:text-slate-300 transition-all duration-300 group"
+                                className="p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-all group"
                             >
-                                <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
-                                <span className="text-[12px] font-medium tracking-tight">Volver</span>
+                                <ChevronLeft size={20} className="text-slate-400 group-hover:text-black dark:group-hover:text-white transition-colors" />
                             </Link>
-                            <div className="h-4 w-px bg-slate-200 dark:bg-slate-700"></div>
-                            <h1 className="text-[14px] font-medium text-black dark:text-white tracking-tight">Credencial Digital - Frente</h1>
+                            <h2 className="text-[15px] font-bold text-black dark:text-white tracking-tight">Credencial Digital - Frente</h2>
                         </div>
                     </div>
 
@@ -138,7 +136,7 @@ export default async function CredencialPage() {
                 <div className="bg-white dark:bg-[#02182b]">
                     {/* Header Dorso Sticky */}
                     <div className="sticky top-16 z-10 bg-white dark:bg-[#02182b] flex items-center justify-between px-8 py-3.5 border-b border-[#f1f5f9] dark:border-slate-800 transition-colors duration-300">
-                        <h2 className="text-[14px] font-medium text-black dark:text-white tracking-tight">Credencial Digital - Dorso</h2>
+                        <h2 className="text-[15px] font-bold text-black dark:text-white tracking-tight ml-4">Credencial Digital - Dorso</h2>
                     </div>
 
                     <div className="p-6 md:p-10 animate-fade-in">

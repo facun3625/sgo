@@ -7,7 +7,8 @@ import {
     ArrowRight,
     ChevronRight,
     History,
-    IdCard
+    IdCard,
+    Home
 } from "lucide-react";
 import Link from "next/link";
 
@@ -31,8 +32,11 @@ export default function DashboardClient({ session }: { session: SessionPayload }
 
                     {/* Header Compacto Unificado Sticky */}
                     <div className="sticky top-16 z-10 bg-white dark:bg-[#02182b] flex items-center justify-between px-8 py-3.5 border-b border-[#f1f5f9] dark:border-slate-800 transition-colors duration-300">
-                        <div className="flex items-center gap-6">
-                            <h1 className="text-[14px] font-medium text-black dark:text-white tracking-tight uppercase">Inicio</h1>
+                        <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 flex items-center justify-center">
+                                <Home size={20} className="text-slate-400" />
+                            </div>
+                            <h2 className="text-[15px] font-bold text-black dark:text-white tracking-tight">Inicio - Tablero de Control</h2>
                         </div>
                     </div>
 
