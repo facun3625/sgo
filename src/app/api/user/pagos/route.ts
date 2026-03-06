@@ -33,6 +33,8 @@ export async function GET() {
             matriculaMensual,
             hasDebitoAutomatico: !!debitoAutomatico,
             hasPagoAnualActivo: !!pagoAnual,
+            montoAnual: matriculaAnual[0]?.monto || 48000,
+            montoMensual: matriculaMensual[0]?.monto || 4500,
             totalDeuda: deudas.reduce((acc, curr) => acc + curr.monto, 0)
         });
 

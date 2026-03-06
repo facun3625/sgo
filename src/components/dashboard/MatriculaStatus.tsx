@@ -143,8 +143,8 @@ export default function MatriculaStatus() {
                                 <p className="text-3xl font-black text-black dark:text-white">${montoAnual.toLocaleString()}</p>
                             </div>
                             {data?.hasPagoAnualActivo ? (
-                                <div className="flex items-center gap-2 text-emerald-500 font-bold text-xs uppercase tracking-widest">
-                                    <CheckCircle2 size={16} />
+                                <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl border border-emerald-100 dark:border-emerald-500/20 font-bold text-[10px] uppercase tracking-widest">
+                                    <CheckCircle2 size={14} />
                                     Abonado
                                 </div>
                             ) : (
@@ -167,24 +167,40 @@ export default function MatriculaStatus() {
                                 <Wallet size={24} />
                             </div>
                             <span className="px-3 py-1 bg-emerald-50 dark:bg-emerald-400/10 text-emerald-600 dark:text-emerald-400 rounded-lg text-[10px] font-bold uppercase tracking-widest border border-emerald-100 dark:border-emerald-900/50">
-                                Próx. Vencimiento
+                                Período Actual
                             </span>
                         </div>
 
                         <div>
                             <h4 className="text-xl font-bold text-black dark:text-white tracking-tight">Matrícula Mensual</h4>
-                            <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Período correspondiente a {mesActual}.</p>
+                            <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Cuota correspondiente al período {mesActual}.</p>
                         </div>
 
                         <div className="flex items-end justify-between pt-4">
-                            <div>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Cuota Mensual</p>
-                                <p className="text-3xl font-black text-black dark:text-white">${montoMensual.toLocaleString()}</p>
-                            </div>
-                            <button className="h-12 px-6 bg-emerald-600 text-white rounded-xl font-bold text-xs hover:bg-emerald-700 transition-all flex items-center gap-2">
-                                Pagar Cuota
-                                <CreditCard size={16} />
-                            </button>
+                            {data?.hasPagoAnualActivo || data?.hasDebitoAutomatico ? (
+                                <div className="w-full flex items-center justify-between">
+                                    <div>
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Estado de Pago</p>
+                                        <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
+                                            {data?.hasPagoAnualActivo ? "Cubierto por Pago Anual" : "Adherido al Débito Automático"}
+                                        </p>
+                                    </div>
+                                    <div className="w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 flex items-center justify-center border border-emerald-100 dark:border-emerald-500/20">
+                                        <CheckCircle2 size={20} />
+                                    </div>
+                                </div>
+                            ) : (
+                                <>
+                                    <div>
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Monto a Pagar</p>
+                                        <p className="text-3xl font-black text-black dark:text-white">${montoMensual.toLocaleString()}</p>
+                                    </div>
+                                    <button className="h-12 px-6 bg-emerald-600 text-white rounded-xl font-bold text-xs hover:bg-emerald-700 transition-all flex items-center gap-2">
+                                        Pagar Cuota
+                                        <CreditCard size={16} />
+                                    </button>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>

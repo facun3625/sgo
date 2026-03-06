@@ -12,7 +12,16 @@ function createPrismaClient() {
     return new PrismaClient({ adapter });
 }
 
-export const prisma = globalForPrisma.prisma || createPrismaClient();
+export const prisma = (() => {
+    if (process.env.NODE_ENV !== "production") {
+        // En desarrollo, si el cliente global no tiene 'deuda', forzamos recreación
+        if (globalForPrisma.prisma && !(globalForPrisma.prisma as any).deuda) {
+            console.log("🔄 Re-initializing Prisma client to include new models...");
+            globalForPrisma.prisma = createPrismaClient();
+        }
+    }
+    return globalForPrisma.prisma || createPrismaClient();
+})();
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
 

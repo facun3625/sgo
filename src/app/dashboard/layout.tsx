@@ -23,16 +23,22 @@ export default async function DashboardLayout({
         redirect("/login");
     }
 
-    const hasDeuda = await prisma.deuda.findFirst({
-        where: { expediente: session.expediente }
-    });
+    let hasDebt = false;
+    try {
+        const debtRecord = await prisma.deuda.findFirst({
+            where: { expediente: session.expediente }
+        });
+        hasDebt = !!debtRecord;
+    } catch (error) {
+        console.error("Error checking debt status:", error);
+    }
 
     const user = {
         nombre: dbUser.nombre,
         apellido: dbUser.apellido,
         expediente: dbUser.expediente || "",
         image: dbUser.image,
-        hasDebt: !!hasDeuda
+        hasDebt
     };
 
     return (
