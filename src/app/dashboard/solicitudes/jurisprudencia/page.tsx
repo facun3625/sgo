@@ -140,7 +140,7 @@ export default function SolicitudJurisprudenciaPage() {
                         </div>
                         <button
                             onClick={() => router.push("/dashboard/solicitudes/enviadas")}
-                            className="px-8 h-12 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-emerald-600/20"
+                            className="px-8 h-12 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-sm transition-all"
                         >
                             Ver mis solicitudes
                         </button>
@@ -149,7 +149,7 @@ export default function SolicitudJurisprudenciaPage() {
                     <div className="space-y-8">
                         {/* Alerta Informativa */}
                         <div className="p-4 rounded-2xl bg-blue-50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30 flex gap-4 items-start">
-                            <div className="p-2 rounded-lg bg-white dark:bg-slate-800 text-blue-500 shadow-sm shrink-0">
+                            <div className="p-2 rounded-lg bg-white dark:bg-slate-800 text-blue-500 shrink-0">
                                 <Info size={16} />
                             </div>
                             <p className="text-[11px] text-blue-700 dark:text-blue-400/80 leading-relaxed font-medium">
@@ -241,7 +241,7 @@ export default function SolicitudJurisprudenciaPage() {
                             <button
                                 type="submit"
                                 disabled={submitting || !pedido}
-                                className="w-full md:w-auto h-14 px-12 bg-[#063f68] dark:bg-blue-600 hover:bg-[#0a4d7a] dark:hover:bg-blue-500 text-white rounded-2xl font-bold text-sm transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-blue-500/10 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="w-full md:w-auto h-14 px-12 bg-[#063f68] dark:bg-blue-600 hover:bg-[#0a4d7a] dark:hover:bg-blue-500 text-white rounded-2xl font-bold text-sm transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {submitting ? (
                                     <>

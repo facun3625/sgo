@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import {
     ChevronLeft,
     Send,
-    FileText,
     Info,
     Loader2,
     CheckCircle2,
@@ -28,6 +27,8 @@ export default function SolicitudSuspensionPage() {
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [submitted, setSubmitted] = useState(false);
+    const [hasDebt, setHasDebt] = useState(false);
+    const [totalDeuda, setTotalDeuda] = useState(0);
 
     // Campos del formulario
     const [tipoTramite, setTipoTramite] = useState("Suspensión");
@@ -35,24 +36,41 @@ export default function SolicitudSuspensionPage() {
     const [motivo, setMotivo] = useState("Motivos personales");
 
     useEffect(() => {
-        const fetchDatos = async () => {
+        const fetchData = async () => {
             try {
-                const res = await fetch("/api/user/datos");
-                if (res.ok) {
-                    const data = await res.json();
+                const [resDatos, resPagos] = await Promise.all([
+                    fetch("/api/user/datos"),
+                    fetch("/api/user/pagos")
+                ]);
+
+                if (resDatos.ok) {
+                    const data = await resDatos.json();
                     setDatos(data);
                 }
+
+                if (resPagos.ok) {
+                    const dataPagos = await resPagos.json();
+                    const deudaTotal = dataPagos.totalDeuda || 0;
+                    setTotalDeuda(deudaTotal);
+                    setHasDebt(deudaTotal > 0);
+                }
             } catch (error) {
-                console.error("Error fetching user data:", error);
+                console.error("Error fetching data:", error);
             } finally {
                 setLoading(false);
             }
         };
-        fetchDatos();
+        fetchData();
     }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (hasDebt) {
+            alert("No se puede iniciar el trámite con deuda pendiente.");
+            return;
+        }
+
         setSubmitting(true);
 
         try {
@@ -128,16 +146,33 @@ export default function SolicitudSuspensionPage() {
                         </div>
                         <button
                             onClick={() => router.push("/dashboard/solicitudes/enviadas")}
-                            className="px-8 h-12 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-emerald-600/20"
+                            className="px-8 h-12 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-sm transition-all"
                         >
                             Ver mis solicitudes
                         </button>
                     </div>
+                ) : hasDebt ? (
+                    <div className="bg-rose-50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/30 rounded-[32px] p-12 text-center space-y-6">
+                        <div className="w-20 h-20 bg-rose-500 text-white rounded-3xl flex items-center justify-center mx-auto shadow-rose-500/10">
+                            <XOctagon size={40} />
+                        </div>
+                        <div className="space-y-2">
+                            <h3 className="text-2xl font-bold text-rose-900 dark:text-rose-400">Trámite Bloqueado</h3>
+                            <p className="text-rose-700/70 dark:text-rose-400/60 font-medium max-w-md mx-auto">
+                                No es posible solicitar la suspensión o cancelación de la matrícula contando con deuda pendiente. El saldo actual es de <span className="font-bold text-rose-600 dark:text-rose-300">${totalDeuda.toLocaleString()}</span>.
+                            </p>
+                        </div>
+                        <button
+                            onClick={() => router.push("/dashboard/pagos")}
+                            className="px-8 h-12 bg-[#063f68] hover:bg-[#0a4d7a] text-white rounded-xl font-bold text-sm transition-all shadow-blue-500/10"
+                        >
+                            Ir a mis Pagos
+                        </button>
+                    </div>
                 ) : (
                     <div className="space-y-8">
-                        {/* Info top */}
                         <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 flex gap-4 items-start">
-                            <div className="p-2 rounded-lg bg-white dark:bg-slate-800 text-[#063f68] dark:text-blue-400 shadow-sm shrink-0">
+                            <div className="p-2 rounded-lg bg-white dark:bg-slate-800 text-[#063f68] dark:text-blue-400 shrink-0">
                                 <Info size={16} />
                             </div>
                             <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
@@ -147,7 +182,6 @@ export default function SolicitudSuspensionPage() {
 
                         <form onSubmit={handleSubmit} className="space-y-8">
                             <div className="grid grid-cols-1 gap-6">
-                                {/* Datos readonly */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-2">
@@ -173,7 +207,6 @@ export default function SolicitudSuspensionPage() {
                                     </div>
                                 </div>
 
-                                {/* Selección de trámite */}
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Solicito tenga a bien proceder a la</label>
                                     <select
@@ -186,7 +219,6 @@ export default function SolicitudSuspensionPage() {
                                     </select>
                                 </div>
 
-                                {/* Fecha */}
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-2">
                                         <CalendarIcon size={12} /> de mi matrícula profesional a partir de
@@ -200,7 +232,6 @@ export default function SolicitudSuspensionPage() {
                                     />
                                 </div>
 
-                                {/* Motivo */}
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">en razón de</label>
                                     <select
@@ -218,7 +249,7 @@ export default function SolicitudSuspensionPage() {
                             <button
                                 type="submit"
                                 disabled={submitting || !fechaInicio}
-                                className="w-full md:w-auto h-14 px-12 bg-[#063f68] dark:bg-blue-600 hover:bg-[#0a4d7a] dark:hover:bg-blue-500 text-white rounded-2xl font-bold text-sm transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-blue-500/10 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="w-full md:w-auto h-14 px-12 bg-[#063f68] dark:bg-blue-600 hover:bg-[#0a4d7a] dark:hover:bg-blue-500 text-white rounded-2xl font-bold text-sm transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {submitting ? (
                                     <>
