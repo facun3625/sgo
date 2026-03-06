@@ -23,14 +23,14 @@ export default async function PerfilPage() {
     }
 
     return (
-        <div className="bg-white p-0 md:px-4 lg:px-6">
-            <div className="max-w-6xl mx-auto pt-0">
+        <div className="bg-white p-0 pb-12">
+            <div className="w-full pt-0">
 
-                {/* Contenedor Principal Simétrico (Estética Fina) */}
-                <div className="bg-white rounded-[40px] border border-slate-200 overflow-hidden">
+                {/* SECCIÓN PERFIL */}
+                <div className="bg-white">
 
-                    {/* Header Minimalista */}
-                    <div className="flex items-center justify-between px-8 py-5 border-b border-slate-50">
+                    {/* Header Compacto Unificado Sticky */}
+                    <div className="sticky top-16 z-10 bg-white flex items-center justify-between px-8 py-3.5 border-b border-[#f1f5f9]">
                         <div className="flex items-center gap-6">
                             <Link
                                 href="/dashboard"
@@ -49,7 +49,8 @@ export default async function PerfilPage() {
                             nombre: user.nombre,
                             apellido: user.apellido,
                             expediente: user.expediente || "",
-                            image: user.image
+                            image: user.image,
+                            signature: user.signature
                         }} />
                     </div>
                 </div>

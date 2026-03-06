@@ -1,8 +1,9 @@
 import prisma from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { ArrowLeft, Printer, Download } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import CardActions from "@/components/dashboard/CardActions";
 
 export default async function BeneficiosPage() {
     const session = await getSession();
@@ -18,14 +19,14 @@ export default async function BeneficiosPage() {
     });
 
     return (
-        <div className="bg-white p-0 md:px-4 lg:px-6">
-            <div className="max-w-6xl mx-auto pt-0">
+        <div className="bg-white p-0">
+            <div className="w-full pt-0">
 
-                {/* Contenedor Principal Unificado con remate elegante (Sombra eliminada para look flat) */}
-                <div className="bg-white rounded-[40px] border border-slate-200 overflow-hidden">
+                {/* SECCIÓN BENEFICIOS */}
+                <div className="bg-white">
 
-                    {/* Header Compacto y Unificado (Sin fondo ni borde para look 100% flat) */}
-                    <div className="flex items-center justify-between px-8 py-3.5">
+                    {/* Header Compacto Sticky */}
+                    <div className="sticky top-16 z-10 bg-white flex items-center justify-between px-8 py-3.5 border-b border-[#f1f5f9]">
                         <div className="flex items-center gap-6">
                             <Link
                                 href="/dashboard"
@@ -37,16 +38,15 @@ export default async function BeneficiosPage() {
                             <div className="h-4 w-px bg-slate-200"></div>
                             <h1 className="text-[14px] font-medium text-black tracking-tight">Tarjeta de Beneficios</h1>
                         </div>
-
                     </div>
 
-                    <div className="p-6 md:p-10">
+                    <div className="p-6 md:p-10 border-b border-[#f1f5f9] animate-fade-in">
                         {/* Layout de Contenido: Carnet + Acciones Lateral */}
                         <div className="flex flex-col lg:flex-row gap-10 items-start">
 
                             {/* Columna del Carnet */}
                             <div className="flex-1 w-full max-w-[500px]">
-                                <div id="benefits-card" className="relative w-full aspect-[1.6/1] bg-gradient-to-br from-[#063f68] to-[#084a7a] rounded-[28px] overflow-hidden text-white p-8 flex flex-col justify-between border border-white/5">
+                                <div id="benefits-card" className="relative w-full aspect-[1.6/1] bg-gradient-to-br from-[#063f68] to-[#084a7a] rounded-[28px] overflow-hidden text-white p-8 flex flex-col justify-between border border-white/5 shadow-2xl">
 
                                     {/* Capas Estéticas */}
                                     <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.06),transparent)]"></div>
@@ -55,12 +55,12 @@ export default async function BeneficiosPage() {
                                     {/* Header Carnet */}
                                     <div className="relative z-10 flex justify-between items-start">
                                         <div className="flex items-center gap-4">
-                                            <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center border border-white/20 overflow-hidden p-1.5">
+                                            <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center border border-white/20 overflow-hidden p-1.5 shadow-xl">
                                                 <img src="/sgo.png" alt="CASF" className="w-12 h-auto opacity-100" />
                                             </div>
                                             <div>
-                                                <p className="text-xl font-bold tracking-tight leading-none mb-1">CASF</p>
-                                                <p className="text-[9px] font-semibold tracking-[0.1em] opacity-70 uppercase">Colegio de Abogados Santa Fe</p>
+                                                <p className="text-xl font-bold tracking-tight leading-none mb-1 text-white">CASF</p>
+                                                <p className="text-[9px] font-semibold tracking-[0.1em] opacity-70 uppercase text-white/70">Colegio de Abogados Santa Fe</p>
                                             </div>
                                         </div>
                                     </div>
@@ -73,16 +73,16 @@ export default async function BeneficiosPage() {
 
                                         <div className="flex gap-10">
                                             <div className="flex flex-col">
-                                                <p className="text-[8px] font-normal opacity-30 uppercase tracking-[0.2em] mb-1.5">Matrícula</p>
-                                                <p className="text-[14px] font-light tracking-[0.15em]">{session.expediente}</p>
+                                                <p className="text-[8px] font-normal opacity-30 uppercase tracking-[0.2em] mb-1.5 text-white/30">Matrícula</p>
+                                                <p className="text-[14px] font-light tracking-[0.15em] text-white">{session.expediente}</p>
                                             </div>
                                             <div className="flex flex-col">
-                                                <p className="text-[8px] font-normal opacity-30 uppercase tracking-[0.2em] mb-1.5">Folio</p>
-                                                <p className="text-[14px] font-light tracking-[0.15em]">{dato?.folio || "--"}</p>
+                                                <p className="text-[8px] font-normal opacity-30 uppercase tracking-[0.2em] mb-1.5 text-white/30">Folio</p>
+                                                <p className="text-[14px] font-light tracking-[0.15em] text-white">{dato?.folio || "--"}</p>
                                             </div>
                                             <div className="flex flex-col">
-                                                <p className="text-[8px] font-normal opacity-30 uppercase tracking-[0.2em] mb-1.5">Tomo</p>
-                                                <p className="text-[14px] font-light tracking-[0.15em]">{dato?.tomo || "--"}</p>
+                                                <p className="text-[8px] font-normal opacity-30 uppercase tracking-[0.2em] mb-1.5 text-white/30">Tomo</p>
+                                                <p className="text-[14px] font-light tracking-[0.15em] text-white">{dato?.tomo || "--"}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -93,33 +93,28 @@ export default async function BeneficiosPage() {
                                             <div className="w-1 h-1 bg-green-400 rounded-full"></div>
                                             <span className="text-[8px] font-medium text-white/60 uppercase tracking-[0.12em]">Tarjeta de beneficios habilitada</span>
                                         </div>
-                                        <p className="text-[6px] font-light uppercase tracking-[0.3em] opacity-20">SGO Operativa</p>
+                                        <p className="text-[6px] font-light uppercase tracking-[0.3em] opacity-20 text-white/20">SGO Operativa</p>
                                     </div>
                                 </div>
                             </div>
 
                             {/* Columna de Acciones Lateral Compacta */}
-                            <div className="w-full lg:w-60 space-y-4 text-center lg:text-left">
+                            <div className="w-full lg:w-64 space-y-4">
                                 <div className="p-5 rounded-[24px] bg-white border border-slate-200 mb-2">
                                     <p className="text-black text-[11px] font-medium leading-relaxed">
                                         Identificación válida para convenios institucionales vigentes.
                                     </p>
                                 </div>
 
-                                <div className="flex flex-row lg:flex-col gap-3">
-                                    <button className="flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-2xl border border-slate-200 text-black hover:bg-slate-50 transition-all text-[12px] font-bold group bg-white">
-                                        <Printer size={15} className="group-hover:scale-110 transition-transform opacity-90" />
-                                        Imprimir
-                                    </button>
-                                    <button className="flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-[#063f68] text-white hover:bg-[#0a4d7a] transition-all text-[12px] font-medium group">
-                                        <Download size={15} className="group-hover:translate-y-0.5 transition-transform opacity-90" />
-                                        Descargar
-                                    </button>
-                                </div>
+                                <CardActions
+                                    targetId="benefits-card"
+                                    fileName={`Beneficios-${session.expediente}`}
+                                    title="Tarjeta de Beneficios"
+                                />
                             </div>
                         </div>
 
-                        <div className="mt-10 pt-8 border-t border-slate-200 grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="mt-10 pt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div>
                                 <h4 className="text-[10px] font-bold text-black uppercase tracking-widest mb-2 leading-none">Alcance</h4>
                                 <p className="text-black text-[11px] font-medium leading-relaxed">

@@ -72,8 +72,6 @@ export default function TopNav({ user }: TopNavProps) {
                     <span className="absolute top-2 right-2.5 w-2 h-2 bg-blue-400 rounded-full border-2 border-[#063f68]"></span>
                 </button>
 
-                <div className="w-px h-6 bg-white/10 mx-2"></div>
-
                 {/* Profile menu */}
                 <div className="relative">
                     <button

@@ -35,7 +35,7 @@ export default async function DashboardLayout({
             <Sidebar user={user} />
             <div className="flex-1 flex flex-col">
                 <TopNav user={user} />
-                <main className="p-4 animate-fade-in">
+                <main className="p-0 animate-fade-in">
                     {children}
                 </main>
             </div>

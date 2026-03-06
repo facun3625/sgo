@@ -11,16 +11,20 @@ interface ProfileFormProps {
         apellido: string;
         expediente: string;
         image: string | null;
+        signature: string | null;
     };
 }
 
 export default function ProfileForm({ initialUser }: ProfileFormProps) {
     const [image, setImage] = useState<string | null>(initialUser.image);
+    const [signature, setSignature] = useState<string | null>(initialUser.signature);
     const [isUploading, setIsUploading] = useState(false);
+    const [isUploadingSignature, setIsUploadingSignature] = useState(false);
     const [isChangingPassword, setIsChangingPassword] = useState(false);
     const router = useRouter();
     const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const signatureInputRef = useRef<HTMLInputElement>(null);
 
     // Password state
     const [passwordData, setPasswordData] = useState({
@@ -57,6 +61,37 @@ export default function ProfileForm({ initialUser }: ProfileFormProps) {
             setMessage({ type: "error", text: "Error de conexión" });
         } finally {
             setIsUploading(false);
+        }
+    };
+
+    const handleSignatureUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setIsUploadingSignature(true);
+        setMessage(null);
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        try {
+            const res = await fetch("/api/user/upload-signature", {
+                method: "POST",
+                body: formData,
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+                setSignature(data.url);
+                setMessage({ type: "success", text: "Firma actualizada correctamente" });
+                router.refresh();
+            } else {
+                setMessage({ type: "error", text: data.error || "Error al subir la firma" });
+            }
+        } catch (error) {
+            setMessage({ type: "error", text: "Error de conexión" });
+        } finally {
+            setIsUploadingSignature(false);
         }
     };
 
@@ -134,6 +169,49 @@ export default function ProfileForm({ initialUser }: ProfileFormProps) {
                     <p className="text-[14px] text-slate-500 font-medium mb-4">Matrícula {initialUser.expediente}</p>
                     <p className="text-[12px] text-slate-400 max-w-sm leading-relaxed">
                         Actualiza tu foto profesional para que sea visible en tu credencial digital y en la barra de navegación.
+                    </p>
+                </div>
+            </div>
+            {/* Sección de Firma del Matriculado */}
+            <div className="flex flex-col md:flex-row gap-8 items-center md:items-start border-b border-slate-50 pb-12">
+                <div className="relative group">
+                    <div className="w-48 h-24 rounded-2xl overflow-hidden bg-slate-50 border-2 border-slate-100 transition-all duration-300 group-hover:border-[#063f68]/20 flex items-center justify-center p-4">
+                        {signature ? (
+                            <img src={signature} alt="Firma" className="max-w-full max-h-full object-contain" />
+                        ) : (
+                            <div className="text-center">
+                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Sin Firma</p>
+                            </div>
+                        )}
+                        {isUploadingSignature && (
+                            <div className="absolute inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center">
+                                <Loader2 size={24} className="text-[#063f68] animate-spin" />
+                            </div>
+                        )}
+                    </div>
+                    <button
+                        onClick={() => signatureInputRef.current?.click()}
+                        className="absolute -bottom-1 -right-1 w-10 h-10 bg-[#063f68] text-white rounded-xl shadow-lg border-4 border-white flex items-center justify-center hover:scale-110 active:scale-95 transition-all"
+                        disabled={isUploadingSignature}
+                    >
+                        <Camera size={18} />
+                    </button>
+                    <input
+                        type="file"
+                        ref={signatureInputRef}
+                        onChange={handleSignatureUpload}
+                        className="hidden"
+                        accept="image/png"
+                    />
+                </div>
+
+                <div className="flex-1 text-center md:text-left pt-2">
+                    <h3 className="text-lg font-bold text-black tracking-tight mb-1">
+                        Tu Firma Digital
+                    </h3>
+                    <p className="text-[12px] text-slate-500 font-medium mb-4">Sube tu firma en formato PNG</p>
+                    <p className="text-[11px] text-slate-400 max-w-sm leading-relaxed">
+                        Esta firma aparecerá en tu credencial digital. Se recomienda un archivo PNG con fondo transparente o blanco.
                     </p>
                 </div>
             </div>
