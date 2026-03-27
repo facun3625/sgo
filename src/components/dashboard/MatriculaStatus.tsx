@@ -24,6 +24,7 @@ interface PagosData {
     matriculaAnual: Concepto[];
     matriculaMensual: Concepto[];
     hasDebitoAutomatico: boolean;
+    hasDebitoEnTramite: boolean;
     hasPagoAnualActivo: boolean;
     totalDeuda: number;
 }
@@ -112,6 +113,11 @@ export default function MatriculaStatus() {
                             <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Débito Activo</span>
                         </div>
                     )}
+                    {data?.hasDebitoEnTramite && (
+                        <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 rounded-xl border border-amber-100 dark:border-amber-900/50 shadow-sm">
+                            <span className="text-[10px] font-bold text-amber-600 uppercase tracking-widest">Débito en Trámite</span>
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -177,16 +183,21 @@ export default function MatriculaStatus() {
                         </div>
 
                         <div className="flex items-end justify-between pt-4">
-                            {data?.hasPagoAnualActivo || data?.hasDebitoAutomatico ? (
+                            {data?.hasPagoAnualActivo || data?.hasDebitoAutomatico || data?.hasDebitoEnTramite ? (
                                 <div className="w-full flex items-center justify-between">
                                     <div>
                                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Estado de Pago</p>
-                                        <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
-                                            {data?.hasPagoAnualActivo ? "Cubierto por Pago Anual" : "Adherido al Débito Automático"}
+                                        <p className={`text-sm font-bold flex items-center gap-2 ${data?.hasDebitoEnTramite ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                                            {data?.hasPagoAnualActivo ? "Cubierto por Pago Anual" :
+                                                data?.hasDebitoAutomatico ? "Adherido al Débito Automático" :
+                                                    "Adhesión en proceso de aprobación"}
                                         </p>
                                     </div>
-                                    <div className="w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 flex items-center justify-center border border-emerald-100 dark:border-emerald-500/20">
-                                        <CheckCircle2 size={20} />
+                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center border ${data?.hasDebitoEnTramite
+                                            ? 'bg-amber-50 dark:bg-amber-500/10 text-amber-600 border-amber-100 dark:border-amber-500/20'
+                                            : 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 border-emerald-100 dark:border-emerald-500/20'
+                                        }`}>
+                                        {data?.hasDebitoEnTramite ? <Loader2 size={20} className="animate-spin" /> : <CheckCircle2 size={20} />}
                                     </div>
                                 </div>
                             ) : (

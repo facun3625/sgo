@@ -84,12 +84,6 @@ model MatriculaMensual {
   @@map("matricula_mensual")
 }
 
-model DebitoAutomatico {
-  id         Int    @id @default(autoincrement())
-  expediente String
-
-  @@map("debito_automatico")
-}
 
 model PagoAnual {
   id         Int    @id @default(autoincrement())
@@ -112,4 +106,56 @@ model Solicitud {
   updatedAt       DateTime @updatedAt
 
   @@map("solicitudes")
+}
+
+model AdhesionDebito {
+  id              Int      @id @default(autoincrement())
+  expediente      String
+  tipoAdhesion    String   // "CBU" o "Tarjeta"
+  estado          String   @default("pendiente") // pendiente, aprobada, rechazada
+  dniFrontal      String?  // Ruta o URL del archivo
+  constanciaCbu   String?  // Ruta o URL del archivo (Solo para CBU)
+  frontalTarjeta  String?  // Ruta o URL del archivo (Solo para Tarjeta)
+  terminosAceptados Boolean @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("adhesiones_debito")
+}
+
+model Curso {
+  id          Int      @id @default(autoincrement())
+  titulo      String
+  descripcion String
+  fecha       String   // "15 de Marzo, 2024" o similar para simpleza
+  hora        String?  // Opcional
+  cupo        Int
+  inscritos   Int      @default(0)
+  precio      String?  // Ejemplo: "Gratis" o "$1500"
+  modalidad   String   @default("Presencial") // Presencial / Virtual
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("cursos")
+}
+
+model InscripcionCurso {
+  id          Int      @id @default(autoincrement())
+  expediente  String
+  cursoId     Int      @map("curso_id")
+  fecha       DateTime @default(now())
+
+  @@map("inscripciones_cursos")
+}
+
+model Evento {
+  id          Int      @id @default(autoincrement())
+  titulo      String
+  descripcion String?
+  fecha       DateTime
+  tipo        String   @default("institucional") // institucional, social, feriado, curso
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("eventos")
 }

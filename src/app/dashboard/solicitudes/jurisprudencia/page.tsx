@@ -109,7 +109,7 @@ export default function SolicitudJurisprudenciaPage() {
     }
 
     return (
-        <div className="bg-white dark:bg-[#02182b] min-h-screen pb-20 transition-colors duration-300">
+        <div className="bg-white dark:bg-[#02182b] pb-20 transition-colors duration-300">
             {/* Header Sticky */}
             <div className="sticky top-16 z-10 bg-white dark:bg-[#02182b] flex items-center justify-between px-8 py-3.5 border-b border-[#f1f5f9] dark:border-slate-800 transition-colors duration-300">
                 <div className="flex items-center gap-4">
@@ -120,7 +120,7 @@ export default function SolicitudJurisprudenciaPage() {
                         <ChevronLeft size={20} className="text-slate-400 group-hover:text-black dark:group-hover:text-white transition-colors" />
                     </Link>
                     <div className="flex items-center gap-3">
-                        <MessageSquare size={18} className="text-slate-400" />
+                        <FileText size={18} className="text-blue-600" />
                         <h2 className="text-[15px] font-bold text-black dark:text-white tracking-tight">Solicitud de Jurisprudencia</h2>
                     </div>
                 </div>

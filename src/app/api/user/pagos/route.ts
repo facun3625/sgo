@@ -17,21 +17,31 @@ export async function GET() {
             deudas,
             matriculaAnual,
             matriculaMensual,
-            debitoAutomatico,
+            debitoAprobado,
+            debitoEnTramite,
             pagoAnual
         ] = await Promise.all([
             prisma.deuda.findMany({ where: { expediente } }),
             prisma.matriculaAnual.findMany({ where: { expediente } }),
             prisma.matriculaMensual.findMany({ where: { expediente } }),
-            prisma.debitoAutomatico.findFirst({ where: { expediente } }),
+            prisma.adhesionDebito.findFirst({
+                where: { expediente, estado: "aprobada" }
+            }),
+            prisma.adhesionDebito.findFirst({
+                where: { expediente, estado: "pendiente" }
+            }),
             prisma.pagoAnual.findFirst({ where: { expediente } })
         ]);
+
+        const debitoActivo = !!debitoAprobado;
+        const debitoPendiente = !!debitoEnTramite;
 
         return NextResponse.json({
             deudas,
             matriculaAnual,
             matriculaMensual,
-            hasDebitoAutomatico: !!debitoAutomatico,
+            hasDebitoAutomatico: debitoActivo,
+            hasDebitoEnTramite: debitoPendiente,
             hasPagoAnualActivo: !!pagoAnual,
             montoAnual: matriculaAnual[0]?.monto || 48000,
             montoMensual: matriculaMensual[0]?.monto || 4500,

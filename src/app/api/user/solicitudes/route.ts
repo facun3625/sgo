@@ -11,12 +11,40 @@ export async function GET() {
             return NextResponse.json({ error: "No autorizado" }, { status: 401 });
         }
 
-        const solicitudes = await prisma.solicitud.findMany({
-            where: { expediente: session.expediente },
-            orderBy: { fecha: 'desc' }
-        });
+        const [solicitudes, adhesiones] = await Promise.all([
+            prisma.solicitud.findMany({
+                where: { expediente: session.expediente },
+                orderBy: { fecha: 'desc' }
+            }),
+            prisma.adhesionDebito.findMany({
+                where: { expediente: session.expediente },
+                orderBy: { createdAt: 'desc' }
+            })
+        ]);
 
-        return NextResponse.json(solicitudes);
+        // Transformar adhesiones al formato de solicitud
+        const adhesionesTransformadas = adhesiones.map(a => ({
+            id: `ad-${a.id}`, // ID único prefijado
+            tipo: `Adhesión a Débito - ${a.tipoAdhesion}`,
+            fecha: a.createdAt,
+            estado: a.estado,
+            presentarAnte: null,
+            emailLegal: null,
+            adjunto: a.tipoAdhesion === "CBU" ? a.constanciaCbu : a.frontalTarjeta,
+            detalles: {
+                tipoAdhesion: a.tipoAdhesion,
+                dni: a.dniFrontal,
+                cbu: a.constanciaCbu,
+                tarjeta: a.frontalTarjeta
+            },
+            isAdhesion: true
+        }));
+
+        const total = [...solicitudes, ...adhesionesTransformadas].sort((a, b) =>
+            new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
+        );
+
+        return NextResponse.json(total);
     } catch (error) {
         console.error("Error al obtener solicitudes:", error);
         return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });

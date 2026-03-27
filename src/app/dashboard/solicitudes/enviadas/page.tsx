@@ -16,12 +16,14 @@ import {
 import Link from "next/link";
 
 interface Solicitud {
-    id: number;
+    id: string | number;
     tipo: string;
     fecha: string;
     estado: string;
     presentarAnte: string | null;
     adjunto: string | null;
+    isAdhesion?: boolean;
+    detalles?: any;
 }
 
 export default function SolicitudesEnviadasPage() {
@@ -87,7 +89,7 @@ export default function SolicitudesEnviadasPage() {
     }
 
     return (
-        <div className="bg-white dark:bg-[#02182b] min-h-screen pb-20 transition-colors duration-300">
+        <div className="bg-white dark:bg-[#02182b] pb-20 transition-colors duration-300">
             {/* Header Sticky */}
             <div className="sticky top-16 z-10 bg-white dark:bg-[#02182b] flex items-center justify-between px-8 py-3.5 border-b border-[#f1f5f9] dark:border-slate-800 transition-colors duration-300">
                 <div className="flex items-center gap-4">
@@ -97,7 +99,10 @@ export default function SolicitudesEnviadasPage() {
                     >
                         <ChevronLeft size={20} className="text-slate-400 group-hover:text-black dark:group-hover:text-white transition-colors" />
                     </Link>
-                    <h2 className="text-[15px] font-bold text-black dark:text-white tracking-tight">Solicitudes Enviadas</h2>
+                    <div className="flex items-center gap-3">
+                        <Clock size={18} className="text-orange-500" />
+                        <h2 className="text-[15px] font-bold text-black dark:text-white tracking-tight">Solicitudes Enviadas</h2>
+                    </div>
                 </div>
 
                 <div className="relative hidden md:block">
@@ -152,17 +157,46 @@ export default function SolicitudesEnviadasPage() {
                                                     </div>
                                                 )}
 
-                                                {solicitud.adjunto && (
-                                                    <a
-                                                        href={solicitud.adjunto}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="flex items-center gap-1.5 px-2 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg text-[9px] font-bold uppercase tracking-wider hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all shrink-0"
-                                                        onClick={(e) => e.stopPropagation()}
-                                                    >
-                                                        <Paperclip size={10} />
-                                                        Ver Adjunto
-                                                    </a>
+                                                {solicitud.isAdhesion ? (
+                                                    <div className="flex items-center gap-2 shrink-0">
+                                                        {solicitud.detalles?.dni && (
+                                                            <a
+                                                                href={solicitud.detalles.dni}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="flex items-center gap-1.5 px-2 py-1 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded-lg text-[9px] font-bold uppercase tracking-wider hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-all"
+                                                                onClick={(e) => e.stopPropagation()}
+                                                            >
+                                                                <Paperclip size={10} />
+                                                                DNI
+                                                            </a>
+                                                        )}
+                                                        {(solicitud.detalles?.cbu || solicitud.detalles?.tarjeta) && (
+                                                            <a
+                                                                href={solicitud.detalles.cbu || solicitud.detalles.tarjeta}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="flex items-center gap-1.5 px-2 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg text-[9px] font-bold uppercase tracking-wider hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all"
+                                                                onClick={(e) => e.stopPropagation()}
+                                                            >
+                                                                <Paperclip size={10} />
+                                                                {solicitud.detalles.tipoAdhesion}
+                                                            </a>
+                                                        )}
+                                                    </div>
+                                                ) : (
+                                                    solicitud.adjunto && (
+                                                        <a
+                                                            href={solicitud.adjunto}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="flex items-center gap-1.5 px-2 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg text-[9px] font-bold uppercase tracking-wider hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all shrink-0"
+                                                            onClick={(e) => e.stopPropagation()}
+                                                        >
+                                                            <Paperclip size={10} />
+                                                            Ver Adjunto
+                                                        </a>
+                                                    )
                                                 )}
                                             </div>
                                         </div>

@@ -9,9 +9,10 @@ interface CardActionsProps {
     targetId: string;
     fileName: string;
     title: string;
+    disabled?: boolean;
 }
 
-export default function CardActions({ targetId, fileName, title }: CardActionsProps) {
+export default function CardActions({ targetId, fileName, title, disabled = false }: CardActionsProps) {
     const [isDownloading, setIsDownloading] = useState(false);
 
     const handlePrint = () => {
@@ -66,15 +67,16 @@ export default function CardActions({ targetId, fileName, title }: CardActionsPr
         <div className="flex flex-row lg:flex-col gap-3 no-print">
             <button
                 onClick={handlePrint}
-                className="flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 text-black dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition-all text-[12px] font-bold group bg-white dark:bg-slate-900 shadow-sm"
+                disabled={disabled}
+                className="flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 text-black dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition-all text-[12px] font-bold group bg-white dark:bg-slate-900 shadow-sm disabled:opacity-30 disabled:cursor-not-allowed"
             >
                 <Printer size={15} className="group-hover:scale-110 transition-transform opacity-90" />
                 Imprimir
             </button>
             <button
                 onClick={handleDownloadPDF}
-                disabled={isDownloading}
-                className="flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-[#063f68] text-white hover:bg-[#0a4d7a] transition-all text-[12px] font-medium group shadow-lg shadow-[#063f68]/10 disabled:opacity-50"
+                disabled={isDownloading || disabled}
+                className="flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-[#063f68] text-white hover:bg-[#0a4d7a] transition-all text-[12px] font-medium group shadow-lg shadow-[#063f68]/10 disabled:opacity-30 disabled:cursor-not-allowed"
             >
                 {isDownloading ? (
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

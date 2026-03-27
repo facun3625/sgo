@@ -19,6 +19,7 @@ import {
     HelpCircle,
     FolderOpen,
     Home,
+    CheckCircle2,
     Clock,
     Lock
 } from "lucide-react";
@@ -92,6 +93,7 @@ const SidebarItem = ({ icon, label, href, active, children, color }: SidebarItem
                 {React.isValidElement(icon) ? React.cloneElement(icon as React.ReactElement<any>, { size: 18 }) : icon}
             </span>
             <span className={`text-[13px] ${active ? "font-semibold text-white" : "font-normal"}`}>{label}</span>
+            {label === "Adehesion a debito automatico" && <AdhesionBadge />}
         </Link>
     );
 };
@@ -118,7 +120,7 @@ export default function Sidebar({ user }: SidebarProps) {
             ]
         },
         { icon: <XOctagon size={20} />, label: "Solicitud de suspensión/cancelación", href: "/dashboard/suspension", color: "text-rose-500" },
-        { icon: <Banknote size={20} />, label: "Adehesion a debito automatico", href: "/dashboard/debito", color: "text-cyan-500" },
+        { icon: <Banknote size={20} />, label: "Adehesion a debito automatico", href: "/dashboard/solicitudes/adhesion-debito", color: "text-cyan-500" },
         { icon: <GraduationCap size={20} />, label: "Cursos", href: "/dashboard/cursos", color: "text-pink-500" },
         { icon: <Calendar size={20} />, label: "Calendario", href: "/dashboard/calendario", color: "text-orange-500" },
         { icon: <HelpCircle size={20} />, label: "Preguntas Frecuentes", href: "/dashboard/faq", color: "text-slate-400" },
@@ -176,4 +178,40 @@ export default function Sidebar({ user }: SidebarProps) {
             </div>
         </aside>
     );
+}
+
+function AdhesionBadge() {
+    const [status, setStatus] = React.useState<{ pending: boolean; approved: boolean }>({ pending: false, approved: false });
+
+    React.useEffect(() => {
+        const fetchStatus = async () => {
+            try {
+                const res = await fetch("/api/user/pagos");
+                const data = await res.json();
+                setStatus({
+                    pending: data.hasDebitoEnTramite,
+                    approved: data.hasDebitoAutomatico
+                });
+            } catch (error) {
+                console.error("Error fetching adhesion status:", error);
+            }
+        };
+        fetchStatus();
+    }, []);
+
+    if (status.pending) {
+        return (
+            <span className="ml-auto px-1.5 py-0.5 bg-amber-500/10 text-amber-500 text-[8px] font-black uppercase tracking-tighter rounded-md border border-amber-500/20 animate-pulse">
+                Pendiente
+            </span>
+        );
+    }
+
+    if (status.approved) {
+        return (
+            <CheckCircle2 size={12} className="ml-auto text-emerald-500" />
+        );
+    }
+
+    return null;
 }

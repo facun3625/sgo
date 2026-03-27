@@ -1,7 +1,14 @@
 import prisma from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { ChevronLeft } from "lucide-react";
+import {
+    ChevronLeft,
+    CreditCard,
+    CheckCircle2,
+    AlertCircle,
+    ArrowRight,
+    Loader2
+} from "lucide-react";
 import Link from "next/link";
 import CardActions from "@/components/dashboard/CardActions";
 
@@ -17,6 +24,14 @@ export default async function BeneficiosPage() {
             expediente: session.expediente
         }
     });
+
+    const hasDebt = await prisma.deuda.findFirst({
+        where: {
+            expediente: session.expediente
+        }
+    });
+
+    const isBlocked = !!hasDebt;
 
     return (
         <div className="bg-white dark:bg-[#02182b] p-0 pb-12 transition-colors duration-300">
@@ -34,17 +49,45 @@ export default async function BeneficiosPage() {
                             >
                                 <ChevronLeft size={20} className="text-slate-400 group-hover:text-black dark:group-hover:text-white transition-colors" />
                             </Link>
-                            <h2 className="text-[15px] font-bold text-black dark:text-white tracking-tight">Tarjeta de Beneficios</h2>
+                            <div className="flex items-center gap-3">
+                                <CreditCard size={18} className="text-blue-500" />
+                                <h2 className="text-[15px] font-bold text-black dark:text-white tracking-tight">Tarjeta de Beneficios</h2>
+                            </div>
                         </div>
                     </div>
 
                     <div className="p-6 md:p-10 border-b border-[#f1f5f9] dark:border-slate-800 animate-fade-in">
+
+                        {isBlocked && (
+                            <div className="mb-10 p-6 rounded-[32px] bg-rose-50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/30 flex flex-col md:flex-row items-center justify-between gap-6 animate-slide-up">
+                                <div className="flex items-center gap-5">
+                                    <div className="w-14 h-14 rounded-2xl bg-rose-500 text-white flex items-center justify-center shadow-lg shadow-rose-500/20 shrink-0">
+                                        <AlertCircle size={28} />
+                                    </div>
+                                    <div className="space-y-1 text-left">
+                                        <h3 className="text-rose-900 dark:text-rose-400 font-bold text-lg tracking-tight">Acceso Restringido por Deuda</h3>
+                                        <p className="text-rose-700/70 dark:text-rose-400/60 text-sm font-medium">Su tarjeta de beneficios se encuentra inhabilitada temporalmente. Regularice su situación para volver a disfrutar de los beneficios exclusivos.</p>
+                                    </div>
+                                </div>
+                                <Link
+                                    href="/dashboard/pagos"
+                                    className="px-8 h-12 bg-rose-600 text-white rounded-xl font-bold text-sm flex items-center gap-3 hover:bg-rose-700 transition-all shadow-lg shadow-rose-600/20 whitespace-nowrap active:scale-95"
+                                >
+                                    Ir a Pagos
+                                    <ArrowRight size={18} />
+                                </Link>
+                            </div>
+                        )}
+
                         {/* Layout de Contenido: Carnet + Acciones Lateral */}
                         <div className="flex flex-col lg:flex-row gap-10 items-start">
 
                             {/* Columna del Carnet */}
                             <div className="flex-1 w-full max-w-[500px]">
-                                <div id="benefits-card" className="relative w-full aspect-[1.6/1] bg-gradient-to-br from-[#063f68] to-[#084a7a] rounded-[28px] overflow-hidden text-white p-8 flex flex-col justify-between border border-white/5 shadow-2xl">
+                                <div id="benefits-card" className={`relative w-full aspect-[1.6/1] rounded-[28px] overflow-hidden text-white p-8 flex flex-col justify-between border border-white/5 shadow-2xl transition-all duration-500 ${isBlocked
+                                        ? "bg-gradient-to-br from-slate-700 to-slate-900 grayscale-[0.8] opacity-90"
+                                        : "bg-gradient-to-br from-[#063f68] to-[#084a7a]"
+                                    }`}>
 
                                     {/* Capas Estéticas */}
                                     <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.06),transparent)]"></div>
@@ -87,10 +130,20 @@ export default async function BeneficiosPage() {
 
                                     {/* Status Footer */}
                                     <div className="relative z-10 flex justify-between items-end">
-                                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/5 backdrop-blur-sm">
-                                            <div className="w-1 h-1 bg-green-400 rounded-full"></div>
-                                            <span className="text-[8px] font-medium text-white/60 uppercase tracking-[0.12em]">Tarjeta de beneficios habilitada</span>
+                                        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border backdrop-blur-sm transition-colors duration-500 ${isBlocked
+                                                ? "bg-rose-500/10 border-rose-500/30"
+                                                : "bg-white/5 border-white/5"
+                                            }`}>
+                                            <div className={`w-1 h-1 rounded-full animate-pulse ${isBlocked ? "bg-rose-500" : "bg-green-400"}`}></div>
+                                            <span className={`text-[8px] font-black uppercase tracking-[0.12em] ${isBlocked ? "text-rose-400" : "text-white/60"}`}>
+                                                {isBlocked ? "Tarjeta de beneficios inhabilitada" : "Tarjeta de beneficios habilitada"}
+                                            </span>
                                         </div>
+                                        {isBlocked && (
+                                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.07] rotate-[-12deg]">
+                                                <span className="text-6xl font-black uppercase tracking-widest text-white border-8 border-white p-4">INHABILITADA</span>
+                                            </div>
+                                        )}
                                         <p className="text-[6px] font-light uppercase tracking-[0.3em] opacity-20 text-white/20">SGO Operativa</p>
                                     </div>
                                 </div>
@@ -106,8 +159,9 @@ export default async function BeneficiosPage() {
 
                                 <CardActions
                                     targetId="benefits-card"
-                                    fileName={`Beneficios-${session.expediente}`}
+                                    fileName={`Beneficios - ${session.expediente}`}
                                     title="Tarjeta de Beneficios"
+                                    disabled={isBlocked}
                                 />
                             </div>
                         </div>
@@ -134,23 +188,24 @@ export default async function BeneficiosPage() {
             <style dangerouslySetInnerHTML={{
                 __html: `
                 @media print {
-                    .no-print { display: none !important; }
-                    body { background: white !important; padding: 0 !important; }
-                    .min-h-screen { min-height: auto !important; padding: 0 !important; }
-                    .max-w-6xl { max-width: none !important; margin: 0 !important; }
-                    .bg-white { border: none !important; box-shadow: none !important; overflow: visible !important; }
-                    #benefits-card { 
-                        position: absolute; 
-                        top: 2.5cm; 
-                        left: 2.5cm; 
-                        width: 85mm !important; 
-                        height: 54mm !important; 
-                        background: #063f68 !important; 
+                    .no-print { display: none!important; }
+                    body { background: white!important; padding: 0!important; }
+                    .h-screen-not-needed { min-height: auto!important; padding: 0!important; }
+                    .max-w-6xl { max-width: none!important; margin: 0!important; }
+                    .bg-white { border: none!important; box-shadow: none!important; overflow: visible!important; }
+                    #benefits-card {
+                        position: absolute;
+                        top: 2.5cm;
+                        left: 2.5cm;
+                        width: 85mm!important;
+                        height: 54mm!important;
+                        background: #063f68!important;
                         print-color-adjust: exact;
                         -webkit-print-color-adjust: exact;
                     }
                 }
-            `}} />
+                `
+            }} />
         </div>
     );
 }

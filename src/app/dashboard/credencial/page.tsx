@@ -1,7 +1,7 @@
 import prisma from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, IdCard } from "lucide-react";
 import Link from "next/link";
 import QRComponent from "@/components/dashboard/QRComponent";
 import CardActions from "@/components/dashboard/CardActions";
@@ -44,7 +44,10 @@ export default async function CredencialPage() {
                             >
                                 <ChevronLeft size={20} className="text-slate-400 group-hover:text-black dark:group-hover:text-white transition-colors" />
                             </Link>
-                            <h2 className="text-[15px] font-bold text-black dark:text-white tracking-tight">Credencial Digital - Frente</h2>
+                            <div className="flex items-center gap-3">
+                                <IdCard size={18} className="text-amber-500" />
+                                <h2 className="text-[15px] font-bold text-black dark:text-white tracking-tight">Credencial Digital - Frente</h2>
+                            </div>
                         </div>
                     </div>
 
@@ -136,7 +139,10 @@ export default async function CredencialPage() {
                 <div className="bg-white dark:bg-[#02182b]">
                     {/* Header Dorso Sticky */}
                     <div className="sticky top-16 z-10 bg-white dark:bg-[#02182b] flex items-center justify-between px-8 py-3.5 border-b border-[#f1f5f9] dark:border-slate-800 transition-colors duration-300">
-                        <h2 className="text-[15px] font-bold text-black dark:text-white tracking-tight ml-4">Credencial Digital - Dorso</h2>
+                        <div className="flex items-center gap-3 ml-4">
+                            <IdCard size={18} className="text-amber-500" />
+                            <h2 className="text-[15px] font-bold text-black dark:text-white tracking-tight">Credencial Digital - Dorso</h2>
+                        </div>
                     </div>
 
                     <div className="p-6 md:p-10 animate-fade-in">
@@ -203,7 +209,7 @@ export default async function CredencialPage() {
                 @media print {
                     .no-print { display: none !important; }
                     body { background: white !important; padding: 0 !important; }
-                    .min-h-screen { height: auto !important; min-height: 0 !important; padding: 0 !important; }
+                    .h-screen-not-needed { height: auto !important; min-height: 0 !important; padding: 0 !important; }
                     .max-w-6xl { max-width: none !important; margin: 0 !important; }
                 }
             `}} />
