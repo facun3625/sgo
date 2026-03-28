@@ -74,6 +74,7 @@ export async function POST(req: NextRequest) {
                 nombre: user.nombre,
                 apellido: user.apellido,
                 expediente: user.expediente,
+                accessLevel: user.accessLevel,
             },
         });
     } catch (error) {

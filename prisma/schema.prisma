@@ -124,26 +124,50 @@ model AdhesionDebito {
 }
 
 model Curso {
-  id          Int      @id @default(autoincrement())
-  titulo      String
-  descripcion String
-  fecha       String   // "15 de Marzo, 2024" o similar para simpleza
-  hora        String?  // Opcional
-  cupo        Int
-  inscritos   Int      @default(0)
-  precio      String?  // Ejemplo: "Gratis" o "$1500"
-  modalidad   String   @default("Presencial") // Presencial / Virtual
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                     Int               @id @default(autoincrement())
+  titulo                 String
+  descripcion            String
+  organizador            String?
+  fecha                  DateTime
+  fechaFin               DateTime?
+  hora                   String?
+  lugar                  String?
+  imagen                 String?
+  modalidad              String            @default("Presencial") // Presencial / Virtual / Híbrida
+  fechaLimiteInscripcion DateTime?
+  activo                 Boolean           @default(true)
+  opciones               CursoOpcion[]
+  inscripciones          InscripcionCurso[]
+  createdAt              DateTime          @default(now())
+  updatedAt              DateTime          @updatedAt
 
   @@map("cursos")
 }
 
+model CursoOpcion {
+  id            Int               @id @default(autoincrement())
+  cursoId       Int               @map("curso_id")
+  nombre        String
+  precio        Float             @default(0)
+  cupo          Int               @default(0)
+  inscritos     Int               @default(0)
+  curso         Curso             @relation(fields: [cursoId], references: [id], onDelete: Cascade)
+  inscripciones InscripcionCurso[]
+  createdAt     DateTime          @default(now())
+
+  @@map("curso_opciones")
+}
+
 model InscripcionCurso {
-  id          Int      @id @default(autoincrement())
+  id          Int          @id @default(autoincrement())
   expediente  String
-  cursoId     Int      @map("curso_id")
-  fecha       DateTime @default(now())
+  cursoId     Int          @map("curso_id")
+  opcionId    Int?         @map("opcion_id")
+  estado      String       @default("pendiente_pago")
+  metodoPago  String?      @map("metodo_pago")
+  curso       Curso        @relation(fields: [cursoId], references: [id])
+  opcion      CursoOpcion? @relation(fields: [opcionId], references: [id])
+  fecha       DateTime     @default(now())
 
   @@map("inscripciones_cursos")
 }

@@ -3,43 +3,49 @@ import { getSession } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 
 export async function GET() {
-    try {
-        const session = await getSession();
+    const session = await getSession();
+    if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
-        if (!session || !session.expediente) {
-            return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-        }
-
-        const cursos = await prisma.curso.findMany({
-            orderBy: { createdAt: "desc" },
+    const [cursos, inscripciones] = await Promise.all([
+        prisma.curso.findMany({
+            where: { activo: true },
             include: {
-                _count: {
-                    select: {
-                        // Correctly, InscripcionCurso is related but maybe I need a relation field in schema
-                        // For now, I'll count manually in the request or just use the field in the model if I don't set up relations.
-                        // I'll check the schema again.
-                    }
-                }
-            }
-        });
+                opciones: true,
+                _count: { select: { inscripciones: true } },
+            },
+            orderBy: { fecha: "asc" },
+        }),
+        prisma.inscripcionCurso.findMany({
+            where: { expediente: session.expediente },
+            select: { cursoId: true, opcionId: true, estado: true },
+        }),
+    ]);
 
-        // I'll also check if the user is already enrolled in each course
-        const inscripciones = await prisma.inscripcionCurso.findMany({
-            where: { expediente: session.expediente }
-        });
+    const inscritosMap = new Map(inscripciones.map(i => [i.cursoId, i]));
 
-        const enrolledCourseIds = inscripciones.map(ins => ins.cursoId);
+    const data = cursos.map(curso => ({
+        id: curso.id,
+        titulo: curso.titulo,
+        descripcion: curso.descripcion,
+        organizador: curso.organizador,
+        fecha: curso.fecha,
+        fechaFin: curso.fechaFin,
+        hora: curso.hora,
+        lugar: curso.lugar,
+        imagen: curso.imagen,
+        modalidad: curso.modalidad,
+        fechaLimiteInscripcion: curso.fechaLimiteInscripcion,
+        totalInscripciones: curso._count.inscripciones,
+        opciones: curso.opciones.map(op => ({
+            id: op.id,
+            nombre: op.nombre,
+            precio: op.precio,
+            cupo: op.cupo,
+            inscritos: op.inscritos,
+            disponible: op.cupo === 0 || op.inscritos < op.cupo,
+        })),
+        inscripcion: inscritosMap.get(curso.id) || null,
+    }));
 
-        const cursosWithStatus = cursos.map(curso => ({
-            ...curso,
-            isEnrolled: enrolledCourseIds.includes(curso.id),
-            isFull: curso.inscritos >= curso.cupo
-        }));
-
-        return NextResponse.json(cursosWithStatus);
-
-    } catch (error) {
-        console.error("Error fetching courses:", error);
-        return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
-    }
+    return NextResponse.json(data);
 }

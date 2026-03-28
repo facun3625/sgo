@@ -52,7 +52,11 @@ export default function LoginPage() {
                 return;
             }
 
-            router.push("/dashboard");
+            if (data.user?.accessLevel === "superadmin" || data.user?.accessLevel === "admin") {
+                router.push("/admin");
+            } else {
+                router.push("/dashboard");
+            }
         } catch {
             setError("Error de conexión. Intentá de nuevo.");
         } finally {
