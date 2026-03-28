@@ -1,5 +1,4 @@
-import Sidebar from "@/components/dashboard/Sidebar";
-import TopNav from "@/components/dashboard/TopNav";
+import DashboardShell from "@/components/dashboard/DashboardShell";
 import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
@@ -42,14 +41,8 @@ export default async function DashboardLayout({
     };
 
     return (
-        <div className="flex min-h-screen bg-white dark:bg-[#02182b] transition-colors duration-300">
-            <Sidebar user={user} />
-            <div className="flex-1 flex flex-col">
-                <TopNav user={user} />
-                <main className="p-0 animate-fade-in">
-                    {children}
-                </main>
-            </div>
-        </div>
+        <DashboardShell user={user}>
+            {children}
+        </DashboardShell>
     );
 }

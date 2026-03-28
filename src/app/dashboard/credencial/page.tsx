@@ -26,7 +26,8 @@ export default async function CredencialPage() {
         ? new Date(dato.fechaMatriculacion).toLocaleDateString("es-AR")
         : "--/--/----";
 
-    const vCardValue = `BEGIN:VCARD\nVERSION:3.0\nFN:${user.nombre} ${user.apellido}\nORG:Colegio de la Abogacía de Santa Fe\nTITLE:Abogado/a - Mat. ${user.expediente}\nTEL;TYPE=WORK:${dato?.movilLegal || dato?.telefonosLegal || ""}\nEMAIL:${dato?.emailLegal || ""}\nURL:https://casf.org.ar\nEND:VCARD`;
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+    const verificationUrl = `${baseUrl}/verificar/${user.expediente}`;
 
     return (
         <div className="bg-white dark:bg-[#02182b] p-0 space-y-0 pb-12 transition-colors duration-300">
@@ -111,7 +112,7 @@ export default async function CredencialPage() {
                                         </div>
 
                                         <div className="bg-white border border-[#f8fafc] p-1 rounded-lg">
-                                            <QRComponent value={vCardValue} size={48} />
+                                            <QRComponent value={verificationUrl} size={48} />
                                         </div>
                                     </div>
                                 </div>

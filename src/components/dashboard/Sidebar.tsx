@@ -31,6 +31,7 @@ interface SidebarProps {
         expediente: string;
         image: string | null;
     };
+    onClose?: () => void;
 }
 
 interface SidebarItemProps {
@@ -40,9 +41,10 @@ interface SidebarItemProps {
     active?: boolean;
     children?: { label: string; href: string }[];
     color?: string;
+    onClose?: () => void;
 }
 
-const SidebarItem = ({ icon, label, href, active, children, color }: SidebarItemProps) => {
+const SidebarItem = ({ icon, label, href, active, children, color, onClose }: SidebarItemProps) => {
     const [isOpen, setIsOpen] = useState(false);
     const hasChildren = children && children.length > 0;
 
@@ -69,6 +71,7 @@ const SidebarItem = ({ icon, label, href, active, children, color }: SidebarItem
                                 <Link
                                     key={index}
                                     href={child.href}
+                                    onClick={onClose}
                                     className="block py-1.5 text-[12px] font-normal text-gray-400 dark:text-slate-500 hover:text-[#063f68] dark:hover:text-blue-400 transition-all duration-200 hover:translate-x-1"
                                 >
                                     {child.label}
@@ -84,6 +87,7 @@ const SidebarItem = ({ icon, label, href, active, children, color }: SidebarItem
     return (
         <Link
             href={href || "#"}
+            onClick={onClose}
             className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg mb-0.5 transition-all duration-200 group
         ${active
                     ? "bg-[#063f68] text-white"
@@ -98,7 +102,7 @@ const SidebarItem = ({ icon, label, href, active, children, color }: SidebarItem
     );
 };
 
-export default function Sidebar({ user }: SidebarProps) {
+export default function Sidebar({ user, onClose }: SidebarProps) {
     const pathname = usePathname();
 
     const menuItems = [
@@ -150,6 +154,7 @@ export default function Sidebar({ user }: SidebarProps) {
                             active={pathname === item.href}
                             children={item.children}
                             color={item.color}
+                            onClose={onClose}
                         />
                     ))}
                 </nav>
@@ -158,6 +163,7 @@ export default function Sidebar({ user }: SidebarProps) {
             <div className="mt-auto p-5 border-t border-slate-100 dark:border-slate-800">
                 <Link
                     href="/dashboard/perfil"
+                    onClick={onClose}
                     className="flex items-center gap-3 p-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-800/20 hover:bg-slate-50 dark:hover:bg-slate-800/40 hover:border-slate-200 dark:hover:border-slate-700 transition-all duration-300 group"
                 >
                     <div className="w-10 h-10 rounded-xl bg-[#063f68]/5 dark:bg-blue-400/10 text-[#063f68] dark:text-blue-400 flex items-center justify-center font-bold text-sm overflow-hidden border border-slate-200 dark:border-slate-700 relative">

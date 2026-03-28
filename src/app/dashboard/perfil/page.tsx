@@ -30,7 +30,7 @@ export default async function PerfilPage() {
                 <div className="bg-white dark:bg-[#02182b]">
 
                     {/* Header Compacto Unificado Sticky */}
-                    <div className="sticky top-16 z-10 bg-white dark:bg-[#02182b] flex items-center justify-between px-8 py-3.5 border-b border-[#f1f5f9] dark:border-slate-800 transition-colors duration-300">
+                    <div className="sticky top-16 z-10 bg-white dark:bg-[#02182b] flex items-center justify-between px-4 md:px-8 py-3.5 border-b border-[#f1f5f9] dark:border-slate-800 transition-colors duration-300">
                         <div className="flex items-center gap-4">
                             <Link
                                 href="/dashboard"
@@ -42,7 +42,7 @@ export default async function PerfilPage() {
                         </div>
                     </div>
 
-                    <div className="p-8 md:p-12">
+                    <div className="p-4 md:p-12">
                         <ProfileForm initialUser={{
                             nombre: user.nombre,
                             apellido: user.apellido,

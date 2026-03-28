@@ -6,7 +6,7 @@ export default function MisDatosPage() {
     return (
         <div className="flex flex-col h-auto">
             {/* Cabecera Estilo "Fina" */}
-            <div className="sticky top-16 z-10 bg-white dark:bg-[#02182b] flex items-center justify-between px-8 py-3.5 border-b border-[#f1f5f9] dark:border-slate-800 transition-colors duration-300">
+            <div className="sticky top-16 z-10 bg-white dark:bg-[#02182b] flex items-center justify-between px-4 md:px-8 py-3.5 border-b border-[#f1f5f9] dark:border-slate-800 transition-colors duration-300">
                 <div className="flex items-center gap-4">
                     <Link
                         href="/dashboard"

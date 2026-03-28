@@ -7,10 +7,10 @@ import {
     Sun,
     Moon,
     ChevronDown,
-    User, // Keep User as is, or change to UserIcon if intended to be renamed
+    User,
     LogOut,
-    Settings,
-    ArrowRight
+    ArrowRight,
+    Menu
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -24,9 +24,10 @@ interface TopNavProps {
         image: string | null;
         hasDebt: boolean;
     };
+    onMenuClick?: () => void;
 }
 
-export default function TopNav({ user }: TopNavProps) {
+export default function TopNav({ user, onMenuClick }: TopNavProps) {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [mounted, setMounted] = useState(false);
     const { theme, setTheme, resolvedTheme } = useTheme();
@@ -73,8 +74,17 @@ export default function TopNav({ user }: TopNavProps) {
     };
 
     return (
-        <nav className="h-16 bg-[#063f68] text-white px-8 flex items-center justify-end sticky top-0 z-40 border-0">
-            <div className="flex items-center gap-4">
+        <nav className="h-16 bg-[#063f68] text-white px-4 md:px-8 flex items-center justify-between sticky top-0 z-40 border-0">
+            {/* Hamburger - solo mobile */}
+            <button
+                onClick={onMenuClick}
+                className="md:hidden p-2 text-white/70 hover:bg-white/10 hover:text-white rounded-xl transition-all duration-200"
+                aria-label="Abrir menú"
+            >
+                <Menu size={22} />
+            </button>
+
+            <div className="flex items-center gap-3 md:gap-4 ml-auto">
                 {/* Status Badges */}
                 <div className="hidden lg:flex items-center gap-3">
                     {/* Registration Status */}

@@ -15,14 +15,6 @@ export default function QRComponent({ value, size = 120 }: QRComponentProps) {
                 size={size}
                 level="M"
                 includeMargin={false}
-                imageSettings={{
-                    src: "/sgo.png",
-                    x: undefined,
-                    y: undefined,
-                    height: 24,
-                    width: 24,
-                    excavate: true,
-                }}
             />
         </div>
     );
