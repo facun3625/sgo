@@ -6,6 +6,8 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import {
     LayoutDashboard,
+    Users,
+    Mail,
     GraduationCap,
     Newspaper,
     Library,
@@ -17,7 +19,6 @@ import {
     Shield,
     Sun,
     Moon,
-    Mail,
     ChevronDown,
     LogOut,
     Cpu,
@@ -25,6 +26,7 @@ import {
 import { useTheme } from "next-themes";
 import { SessionPayload } from "@/lib/auth";
 import NotificacionesBell from "@/components/dashboard/NotificacionesBell";
+import AdminMensajesIcon from "@/components/admin/AdminMensajesIcon";
 import { ToastProvider } from "@/components/ui/Toast";
 
 interface AdminShellProps {
@@ -35,12 +37,14 @@ interface AdminShellProps {
 
 const navItems = [
     { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true, color: "text-slate-400" },
+    { href: "/admin/usuarios", label: "Usuarios", icon: Users, color: "text-indigo-500" },
     { href: "/admin/cursos", label: "Cursos", icon: GraduationCap, color: "text-pink-500" },
     { href: "/admin/noticias", label: "Actividades Institucionales", icon: Newspaper, color: "text-amber-500" },
     { href: "/admin/biblioteca", label: "Biblioteca", icon: Library, color: "text-blue-500" },
     { href: "/admin/tokens", label: "Tokens", icon: Cpu, color: "text-violet-500" },
     { href: "/admin/calendario", label: "Calendario", icon: CalendarDays, color: "text-orange-500" },
     { href: "/admin/faq", label: "Preguntas Frecuentes", icon: HelpCircle, color: "text-slate-400" },
+    { href: "/admin/mensajes", label: "Mensajes", icon: Mail, color: "text-sky-500" },
     { href: "/admin/repositorio", label: "Repositorio de Archivos", icon: FolderOpen, color: "text-indigo-500" },
 ];
 
@@ -164,10 +168,7 @@ export default function AdminShell({ session, image, children }: AdminShellProps
                         <NotificacionesBell />
 
                         {/* Mensajes */}
-                        <button className="p-2 text-white/70 hover:bg-white/10 hover:text-white rounded-xl transition-all relative">
-                            <Mail size={20} />
-                            <span className="absolute top-2 right-2.5 w-2 h-2 bg-blue-400 rounded-full border-2 border-green-900"></span>
-                        </button>
+                        <AdminMensajesIcon />
 
                         {/* Perfil */}
                         <div className="relative" ref={profileRef}>

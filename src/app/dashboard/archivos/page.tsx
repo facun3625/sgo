@@ -56,7 +56,7 @@ export default function RepositorioPage() {
     const [catFiltro, setCatFiltro] = useState<number | null>(null);
 
     useEffect(() => {
-        fetch("/api/user/archivos")
+        fetch("/api/user/archivos", { cache: "no-store" })
             .then(r => r.json())
             .then(data => {
                 if (Array.isArray(data)) {

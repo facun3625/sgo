@@ -41,7 +41,7 @@ const tipoLabel: Record<string, string> = {
 };
 
 export default function RepositorioAdminPage() {
-    const { addToast } = useToast();
+    const { showToast: addToast } = useToast();
     const [cats, setCats] = useState<Categoria[]>([]);
     const [loading, setLoading] = useState(true);
     const [openCats, setOpenCats] = useState<Set<number>>(new Set());

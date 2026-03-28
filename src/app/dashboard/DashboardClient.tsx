@@ -71,12 +71,13 @@ export default function DashboardClient({ session }: { session: SessionPayload }
     useEffect(() => {
         const fetchData = async () => {
             try {
+                const NC = { cache: "no-store" } as const;
                 const [pagosRes, solicitudesRes, cursosRes, eventosRes, noticiasRes] = await Promise.all([
-                    fetch("/api/user/pagos"),
-                    fetch("/api/user/solicitudes"),
-                    fetch("/api/user/cursos"),
-                    fetch("/api/user/eventos"),
-                    fetch("/api/user/noticias"),
+                    fetch("/api/user/pagos", NC),
+                    fetch("/api/user/solicitudes", NC),
+                    fetch("/api/user/cursos", NC),
+                    fetch("/api/user/eventos", NC),
+                    fetch("/api/user/noticias", NC),
                 ]);
 
                 const [pagos, solicitudes, cursos, eventos, noticiasData] = await Promise.all([

@@ -33,7 +33,7 @@ export default function CalendarioPage() {
 
     const fetchEventos = async () => {
         try {
-            const res = await fetch("/api/user/eventos");
+            const res = await fetch("/api/user/eventos", { cache: "no-store" });
             const data = await res.json();
             if (Array.isArray(data)) {
                 // Ordenar por fecha ascendente

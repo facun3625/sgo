@@ -18,7 +18,7 @@ export default function NoticiasPage() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetch("/api/user/noticias")
+        fetch("/api/user/noticias", { cache: "no-store" })
             .then(r => r.json())
             .then(data => { if (Array.isArray(data)) setNoticias(data); })
             .finally(() => setLoading(false));

@@ -55,7 +55,7 @@ export default function CursosPage() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetch("/api/user/cursos")
+        fetch("/api/user/cursos", { cache: "no-store" })
             .then(r => r.json())
             .then(data => { if (Array.isArray(data)) setCursos(data); })
             .finally(() => setLoading(false));

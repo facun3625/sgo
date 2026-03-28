@@ -296,6 +296,30 @@ model Faq {
   @@map("faqs")
 }
 
+model Conversacion {
+  id         Int           @id @default(autoincrement())
+  expediente String
+  asunto     String
+  archivada  Boolean       @default(false)
+  mensajes   MensajeChat[]
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  @@map("conversaciones")
+}
+
+model MensajeChat {
+  id             Int          @id @default(autoincrement())
+  conversacionId Int          @map("conversacion_id")
+  conversacion   Conversacion @relation(fields: [conversacionId], references: [id], onDelete: Cascade)
+  de             String       // "admin" | "user"
+  contenido      String
+  leido          Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+
+  @@map("mensajes_chat")
+}
+
 model RepositorioCategoria {
   id        Int                  @id @default(autoincrement())
   nombre    String

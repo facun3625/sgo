@@ -23,7 +23,7 @@ export default function FaqPage() {
     const [openFaqs, setOpenFaqs] = useState<Set<number>>(new Set());
 
     useEffect(() => {
-        fetch("/api/user/faq")
+        fetch("/api/user/faq", { cache: "no-store" })
             .then(r => r.json())
             .then(data => { if (Array.isArray(data)) setCategorias(data); })
             .finally(() => setLoading(false));

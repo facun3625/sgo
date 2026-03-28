@@ -5,136 +5,136 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
-    CreditCard,
-    IdCard,
-    User,
-    Wallet,
-    FileText,
-    ChevronDown,
-    ChevronRight,
-    XOctagon,
-    Banknote,
-    GraduationCap,
-    Calendar,
-    HelpCircle,
-    FolderOpen,
-    Home,
-    CheckCircle2,
-    Clock,
-    Lock,
-    Newspaper,
-    Library,
-    Cpu
+    CreditCard, IdCard, User, Wallet, FileText, ChevronDown, ChevronRight,
+    XOctagon, Banknote, GraduationCap, Calendar, HelpCircle, FolderOpen,
+    Home, CheckCircle2, Clock, Newspaper, Library, Cpu, Mail,
 } from "lucide-react";
 
 interface SidebarProps {
-    user: {
-        nombre: string;
-        apellido: string;
-        expediente: string;
-        image: string | null;
-    };
+    user: { nombre: string; apellido: string; expediente: string; image: string | null; };
     onClose?: () => void;
 }
 
-interface SidebarItemProps {
+interface NavItem {
     icon: React.ReactNode;
     label: string;
     href?: string;
-    active?: boolean;
-    children?: { label: string; href: string }[];
     color?: string;
-    onClose?: () => void;
+    children?: { label: string; href: string }[];
 }
 
-const SidebarItem = ({ icon, label, href, active, children, color, onClose }: SidebarItemProps) => {
-    const [isOpen, setIsOpen] = useState(false);
-    const hasChildren = children && children.length > 0;
+interface NavGroup {
+    label?: string;
+    items: NavItem[];
+}
 
-    if (hasChildren) {
-        return (
-            <div className="mb-0.5">
-                <button
-                    onClick={() => setIsOpen(!isOpen)}
-                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-all duration-200 group
-            ${isOpen ? "bg-gray-50 dark:bg-slate-800/50 text-[#063f68] dark:text-blue-400" : "text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50 hover:text-[#063f68] dark:hover:text-blue-400"}`}
-                >
-                    <div className="flex items-center gap-2.5">
-                        <span className={`transition-all duration-200 ${isOpen ? "text-[#063f68] scale-110" : `group-hover:scale-110 ${color || "text-gray-400"}`}`}>
-                            {React.isValidElement(icon) ? React.cloneElement(icon as React.ReactElement<any>, { size: 18 }) : icon}
-                        </span>
-                        <span className="text-[13px] font-normal tracking-tight">{label}</span>
-                    </div>
-                    {isOpen ? <ChevronDown size={14} className="text-gray-400" /> : <ChevronRight size={14} className="text-gray-400 group-hover:text-[#063f68]" />}
-                </button>
-                <div className={`grid transition-all duration-300 ease-in-out ${isOpen ? "grid-rows-[1fr] opacity-100 mt-1" : "grid-rows-[0fr] opacity-0"}`}>
-                    <div className="overflow-hidden">
-                        <div className="ml-5 border-l border-slate-200 dark:border-slate-800 pl-4 space-y-0.5">
-                            {children.map((child, index) => (
-                                <Link
-                                    key={index}
-                                    href={child.href}
-                                    onClick={onClose}
-                                    className="block py-1.5 text-[12px] font-normal text-gray-400 dark:text-slate-500 hover:text-[#063f68] dark:hover:text-blue-400 transition-all duration-200 hover:translate-x-1"
-                                >
-                                    {child.label}
-                                </Link>
-                            ))}
-                        </div>
+const SidebarLink = ({ icon, label, href, active, color, onClose, badge }: {
+    icon: React.ReactNode; label: string; href: string;
+    active: boolean; color?: string; onClose?: () => void; badge?: React.ReactNode;
+}) => (
+    <Link href={href} onClick={onClose}
+        className={`flex items-center gap-2.5 px-3 py-2 rounded-lg mb-0.5 transition-all duration-200 group
+            ${active ? "bg-[#063f68] text-white" : "text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50 hover:text-[#063f68] dark:hover:text-blue-400"}`}>
+        <span className={`transition-all duration-200 flex-shrink-0 ${active ? "text-white scale-110" : `group-hover:scale-110 ${color || "text-gray-400"}`}`}>
+            {React.isValidElement(icon) ? React.cloneElement(icon as React.ReactElement<{ size?: number }>, { size: 17 }) : icon}
+        </span>
+        <span className={`text-[12.5px] leading-tight ${active ? "font-semibold text-white" : "font-normal"}`}>{label}</span>
+        {badge && <span className="ml-auto">{badge}</span>}
+    </Link>
+);
+
+const SidebarSubmenu = ({ icon, label, color, children, onClose }: {
+    icon: React.ReactNode; label: string; color?: string;
+    children: { label: string; href: string }[]; onClose?: () => void;
+}) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const pathname = usePathname();
+    const anyActive = children.some(c => pathname === c.href);
+
+    return (
+        <div className="mb-0.5">
+            <button onClick={() => setIsOpen(!isOpen)}
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-200 group
+                    ${isOpen || anyActive ? "bg-gray-50 dark:bg-slate-800/50 text-[#063f68] dark:text-blue-400" : "text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50 hover:text-[#063f68] dark:hover:text-blue-400"}`}>
+                <div className="flex items-center gap-2.5">
+                    <span className={`flex-shrink-0 transition-all duration-200 ${isOpen || anyActive ? "text-[#063f68]" : `group-hover:scale-110 ${color || "text-gray-400"}`}`}>
+                        {React.isValidElement(icon) ? React.cloneElement(icon as React.ReactElement<{ size?: number }>, { size: 17 }) : icon}
+                    </span>
+                    <span className="text-[12.5px] font-normal">{label}</span>
+                </div>
+                {isOpen ? <ChevronDown size={13} className="text-gray-400" /> : <ChevronRight size={13} className="text-gray-400 group-hover:text-[#063f68]" />}
+            </button>
+            <div className={`grid transition-all duration-300 ease-in-out ${isOpen ? "grid-rows-[1fr] opacity-100 mt-0.5" : "grid-rows-[0fr] opacity-0"}`}>
+                <div className="overflow-hidden">
+                    <div className="ml-5 border-l border-slate-200 dark:border-slate-800 pl-3.5">
+                        {children.map((child, i) => (
+                            <Link key={i} href={child.href} onClick={onClose}
+                                className={`block py-1.5 text-[12px] font-normal transition-all duration-200 hover:translate-x-1
+                                    ${pathname === child.href ? "text-[#063f68] dark:text-blue-400 font-semibold" : "text-gray-400 dark:text-slate-500 hover:text-[#063f68] dark:hover:text-blue-400"}`}>
+                                {child.label}
+                            </Link>
+                        ))}
                     </div>
                 </div>
             </div>
-        );
-    }
-
-    return (
-        <Link
-            href={href || "#"}
-            onClick={onClose}
-            className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg mb-0.5 transition-all duration-200 group
-        ${active
-                    ? "bg-[#063f68] text-white"
-                    : "text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50 hover:text-[#063f68] dark:hover:text-blue-400"}`}
-        >
-            <span className={`transition-all duration-200 ${active ? "text-white scale-110" : `group-hover:scale-110 ${color || "text-gray-400"}`}`}>
-                {React.isValidElement(icon) ? React.cloneElement(icon as React.ReactElement<any>, { size: 18 }) : icon}
-            </span>
-            <span className={`text-[13px] ${active ? "font-semibold text-white" : "font-normal"}`}>{label}</span>
-            {label === "Adehesion a debito automatico" && <AdhesionBadge />}
-        </Link>
+        </div>
     );
 };
+
+const SectionLabel = ({ label }: { label: string }) => (
+    <div className="px-3 pt-4 pb-1.5">
+        <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-600">{label}</p>
+    </div>
+);
 
 export default function Sidebar({ user, onClose }: SidebarProps) {
     const pathname = usePathname();
 
-    const menuItems = [
-        { icon: <Home size={20} />, label: "Inicio", href: "/dashboard", color: "text-slate-400" },
-        { icon: <Clock size={20} />, label: "Solicitudes enviadas", href: "/dashboard/solicitudes/enviadas", color: "text-orange-500" },
-        { icon: <CreditCard size={20} />, label: "Tarjeta de beneficios", href: "/dashboard/beneficios", color: "text-blue-500" },
-        { icon: <IdCard size={20} />, label: "Credencia digital", href: "/dashboard/credencial", color: "text-amber-500" },
-        { icon: <User size={20} />, label: "Mis datos", href: "/dashboard/mis-datos", color: "text-indigo-500" },
-        { icon: <Wallet size={20} />, label: "Estado de matricula y Pagos", href: "/dashboard/pagos", color: "text-emerald-500" },
+    const groups: NavGroup[] = [
         {
-            icon: <FileText size={20} />,
-            label: "Trámites",
-            color: "text-blue-600",
-            children: [
-                { label: "Certificado de matriculacion", href: "/dashboard/solicitudes/certificado" },
-                { label: "Clave Sistema SISFE", href: "/dashboard/solicitudes/sisfe" },
-                { label: "Usuario CATASTRO/SIGIT", href: "/dashboard/solicitudes/catastro" },
-                { label: "Jurisprudencia", href: "/dashboard/solicitudes/jurisprudencia" },
-            ]
+            items: [
+                { icon: <Home />, label: "Inicio", href: "/dashboard", color: "text-slate-400" },
+            ],
         },
-        { icon: <XOctagon size={20} />, label: "Solicitud de suspensión/cancelación", href: "/dashboard/suspension", color: "text-rose-500" },
-        { icon: <Banknote size={20} />, label: "Adehesion a debito automatico", href: "/dashboard/solicitudes/adhesion-debito", color: "text-cyan-500" },
-        { icon: <GraduationCap size={20} />, label: "Cursos", href: "/dashboard/cursos", color: "text-pink-500" },
-        { icon: <Newspaper size={20} />, label: "Actividades Institucionales", href: "/dashboard/noticias", color: "text-amber-500" },
-        { icon: <Calendar size={20} />, label: "Calendario", href: "/dashboard/calendario", color: "text-orange-500" },
-        { icon: <HelpCircle size={20} />, label: "Preguntas Frecuentes", href: "/dashboard/faq", color: "text-slate-400" },
-        { icon: <Library size={20} />, label: "Biblioteca", href: "/dashboard/biblioteca", color: "text-[#063f68] dark:text-blue-400" },
-        { icon: <FolderOpen size={20} />, label: "Repositorio de Archivos", href: "/dashboard/archivos", color: "text-[#063f68] dark:text-blue-400" },
-        { icon: <Cpu size={20} />, label: "Tokens", href: "/dashboard/tokens", color: "text-violet-500" },
+        {
+            label: "MI MATRÍCULA",
+            items: [
+                { icon: <User />, label: "Mis datos", href: "/dashboard/mis-datos", color: "text-indigo-500" },
+                { icon: <IdCard />, label: "Credencial digital", href: "/dashboard/credencial", color: "text-amber-500" },
+                { icon: <CreditCard />, label: "Tarjeta de beneficios", href: "/dashboard/beneficios", color: "text-blue-500" },
+                { icon: <Wallet />, label: "Estado de matrícula y Pagos", href: "/dashboard/pagos", color: "text-emerald-500" },
+            ],
+        },
+        {
+            label: "TRÁMITES",
+            items: [
+                { icon: <Clock />, label: "Solicitudes enviadas", href: "/dashboard/solicitudes/enviadas", color: "text-orange-500" },
+                {
+                    icon: <FileText />, label: "Trámites", color: "text-blue-600",
+                    children: [
+                        { label: "Certificado de matriculación", href: "/dashboard/solicitudes/certificado" },
+                        { label: "Clave Sistema SISFE", href: "/dashboard/solicitudes/sisfe" },
+                        { label: "Usuario CATASTRO/SIGIT", href: "/dashboard/solicitudes/catastro" },
+                        { label: "Jurisprudencia", href: "/dashboard/solicitudes/jurisprudencia" },
+                    ],
+                },
+                { icon: <XOctagon />, label: "Solicitud de suspensión/cancelación", href: "/dashboard/suspension", color: "text-rose-500" },
+                { icon: <Banknote />, label: "Adhesión a débito automático", href: "/dashboard/solicitudes/adhesion-debito", color: "text-cyan-500" },
+            ],
+        },
+        {
+            label: "INSTITUCIÓN",
+            items: [
+                { icon: <GraduationCap />, label: "Cursos", href: "/dashboard/cursos", color: "text-pink-500" },
+                { icon: <Newspaper />, label: "Actividades Institucionales", href: "/dashboard/noticias", color: "text-amber-500" },
+                { icon: <Calendar />, label: "Calendario", href: "/dashboard/calendario", color: "text-orange-500" },
+                { icon: <Cpu />, label: "Tokens", href: "/dashboard/tokens", color: "text-violet-500" },
+                { icon: <Library />, label: "Biblioteca", href: "/dashboard/biblioteca", color: "text-[#063f68] dark:text-blue-400" },
+                { icon: <FolderOpen />, label: "Repositorio de Archivos", href: "/dashboard/archivos", color: "text-indigo-500" },
+                { icon: <HelpCircle />, label: "Preguntas Frecuentes", href: "/dashboard/faq", color: "text-slate-400" },
+                { icon: <Mail />, label: "Mensajes", href: "/dashboard/mensajes", color: "text-sky-500" },
+            ],
+        },
     ];
 
     return (
@@ -149,32 +149,43 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
                 </div>
             </div>
 
-            <div className="p-4 overflow-y-auto flex-1">
-                <nav className="space-y-1">
-                    {menuItems.map((item, index) => (
-                        <SidebarItem
-                            key={index}
-                            icon={item.icon}
-                            label={item.label}
-                            href={item.href}
-                            active={pathname === item.href}
-                            children={item.children}
-                            color={item.color}
-                            onClose={onClose}
-                        />
-                    ))}
-                </nav>
+            <div className="px-3 py-3 overflow-y-auto flex-1">
+                {groups.map((group, gi) => (
+                    <div key={gi}>
+                        {group.label && <SectionLabel label={group.label} />}
+                        {group.items.map((item, ii) =>
+                            item.children ? (
+                                <SidebarSubmenu
+                                    key={ii}
+                                    icon={item.icon}
+                                    label={item.label}
+                                    color={item.color}
+                                    children={item.children}
+                                    onClose={onClose}
+                                />
+                            ) : (
+                                <SidebarLink
+                                    key={ii}
+                                    icon={item.icon}
+                                    label={item.label}
+                                    href={item.href!}
+                                    active={pathname === item.href}
+                                    color={item.color}
+                                    onClose={onClose}
+                                    badge={item.label === "Adhesión a débito automático" ? <AdhesionBadge /> : undefined}
+                                />
+                            )
+                        )}
+                    </div>
+                ))}
             </div>
 
-            <div className="mt-auto p-5 border-t border-slate-100 dark:border-slate-800">
-                <Link
-                    href="/dashboard/perfil"
-                    onClick={onClose}
-                    className="flex items-center gap-3 p-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-800/20 hover:bg-slate-50 dark:hover:bg-slate-800/40 hover:border-slate-200 dark:hover:border-slate-700 transition-all duration-300 group"
-                >
+            <div className="p-4 border-t border-slate-100 dark:border-slate-800">
+                <Link href="/dashboard/perfil" onClick={onClose}
+                    className="flex items-center gap-3 p-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-800/20 hover:bg-slate-50 dark:hover:bg-slate-800/40 hover:border-slate-200 dark:hover:border-slate-700 transition-all duration-300 group">
                     <div className="w-10 h-10 rounded-xl bg-[#063f68]/5 dark:bg-blue-400/10 text-[#063f68] dark:text-blue-400 flex items-center justify-center font-bold text-sm overflow-hidden border border-slate-200 dark:border-slate-700 relative">
                         {user.image ? (
-                            <img src={user.image} alt="Profile" className="w-full h-full object-cover animate-fade-in" />
+                            <img src={user.image} alt="Profile" className="w-full h-full object-cover" />
                         ) : (
                             <span className="opacity-80 font-bold">{user.nombre[0]}{user.apellido[0]}</span>
                         )}
@@ -194,36 +205,14 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
 
 function AdhesionBadge() {
     const [status, setStatus] = React.useState<{ pending: boolean; approved: boolean }>({ pending: false, approved: false });
-
     React.useEffect(() => {
-        const fetchStatus = async () => {
-            try {
-                const res = await fetch("/api/user/pagos");
-                const data = await res.json();
-                setStatus({
-                    pending: data.hasDebitoEnTramite,
-                    approved: data.hasDebitoAutomatico
-                });
-            } catch (error) {
-                console.error("Error fetching adhesion status:", error);
-            }
-        };
-        fetchStatus();
+        fetch("/api/user/pagos").then(r => r.json()).then(data => {
+            setStatus({ pending: data.hasDebitoEnTramite, approved: data.hasDebitoAutomatico });
+        }).catch(() => {});
     }, []);
-
-    if (status.pending) {
-        return (
-            <span className="ml-auto px-1.5 py-0.5 bg-amber-500/10 text-amber-500 text-[8px] font-black uppercase tracking-tighter rounded-md border border-amber-500/20 animate-pulse">
-                Pendiente
-            </span>
-        );
-    }
-
-    if (status.approved) {
-        return (
-            <CheckCircle2 size={12} className="ml-auto text-emerald-500" />
-        );
-    }
-
+    if (status.pending) return (
+        <span className="px-1.5 py-0.5 bg-amber-500/10 text-amber-500 text-[8px] font-black uppercase tracking-tighter rounded-md border border-amber-500/20 animate-pulse">Pendiente</span>
+    );
+    if (status.approved) return <CheckCircle2 size={12} className="text-emerald-500" />;
     return null;
 }

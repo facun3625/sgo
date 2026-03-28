@@ -15,6 +15,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import NotificacionesBell from "@/components/dashboard/NotificacionesBell";
+import MensajesIcon from "@/components/dashboard/MensajesIcon";
 
 interface TopNavProps {
     user: {
@@ -128,10 +129,7 @@ export default function TopNav({ user, onMenuClick }: TopNavProps) {
                 <NotificacionesBell />
 
                 {/* Messages */}
-                <button className="p-2 text-white/70 hover:bg-white/10 hover:text-white rounded-xl transition-all duration-200 relative">
-                    <Mail size={20} />
-                    <span className="absolute top-2 right-2.5 w-2 h-2 bg-blue-400 rounded-full border-2 border-[#063f68]"></span>
-                </button>
+                <MensajesIcon />
 
                 {/* Profile menu */}
                 <div className="relative" ref={menuRef}>

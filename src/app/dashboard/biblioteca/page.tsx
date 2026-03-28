@@ -107,7 +107,7 @@ export default function BibliotecaPage() {
     const [showGrid, setShowGrid] = useState(false);
 
     useEffect(() => {
-        fetch("/api/user/biblioteca")
+        fetch("/api/user/biblioteca", { cache: "no-store" })
             .then(r => r.json())
             .then(data => { if (Array.isArray(data)) setItems(data); })
             .finally(() => setLoading(false));
