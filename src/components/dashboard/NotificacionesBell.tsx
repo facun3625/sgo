@@ -1,0 +1,140 @@
+"use client";
+
+import { useState, useEffect, useRef, useCallback } from "react";
+import { Bell } from "lucide-react";
+
+interface Notificacion {
+    id: number;
+    titulo: string;
+    mensaje: string;
+    tipo: string;
+    leida: boolean;
+    createdAt: string;
+}
+
+function timeAgo(dateStr: string): string {
+    const now = new Date();
+    const date = new Date(dateStr);
+    const diff = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (diff < 60) return "hace un momento";
+    if (diff < 3600) return `hace ${Math.floor(diff / 60)} min`;
+    if (diff < 86400) return `hace ${Math.floor(diff / 3600)} h`;
+    return `hace ${Math.floor(diff / 86400)} d`;
+}
+
+export default function NotificacionesBell() {
+    const [open, setOpen] = useState(false);
+    const [notificaciones, setNotificaciones] = useState<Notificacion[]>([]);
+    const [unreadCount, setUnreadCount] = useState(0);
+    const [marking, setMarking] = useState(false);
+    const ref = useRef<HTMLDivElement>(null);
+
+    const fetchNotificaciones = useCallback(async () => {
+        try {
+            const res = await fetch("/api/user/notificaciones");
+            if (!res.ok) return;
+            const data = await res.json();
+            setNotificaciones(data.notificaciones ?? []);
+            setUnreadCount(data.unreadCount ?? 0);
+        } catch {
+            // silencioso
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchNotificaciones();
+        const interval = setInterval(fetchNotificaciones, 30000);
+        return () => clearInterval(interval);
+    }, [fetchNotificaciones]);
+
+    useEffect(() => {
+        function handleClickOutside(e: MouseEvent) {
+            if (ref.current && !ref.current.contains(e.target as Node)) {
+                setOpen(false);
+            }
+        }
+        if (open) document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [open]);
+
+    async function marcarTodasLeidas() {
+        setMarking(true);
+        try {
+            await fetch("/api/user/notificaciones/leer", { method: "POST" });
+            setNotificaciones((prev) => prev.map((n) => ({ ...n, leida: true })));
+            setUnreadCount(0);
+        } finally {
+            setMarking(false);
+        }
+    }
+
+    const displayCount = unreadCount > 9 ? "9+" : String(unreadCount);
+
+    return (
+        <div className="relative" ref={ref}>
+            <button
+                onClick={() => setOpen(!open)}
+                className="p-2 text-white/70 hover:bg-white/10 hover:text-white rounded-xl transition-all duration-200 relative"
+                aria-label="Notificaciones"
+            >
+                <Bell size={20} />
+                {unreadCount > 0 && (
+                    <span className="absolute top-1 right-1 min-w-[16px] h-4 px-0.5 bg-red-500 text-white text-[9px] font-black rounded-full border-2 border-[#063f68] flex items-center justify-center leading-none">
+                        {displayCount}
+                    </span>
+                )}
+            </button>
+
+            {open && (
+                <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-xl z-50 overflow-hidden animate-fade-in">
+                    {/* Header */}
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-800">
+                        <p className="text-[13px] font-bold text-slate-800 dark:text-white">Notificaciones</p>
+                        {unreadCount > 0 && (
+                            <button
+                                onClick={marcarTodasLeidas}
+                                disabled={marking}
+                                className="text-[11px] font-semibold text-[#063f68] dark:text-blue-400 hover:underline disabled:opacity-50 transition-all"
+                            >
+                                Marcar todas como leídas
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Lista */}
+                    <div className="max-h-80 overflow-y-auto">
+                        {notificaciones.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center py-10 gap-3">
+                                <Bell size={28} className="text-slate-200 dark:text-slate-700" />
+                                <p className="text-[12px] text-slate-400 font-medium">Sin notificaciones</p>
+                            </div>
+                        ) : (
+                            notificaciones.map((n) => (
+                                <div
+                                    key={n.id}
+                                    className={`px-4 py-3 border-b border-slate-50 dark:border-slate-800/60 last:border-0 flex gap-3 transition-colors
+                                        ${!n.leida ? "bg-blue-50/50 dark:bg-blue-900/10" : "hover:bg-slate-50 dark:hover:bg-slate-800/30"}`}
+                                >
+                                    {/* Indicador no leída */}
+                                    <div className="pt-1 flex-shrink-0">
+                                        {!n.leida ? (
+                                            <div className="w-2 h-2 bg-blue-500 rounded-full mt-0.5" />
+                                        ) : (
+                                            <div className="w-2 h-2 rounded-full" />
+                                        )}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-[13px] font-bold text-slate-800 dark:text-white leading-snug">{n.titulo}</p>
+                                        <p className="text-[12px] text-slate-400 mt-0.5 leading-snug">{n.mensaje}</p>
+                                        <p className="text-[11px] text-slate-300 dark:text-slate-600 mt-1">{timeAgo(n.createdAt)}</p>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}

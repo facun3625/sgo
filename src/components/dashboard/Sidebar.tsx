@@ -21,7 +21,10 @@ import {
     Home,
     CheckCircle2,
     Clock,
-    Lock
+    Lock,
+    Newspaper,
+    Library,
+    Cpu
 } from "lucide-react";
 
 interface SidebarProps {
@@ -126,9 +129,12 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
         { icon: <XOctagon size={20} />, label: "Solicitud de suspensión/cancelación", href: "/dashboard/suspension", color: "text-rose-500" },
         { icon: <Banknote size={20} />, label: "Adehesion a debito automatico", href: "/dashboard/solicitudes/adhesion-debito", color: "text-cyan-500" },
         { icon: <GraduationCap size={20} />, label: "Cursos", href: "/dashboard/cursos", color: "text-pink-500" },
+        { icon: <Newspaper size={20} />, label: "Actividades Institucionales", href: "/dashboard/noticias", color: "text-amber-500" },
         { icon: <Calendar size={20} />, label: "Calendario", href: "/dashboard/calendario", color: "text-orange-500" },
         { icon: <HelpCircle size={20} />, label: "Preguntas Frecuentes", href: "/dashboard/faq", color: "text-slate-400" },
+        { icon: <Library size={20} />, label: "Biblioteca", href: "/dashboard/biblioteca", color: "text-[#063f68] dark:text-blue-400" },
         { icon: <FolderOpen size={20} />, label: "Repositorio de Archivos", href: "/dashboard/archivos", color: "text-[#063f68] dark:text-blue-400" },
+        { icon: <Cpu size={20} />, label: "Tokens", href: "/dashboard/tokens", color: "text-violet-500" },
     ];
 
     return (

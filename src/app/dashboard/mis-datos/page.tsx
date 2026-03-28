@@ -22,7 +22,7 @@ export default function MisDatosPage() {
             </div>
 
             {/* Contenido del Legajo */}
-            <div className="flex-1 p-6 md:p-10 max-w-5xl mx-auto w-full">
+            <div className="flex-1 p-6 md:p-10 w-full">
                 <PersonalDocsForm />
             </div>
         </div>

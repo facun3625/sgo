@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Upload, X, Plus, Trash2, Loader2, GraduationCap, Users, AlertCircle } from "lucide-react";
+import { useToast } from "@/components/ui/Toast";
 
 interface Opcion {
     id?: number;
@@ -35,6 +36,7 @@ interface Curso {
     modalidad: string;
     fechaLimiteInscripcion: string | null;
     activo: boolean;
+    mostrarEnCalendario: boolean;
     opciones: Opcion[];
     inscripciones: Inscripcion[];
 }
@@ -44,6 +46,7 @@ export default function EditarCursoPage() {
     const params = useParams();
     const id = params.id as string;
 
+    const { showToast } = useToast();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [deleting, setDeleting] = useState(false);
@@ -62,6 +65,7 @@ export default function EditarCursoPage() {
         modalidad: "Presencial",
         fechaLimiteInscripcion: "",
         activo: true,
+        mostrarEnCalendario: false,
     });
     const [opciones, setOpciones] = useState<Opcion[]>([]);
     const [inscripciones, setInscripciones] = useState<Inscripcion[]>([]);
@@ -83,6 +87,7 @@ export default function EditarCursoPage() {
                     modalidad: data.modalidad,
                     fechaLimiteInscripcion: data.fechaLimiteInscripcion ? data.fechaLimiteInscripcion.split("T")[0] : "",
                     activo: data.activo,
+                    mostrarEnCalendario: data.mostrarEnCalendario,
                 });
                 if (data.imagen) setImagePreview(data.imagen);
                 setOpciones(data.opciones);
@@ -159,7 +164,8 @@ export default function EditarCursoPage() {
                 }),
             });
             if (!res.ok) throw new Error();
-            router.push("/admin/cursos");
+            showToast("Curso guardado correctamente");
+            setTimeout(() => router.push("/admin/cursos"), 3500);
         } catch {
             setError("Error al guardar. Intentá de nuevo.");
         } finally {
@@ -346,6 +352,17 @@ export default function EditarCursoPage() {
                             <button type="button" onClick={() => setField("activo", !form.activo)}
                                 className={`relative w-11 h-6 rounded-full transition-colors ${form.activo ? "bg-emerald-500" : "bg-slate-200 dark:bg-slate-700"}`}>
                                 <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${form.activo ? "translate-x-5" : "translate-x-0"}`} />
+                            </button>
+                        </div>
+
+                        <div className="flex items-center justify-between py-1">
+                            <div>
+                                <p className="text-[13px] font-medium text-slate-700 dark:text-slate-300">Mostrar en calendario</p>
+                                <p className="text-[11px] text-slate-400">Aparece en la agenda institucional de los matriculados</p>
+                            </div>
+                            <button type="button" onClick={() => setField("mostrarEnCalendario", !form.mostrarEnCalendario)}
+                                className={`relative w-11 h-6 rounded-full transition-colors ${form.mostrarEnCalendario ? "bg-blue-500" : "bg-slate-200 dark:bg-slate-700"}`}>
+                                <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${form.mostrarEnCalendario ? "translate-x-5" : "translate-x-0"}`} />
                             </button>
                         </div>
                     </div>

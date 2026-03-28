@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import {
-    Bell,
     Mail,
     Sun,
     Moon,
@@ -15,6 +14,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
+import NotificacionesBell from "@/components/dashboard/NotificacionesBell";
 
 interface TopNavProps {
     user: {
@@ -125,10 +125,7 @@ export default function TopNav({ user, onMenuClick }: TopNavProps) {
                 </button>
 
                 {/* Notifications */}
-                <button className="p-2 text-white/70 hover:bg-white/10 hover:text-white rounded-xl transition-all duration-200 relative">
-                    <Bell size={20} />
-                    <span className="absolute top-2 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-[#063f68]"></span>
-                </button>
+                <NotificacionesBell />
 
                 {/* Messages */}
                 <button className="p-2 text-white/70 hover:bg-white/10 hover:text-white rounded-xl transition-all duration-200 relative">

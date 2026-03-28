@@ -132,7 +132,7 @@ export default function SolicitudSuspensionPage() {
                 </div>
             </div>
 
-            <div className="max-w-4xl mx-auto p-6 md:p-10 animate-fade-in">
+            <div className="p-6 md:p-10 animate-fade-in">
                 {submitted ? (
                     <div className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 rounded-[32px] p-12 text-center space-y-6">
                         <div className="w-20 h-20 bg-emerald-500 text-white rounded-3xl flex items-center justify-center mx-auto shadow-xl shadow-emerald-500/20">

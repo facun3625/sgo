@@ -136,6 +136,7 @@ model Curso {
   modalidad              String            @default("Presencial") // Presencial / Virtual / Híbrida
   fechaLimiteInscripcion DateTime?
   activo                 Boolean           @default(true)
+  mostrarEnCalendario    Boolean           @default(false)
   opciones               CursoOpcion[]
   inscripciones          InscripcionCurso[]
   createdAt              DateTime          @default(now())
@@ -172,6 +173,58 @@ model InscripcionCurso {
   @@map("inscripciones_cursos")
 }
 
+model Noticia {
+  id          Int      @id @default(autoincrement())
+  titulo      String
+  contenido   String
+  imagen      String?
+  imagenes    String[] @default([])
+  activa      Boolean  @default(true)
+  destacada   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("noticias")
+}
+
+model Biblioteca {
+  id          Int      @id @default(autoincrement())
+  tipo        String   // "libro" | "jurisprudencia"
+  titulo      String
+  autor       String
+  categoria   String
+  tags        String[] @default([])
+  archivo     String   // URL del PDF
+  portada     String?  // URL imagen opcional
+  activa      Boolean  @default(true)
+  destacado   Boolean  @default(false)
+  vistas      Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  favoritos   BibliotecaFavorito[]
+
+  @@map("biblioteca")
+}
+
+model BibliotecaCategoria {
+  id        Int      @id @default(autoincrement())
+  nombre    String   @unique
+  createdAt DateTime @default(now())
+
+  @@map("biblioteca_categorias")
+}
+
+model BibliotecaFavorito {
+  id           Int       @id @default(autoincrement())
+  expediente   String
+  bibliotecaId Int       @map("biblioteca_id")
+  biblioteca   Biblioteca @relation(fields: [bibliotecaId], references: [id], onDelete: Cascade)
+  createdAt    DateTime  @default(now())
+
+  @@unique([expediente, bibliotecaId])
+  @@map("biblioteca_favoritos")
+}
+
 model Evento {
   id          Int      @id @default(autoincrement())
   titulo      String
@@ -182,4 +235,88 @@ model Evento {
   updatedAt   DateTime @updatedAt
 
   @@map("eventos")
+}
+
+model TokenConfig {
+  id            Int      @id @default(autoincrement())
+  precio        Float
+  stock         Int
+  limiteMensual Int      @default(1)
+  activo        Boolean  @default(true)
+  updatedAt     DateTime @updatedAt
+
+  @@map("token_config")
+}
+
+model TokenPedido {
+  id          Int      @id @default(autoincrement())
+  expediente  String
+  cantidad    Int      @default(1)
+  metodoPago  String   // "mercadopago" | "transferencia" | "efectivo"
+  comprobante String?  // URL — solo transferencia
+  estado      String   @default("pendiente") // pendiente | aprobado | entregado | cancelado
+  observacion String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("token_pedidos")
+}
+
+model Notificacion {
+  id         Int      @id @default(autoincrement())
+  expediente String
+  titulo     String
+  mensaje    String
+  tipo       String   @default("general") // general | pedido
+  leida      Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@map("notificaciones")
+}
+
+model FaqCategoria {
+  id        Int      @id @default(autoincrement())
+  nombre    String
+  orden     Int      @default(0)
+  faqs      Faq[]
+  createdAt DateTime @default(now())
+
+  @@map("faq_categorias")
+}
+
+model Faq {
+  id          Int          @id @default(autoincrement())
+  categoriaId Int          @map("categoria_id")
+  categoria   FaqCategoria @relation(fields: [categoriaId], references: [id], onDelete: Cascade)
+  pregunta    String
+  respuesta   String
+  orden       Int          @default(0)
+  createdAt   DateTime     @default(now())
+
+  @@map("faqs")
+}
+
+model RepositorioCategoria {
+  id        Int                  @id @default(autoincrement())
+  nombre    String
+  orden     Int                  @default(0)
+  archivos  RepositorioArchivo[]
+  createdAt DateTime             @default(now())
+
+  @@map("repositorio_categorias")
+}
+
+model RepositorioArchivo {
+  id          Int                  @id @default(autoincrement())
+  categoriaId Int                  @map("categoria_id")
+  categoria   RepositorioCategoria @relation(fields: [categoriaId], references: [id], onDelete: Cascade)
+  nombre      String
+  descripcion String?
+  archivo     String
+  tipo        String               @default("pdf")
+  tamano      String?
+  descargas   Int                  @default(0)
+  createdAt   DateTime             @default(now())
+
+  @@map("repositorio_archivos")
 }

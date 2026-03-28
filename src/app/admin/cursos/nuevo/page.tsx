@@ -28,6 +28,7 @@ export default function NuevoCursoPage() {
         modalidad: "Presencial",
         fechaLimiteInscripcion: "",
         activo: true,
+        mostrarEnCalendario: false,
     });
     const [opciones, setOpciones] = useState<Opcion[]>([
         { nombre: "", precio: 0, cupo: 0 }
@@ -266,6 +267,20 @@ export default function NuevoCursoPage() {
                             className={`relative w-11 h-6 rounded-full transition-colors ${form.activo ? "bg-emerald-500" : "bg-slate-200 dark:bg-slate-700"}`}
                         >
                             <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${form.activo ? "translate-x-5" : "translate-x-0"}`} />
+                        </button>
+                    </div>
+
+                    <div className="flex items-center justify-between py-1">
+                        <div>
+                            <p className="text-[13px] font-medium text-slate-700 dark:text-slate-300">Mostrar en calendario</p>
+                            <p className="text-[11px] text-slate-400">Aparece en la agenda institucional de los matriculados</p>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => setField("mostrarEnCalendario", !form.mostrarEnCalendario)}
+                            className={`relative w-11 h-6 rounded-full transition-colors ${form.mostrarEnCalendario ? "bg-blue-500" : "bg-slate-200 dark:bg-slate-700"}`}
+                        >
+                            <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${form.mostrarEnCalendario ? "translate-x-5" : "translate-x-0"}`} />
                         </button>
                     </div>
                 </div>

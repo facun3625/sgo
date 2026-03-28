@@ -14,18 +14,19 @@ export async function GET() {
             orderBy: { fecha: "asc" }
         });
 
-        // También incluimos los cursos como eventos del calendario
-        const cursos = await prisma.curso.findMany();
+        // Cursos marcados para mostrar en calendario
+        const cursos = await prisma.curso.findMany({
+            where: { mostrarEnCalendario: true, activo: true },
+        });
 
-        // Mapeamos cursos a formato de evento
         const cursosComoEventos = cursos.map(curso => ({
             id: `curso-${curso.id}`,
+            cursoId: curso.id,
             titulo: curso.titulo,
             descripcion: curso.descripcion,
-            fecha: curso.fecha, // Ojo: en el modelo Curso la fecha es String actualmente, 
-            // idealmente debería ser DateTime para el calendario, pero lo adaptaremos en el front.
+            fecha: curso.fecha,
             tipo: "curso",
-            isCurso: true
+            isCurso: true,
         }));
 
         return NextResponse.json([...eventos, ...cursosComoEventos]);

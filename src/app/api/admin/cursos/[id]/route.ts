@@ -36,7 +36,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const { id: idStr } = await params;
     const id = parseInt(idStr);
     const body = await req.json();
-    const { titulo, descripcion, organizador, fecha, fechaFin, hora, lugar, imagen, modalidad, fechaLimiteInscripcion, activo, opciones } = body;
+    const { titulo, descripcion, organizador, fecha, fechaFin, hora, lugar, imagen, modalidad, fechaLimiteInscripcion, activo, mostrarEnCalendario, opciones } = body;
 
     await prisma.curso.update({
         where: { id },
@@ -52,6 +52,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
             modalidad,
             fechaLimiteInscripcion: fechaLimiteInscripcion ? new Date(fechaLimiteInscripcion) : null,
             activo,
+            mostrarEnCalendario: mostrarEnCalendario ?? false,
         }
     });
 

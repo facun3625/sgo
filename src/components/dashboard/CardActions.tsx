@@ -1,60 +1,72 @@
 "use client";
 
-import { Printer, Download, FileText, Share2 } from "lucide-react";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
+import { Printer, Download } from "lucide-react";
 import { useState } from "react";
 
 interface CardActionsProps {
-    targetId: string;
+    targetId?: string;
+    targetIds?: string[];  // multiple pages in one PDF
     fileName: string;
     title: string;
     disabled?: boolean;
 }
 
-export default function CardActions({ targetId, fileName, title, disabled = false }: CardActionsProps) {
+export default function CardActions({ targetId, targetIds, fileName, title, disabled = false }: CardActionsProps) {
     const [isDownloading, setIsDownloading] = useState(false);
 
-    const handlePrint = () => {
-        window.print();
-    };
+    const handlePrint = () => window.print();
 
     const handleDownloadPDF = async () => {
-        const element = document.getElementById(targetId);
-        if (!element) return;
+        const ids = targetIds ?? (targetId ? [targetId] : []);
+        if (ids.length === 0) return;
 
         try {
             setIsDownloading(true);
 
-            // Use html2canvas to capture the element
-            // We use high scale for better quality in the PDF
-            const canvas = await html2canvas(element, {
-                scale: 3,
-                useCORS: true,
-                logging: false,
-                backgroundColor: null,
-            });
+            const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
+                import("html2canvas-pro"),
+                import("jspdf"),
+            ]);
 
-            const imgData = canvas.toDataURL("image/png");
-
-            // PDF orientation depends on element proportions
-            const pdf = new jsPDF({
-                orientation: "landscape",
-                unit: "mm",
-                format: "a4",
-            });
-
-            const imgProps = pdf.getImageProperties(imgData);
+            const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
             const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+            const pdfHeight = pdf.internal.pageSize.getHeight();
 
-            // Center image in the PDF page
-            const marginX = (pdfWidth - (pdfWidth * 0.8)) / 2;
-            const marginY = 20;
-            const finalWidth = pdfWidth * 0.8;
-            const finalHeight = (imgProps.height * finalWidth) / imgProps.width;
+            for (let i = 0; i < ids.length; i++) {
+                const element = document.getElementById(ids[i]);
+                if (!element) continue;
 
-            pdf.addImage(imgData, "PNG", marginX, marginY, finalWidth, finalHeight);
+                const canvas = await html2canvas(element, {
+                    scale: 3,
+                    useCORS: true,
+                    logging: false,
+                    backgroundColor: null,
+                });
+
+                const imgData = canvas.toDataURL("image/png");
+                const imgProps = pdf.getImageProperties(imgData);
+
+                // fit inside page with margins, centered
+                const margin = 15;
+                const maxW = pdfWidth - margin * 2;
+                const maxH = pdfHeight - margin * 2;
+                const imgRatio = imgProps.width / imgProps.height;
+                const pageRatio = maxW / maxH;
+
+                let finalW = maxW;
+                let finalH = maxW / imgRatio;
+                if (finalH > maxH) {
+                    finalH = maxH;
+                    finalW = maxH * imgRatio;
+                }
+
+                const x = (pdfWidth - finalW) / 2;
+                const y = (pdfHeight - finalH) / 2;
+
+                if (i > 0) pdf.addPage();
+                pdf.addImage(imgData, "PNG", x, y, finalW, finalH);
+            }
+
             pdf.save(`${fileName}.pdf`);
         } catch (error) {
             console.error("Error generating PDF:", error);

@@ -7,18 +7,25 @@ import { usePathname, useRouter } from "next/navigation";
 import {
     LayoutDashboard,
     GraduationCap,
+    Newspaper,
+    Library,
+    CalendarDays,
+    HelpCircle,
+    FolderOpen,
     Menu,
     ChevronRight,
     Shield,
     Sun,
     Moon,
-    Bell,
     Mail,
     ChevronDown,
     LogOut,
+    Cpu,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { SessionPayload } from "@/lib/auth";
+import NotificacionesBell from "@/components/dashboard/NotificacionesBell";
+import { ToastProvider } from "@/components/ui/Toast";
 
 interface AdminShellProps {
     session: SessionPayload;
@@ -27,8 +34,14 @@ interface AdminShellProps {
 }
 
 const navItems = [
-    { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
-    { href: "/admin/cursos", label: "Cursos", icon: GraduationCap },
+    { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true, color: "text-slate-400" },
+    { href: "/admin/cursos", label: "Cursos", icon: GraduationCap, color: "text-pink-500" },
+    { href: "/admin/noticias", label: "Actividades Institucionales", icon: Newspaper, color: "text-amber-500" },
+    { href: "/admin/biblioteca", label: "Biblioteca", icon: Library, color: "text-blue-500" },
+    { href: "/admin/tokens", label: "Tokens", icon: Cpu, color: "text-violet-500" },
+    { href: "/admin/calendario", label: "Calendario", icon: CalendarDays, color: "text-orange-500" },
+    { href: "/admin/faq", label: "Preguntas Frecuentes", icon: HelpCircle, color: "text-slate-400" },
+    { href: "/admin/repositorio", label: "Repositorio de Archivos", icon: FolderOpen, color: "text-indigo-500" },
 ];
 
 export default function AdminShell({ session, image, children }: AdminShellProps) {
@@ -61,6 +74,7 @@ export default function AdminShell({ session, image, children }: AdminShellProps
         item.exact ? pathname === item.href : pathname.startsWith(item.href);
 
     return (
+        <ToastProvider>
         <div className="flex min-h-screen bg-[#f8fafc] dark:bg-[#02182b] transition-colors duration-300">
 
             {/* Overlay mobile */}
@@ -69,9 +83,10 @@ export default function AdminShell({ session, image, children }: AdminShellProps
             )}
 
             {/* Sidebar */}
-            <aside className={`fixed md:sticky top-0 left-0 h-screen z-50 w-64 bg-[#063f68] flex flex-col transition-transform duration-300 ease-in-out md:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
+            <aside className={`fixed md:sticky top-0 left-0 h-screen z-50 w-64 bg-white dark:bg-[#02182b] flex flex-col transition-transform duration-300 ease-in-out md:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
 
-                <div className="px-5 h-16 flex items-center gap-3 border-b border-white/10">
+                {/* Logo */}
+                <div className="px-5 h-16 flex items-center gap-3 bg-green-900">
                     <Image src="/sgo.png" alt="SGO" width={36} height={36} className="object-contain" />
                     <div>
                         <p className="text-white font-bold text-[13px] leading-tight">Panel Admin</p>
@@ -84,8 +99,12 @@ export default function AdminShell({ session, image, children }: AdminShellProps
                         const active = isActive(item);
                         return (
                             <Link key={item.href} href={item.href} onClick={() => setSidebarOpen(false)}
-                                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-[13px] font-medium group ${active ? "bg-white/15 text-white" : "text-white/60 hover:bg-white/10 hover:text-white"}`}>
-                                <item.icon size={17} className={active ? "text-white" : "text-white/50 group-hover:text-white"} />
+                                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-[13px] font-medium group
+                                    ${active
+                                        ? "bg-green-900 text-white dark:bg-white/15"
+                                        : "text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-700 dark:hover:text-slate-200"
+                                    }`}>
+                                <item.icon size={17} className={active ? "text-white" : `${item.color} group-hover:scale-110 transition-transform`} />
                                 {item.label}
                                 {active && <ChevronRight size={13} className="ml-auto text-white/40" />}
                             </Link>
@@ -93,18 +112,19 @@ export default function AdminShell({ session, image, children }: AdminShellProps
                     })}
                 </nav>
 
-                <div className="p-4 border-t border-white/10">
-                    <div className="flex items-center gap-3 mb-3 px-1">
-                        <div className="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center overflow-hidden">
+                {/* User info bottom */}
+                <div className="p-4 border-t border-slate-100 dark:border-slate-800">
+                    <div className="flex items-center gap-3 px-1">
+                        <div className="w-8 h-8 rounded-xl bg-green-900/10 dark:bg-slate-800 flex items-center justify-center overflow-hidden">
                             {image ? (
                                 <img src={image} alt="foto" className="w-full h-full object-cover" />
                             ) : (
-                                <Shield size={15} className="text-white/70" />
+                                <Shield size={15} className="text-green-800 dark:text-white/70" />
                             )}
                         </div>
                         <div>
-                            <p className="text-white text-[12px] font-bold leading-tight">{session.nombre} {session.apellido[0]}.</p>
-                            <p className="text-white/40 text-[9px] uppercase tracking-wider">Superadmin</p>
+                            <p className="text-slate-700 dark:text-slate-200 text-[12px] font-bold leading-tight">{session.nombre} {session.apellido[0]}.</p>
+                            <p className="text-slate-400 dark:text-slate-500 text-[9px] uppercase tracking-wider">Superadmin</p>
                         </div>
                     </div>
                 </div>
@@ -113,15 +133,15 @@ export default function AdminShell({ session, image, children }: AdminShellProps
             {/* Main */}
             <div className="flex-1 flex flex-col min-w-0">
 
-                {/* TopNav — igual al del usuario */}
-                <nav className="h-16 bg-[#063f68] text-white px-4 md:px-8 flex items-center justify-between sticky top-0 z-40">
+                {/* TopNav */}
+                <nav className="h-16 bg-green-900 text-white px-4 md:px-8 flex items-center justify-between sticky top-0 z-40">
 
                     {/* Hamburger mobile */}
                     <button onClick={() => setSidebarOpen(true)} className="md:hidden p-2 text-white/70 hover:bg-white/10 hover:text-white rounded-xl transition-all">
                         <Menu size={22} />
                     </button>
 
-                    {/* Badge admin - solo desktop */}
+                    {/* Badge admin */}
                     <div className="hidden md:flex items-center gap-2 h-8 px-3 bg-white/10 rounded-lg">
                         <Shield size={12} className="text-amber-400" />
                         <span className="text-[10px] font-extrabold text-white uppercase tracking-widest">Superadministrador</span>
@@ -141,15 +161,12 @@ export default function AdminShell({ session, image, children }: AdminShellProps
                         )}
 
                         {/* Notificaciones */}
-                        <button className="p-2 text-white/70 hover:bg-white/10 hover:text-white rounded-xl transition-all relative">
-                            <Bell size={20} />
-                            <span className="absolute top-2 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-[#063f68]"></span>
-                        </button>
+                        <NotificacionesBell />
 
                         {/* Mensajes */}
                         <button className="p-2 text-white/70 hover:bg-white/10 hover:text-white rounded-xl transition-all relative">
                             <Mail size={20} />
-                            <span className="absolute top-2 right-2.5 w-2 h-2 bg-blue-400 rounded-full border-2 border-[#063f68]"></span>
+                            <span className="absolute top-2 right-2.5 w-2 h-2 bg-blue-400 rounded-full border-2 border-green-900"></span>
                         </button>
 
                         {/* Perfil */}
@@ -192,5 +209,6 @@ export default function AdminShell({ session, image, children }: AdminShellProps
                 </main>
             </div>
         </div>
+        </ToastProvider>
     );
 }

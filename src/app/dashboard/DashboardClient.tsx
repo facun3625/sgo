@@ -21,7 +21,10 @@ import {
     CheckCircle2,
     Loader2,
     TrendingUp,
-    ExternalLink
+    ExternalLink,
+    Newspaper,
+    ChevronLeft,
+    Star
 } from "lucide-react";
 import Link from "next/link";
 
@@ -33,9 +36,20 @@ interface SessionPayload {
     accessLevel: string;
 }
 
+interface Noticia {
+    id: number;
+    titulo: string;
+    contenido: string;
+    imagen: string | null;
+    destacada: boolean;
+    createdAt: string;
+}
+
 export default function DashboardClient({ session }: { session: SessionPayload }) {
     const router = useRouter();
     const [loading, setLoading] = useState(true);
+    const [noticias, setNoticias] = useState<Noticia[]>([]);
+    const [carouselIndex, setCarouselIndex] = useState(0);
     const [data, setData] = useState<{
         totalDeuda: number;
         solicitudesContador: number;
@@ -57,19 +71,23 @@ export default function DashboardClient({ session }: { session: SessionPayload }
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [pagosRes, solicitudesRes, cursosRes, eventosRes] = await Promise.all([
+                const [pagosRes, solicitudesRes, cursosRes, eventosRes, noticiasRes] = await Promise.all([
                     fetch("/api/user/pagos"),
                     fetch("/api/user/solicitudes"),
                     fetch("/api/user/cursos"),
-                    fetch("/api/user/eventos")
+                    fetch("/api/user/eventos"),
+                    fetch("/api/user/noticias"),
                 ]);
 
-                const [pagos, solicitudes, cursos, eventos] = await Promise.all([
-                    pagosRes.json(),
-                    solicitudesRes.json(),
-                    cursosRes.json(),
-                    eventosRes.json()
+                const [pagos, solicitudes, cursos, eventos, noticiasData] = await Promise.all([
+                    pagosRes.ok ? pagosRes.json() : { totalDeuda: 0, hasDebitoAutomatico: false, hasPagoAnualActivo: false },
+                    solicitudesRes.ok ? solicitudesRes.json() : [],
+                    cursosRes.ok ? cursosRes.json() : [],
+                    eventosRes.ok ? eventosRes.json() : [],
+                    noticiasRes.ok ? noticiasRes.json() : [],
                 ]);
+
+                if (Array.isArray(noticiasData)) setNoticias(noticiasData.slice(0, 6));
 
                 // Solicitudes pendientes o en trámite (filtro rápido)
                 const solicitudesPendientes = Array.isArray(solicitudes)
@@ -303,6 +321,80 @@ export default function DashboardClient({ session }: { session: SessionPayload }
                             </div>
                         </div>
                     </div>
+
+                    {/* CARRUSEL NOTICIAS */}
+                    {noticias.length > 0 && (
+                        <div className="px-6 md:px-10 pb-4 mt-2">
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-2">
+                                    <Newspaper size={16} className="text-[#063f68] dark:text-blue-400" />
+                                    <h3 className="text-[14px] font-bold text-slate-800 dark:text-white">Últimas noticias</h3>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={() => setCarouselIndex(i => Math.max(0, i - 1))}
+                                        disabled={carouselIndex === 0}
+                                        className="w-8 h-8 flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 disabled:opacity-30 transition-all">
+                                        <ChevronLeft size={15} />
+                                    </button>
+                                    <button
+                                        onClick={() => setCarouselIndex(i => Math.min(noticias.length - 1, i + 1))}
+                                        disabled={carouselIndex >= noticias.length - 1}
+                                        className="w-8 h-8 flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 disabled:opacity-30 transition-all">
+                                        <ChevronRight size={15} />
+                                    </button>
+                                    <Link href="/dashboard/noticias"
+                                        className="text-[12px] font-semibold text-[#063f68] dark:text-blue-400 hover:underline underline-offset-2 ml-1">
+                                        Ver todas
+                                    </Link>
+                                </div>
+                            </div>
+
+                            <div className="overflow-hidden">
+                                <div className="flex gap-4 transition-transform duration-300 ease-in-out"
+                                    style={{ transform: `translateX(${carouselIndex * -316}px)` }}>
+                                    {noticias.map(n => (
+                                        <Link key={n.id} href={`/dashboard/noticias/${n.id}`}
+                                            className="group flex-shrink-0 w-72 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden hover:shadow-md transition-all flex flex-col">
+                                            <div className="h-36 bg-slate-100 dark:bg-slate-800 relative">
+                                                {n.imagen ? (
+                                                    <img src={n.imagen} alt={n.titulo} className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center">
+                                                        <Newspaper size={28} className="text-slate-300" />
+                                                    </div>
+                                                )}
+                                                {n.destacada && (
+                                                    <div className="absolute top-2.5 left-2.5 flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-400 text-white text-[10px] font-bold">
+                                                        <Star size={9} fill="white" /> Destacada
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="p-3.5 flex flex-col flex-1 gap-1.5">
+                                                <p className="text-[10px] text-slate-400 font-medium">
+                                                    {new Date(n.createdAt).toLocaleDateString("es-AR", { timeZone: "UTC", day: "2-digit", month: "short", year: "numeric" })}
+                                                </p>
+                                                <h4 className="font-bold text-slate-800 dark:text-white text-[13px] leading-snug line-clamp-2 group-hover:text-[#063f68] dark:group-hover:text-blue-400 transition-colors">
+                                                    {n.titulo}
+                                                </h4>
+                                                <p className="text-[11px] text-slate-400 line-clamp-2 flex-1">{n.contenido}</p>
+                                            </div>
+                                        </Link>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Dots */}
+                            {noticias.length > 1 && (
+                                <div className="flex justify-center gap-1.5 mt-4">
+                                    {noticias.map((_, i) => (
+                                        <button key={i} onClick={() => setCarouselIndex(i)}
+                                            className={`h-1.5 rounded-full transition-all ${i === carouselIndex ? "w-5 bg-[#063f68] dark:bg-blue-400" : "w-1.5 bg-slate-200 dark:bg-slate-700"}`} />
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

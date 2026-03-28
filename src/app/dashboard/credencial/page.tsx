@@ -127,9 +127,9 @@ export default async function CredencialPage() {
                                 </div>
 
                                 <CardActions
-                                    targetId="digital-credential-front"
-                                    fileName={`Credencial-Frente-${user.expediente}`}
-                                    title="Frente Credencial"
+                                    targetIds={["digital-credential-front", "digital-credential-back"]}
+                                    fileName={`Credencial-${user.expediente}`}
+                                    title="Credencial"
                                 />
                             </div>
                         </div>
@@ -185,19 +185,13 @@ export default async function CredencialPage() {
                                 </div>
                             </div>
 
-                            {/* Columna de Acciones Lateral */}
-                            <div className="w-full lg:w-64 space-y-4">
+                            {/* Columna info dorso */}
+                            <div className="w-full lg:w-64">
                                 <div className="p-5 rounded-[24px] bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
                                     <p className="text-slate-500 dark:text-slate-400 text-[11px] font-medium leading-relaxed">
                                         Leyenda legal y firmas de las autoridades institucionales.
                                     </p>
                                 </div>
-
-                                <CardActions
-                                    targetId="digital-credential-back"
-                                    fileName={`Credencial-Dorso-${user.expediente}`}
-                                    title="Dorso Credencial"
-                                />
                             </div>
                         </div>
                     </div>

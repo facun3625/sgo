@@ -120,7 +120,7 @@ export default function AdhesionDebitoPage() {
     if (submitted) {
         return (
             <div className="bg-white dark:bg-[#02182b] transition-colors duration-300">
-                <div className="max-w-4xl mx-auto p-6 md:p-12 animate-fade-in text-center space-y-8">
+                <div className="p-6 md:p-12 animate-fade-in text-center space-y-8">
                     <div className="w-24 h-24 bg-emerald-500 text-white rounded-[32px] flex items-center justify-center mx-auto shadow-xl shadow-emerald-500/10">
                         <CheckCircle2 size={48} />
                     </div>
@@ -177,7 +177,7 @@ export default function AdhesionDebitoPage() {
                 </div>
             </div>
 
-            <div className="max-w-4xl mx-auto p-6 md:p-10 animate-fade-in w-full">
+            <div className="p-6 md:p-10 animate-fade-in w-full">
 
                 {loadingInitial && (
                     <div className="flex flex-col items-center justify-center py-20 gap-4">

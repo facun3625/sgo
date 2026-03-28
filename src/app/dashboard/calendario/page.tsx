@@ -18,6 +18,7 @@ import Link from "next/link";
 
 interface Evento {
     id: string | number;
+    cursoId?: number;
     titulo: string;
     descripcion: string | null;
     fecha: string;
@@ -140,7 +141,7 @@ export default function CalendarioPage() {
 
                             {selectedEvent.isCurso ? (
                                 <Link
-                                    href="/dashboard/cursos"
+                                    href={selectedEvent.cursoId ? `/dashboard/cursos?id=${selectedEvent.cursoId}` : "/dashboard/cursos"}
                                     className="w-full h-14 bg-[#063f68] hover:bg-[#0a4d7a] text-white rounded-[22px] font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-3 transition-all shadow-xl shadow-blue-500/10"
                                 >
                                     Ver Curso completo
@@ -159,7 +160,7 @@ export default function CalendarioPage() {
                 </div>
             )}
 
-            <div className="max-w-7xl mx-auto p-6 md:p-10 animate-fade-in">
+            <div className="p-6 md:p-10 animate-fade-in">
                 <div className="mb-12">
                     <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight mb-2 uppercase">Agenda</h1>
                     <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Próximos eventos, cursos y feriados institucionales.</p>
