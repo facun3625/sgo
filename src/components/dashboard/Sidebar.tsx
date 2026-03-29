@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
 import {
     CreditCard, IdCard, User, Wallet, FileText, ChevronDown, ChevronRight,
     XOctagon, Banknote, GraduationCap, Calendar, HelpCircle, FolderOpen,
-    Home, CheckCircle2, Clock, Newspaper, Library, Cpu, Mail,
+    Home, CheckCircle2, Clock, Newspaper, Library, Cpu, Mail, Megaphone,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -132,7 +132,8 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
                 { icon: <Library />, label: "Biblioteca", href: "/dashboard/biblioteca", color: "text-[#063f68] dark:text-blue-400" },
                 { icon: <FolderOpen />, label: "Repositorio de Archivos", href: "/dashboard/archivos", color: "text-indigo-500" },
                 { icon: <HelpCircle />, label: "Preguntas Frecuentes", href: "/dashboard/faq", color: "text-slate-400" },
-                { icon: <Mail />, label: "Mensajes", href: "/dashboard/mensajes", color: "text-sky-500" },
+                { icon: <Mail />, label: "Mensajes Privados", href: "/dashboard/mensajes", color: "text-sky-500" },
+                { icon: <Megaphone />, label: "Comunicados", href: "/dashboard/comunicados", color: "text-amber-500" },
             ],
         },
     ];
@@ -172,7 +173,11 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
                                     active={pathname === item.href}
                                     color={item.color}
                                     onClose={onClose}
-                                    badge={item.label === "Adhesión a débito automático" ? <AdhesionBadge /> : undefined}
+                                    badge={
+                        item.label === "Adhesión a débito automático" ? <AdhesionBadge /> :
+                        item.label === "Comunicados" ? <ComunicadosBadge /> :
+                        undefined
+                    }
                                 />
                             )
                         )}
@@ -200,6 +205,39 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
                 </Link>
             </div>
         </aside>
+    );
+}
+
+function ComunicadosBadge() {
+    const [count, setCount] = React.useState(0);
+    const refresh = React.useCallback(() => {
+        fetch("/api/user/comunicados/unread").then(r => r.json()).then(data => setCount(data.count ?? 0)).catch(() => {});
+    }, []);
+    React.useEffect(() => {
+        refresh();
+        const t = setInterval(refresh, 30000);
+
+        // Cross-tab: admin envió masivo
+        let bc: BroadcastChannel | null = null;
+        try {
+            bc = new BroadcastChannel("sgo-updates");
+            bc.onmessage = (e) => { if (e.data?.type === "new-comunicado") refresh(); };
+        } catch {}
+
+        // Mismo tab: usuario leyó un comunicado
+        window.addEventListener("comunicado-leido", refresh);
+
+        return () => {
+            clearInterval(t);
+            bc?.close();
+            window.removeEventListener("comunicado-leido", refresh);
+        };
+    }, [refresh]);
+    if (count === 0) return null;
+    return (
+        <span className="min-w-[18px] h-[18px] px-1 bg-amber-400 text-white text-[9px] font-black rounded-full flex items-center justify-center leading-none">
+            {count > 9 ? "9+" : count}
+        </span>
     );
 }
 

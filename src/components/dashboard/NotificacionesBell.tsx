@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Bell } from "lucide-react";
+import { Bell, Megaphone } from "lucide-react";
+import Link from "next/link";
 
 interface Notificacion {
     id: number;
@@ -45,7 +46,23 @@ export default function NotificacionesBell() {
     useEffect(() => {
         fetchNotificaciones();
         const interval = setInterval(fetchNotificaciones, 30000);
-        return () => clearInterval(interval);
+
+        // Cross-tab: cuando admin envía masivo, notificar inmediatamente
+        let bc: BroadcastChannel | null = null;
+        try {
+            bc = new BroadcastChannel("sgo-updates");
+            bc.onmessage = (e) => { if (e.data?.type === "new-comunicado") fetchNotificaciones(); };
+        } catch {}
+
+        // Mismo tab: cuando el usuario lee un comunicado
+        const onRead = () => fetchNotificaciones();
+        window.addEventListener("comunicado-leido", onRead);
+
+        return () => {
+            clearInterval(interval);
+            bc?.close();
+            window.removeEventListener("comunicado-leido", onRead);
+        };
     }, [fetchNotificaciones]);
 
     useEffect(() => {
@@ -57,6 +74,16 @@ export default function NotificacionesBell() {
         if (open) document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, [open]);
+
+    async function marcarLeida(id: number) {
+        setNotificaciones((prev) => prev.map((n) => n.id === id ? { ...n, leida: true } : n));
+        setUnreadCount((prev) => Math.max(0, prev - 1));
+        fetch("/api/user/notificaciones/leer", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id }),
+        }).catch(() => {});
+    }
 
     async function marcarTodasLeidas() {
         setMarking(true);
@@ -110,27 +137,55 @@ export default function NotificacionesBell() {
                                 <p className="text-[12px] text-slate-400 font-medium">Sin notificaciones</p>
                             </div>
                         ) : (
-                            notificaciones.map((n) => (
-                                <div
-                                    key={n.id}
-                                    className={`px-4 py-3 border-b border-slate-50 dark:border-slate-800/60 last:border-0 flex gap-3 transition-colors
-                                        ${!n.leida ? "bg-blue-50/50 dark:bg-blue-900/10" : "hover:bg-slate-50 dark:hover:bg-slate-800/30"}`}
-                                >
-                                    {/* Indicador no leída */}
-                                    <div className="pt-1 flex-shrink-0">
-                                        {!n.leida ? (
-                                            <div className="w-2 h-2 bg-blue-500 rounded-full mt-0.5" />
-                                        ) : (
-                                            <div className="w-2 h-2 rounded-full" />
-                                        )}
+                            notificaciones.map((n) => {
+                                const isComunicado = n.tipo === "comunicado";
+                                const inner = (
+                                    <div
+                                        key={n.id}
+                                        className={`px-4 py-3 border-b border-slate-50 dark:border-slate-800/60 last:border-0 flex gap-3 transition-colors
+                                            ${!n.leida
+                                                ? isComunicado ? "bg-amber-50/60 dark:bg-amber-900/10" : "bg-blue-50/50 dark:bg-blue-900/10"
+                                                : "hover:bg-slate-50 dark:hover:bg-slate-800/30"}`}
+                                    >
+                                        <div className="pt-0.5 flex-shrink-0">
+                                            {isComunicado ? (
+                                                <div className={`w-6 h-6 rounded-lg flex items-center justify-center ${!n.leida ? "bg-amber-100 dark:bg-amber-900/30" : "bg-slate-100 dark:bg-slate-800"}`}>
+                                                    <Megaphone size={12} className={!n.leida ? "text-amber-500" : "text-slate-400"} />
+                                                </div>
+                                            ) : (
+                                                <div className="pt-1">
+                                                    {!n.leida ? (
+                                                        <div className="w-2 h-2 bg-blue-500 rounded-full mt-0.5" />
+                                                    ) : (
+                                                        <div className="w-2 h-2 rounded-full" />
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-[13px] font-bold text-slate-800 dark:text-white leading-snug">{n.titulo}</p>
+                                            <p className="text-[12px] text-slate-400 mt-0.5 leading-snug">{n.mensaje}</p>
+                                            <p className="text-[11px] text-slate-300 dark:text-slate-600 mt-1">{timeAgo(n.createdAt)}</p>
+                                        </div>
                                     </div>
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-[13px] font-bold text-slate-800 dark:text-white leading-snug">{n.titulo}</p>
-                                        <p className="text-[12px] text-slate-400 mt-0.5 leading-snug">{n.mensaje}</p>
-                                        <p className="text-[11px] text-slate-300 dark:text-slate-600 mt-1">{timeAgo(n.createdAt)}</p>
-                                    </div>
-                                </div>
-                            ))
+                                );
+                                const isTramite = n.tipo === "tramite";
+                                const handleClick = () => {
+                                    if (!n.leida) marcarLeida(n.id);
+                                    setOpen(false);
+                                };
+                                return isComunicado ? (
+                                    <Link key={n.id} href="/dashboard/comunicados" onClick={handleClick}>
+                                        {inner}
+                                    </Link>
+                                ) : isTramite ? (
+                                    <Link key={n.id} href="/dashboard/solicitudes/enviadas" onClick={handleClick}>
+                                        {inner}
+                                    </Link>
+                                ) : (
+                                    <div key={n.id}>{inner}</div>
+                                );
+                            })
                         )}
                     </div>
                 </div>

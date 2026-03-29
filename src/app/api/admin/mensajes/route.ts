@@ -24,7 +24,7 @@ export async function GET() {
     // Enrich with user name from datos
     const expedientes = [...new Set(convs.map(c => c.expediente))];
     const datos = await prisma.dato.findMany({
-        where: { OR: expedientes.map(e => ({ expediente: e })).concat(expedientes.map(e => ({ cod: e }))) },
+        where: { OR: [...expedientes.map(e => ({ expediente: e })), ...expedientes.map(e => ({ cod: e }))] },
         select: { expediente: true, cod: true, nombre: true, apellido: true },
     });
     const datoMap = new Map(datos.map(d => [d.expediente || d.cod, d]));

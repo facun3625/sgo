@@ -12,6 +12,10 @@ export default async function VerificarCertificadoPage({ params }: { params: { i
         notFound();
     }
 
+    const detalles = solicitud.detalles as Record<string, any> | null;
+    const firmante = detalles?.firmante as { cargo: string; nombre?: string; firma?: string } | null;
+    const sanciones = (detalles?.sanciones ?? []) as { texto: string; inicio: string; fin: string }[];
+
     const user = await prisma.user.findUnique({ where: { expediente: solicitud.expediente } });
     if (!user) notFound();
 
@@ -95,6 +99,31 @@ export default async function VerificarCertificadoPage({ params }: { params: { i
                         </div>
                     )}
                 </div>
+
+                {/* Sanciones Tribunal de Ética */}
+                {sanciones.length > 0 && (
+                    <div className="mx-6 mb-4 p-4 rounded-2xl bg-rose-50 border border-rose-200">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-rose-600 mb-2 flex items-center gap-1.5">
+                            <span>⚖</span> Observaciones del Tribunal de Ética
+                        </p>
+                        {sanciones.map((s, i) => (
+                            <p key={i} className="text-[12px] text-rose-800 leading-relaxed font-medium">{s.texto}</p>
+                        ))}
+                    </div>
+                )}
+
+                {/* Firmante */}
+                {firmante && (
+                    <div className="mx-6 mb-4 flex flex-col items-center gap-2 py-4 border-t border-slate-100">
+                        {firmante.firma && (
+                            <img src={firmante.firma} alt="Firma" className="max-h-16 max-w-[160px] object-contain mix-blend-multiply" />
+                        )}
+                        <div className="text-center border-t border-slate-200 pt-2 w-40">
+                            <p className="text-[11px] font-bold text-slate-800">{firmante.cargo}</p>
+                            {firmante.nombre && <p className="text-[10px] text-slate-500 mt-0.5">{firmante.nombre}</p>}
+                        </div>
+                    </div>
+                )}
 
                 {/* Footer */}
                 <div className="mx-6 mb-6 p-4 rounded-2xl bg-[#063f68]/5 border border-[#063f68]/10 flex items-start gap-3">

@@ -67,6 +67,7 @@ export default function AdminMensajesPage() {
         const data = await res.json();
         setSelected(data);
         setConvs(prev => prev.map(c => c.id === id ? { ...c, unreadAdmin: 0 } : c));
+        window.dispatchEvent(new CustomEvent("admin-mensajes-leidos"));
         setLoadingConv(false);
         setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: "instant" }), 50);
     }

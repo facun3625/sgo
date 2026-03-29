@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { ChevronLeft, FileText, Info, Loader2, Send } from "lucide-react";
+import { ChevronLeft, FileText, Info, Loader2, Send, AlertCircle, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { QRCodeSVG } from "qrcode.react";
@@ -32,14 +32,28 @@ function fechaEnLetras(): { dia: string; mes: string; anio: string } {
     return { dia, mes, anio };
 }
 
+interface FirmanteSnapshot {
+    cargo: string;
+    nombre: string | null;
+    firma: string | null;
+}
+
+interface SancionSnapshot {
+    texto: string;
+    inicio: string;
+    fin: string;
+}
+
 interface CertificateProps {
     datos: UserDatos;
     presentarAnte: string;
     solicitudId: number | null;
     baseUrl: string;
+    firmante: FirmanteSnapshot | null;
+    sanciones: SancionSnapshot[];
 }
 
-function CertificateDocument({ datos, presentarAnte, solicitudId, baseUrl }: CertificateProps) {
+function CertificateDocument({ datos, presentarAnte, solicitudId, baseUrl, firmante, sanciones }: CertificateProps) {
     const { dia, mes, anio } = fechaEnLetras();
     const qrUrl = solicitudId ? `${baseUrl}/verificar/certificado/${solicitudId}` : `${baseUrl}/verificar/${datos.expediente}`;
 
@@ -92,8 +106,37 @@ function CertificateDocument({ datos, presentarAnte, solicitudId, baseUrl }: Cer
                 </p>
             </div>
 
-            {/* QR y firma */}
-            <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "flex-end", marginTop: "20px" }}>
+            {/* Sanciones activas del Tribunal de Ética */}
+            {sanciones.length > 0 && (
+                <div style={{ marginTop: "30px", borderTop: "1.5px solid #000", paddingTop: "16px" }}>
+                    <p style={{ fontWeight: "bold", textDecoration: "underline", fontSize: "14px", marginBottom: "10px" }}>
+                        OBSERVACIONES DEL TRIBUNAL DE ÉTICA:
+                    </p>
+                    {sanciones.map((s, i) => (
+                        <p key={i} style={{ fontSize: "13px", lineHeight: "1.8", marginBottom: "8px", textAlign: "justify" }}>
+                            {s.texto}
+                        </p>
+                    ))}
+                </div>
+            )}
+
+            {/* Firma de autoridad + QR */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginTop: "40px" }}>
+                {firmante ? (
+                    <div style={{ textAlign: "center", minWidth: "160px" }}>
+                        {firmante.firma && (
+                            <img
+                                src={firmante.firma}
+                                alt="Firma"
+                                style={{ maxHeight: "60px", maxWidth: "160px", objectFit: "contain", display: "block", margin: "0 auto 6px" }}
+                            />
+                        )}
+                        <div style={{ borderTop: "1px solid #000", paddingTop: "6px" }}>
+                            <p style={{ fontSize: "12px", fontWeight: "bold", margin: 0 }}>{firmante.cargo}</p>
+                            {firmante.nombre && <p style={{ fontSize: "11px", margin: "2px 0 0" }}>{firmante.nombre}</p>}
+                        </div>
+                    </div>
+                ) : <div />}
                 <div style={{ border: "1px solid #e2e8f0", padding: "6px", borderRadius: "8px", background: "white" }}>
                     <QRCodeSVG value={qrUrl} size={80} level="M" />
                 </div>
@@ -115,16 +158,24 @@ export default function SolicitudCertificadoPage() {
 
     const [datos, setDatos] = useState<UserDatos | null>(null);
     const [loading, setLoading] = useState(true);
+    const [certVigente, setCertVigente] = useState<{ id: number; adjunto: string | null; expiresAt: string } | null>(null);
     const [presentarAnte, setPresentarAnte] = useState("");
     const [status, setStatus] = useState<"idle" | "creating" | "generating" | "uploading">("idle");
     const [solicitudId, setSolicitudId] = useState<number | null>(null);
+    const [firmante, setFirmante] = useState<FirmanteSnapshot | null>(null);
+    const [sanciones, setSanciones] = useState<SancionSnapshot[]>([]);
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
     useEffect(() => {
-        fetch("/api/user/datos")
-            .then(r => r.json())
-            .then(d => setDatos(d))
-            .finally(() => setLoading(false));
+        Promise.all([
+            fetch("/api/user/datos").then(r => r.json()),
+            fetch("/api/user/certificado").then(r => r.json()),
+        ]).then(([datosData, certData]) => {
+            setDatos(datosData);
+            if (certData.blocked) {
+                setCertVigente({ id: certData.solicitud.id, adjunto: certData.solicitud.adjunto, expiresAt: certData.expiresAt });
+            }
+        }).finally(() => setLoading(false));
     }, []);
 
     // Cuando tenemos el solicitudId, el QR ya se actualizó en el DOM → generamos el PDF
@@ -183,6 +234,8 @@ export default function SolicitudCertificadoPage() {
             });
             const data = await res.json();
             setSolicitudId(data.id);
+            if (data.detalles?.firmante) setFirmante(data.detalles.firmante);
+            if (data.detalles?.sanciones?.length) setSanciones(data.detalles.sanciones);
             setStatus("generating");
         } catch {
             setStatus("idle");
@@ -218,6 +271,8 @@ export default function SolicitudCertificadoPage() {
                             presentarAnte={presentarAnte}
                             solicitudId={solicitudId}
                             baseUrl={baseUrl}
+                            firmante={firmante}
+                            sanciones={sanciones}
                         />
                     )}
                 </div>
@@ -235,6 +290,33 @@ export default function SolicitudCertificadoPage() {
             </div>
 
             <div className="p-4 md:p-10 space-y-6 animate-fade-in">
+
+                {/* Certificado vigente — bloqueo 60 días */}
+                {certVigente && (
+                    <div className="p-5 rounded-2xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 flex gap-4 items-start">
+                        <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center shrink-0">
+                            <AlertCircle size={20} className="text-amber-600" />
+                        </div>
+                        <div className="flex-1">
+                            <p className="text-[14px] font-black text-amber-800 dark:text-amber-300 mb-1">Ya tenés un certificado vigente</p>
+                            <p className="text-[12px] text-amber-700 dark:text-amber-400 leading-relaxed">
+                                Podés generar uno nuevo a partir del <strong>{new Date(certVigente.expiresAt).toLocaleDateString("es-AR", { day: "2-digit", month: "long", year: "numeric" })}</strong>.
+                            </p>
+                            <div className="flex gap-3 mt-3 flex-wrap">
+                                {certVigente.adjunto && (
+                                    <a href={certVigente.adjunto} target="_blank" rel="noopener noreferrer"
+                                        className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 text-white rounded-xl text-[11px] font-bold hover:bg-amber-700 transition-all">
+                                        <FileText size={12} /> Ver certificado
+                                    </a>
+                                )}
+                                <a href={`/verificar/certificado/${certVigente.id}`} target="_blank" rel="noopener noreferrer"
+                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-slate-800 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-400 rounded-xl text-[11px] font-bold hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-all">
+                                    <ExternalLink size={12} /> Verificar
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Aviso */}
                 <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 flex gap-3 items-start">
@@ -276,7 +358,7 @@ export default function SolicitudCertificadoPage() {
 
                     <button
                         type="submit"
-                        disabled={isProcessing || !presentarAnte.trim()}
+                        disabled={isProcessing || !presentarAnte.trim() || !!certVigente}
                         className="w-full h-14 bg-[#063f68] dark:bg-blue-600 hover:bg-[#0a4d7a] text-white rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-blue-500/10"
                     >
                         {isProcessing ? (

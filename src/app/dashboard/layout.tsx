@@ -37,7 +37,8 @@ export default async function DashboardLayout({
         apellido: dbUser.apellido,
         expediente: dbUser.expediente || "",
         image: dbUser.image,
-        hasDebt
+        hasDebt,
+        isSuspended: dbUser.status === "suspended",
     };
 
     return (

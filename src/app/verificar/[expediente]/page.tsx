@@ -1,6 +1,6 @@
 import prisma from "@/lib/prisma";
 import { notFound } from "next/navigation";
-import { CheckCircle2, XCircle, ShieldCheck, Calendar, BookOpen, Hash } from "lucide-react";
+import { CheckCircle2, XCircle, ShieldCheck, Calendar, BookOpen, Hash, AlertTriangle } from "lucide-react";
 import Image from "next/image";
 
 export default async function VerificarPage({ params }: { params: { expediente: string } }) {
@@ -12,11 +12,12 @@ export default async function VerificarPage({ params }: { params: { expediente: 
         prisma.deuda.findFirst({ where: { expediente } }),
     ]);
 
-    if (!user || user.status !== "active") {
+    if (!user) {
         notFound();
     }
 
-    const isActive = !deuda;
+    const isSuspended = user.status === "suspended";
+    const isActive = !isSuspended && !deuda;
     const fechaMatriculacion = dato?.fechaMatriculacion
         ? new Date(dato.fechaMatriculacion).toLocaleDateString("es-AR", {
             day: "2-digit", month: "long", year: "numeric"
@@ -46,7 +47,19 @@ export default async function VerificarPage({ params }: { params: { expediente: 
                 </div>
 
                 {/* Badge de estado */}
-                <div className={`mx-6 -mt-0 py-4 flex items-center gap-3 border-b border-slate-100 ${isActive ? "" : ""}`}>
+                {isSuspended && (
+                    <div className="mx-4 mt-4 flex items-center gap-3 px-4 py-3 bg-rose-50 border-2 border-rose-400 rounded-2xl">
+                        <div className="w-10 h-10 rounded-xl bg-rose-100 flex items-center justify-center shrink-0">
+                            <AlertTriangle size={22} className="text-rose-500" />
+                        </div>
+                        <div>
+                            <p className="text-[14px] font-black uppercase tracking-tight text-rose-600">Matrícula Suspendida</p>
+                            <p className="text-rose-400 text-[11px] font-semibold">No habilitado/a para ejercer la profesión</p>
+                        </div>
+                    </div>
+                )}
+
+                <div className={`mx-6 py-4 flex items-center gap-3 border-b border-slate-100 ${isSuspended ? "opacity-50" : ""}`}>
                     <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${isActive ? "bg-emerald-50" : "bg-rose-50"}`}>
                         {isActive
                             ? <CheckCircle2 size={26} className="text-emerald-500" />
@@ -55,13 +68,10 @@ export default async function VerificarPage({ params }: { params: { expediente: 
                     </div>
                     <div>
                         <p className={`text-[13px] font-black uppercase tracking-tight ${isActive ? "text-emerald-600" : "text-rose-600"}`}>
-                            {isActive ? "Matrícula Activa y Vigente" : "Matrícula con Restricciones"}
+                            {isActive ? "Matrícula Activa y Vigente" : isSuspended ? "Matrícula Suspendida" : "Matrícula con Restricciones"}
                         </p>
                         <p className="text-slate-400 text-[11px] font-medium">
-                            {isActive
-                                ? "Habilitado/a para ejercer la profesión"
-                                : "Verificar estado con el Colegio"
-                            }
+                            {isActive ? "Habilitado/a para ejercer la profesión" : "Verificar estado con el Colegio"}
                         </p>
                     </div>
                 </div>

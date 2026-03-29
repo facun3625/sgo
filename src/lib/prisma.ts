@@ -16,7 +16,7 @@ export const prisma = (() => {
     if (process.env.NODE_ENV !== "production") {
         // En desarrollo, si el cliente global no tiene 'deuda' o 'solicitud', forzamos recreación
         // Forzamos recreación para que reconozca los nuevos campos del esquema (adjunto, etc)
-        const SCHEMA_VERSION = "2026-03-28-v8-mensajes";
+        const SCHEMA_VERSION = "2026-03-28-v12-tribunal-etica";
         if (globalForPrisma.prisma && (globalForPrisma as any).prismaVersion !== SCHEMA_VERSION) {
             console.log(`🔄 Re-initializing Prisma client to version ${SCHEMA_VERSION}...`);
             globalForPrisma.prisma = createPrismaClient();

@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import prisma from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
@@ -13,9 +14,10 @@ export default async function CredencialPage() {
         redirect("/login");
     }
 
-    const [user, dato] = await Promise.all([
+    const [user, dato, firmasCredencial] = await Promise.all([
         prisma.user.findUnique({ where: { expediente: session.expediente } }),
-        prisma.dato.findFirst({ where: { expediente: session.expediente } })
+        prisma.dato.findFirst({ where: { expediente: session.expediente } }),
+        prisma.firmaAutoridad.findMany({ where: { enCredencial: true }, orderBy: { orden: "asc" } }),
     ]);
 
     if (!user) {
@@ -28,10 +30,24 @@ export default async function CredencialPage() {
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
     const verificationUrl = `${baseUrl}/verificar/${user.expediente}`;
+    const isSuspended = user.status === "suspended";
 
     return (
         <div className="bg-white dark:bg-[#02182b] p-0 space-y-0 pb-12 transition-colors duration-300">
             <div className="w-full pt-0">
+
+                {/* Banner suspensión */}
+                {isSuspended && (
+                    <div className="mx-6 md:mx-10 mt-6 flex items-center gap-3 px-5 py-4 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded-2xl">
+                        <div className="w-10 h-10 rounded-xl bg-rose-100 dark:bg-rose-900/40 flex items-center justify-center flex-shrink-0">
+                            <span className="text-rose-500 text-xl font-black">!</span>
+                        </div>
+                        <div>
+                            <p className="text-[14px] font-black text-rose-700 dark:text-rose-400 uppercase tracking-wide">Matrícula Suspendida</p>
+                            <p className="text-[12px] text-rose-500 dark:text-rose-500 mt-0.5">Esta credencial no es válida para ejercer la profesión. Comuníquese con el CASF.</p>
+                        </div>
+                    </div>
+                )}
 
                 {/* SECCIÓN FRENTE */}
                 <div className="bg-white dark:bg-[#02182b]">
@@ -58,6 +74,18 @@ export default async function CredencialPage() {
                             {/* Columna del Carnet (Frente) */}
                             <div className="flex-1 w-full max-w-[450px]">
                                 <div id="digital-credential-front" className="relative aspect-[1.58/1] w-full bg-white rounded-[20px] shadow-xl border border-[#e2e8f0] overflow-hidden flex flex-col p-6 pointer-events-none select-none">
+
+                                    {/* Overlay suspensión */}
+                                    {isSuspended && (
+                                        <div className="absolute inset-0 z-20 flex items-center justify-center" style={{ background: "rgba(255,255,255,0.15)" }}>
+                                            <div className="absolute inset-0 border-4 border-rose-500 rounded-[20px]" />
+                                            <div className="rotate-[-30deg] text-center pointer-events-none select-none">
+                                                <p className="text-rose-600 font-black uppercase tracking-widest border-4 border-rose-600 px-4 py-1 rounded-lg text-[18px] opacity-80" style={{ textShadow: "none" }}>
+                                                    MATRÍCULA<br />SUSPENDIDA
+                                                </p>
+                                            </div>
+                                        </div>
+                                    )}
 
                                     {/* Top: Logo y Título */}
                                     <div className="flex items-center gap-3 mb-4 pb-3 border-b border-[#f1f5f9]">
@@ -158,22 +186,23 @@ export default async function CredencialPage() {
                                         </p>
 
                                         <div className="flex justify-around items-end">
-                                            <div className="text-center">
-                                                <div className="h-10 flex items-center justify-center mb-1">
-                                                    <span className="text-[12px] font-serif text-[#f1f5f9] italic opacity-40">Firma Autoridad</span>
+                                            {firmasCredencial.length > 0 ? firmasCredencial.map(f => (
+                                                <div key={f.id} className="text-center min-w-[100px]">
+                                                    <div className="h-10 flex items-end justify-center mb-1">
+                                                        {f.firma ? (
+                                                            <img src={f.firma} alt={`Firma ${f.cargo}`} className="max-h-full max-w-[90px] object-contain mix-blend-multiply" />
+                                                        ) : (
+                                                            <span className="text-[12px] font-serif text-[#f1f5f9] italic opacity-40">Firma</span>
+                                                        )}
+                                                    </div>
+                                                    <div className="border-t border-[#f1f5f9] pt-1">
+                                                        <p className="text-[8px] font-bold text-slate-800">{f.cargo}</p>
+                                                        {f.nombre && <p className="text-[7px] text-slate-500 mt-0.5 leading-tight">{f.nombre}</p>}
+                                                    </div>
                                                 </div>
-                                                <div className="border-t border-[#f1f5f9] pt-1">
-                                                    <p className="text-[8px] font-bold text-slate-800">Presidencia</p>
-                                                </div>
-                                            </div>
-                                            <div className="text-center">
-                                                <div className="h-10 flex items-center justify-center mb-1">
-                                                    <span className="text-[12px] font-serif text-[#f1f5f9] italic opacity-40">Firma Autoridad</span>
-                                                </div>
-                                                <div className="border-t border-[#f1f5f9] pt-1">
-                                                    <p className="text-[8px] font-bold text-slate-800">Secretaría</p>
-                                                </div>
-                                            </div>
+                                            )) : (
+                                                <span className="text-[8px] italic text-[#f1f5f9] opacity-40">Sin firmas configuradas</span>
+                                            )}
                                         </div>
                                     </div>
 

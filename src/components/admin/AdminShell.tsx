@@ -22,11 +22,16 @@ import {
     ChevronDown,
     LogOut,
     Cpu,
+    Send,
+    PenLine,
+    Scale,
+    ClipboardList,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { SessionPayload } from "@/lib/auth";
 import NotificacionesBell from "@/components/dashboard/NotificacionesBell";
 import AdminMensajesIcon from "@/components/admin/AdminMensajesIcon";
+import AdminSolicitudesIcon from "@/components/admin/AdminSolicitudesIcon";
 import { ToastProvider } from "@/components/ui/Toast";
 
 interface AdminShellProps {
@@ -37,6 +42,7 @@ interface AdminShellProps {
 
 const navItems = [
     { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true, color: "text-slate-400" },
+    { href: "/admin/solicitudes", label: "Gestión de Trámites", icon: ClipboardList, color: "text-amber-500" },
     { href: "/admin/usuarios", label: "Usuarios", icon: Users, color: "text-indigo-500" },
     { href: "/admin/cursos", label: "Cursos", icon: GraduationCap, color: "text-pink-500" },
     { href: "/admin/noticias", label: "Actividades Institucionales", icon: Newspaper, color: "text-amber-500" },
@@ -44,7 +50,10 @@ const navItems = [
     { href: "/admin/tokens", label: "Tokens", icon: Cpu, color: "text-violet-500" },
     { href: "/admin/calendario", label: "Calendario", icon: CalendarDays, color: "text-orange-500" },
     { href: "/admin/faq", label: "Preguntas Frecuentes", icon: HelpCircle, color: "text-slate-400" },
-    { href: "/admin/mensajes", label: "Mensajes", icon: Mail, color: "text-sky-500" },
+    { href: "/admin/mensajes", label: "Mensajes Privados", icon: Mail, color: "text-sky-500" },
+    { href: "/admin/envios", label: "Envíos Masivos", icon: Send, color: "text-amber-500" },
+    { href: "/admin/firmas", label: "Firmas de Autoridades", icon: PenLine, color: "text-indigo-500" },
+    { href: "/admin/tribunal-etica", label: "Tribunal de Ética", icon: Scale, color: "text-rose-500" },
     { href: "/admin/repositorio", label: "Repositorio de Archivos", icon: FolderOpen, color: "text-indigo-500" },
 ];
 
@@ -166,6 +175,9 @@ export default function AdminShell({ session, image, children }: AdminShellProps
 
                         {/* Notificaciones */}
                         <NotificacionesBell />
+
+                        {/* Trámites */}
+                        <AdminSolicitudesIcon />
 
                         {/* Mensajes */}
                         <AdminMensajesIcon />

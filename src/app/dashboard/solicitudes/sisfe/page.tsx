@@ -8,7 +8,9 @@ import {
     Info,
     Loader2,
     CheckCircle2,
-    Lock
+    Lock,
+    AlertCircle,
+    ArrowRight,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -28,6 +30,7 @@ export default function SolicitudSISFEPage() {
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [submitted, setSubmitted] = useState(false);
+    const [existing, setExisting] = useState<{ id: number; estado: string; detalles: any } | null>(null);
 
     const hoy = new Date().toLocaleDateString('es-AR', {
         day: '2-digit',
@@ -36,20 +39,13 @@ export default function SolicitudSISFEPage() {
     });
 
     useEffect(() => {
-        const fetchDatos = async () => {
-            try {
-                const res = await fetch("/api/user/datos");
-                if (res.ok) {
-                    const data = await res.json();
-                    setDatos(data);
-                }
-            } catch (error) {
-                console.error("Error fetching user data:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchDatos();
+        Promise.all([
+            fetch("/api/user/datos").then(r => r.json()),
+            fetch("/api/user/solicitudes/check?tipo=SISFE").then(r => r.json()),
+        ]).then(([datosData, checkData]) => {
+            setDatos(datosData);
+            if (checkData.found) setExisting(checkData.solicitud);
+        }).catch(() => {}).finally(() => setLoading(false));
     }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -131,6 +127,33 @@ export default function SolicitudSISFEPage() {
                         >
                             Ver mis solicitudes
                         </button>
+                    </div>
+                ) : existing ? (
+                    <div className="p-5 rounded-2xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 flex gap-4 items-start">
+                        <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center shrink-0">
+                            {existing.estado === "completada" ? <CheckCircle2 size={20} className="text-emerald-600" /> : <AlertCircle size={20} className="text-amber-600" />}
+                        </div>
+                        <div className="flex-1">
+                            {existing.estado === "completada" ? (
+                                <>
+                                    <p className="text-[14px] font-black text-emerald-800 dark:text-emerald-300 mb-1">Ya tenés tu clave SISFE</p>
+                                    {existing.detalles?.respuesta?.clave && (
+                                        <p className="text-[13px] font-bold text-emerald-700 dark:text-emerald-400 mb-2">
+                                            Clave: <strong>{existing.detalles.respuesta.clave}</strong>
+                                        </p>
+                                    )}
+                                </>
+                            ) : (
+                                <>
+                                    <p className="text-[14px] font-black text-amber-800 dark:text-amber-300 mb-1">Ya tenés una solicitud en proceso</p>
+                                    <p className="text-[12px] text-amber-700 dark:text-amber-400 mb-2">Tu pedido está siendo procesado por el Colegio.</p>
+                                </>
+                            )}
+                            <Link href="/dashboard/solicitudes/enviadas"
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-slate-800 border border-amber-200 dark:border-amber-700 text-amber-700 dark:text-amber-400 rounded-xl text-[11px] font-bold hover:bg-amber-50 transition-all">
+                                Ver en mis solicitudes <ArrowRight size={11} />
+                            </Link>
+                        </div>
                     </div>
                 ) : (
                     <div className="space-y-8">

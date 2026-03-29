@@ -4,6 +4,27 @@ import prisma from "@/lib/prisma";
 import { writeFile, mkdir } from "fs/promises";
 import { join } from "path";
 
+export async function GET() {
+    const session = await getSession();
+    if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+
+    const cutoff = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
+    const existing = await prisma.solicitud.findFirst({
+        where: {
+            expediente: session.expediente || "",
+            tipo: "Certificado de Matriculación",
+            estado: "completada",
+            fecha: { gte: cutoff },
+        },
+        orderBy: { fecha: "desc" },
+    });
+
+    if (!existing) return NextResponse.json({ blocked: false });
+
+    const expiresAt = new Date(new Date(existing.fecha).getTime() + 60 * 24 * 60 * 60 * 1000);
+    return NextResponse.json({ blocked: true, solicitud: existing, expiresAt: expiresAt.toISOString() });
+}
+
 export async function POST(req: NextRequest) {
     const session = await getSession();
     if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
@@ -11,14 +32,40 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { presentarAnte, emailLegal, detalles } = body;
 
+    const today = new Date();
+
+    // Snapshot del firmante activo al momento de emisión
+    const firmante = await prisma.firmaAutoridad.findFirst({ where: { enCertificado: true } });
+
+    // Verificar sanciones activas del Tribunal de Ética
+    const sancionesActivas = await prisma.tribunalEtica.findMany({
+        where: {
+            expediente: session.expediente || "",
+            inicio: { lte: today },
+            fin: { gte: today },
+        },
+    });
+
     const solicitud = await prisma.solicitud.create({
         data: {
             expediente: session.expediente || "",
             tipo: "Certificado de Matriculación",
             presentarAnte: presentarAnte || null,
             emailLegal: emailLegal || null,
-            detalles: detalles || {},
             estado: "completada",
+            detalles: {
+                ...(detalles || {}),
+                firmante: firmante ? {
+                    cargo: firmante.cargo,
+                    nombre: firmante.nombre,
+                    firma: firmante.firma,
+                } : null,
+                sanciones: sancionesActivas.map(s => ({
+                    texto: s.texto,
+                    inicio: s.inicio.toISOString(),
+                    fin: s.fin.toISOString(),
+                })),
+            },
         }
     });
 

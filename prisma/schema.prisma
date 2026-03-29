@@ -320,6 +320,54 @@ model MensajeChat {
   @@map("mensajes_chat")
 }
 
+model FirmaAutoridad {
+  id              Int      @id @default(autoincrement())
+  cargo           String
+  nombre          String?
+  firma           String?
+  enCredencial    Boolean  @default(false)
+  enCertificado   Boolean  @default(false)
+  orden           Int      @default(0)
+  updatedAt       DateTime @updatedAt
+
+  @@map("firmas_autoridades")
+}
+
+model EnvioMasivo {
+  id            Int                       @id @default(autoincrement())
+  asunto        String
+  contenido     String
+  totalEnvios   Int                       @default(0)
+  destinatarios EnvioMasivoDestinatario[]
+  createdAt     DateTime                  @default(now())
+
+  @@map("envios_masivos")
+}
+
+model EnvioMasivoDestinatario {
+  id         Int         @id @default(autoincrement())
+  envioId    Int         @map("envio_id")
+  envio      EnvioMasivo @relation(fields: [envioId], references: [id], onDelete: Cascade)
+  expediente String
+  leido      Boolean     @default(false)
+  leidoAt    DateTime?   @map("leido_at")
+
+  @@unique([envioId, expediente])
+  @@map("envios_masivos_destinatarios")
+}
+
+model TribunalEtica {
+  id          Int      @id @default(autoincrement())
+  expediente  String
+  texto       String
+  inicio      DateTime
+  fin         DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("tribunal_etica")
+}
+
 model RepositorioCategoria {
   id        Int                  @id @default(autoincrement())
   nombre    String

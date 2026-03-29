@@ -21,6 +21,7 @@ interface DashboardShellProps {
         expediente: string;
         image: string | null;
         hasDebt: boolean;
+        isSuspended: boolean;
     };
     children: React.ReactNode;
 }

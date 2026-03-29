@@ -24,6 +24,7 @@ interface TopNavProps {
         expediente: string;
         image: string | null;
         hasDebt: boolean;
+        isSuspended: boolean;
     };
     onMenuClick?: () => void;
 }
@@ -89,10 +90,17 @@ export default function TopNav({ user, onMenuClick }: TopNavProps) {
                 {/* Status Badges */}
                 <div className="hidden lg:flex items-center gap-3">
                     {/* Registration Status */}
-                    <div className="h-8 flex items-center gap-2 px-3 bg-white/10 rounded-lg backdrop-blur-sm">
-                        <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></div>
-                        <span className="text-[10px] font-extrabold text-white uppercase tracking-widest leading-none">Matrícula Activa</span>
-                    </div>
+                    {user.isSuspended ? (
+                        <div className="h-8 flex items-center gap-2 px-3 bg-rose-500/20 border border-rose-500/40 rounded-lg backdrop-blur-sm animate-pulse">
+                            <div className="w-1.5 h-1.5 bg-rose-400 rounded-full shadow-[0_0_8px_rgba(251,113,133,0.8)]"></div>
+                            <span className="text-[10px] font-extrabold text-rose-300 uppercase tracking-widest leading-none">Matrícula Suspendida</span>
+                        </div>
+                    ) : (
+                        <div className="h-8 flex items-center gap-2 px-3 bg-white/10 rounded-lg backdrop-blur-sm">
+                            <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></div>
+                            <span className="text-[10px] font-extrabold text-white uppercase tracking-widest leading-none">Matrícula Activa</span>
+                        </div>
+                    )}
 
                     {/* Debt Status */}
                     {user.hasDebt ? (
