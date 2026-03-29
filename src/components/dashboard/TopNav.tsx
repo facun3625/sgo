@@ -9,7 +9,9 @@ import {
     User,
     LogOut,
     ArrowRight,
-    Menu
+    Menu,
+    Download,
+    Share
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -32,14 +34,37 @@ interface TopNavProps {
 export default function TopNav({ user, onMenuClick }: TopNavProps) {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [mounted, setMounted] = useState(false);
+    const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+    const [isIOS, setIsIOS] = useState(false);
+    const [showIOSHint, setShowIOSHint] = useState(false);
+    const [isInstalled, setIsInstalled] = useState(false);
     const { theme, setTheme, resolvedTheme } = useTheme();
     const router = useRouter();
     const menuRef = useRef<HTMLDivElement>(null);
 
-    // Evitar errores de hidratación
     useEffect(() => {
         setMounted(true);
+        if (window.matchMedia("(display-mode: standalone)").matches) {
+            setIsInstalled(true);
+            return;
+        }
+        const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+        setIsIOS(ios);
+        const handler = (e: Event) => { e.preventDefault(); setDeferredPrompt(e); };
+        window.addEventListener("beforeinstallprompt", handler as any);
+        return () => window.removeEventListener("beforeinstallprompt", handler as any);
     }, []);
+
+    const handleInstallClick = async () => {
+        if (isIOS) { setShowIOSHint(h => !h); return; }
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            await deferredPrompt.userChoice;
+            setDeferredPrompt(null);
+        } else {
+            setShowIOSHint(h => !h);
+        }
+    };
 
     // Cerrar menú al hacer clic fuera
     useEffect(() => {
@@ -138,6 +163,27 @@ export default function TopNav({ user, onMenuClick }: TopNavProps) {
 
                 {/* Messages */}
                 <MensajesIcon />
+
+                {/* Install PWA — solo mobile, solo si no está instalada */}
+                {!isInstalled && (
+                    <div className="relative md:hidden">
+                        <button
+                            onClick={handleInstallClick}
+                            className="p-2 text-white/70 hover:bg-white/10 hover:text-white rounded-xl transition-all"
+                            title="Instalar app"
+                        >
+                            {deferredPrompt ? <Download size={20} /> : <Share size={20} />}
+                        </button>
+                        {showIOSHint && (
+                            <div className="absolute right-0 top-12 w-60 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-3 shadow-xl z-50 text-[12px] text-slate-700 dark:text-slate-300 leading-relaxed">
+                                {isIOS
+                                    ? <>Tocá <strong>Compartir</strong> <Share size={11} className="inline mb-0.5" /> en Safari y luego <strong>"Agregar a pantalla de inicio"</strong></>
+                                    : <>En el menú de tu browser tocá <strong>"Agregar a pantalla de inicio"</strong> o <strong>"Instalar app"</strong></>
+                                }
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 {/* Profile menu */}
                 <div className="relative" ref={menuRef}>
