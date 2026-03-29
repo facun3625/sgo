@@ -650,6 +650,18 @@ export default function AdminSolicitudesPage() {
                                 </div>
                             )}
 
+                            {/* Suspensión/Cancelación: Aprobar */}
+                            {(selected.tipo.toLowerCase().includes("suspensión") || selected.tipo.toLowerCase().includes("suspension") || selected.tipo.toLowerCase().includes("cancelación") || selected.tipo.toLowerCase().includes("cancelacion")) && selected.estado === "pendiente" && (
+                                <button
+                                    onClick={() => doAction("suspender", {})}
+                                    disabled={submitting}
+                                    className="w-full flex items-center justify-center gap-2 h-10 bg-emerald-600 text-white rounded-xl text-[13px] font-bold hover:bg-emerald-700 disabled:opacity-40 transition-all"
+                                >
+                                    {submitting ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
+                                    Aprobar solicitud
+                                </button>
+                            )}
+
                             {/* Rechazar (all pendientes) */}
                             {selected.estado === "pendiente" && (
                                 <div className="space-y-2 pt-1">
