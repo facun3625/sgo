@@ -43,6 +43,7 @@ export default function SolicitudesEnviadasPage() {
     const [solicitudes, setSolicitudes] = useState<Solicitud[]>([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState("");
+    const [tipoFilter, setTipoFilter] = useState("");
     const [favs, setFavs] = useState<Set<string>>(new Set());
 
     useEffect(() => {
@@ -87,10 +88,22 @@ export default function SolicitudesEnviadasPage() {
         }
     };
 
-    const filtered = solicitudes.filter(s =>
-        s.tipo.toLowerCase().includes(filter.toLowerCase()) ||
-        (s.presentarAnte && s.presentarAnte.toLowerCase().includes(filter.toLowerCase()))
-    );
+    const TIPOS = [
+        { key: "", label: "Todos" },
+        { key: "Certificado", label: "Certificado" },
+        { key: "SISFE", label: "SISFE" },
+        { key: "CATASTRO", label: "CATASTRO" },
+        { key: "Jurisprudencia", label: "Jurisprudencia" },
+        { key: "Suspensión", label: "Suspensión" },
+        { key: "Adhesión", label: "Adhesión a Débito" },
+    ];
+
+    const filtered = solicitudes.filter(s => {
+        const matchText = s.tipo.toLowerCase().includes(filter.toLowerCase()) ||
+            (s.presentarAnte && s.presentarAnte.toLowerCase().includes(filter.toLowerCase()));
+        const matchTipo = !tipoFilter || s.tipo.toLowerCase().includes(tipoFilter.toLowerCase());
+        return matchText && matchTipo;
+    });
 
     const favoritas = filtered.filter(s => favs.has(String(s.id)));
     const resto = filtered.filter(s => !favs.has(String(s.id)));
@@ -125,6 +138,18 @@ export default function SolicitudesEnviadasPage() {
                         className="pl-10 pr-4 h-10 w-64 bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 rounded-xl text-[12px] font-medium focus:outline-none focus:ring-2 focus:ring-[#063f68]/10 transition-all"
                     />
                 </div>
+            </div>
+
+            {/* Filtros por tipo */}
+            <div className="px-4 md:px-10 pt-4 flex gap-2 flex-wrap">
+                {TIPOS.map(t => (
+                    <button key={t.key} onClick={() => setTipoFilter(t.key)}
+                        className={`h-8 px-3 rounded-xl text-[11px] font-bold transition-all border ${tipoFilter === t.key
+                            ? "bg-[#063f68] text-white border-[#063f68] dark:bg-blue-600 dark:border-blue-600"
+                            : "bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"}`}>
+                        {t.label}
+                    </button>
+                ))}
             </div>
 
             <div className="p-4 md:p-10 animate-fade-in space-y-6">

@@ -109,6 +109,35 @@ export async function PATCH(
         return NextResponse.json(updated);
     }
 
+    if (action === "suspender") {
+        // Aprobar solicitud de suspensión/cancelación → cambiar estado del usuario
+        const esCancelacion = solicitud.tipo.toLowerCase().includes("cancelación") || solicitud.tipo.toLowerCase().includes("cancelacion");
+        const nuevoStatus = esCancelacion ? "cancelled" : "suspended";
+
+        await prisma.user.updateMany({
+            where: { expediente: solicitud.expediente },
+            data: { status: nuevoStatus },
+        });
+
+        const updated = await prisma.solicitud.update({
+            where: { id: parseInt(id) },
+            data: { estado: "completada" },
+        });
+
+        await prisma.notificacion.create({
+            data: {
+                expediente: solicitud.expediente,
+                titulo: solicitud.tipo,
+                mensaje: esCancelacion
+                    ? "Tu solicitud de cancelación de matrícula fue aprobada por el Colegio."
+                    : "Tu solicitud de suspensión de matrícula fue aprobada por el Colegio.",
+                tipo: "tramite",
+            },
+        });
+
+        return NextResponse.json(updated);
+    }
+
     if (action === "rechazar") {
         const { motivo } = body;
         const newDetalles = {

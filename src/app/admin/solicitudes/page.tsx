@@ -45,6 +45,8 @@ function tipoBadge(tipo: string) {
         return { label: "CATASTRO", cls: "bg-orange-50 text-orange-600 border-orange-100 dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-900/30" };
     if (tipo.includes("Jurisprudencia"))
         return { label: "Jurisprudencia", cls: "bg-teal-50 text-teal-600 border-teal-100 dark:bg-teal-900/20 dark:text-teal-400 dark:border-teal-900/30" };
+    if (tipo.includes("Suspensión") || tipo.includes("Cancelación"))
+        return { label: tipo.includes("Cancelación") ? "Cancelación" : "Suspensión", cls: "bg-rose-50 text-rose-600 border-rose-100 dark:bg-rose-900/20 dark:text-rose-400 dark:border-rose-900/30" };
     return { label: tipo, cls: "bg-slate-50 text-slate-600 border-slate-100 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700" };
 }
 
@@ -66,6 +68,7 @@ const TABS = [
     { key: "SISFE", label: "SISFE" },
     { key: "CATASTRO", label: "CATASTRO" },
     { key: "Jurisprudencia", label: "Jurisprudencia" },
+    { key: "Suspensión", label: "Suspensión" },
 ];
 
 // ─── main component ──────────────────────────────────────────────────────────
