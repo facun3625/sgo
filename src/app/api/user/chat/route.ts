@@ -15,17 +15,20 @@ export async function POST(req: NextRequest) {
 
     const exp = session.expediente;
 
+    const currentPeriod = new Date().toISOString().slice(0, 7);
     const [
-        datos, user, deudas, matriculaAnual, matriculaMensual, pagoAnual,
+        datos, user, deudas, cuotaActual, pagoAnual,
+        configMensual, configAnual,
         solicitudes, adhesion, inscripciones, tokenPedidos,
         cursos, eventos, noticias, faqs, tribunalEtica, biblioteca,
     ] = await Promise.all([
         prisma.dato.findFirst({ where: { expediente: exp } }),
         prisma.user.findFirst({ where: { expediente: exp }, select: { nombre: true, apellido: true, status: true } }),
         prisma.deuda.findMany({ where: { expediente: exp } }),
-        prisma.matriculaAnual.findMany({ where: { expediente: exp } }),
-        prisma.matriculaMensual.findMany({ where: { expediente: exp } }),
+        prisma.cuotaMensual.findFirst({ where: { expediente: exp, periodo: currentPeriod } }),
         prisma.pagoAnual.findFirst({ where: { expediente: exp } }),
+        prisma.config.findUnique({ where: { clave: "montoMensual" } }),
+        prisma.config.findUnique({ where: { clave: "montoAnual" } }),
         prisma.solicitud.findMany({ where: { expediente: exp }, orderBy: { fecha: "desc" }, take: 10 }),
         prisma.adhesionDebito.findFirst({ where: { expediente: exp }, orderBy: { createdAt: "desc" } }),
         prisma.inscripcionCurso.findMany({ where: { expediente: exp }, include: { curso: true, opcion: true } }),
@@ -40,8 +43,8 @@ export async function POST(req: NextRequest) {
 
     const totalDeuda = deudas.reduce((acc, d) => acc + d.monto, 0);
     const solicitudesPendientes = solicitudes.filter(s => s.estado === "pendiente");
-    const montoAnual = matriculaAnual[0]?.monto ?? 48000;
-    const montoMensual = matriculaMensual[0]?.monto ?? 4500;
+    const montoAnual = configAnual ? parseFloat(configAnual.valor) : 48000;
+    const montoMensual = configMensual ? parseFloat(configMensual.valor) : 4500;
 
     const fmt = (d: Date) => new Date(d).toLocaleDateString("es-AR");
 
