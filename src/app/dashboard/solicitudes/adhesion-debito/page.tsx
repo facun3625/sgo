@@ -26,8 +26,11 @@ export default function AdhesionDebitoPage() {
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
     const [submitted, setSubmitted] = useState(false);
-    const [existingAdhesion, setExistingAdhesion] = useState<{ pending: boolean; approved: boolean }>({ pending: false, approved: false });
+    const [existingAdhesion, setExistingAdhesion] = useState<{ pending: boolean; approved: boolean; cancelacionPendiente: boolean }>({ pending: false, approved: false, cancelacionPendiente: false });
     const [loadingInitial, setLoadingInitial] = useState(true);
+    const [showChangeForm, setShowChangeForm] = useState(false);
+    const [cancelLoading, setCancelLoading] = useState(false);
+    const [cancelSubmitted, setCancelSubmitted] = useState(false);
 
     useEffect(() => {
         const checkStatus = async () => {
@@ -36,7 +39,8 @@ export default function AdhesionDebitoPage() {
                 const data = await res.json();
                 setExistingAdhesion({
                     pending: data.hasDebitoEnTramite,
-                    approved: data.hasDebitoAutomatico
+                    approved: data.hasDebitoAutomatico,
+                    cancelacionPendiente: data.hasCancelacionPendiente ?? false,
                 });
             } catch (error) {
                 console.error("Error checking status:", error);
@@ -50,6 +54,8 @@ export default function AdhesionDebitoPage() {
     // Form state
     const [tipoAdhesion, setTipoAdhesion] = useState("");
     const [terminosAceptados, setTerminosAceptados] = useState(false);
+    const [hasScrolledTerms, setHasScrolledTerms] = useState(false);
+    const [showScrollWarning, setShowScrollWarning] = useState(false);
 
     // Files state
     const [dniFrontal, setDniFrontal] = useState<File | null>(null);
@@ -102,6 +108,23 @@ export default function AdhesionDebitoPage() {
             alert("Error de conexión. Reintente por favor.");
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleCancelacion = async () => {
+        setCancelLoading(true);
+        try {
+            const res = await fetch("/api/user/adhesion-debito/cancelar", { method: "POST" });
+            if (res.ok) {
+                setCancelSubmitted(true);
+            } else {
+                const err = await res.json();
+                alert(`Error: ${err.error}`);
+            }
+        } catch {
+            alert("Error de conexión. Reintente por favor.");
+        } finally {
+            setCancelLoading(false);
         }
     };
 
@@ -198,19 +221,60 @@ export default function AdhesionDebitoPage() {
                     </div>
                 )}
 
-                {!loadingInitial && existingAdhesion.approved && (
-                    <div className="mb-10 p-8 rounded-[32px] bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 flex flex-col md:flex-row items-center gap-6 animate-slide-up">
-                        <div className="w-16 h-16 rounded-2xl bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/20 shrink-0">
-                            <CheckCircle2 size={32} />
-                        </div>
-                        <div className="space-y-1 text-center md:text-left">
-                            <h3 className="text-emerald-900 dark:text-emerald-400 font-bold text-xl tracking-tight">Ya se encuentra Adherido</h3>
-                            <p className="text-emerald-700/70 dark:text-emerald-400/60 text-sm font-medium">Actualmente se encuentra adherido al débito automático. A continuación puede modificar su medio de pago si lo desea.</p>
-                        </div>
+                {!loadingInitial && existingAdhesion.approved && !showChangeForm && (
+                    <div className="space-y-6 animate-slide-up">
+                        {(cancelSubmitted || existingAdhesion.cancelacionPendiente) ? (
+                            <div className="p-8 rounded-[32px] bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 flex flex-col md:flex-row items-center gap-6">
+                                <div className="w-16 h-16 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-lg shadow-amber-500/20 shrink-0">
+                                    <Clock size={32} />
+                                </div>
+                                <div className="space-y-1 text-center md:text-left">
+                                    <h3 className="text-amber-900 dark:text-amber-400 font-bold text-xl tracking-tight">Cancelación en Trámite</h3>
+                                    <p className="text-amber-700/70 dark:text-amber-400/60 text-sm font-medium">Tu solicitud de cancelación de débito automático está siendo procesada. Te notificaremos cuando sea resuelta.</p>
+                                </div>
+                            </div>
+                        ) : (
+                            <>
+                                <div className="p-8 rounded-[32px] bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 flex flex-col md:flex-row items-center gap-6">
+                                    <div className="w-16 h-16 rounded-2xl bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/20 shrink-0">
+                                        <CheckCircle2 size={32} />
+                                    </div>
+                                    <div className="space-y-1 text-center md:text-left flex-1">
+                                        <h3 className="text-emerald-900 dark:text-emerald-400 font-bold text-xl tracking-tight">Ya se encuentra Adherido</h3>
+                                        <p className="text-emerald-700/70 dark:text-emerald-400/60 text-sm font-medium">Actualmente se encuentra adherido al débito automático.</p>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <button
+                                        onClick={() => setShowChangeForm(true)}
+                                        className="p-6 rounded-[24px] border-2 border-[#063f68]/20 dark:border-blue-500/20 bg-blue-50/50 dark:bg-blue-500/5 hover:border-[#063f68] dark:hover:border-blue-500 text-left transition-all group"
+                                    >
+                                        <div className="w-10 h-10 rounded-xl bg-[#063f68] text-white flex items-center justify-center mb-4">
+                                            <CreditCard size={20} />
+                                        </div>
+                                        <h4 className="font-bold text-slate-900 dark:text-white">Cambiar método de pago</h4>
+                                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Actualizá tu CBU o tarjeta vinculada.</p>
+                                    </button>
+                                    <button
+                                        onClick={handleCancelacion}
+                                        disabled={cancelLoading}
+                                        className="p-6 rounded-[24px] border-2 border-rose-200 dark:border-rose-900/30 bg-rose-50/50 dark:bg-rose-900/10 hover:border-rose-400 dark:hover:border-rose-700 text-left transition-all group disabled:opacity-50"
+                                    >
+                                        <div className="w-10 h-10 rounded-xl bg-rose-500 text-white flex items-center justify-center mb-4">
+                                            <X size={20} />
+                                        </div>
+                                        <h4 className="font-bold text-rose-700 dark:text-rose-400">Solicitar cancelación</h4>
+                                        <p className="text-sm text-rose-500/70 dark:text-rose-400/60 mt-1">
+                                            {cancelLoading ? "Enviando solicitud..." : "Solicitá la baja del débito automático."}
+                                        </p>
+                                    </button>
+                                </div>
+                            </>
+                        )}
                     </div>
                 )}
 
-                {!loadingInitial && !existingAdhesion.pending && (
+                {!loadingInitial && !existingAdhesion.pending && (!existingAdhesion.approved || showChangeForm) && (
                     <>
                         {/* Step 1: Selección de Medio */}
                         {step === 1 && (
@@ -270,7 +334,15 @@ export default function AdhesionDebitoPage() {
                             <div className="space-y-4 animate-slide-up">
                                 <div className="space-y-2">
                                     <h3 className="text-lg font-black text-slate-900 dark:text-white tracking-tight">Términos y Condiciones</h3>
-                                    <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 text-slate-600 dark:text-slate-400 text-[12px] leading-relaxed max-h-[180px] overflow-y-auto font-medium space-y-3 custom-scrollbar">
+                                    <div className="relative">
+                                    <div
+                                        className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 text-slate-600 dark:text-slate-400 text-[12px] leading-relaxed max-h-[220px] overflow-y-auto font-medium space-y-3 custom-scrollbar"
+                                        onScroll={(e) => {
+                                            const el = e.currentTarget;
+                                            const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 10;
+                                            if (atBottom) setHasScrolledTerms(true);
+                                        }}
+                                    >
                                         <p className="font-bold text-slate-900 dark:text-slate-200">Reconozco y acepto en forma irrevocable los términos y condiciones de adhesión débito automático en cuenta bancaria o tarjeta de crédito de las CUOTAS DE MATRICULAS MENSUALES del COLEGIO DE ABOGADOS DE SANTA FE DE LA PRIMERA CIRCUNSCRIPCIÓN (en adelante "CASF"), devengadas por mi condición de MATRICULADO, que se regirá por las siguientes condiciones y declaraciones:</p>
                                         <ul className="list-disc pl-5 space-y-2">
                                             <li>Autorizo a que los importes de "las cuotas" se debiten el día de su vencimiento y en la medida que las mismas sean remitidas por el "CASF", de la cuenta bancaria y/o tarjeta de crédito denunciada ante el "CASF" a través del sistema SGO.</li>
@@ -288,17 +360,47 @@ export default function AdhesionDebitoPage() {
                                         </ul>
                                         <p>La presente autorización tiene validez desde la fecha de la aceptación de los presentes términos y condiciones a través de firma electrónica por el Sistema SGO, hasta tanto medie comunicación fehaciente de mi parte de revocarla.</p>
                                     </div>
+                                    {/* Indicador de scroll */}
+                                    {!hasScrolledTerms && (
+                                        <div className="absolute bottom-0 left-0 right-0 h-12 pointer-events-none rounded-b-2xl bg-gradient-to-t from-slate-100 dark:from-slate-900 to-transparent flex items-end justify-center pb-2">
+                                            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 flex items-center gap-1 animate-bounce">
+                                                <ChevronRight size={12} className="rotate-90" /> Desplazá para leer todo
+                                            </span>
+                                        </div>
+                                    )}
+                                    </div>
                                 </div>
 
-                                <label className="flex items-center gap-4 p-4 rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 cursor-pointer group transition-all">
+                                <label
+                                    className={`flex items-center gap-4 p-4 rounded-xl border transition-all ${
+                                        hasScrolledTerms
+                                            ? "border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 cursor-pointer"
+                                            : "border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 cursor-not-allowed opacity-60"
+                                    }`}
+                                    onClick={(e) => {
+                                        if (!hasScrolledTerms) {
+                                            e.preventDefault();
+                                            setShowScrollWarning(true);
+                                        }
+                                    }}
+                                >
                                     <input
                                         type="checkbox"
                                         checked={terminosAceptados}
-                                        onChange={(e) => setTerminosAceptados(e.target.checked)}
-                                        className="w-5 h-5 rounded-lg border-2 border-slate-200 text-[#063f68] focus:ring-[#063f68]"
+                                        disabled={!hasScrolledTerms}
+                                        onChange={(e) => {
+                                            if (hasScrolledTerms) setTerminosAceptados(e.target.checked);
+                                        }}
+                                        className="w-5 h-5 rounded-lg border-2 border-slate-200 text-[#063f68] focus:ring-[#063f68] disabled:cursor-not-allowed"
                                     />
                                     <span className="text-[13px] font-bold text-slate-700 dark:text-slate-300">He leído y acepto los términos y condiciones irrevocablemente</span>
                                 </label>
+                                {showScrollWarning && !hasScrolledTerms && (
+                                    <p className="text-[12px] text-amber-600 dark:text-amber-400 font-semibold flex items-center gap-2">
+                                        <AlertCircle size={14} />
+                                        Debés leer todos los términos antes de aceptar.
+                                    </p>
+                                )}
 
                                 <div className="flex justify-between pt-4">
                                     <button

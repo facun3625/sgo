@@ -169,21 +169,22 @@ export default function NotificacionesBell() {
                                         </div>
                                     </div>
                                 );
-                                const isTramite = n.tipo === "tramite";
                                 const handleClick = () => {
                                     if (!n.leida) marcarLeida(n.id);
                                     setOpen(false);
                                 };
-                                return isComunicado ? (
-                                    <Link key={n.id} href="/dashboard/comunicados" onClick={handleClick}>
-                                        {inner}
-                                    </Link>
-                                ) : isTramite ? (
-                                    <Link key={n.id} href="/dashboard/solicitudes/enviadas" onClick={handleClick}>
+                                const linkHref =
+                                    n.tipo === "comunicado" ? "/dashboard/comunicados" :
+                                    n.tipo === "tramite" ? "/dashboard/solicitudes/enviadas" :
+                                    n.tipo === "debito" ? "/dashboard/solicitudes/adhesion-debito" :
+                                    n.tipo === "admin_debito" ? "/admin/adhesiones" :
+                                    null;
+                                return linkHref ? (
+                                    <Link key={n.id} href={linkHref} onClick={handleClick}>
                                         {inner}
                                     </Link>
                                 ) : (
-                                    <div key={n.id}>{inner}</div>
+                                    <div key={n.id} onClick={handleClick} className="cursor-pointer">{inner}</div>
                                 );
                             })
                         )}

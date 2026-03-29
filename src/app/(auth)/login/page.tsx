@@ -129,10 +129,11 @@ export default function LoginPage() {
                 </div>
 
                 {/* Título */}
-                <div className="text-center mb-10">
-                    <h1 className="text-[28px] font-medium text-gray-800 mb-2">Acceder</h1>
+                <div className="mb-9">
+                    <p className="text-[11px] font-bold text-[#063f68]/60 uppercase tracking-[0.2em] mb-2">Bienvenido</p>
+                    <h1 className="text-[28px] font-medium text-gray-800 leading-tight mb-1">Ingresá a tu cuenta</h1>
                     <p className="text-gray-400 text-[13px]">
-                        ¿Todavía no tenés usuario?{" "}
+                        ¿No tenés usuario?{" "}
                         <Link href="/register" className="text-[#063f68] font-semibold hover:underline underline-offset-2">
                             Registrate
                         </Link>
@@ -148,30 +149,39 @@ export default function LoginPage() {
 
                 {/* Formulario */}
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    <input
+                    <div className="space-y-1.5">
+                        <label htmlFor="expediente" className="text-[12px] font-semibold text-gray-500 uppercase tracking-wider">
+                            Nº de Expediente / Matrícula
+                        </label>
+                        <input
                         id="expediente"
                         type="text"
                         value={expediente}
                         onChange={(e) => setExpediente(e.target.value)}
-                        placeholder="Expediente"
+                        placeholder="Ej: 1234"
                         required
                         className="w-full px-5 py-4 rounded-2xl border border-gray-200 text-gray-800 text-[14px]
-                       placeholder:text-gray-400 bg-white
-                       focus:outline-none focus:border-[#063f68] focus:ring-1 focus:ring-[#063f68]/20
+                       placeholder:text-gray-300 bg-gray-50/50
+                       focus:outline-none focus:border-[#063f68] focus:ring-2 focus:ring-[#063f68]/10 focus:bg-white
                        transition-all duration-200"
                     />
+                    </div>
 
+                    <div className="space-y-1.5">
+                        <label htmlFor="password" className="text-[12px] font-semibold text-gray-500 uppercase tracking-wider">
+                            Contraseña
+                        </label>
                     <div className="relative">
                         <input
                             id="password"
                             type={showPassword ? "text" : "password"}
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            placeholder="Contraseña"
+                            placeholder="••••••••"
                             required
                             className="w-full px-5 py-4 rounded-2xl border border-gray-200 text-gray-800 text-[14px]
-                         placeholder:text-gray-400 bg-white
-                         focus:outline-none focus:border-[#063f68] focus:ring-1 focus:ring-[#063f68]/20
+                         placeholder:text-gray-300 bg-gray-50/50
+                         focus:outline-none focus:border-[#063f68] focus:ring-2 focus:ring-[#063f68]/10 focus:bg-white
                          transition-all duration-200 pr-14"
                         />
                         <button
@@ -191,6 +201,7 @@ export default function LoginPage() {
                                 </svg>
                             )}
                         </button>
+                    </div>
                     </div>
 
                     <div className="flex items-center justify-between py-1">

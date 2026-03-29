@@ -52,6 +52,29 @@ export async function POST(request: Request) {
             }
         });
 
+        // Notificar a admins
+        const admins = await prisma.user.findMany({
+            where: { accessLevel: { in: ["admin", "superadmin"] } },
+            select: { expediente: true },
+        });
+
+        if (admins.length > 0) {
+            const user = await prisma.user.findUnique({
+                where: { expediente: session.expediente },
+                select: { nombre: true, apellido: true },
+            });
+            const nombre = user ? `${user.apellido}, ${user.nombre}` : `Mat. ${session.expediente}`;
+
+            await prisma.notificacion.createMany({
+                data: admins.map((a) => ({
+                    expediente: a.expediente!,
+                    titulo: "Nueva Adhesión a Débito Automático",
+                    mensaje: `${nombre} (Mat. ${session.expediente}) solicita adhesión a débito automático por ${tipoAdhesion}.`,
+                    tipo: "admin_debito",
+                })),
+            });
+        }
+
         return NextResponse.json(nuevaAdhesion);
     } catch (error) {
         console.error("CRITICAL API ERROR:", error);

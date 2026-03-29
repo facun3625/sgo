@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "Read(//Applications/**)",
-      "Bash(curl -s -X POST http://localhost:3000/api/user/chat -H \"Content-Type: application/json\" -d '{\"\"message\"\":\"\"tengo deuda?\"\",\"\"history\"\":[]}')"
+      "Bash(curl -s -X POST http://localhost:3000/api/user/chat -H \"Content-Type: application/json\" -d '{\"\"message\"\":\"\"tengo deuda?\"\",\"\"history\"\":[]}')",
+      "Bash(ssh -p 5341 root@149.50.148.28 \"cat /root/deploy.sh\")"
+    ],
+    "additionalDirectories": [
+      "/Users/facundoarteagasola/Documents/sgo/src/app/api/admin/adhesiones"
     ]
   }
 }

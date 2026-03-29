@@ -203,6 +203,10 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
                         <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">Matrícula {user.expediente}</p>
                     </div>
                 </Link>
+                <a href="https://kubbo.com.ar" target="_blank" rel="noopener noreferrer"
+                    className="block mt-3 text-center text-[9px] text-slate-300 dark:text-slate-600 hover:text-slate-400 dark:hover:text-slate-500 transition-colors">
+                    Desarrollado por <span style={{ color: "#3EDE7C" }}>kubbo</span>
+                </a>
             </div>
         </aside>
     );

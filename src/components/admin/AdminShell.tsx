@@ -26,6 +26,7 @@ import {
     PenLine,
     Scale,
     ClipboardList,
+    Banknote,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { SessionPayload } from "@/lib/auth";
@@ -53,6 +54,7 @@ const navItems = [
     { href: "/admin/mensajes", label: "Mensajes Privados", icon: Mail, color: "text-sky-500" },
     { href: "/admin/envios", label: "Envíos Masivos", icon: Send, color: "text-amber-500" },
     { href: "/admin/firmas", label: "Firmas de Autoridades", icon: PenLine, color: "text-indigo-500" },
+    { href: "/admin/adhesiones", label: "Débito Automático", icon: Banknote, color: "text-emerald-500" },
     { href: "/admin/tribunal-etica", label: "Tribunal de Ética", icon: Scale, color: "text-rose-500" },
     { href: "/admin/repositorio", label: "Repositorio de Archivos", icon: FolderOpen, color: "text-indigo-500" },
 ];
@@ -66,7 +68,7 @@ export default function AdminShell({ session, image, children }: AdminShellProps
     const { resolvedTheme, setTheme } = useTheme();
     const profileRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => setMounted(true), []);
+    useEffect(() => { setMounted(true); setTheme("dark"); }, [setTheme]);
 
     useEffect(() => {
         function handleClickOutside(e: MouseEvent) {
@@ -140,6 +142,10 @@ export default function AdminShell({ session, image, children }: AdminShellProps
                             <p className="text-slate-400 dark:text-slate-500 text-[9px] uppercase tracking-wider">Superadmin</p>
                         </div>
                     </div>
+                    <a href="https://kubbo.com.ar" target="_blank" rel="noopener noreferrer"
+                        className="block mt-3 text-center text-[9px] text-slate-300 dark:text-slate-600 hover:text-slate-400 dark:hover:text-slate-500 transition-colors">
+                        Desarrollado por <span style={{ color: "#3EDE7C" }}>kubbo</span>
+                    </a>
                 </div>
             </aside>
 

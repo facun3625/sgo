@@ -7,39 +7,64 @@ export default function AuthLayout({
 }) {
     return (
         <div className="min-h-screen flex bg-white">
-            {/* Panel izquierdo - Branding (1/3) */}
-            <div className="hidden md:flex md:w-[40%] bg-gradient-to-b from-[#063f68] to-[#0a527e] relative flex-col items-center justify-center p-12 overflow-hidden">
-                {/* Efecto de luz sutil */}
+            {/* Panel izquierdo */}
+            <div className="hidden md:flex md:w-[42%] bg-[#052e4a] relative flex-col items-center justify-center p-12 overflow-hidden">
+
+                {/* Fondo con patrón geométrico sutil */}
                 <div className="absolute inset-0">
-                    <div className="absolute top-0 right-0 w-3/4 h-1/2 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.07)_0%,transparent_60%)]" />
-                    <div className="absolute bottom-0 left-0 w-2/3 h-1/3 bg-[radial-gradient(ellipse_at_bottom_left,rgba(255,255,255,0.04)_0%,transparent_60%)]" />
+                    <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.06)_0%,transparent_55%)]" />
+                    <div className="absolute bottom-0 left-0 w-full h-1/2 bg-[radial-gradient(ellipse_at_bottom_left,rgba(6,63,104,0.8)_0%,transparent_70%)]" />
+                    {/* Círculos decorativos */}
+                    <div className="absolute -top-32 -right-32 w-[420px] h-[420px] rounded-full border border-white/[0.04]" />
+                    <div className="absolute -top-16 -right-16 w-[280px] h-[280px] rounded-full border border-white/[0.06]" />
+                    <div className="absolute -bottom-40 -left-40 w-[500px] h-[500px] rounded-full border border-white/[0.03]" />
+                    <div className="absolute bottom-32 right-0 w-[180px] h-[180px] rounded-full border border-white/[0.05]" />
                 </div>
 
-                {/* Logo y texto */}
+                {/* Logo y título */}
                 <div className="relative z-10 flex flex-col items-center text-center">
-                    <Image
-                        src="/sgo.png"
-                        alt="SGO Logo"
-                        width={150}
-                        height={150}
-                        className="mb-8 drop-shadow-[0_4px_20px_rgba(0,0,0,0.3)]"
-                        priority
-                    />
-                    <h1 className="text-white text-3xl font-semibold tracking-tight">
-                        SGO - CASF
+                    <div className="w-[120px] h-[120px] flex items-center justify-center mb-6">
+                        <Image
+                            src="/sgo.png"
+                            alt="CASF"
+                            width={120}
+                            height={120}
+                            className="drop-shadow-[0_8px_30px_rgba(0,0,0,0.4)]"
+                            priority
+                        />
+                    </div>
+                    <h1 className="text-white text-2xl font-bold tracking-tight mb-1">
+                        CASF
                     </h1>
-                    <div className="w-16 h-[2px] bg-white/25 rounded-full mt-4" />
+                    <p className="text-white/50 text-[11px] font-semibold uppercase tracking-[0.2em]">
+                        Colegio de Abogados de Santa Fe
+                    </p>
+                    <div className="w-12 h-px bg-white/20 rounded-full mt-5 mb-5" />
+                    <p className="text-white/40 text-[12px] leading-relaxed max-w-[200px]">
+                        Sistema de Gestión Operativa
+                    </p>
                 </div>
 
                 {/* Footer */}
-                <div className="absolute bottom-6 text-white/30 text-xs">
-                    © {new Date().getFullYear()} SGO - CASF
+                <div className="absolute bottom-6 z-10 text-white/20 text-[11px]">
+                    © {new Date().getFullYear()} SGO · CASF · 1ª Circunscripción
                 </div>
             </div>
 
-            {/* Panel derecho - Contenido (2/3) */}
-            <div className="flex-1 flex items-center justify-center p-8 sm:p-12">
-                <div className="w-full max-w-[400px]">{children}</div>
+            {/* Panel derecho */}
+            <div className="flex-1 relative flex items-start md:items-center justify-center px-5 pt-10 pb-8 sm:p-12 bg-white overflow-hidden">
+                {/* Círculos decorativos grises - solo desktop */}
+                <div className="hidden md:block absolute -top-24 -right-24 w-[320px] h-[320px] rounded-full border border-gray-100" />
+                <div className="hidden md:block absolute -top-8 -right-8 w-[200px] h-[200px] rounded-full border border-gray-100" />
+                <div className="hidden md:block absolute -bottom-32 -right-32 w-[400px] h-[400px] rounded-full border border-gray-100" />
+                <div className="hidden md:block absolute -bottom-12 -right-12 w-[220px] h-[220px] rounded-full border border-gray-100" />
+                <div className="w-full max-w-[400px] mx-auto relative z-10">
+                    {children}
+                    <a href="https://kubbo.com.ar" target="_blank" rel="noopener noreferrer"
+                        className="block mt-10 text-center text-[10px] text-slate-300 hover:text-slate-400 transition-colors">
+                        Desarrollado por <span style={{ color: "#3EDE7C" }}>kubbo</span>
+                    </a>
+                </div>
             </div>
         </div>
     );

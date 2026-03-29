@@ -77,7 +77,7 @@ export default async function CredencialPage() {
 
                             {/* Columna del Carnet (Frente) */}
                             <div className="flex-1 w-full max-w-[450px]">
-                                <div id="digital-credential-front" className="relative aspect-[1.58/1] w-full bg-white rounded-[20px] shadow-xl border border-[#e2e8f0] overflow-hidden flex flex-col p-6 pointer-events-none select-none">
+                                <div id="digital-credential-front" className="relative w-full bg-white rounded-[20px] shadow-xl border border-[#e2e8f0] overflow-hidden flex flex-col p-4 sm:p-6 md:aspect-[1.58/1] pointer-events-none select-none">
 
                                     {/* Overlay suspensión */}
                                     {isSuspended && (
@@ -183,7 +183,7 @@ export default async function CredencialPage() {
 
                             {/* Columna del Carnet (Dorso) */}
                             <div className="flex-1 w-full max-w-[450px]">
-                                <div id="digital-credential-back" className="relative aspect-[1.58/1] w-full bg-white rounded-[20px] shadow-xl border border-[#e2e8f0] overflow-hidden flex flex-col p-8 pointer-events-none select-none">
+                                <div id="digital-credential-back" className="relative w-full bg-white rounded-[20px] shadow-xl border border-[#e2e8f0] overflow-hidden flex flex-col p-4 sm:p-8 md:aspect-[1.58/1] pointer-events-none select-none">
                                     <div className="flex-1">
                                         <p className="text-[#475569] text-[11px] leading-relaxed italic font-medium mb-10 text-center border-b border-[#f1f5f9] pb-6">
                                             "En el ejercicio de su profesión, el abogado está equiparado a los magistrados judiciales en cuanto al respeto y consideración que debe guardársele."
