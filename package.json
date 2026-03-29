@@ -9,9 +9,11 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@prisma/adapter-pg": "^7.4.2",
     "@prisma/client": "^7.4.2",
     "bcryptjs": "^3.0.3",
+    "groq-sdk": "^1.1.2",
     "html2canvas": "^1.4.1",
     "html2canvas-pro": "^2.0.2",
     "jose": "^6.1.3",

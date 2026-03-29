@@ -6,6 +6,7 @@ import TopNav from "./TopNav";
 import Link from "next/link";
 import { X, Newspaper, ArrowRight } from "lucide-react";
 import { ToastProvider } from "@/components/ui/Toast";
+import ChatBot from "./ChatBot";
 
 interface Noticia {
     id: number;
@@ -68,6 +69,8 @@ export default function DashboardShell({ user, children }: DashboardShellProps) 
                     {children}
                 </main>
             </div>
+
+            <ChatBot />
 
             {/* Popup noticia destacada */}
             {popup && (

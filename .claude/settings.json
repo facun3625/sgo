@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Read(//Applications/**)"
+      "Read(//Applications/**)",
+      "Bash(curl -s -X POST http://localhost:3000/api/user/chat -H \"Content-Type: application/json\" -d '{\"\"message\"\":\"\"tengo deuda?\"\",\"\"history\"\":[]}')"
     ]
   }
 }
