@@ -6,7 +6,7 @@ function isAdmin(lvl: string) {
     return lvl === "superadmin" || lvl === "admin";
 }
 
-type TipoFinanciero = "deudas" | "matriculaAnual" | "matriculaMensual" | "pagoAnual";
+type TipoFinanciero = "deudas" | "pagoAnual";
 
 export async function POST(req: NextRequest) {
     const session = await getSession();
@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     if (!tipo || !Array.isArray(registros) || registros.length === 0)
         return NextResponse.json({ error: "Tipo o registros inválidos" }, { status: 400 });
 
-    const tiposValidos: TipoFinanciero[] = ["deudas", "matriculaAnual", "matriculaMensual", "pagoAnual"];
+    const tiposValidos: TipoFinanciero[] = ["deudas", "pagoAnual"];
     if (!tiposValidos.includes(tipo))
         return NextResponse.json({ error: "Tipo inválido" }, { status: 400 });
 
@@ -26,7 +26,6 @@ export async function POST(req: NextRequest) {
     if (expedientes.length === 0)
         return NextResponse.json({ error: "Sin expedientes válidos" }, { status: 400 });
 
-    // Eliminar registros existentes para estos expedientes y reemplazar
     if (tipo === "deudas") {
         await prisma.deuda.deleteMany({ where: { expediente: { in: expedientes } } });
         const data = registros
@@ -34,26 +33,6 @@ export async function POST(req: NextRequest) {
             .map(r => ({ expediente: String(r.expediente).trim(), monto: parseFloat(r.monto) }))
             .filter(r => !isNaN(r.monto));
         await prisma.deuda.createMany({ data });
-        return NextResponse.json({ actualizados: data.length });
-    }
-
-    if (tipo === "matriculaAnual") {
-        await prisma.matriculaAnual.deleteMany({ where: { expediente: { in: expedientes } } });
-        const data = registros
-            .filter(r => r.expediente && r.monto)
-            .map(r => ({ expediente: String(r.expediente).trim(), monto: parseFloat(r.monto) }))
-            .filter(r => !isNaN(r.monto));
-        await prisma.matriculaAnual.createMany({ data });
-        return NextResponse.json({ actualizados: data.length });
-    }
-
-    if (tipo === "matriculaMensual") {
-        await prisma.matriculaMensual.deleteMany({ where: { expediente: { in: expedientes } } });
-        const data = registros
-            .filter(r => r.expediente && r.monto)
-            .map(r => ({ expediente: String(r.expediente).trim(), monto: parseFloat(r.monto) }))
-            .filter(r => !isNaN(r.monto));
-        await prisma.matriculaMensual.createMany({ data });
         return NextResponse.json({ actualizados: data.length });
     }
 

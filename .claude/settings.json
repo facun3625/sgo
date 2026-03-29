@@ -4,7 +4,11 @@
       "Read(//Applications/**)",
       "Bash(curl -s -X POST http://localhost:3000/api/user/chat -H \"Content-Type: application/json\" -d '{\"\"message\"\":\"\"tengo deuda?\"\",\"\"history\"\":[]}')",
       "Bash(ssh -p 5341 root@149.50.148.28 \"cat /root/deploy.sh\")",
-      "Bash(npx prisma:*)"
+      "Bash(npx prisma:*)",
+      "Bash(git add:*)",
+      "Bash(git -C /Users/facundoarteagasola/Documents/sgo status)",
+      "Bash(ssh -p 5341 -i ~/.ssh/id_rsa root@149.50.148.28 \"pm2 logs sgo --lines 30 --nostream\")",
+      "Bash(ssh -p 5341 -i ~/.ssh/id_ed25519 root@149.50.148.28 \"pm2 logs sgo --lines 30 --nostream\")"
     ],
     "additionalDirectories": [
       "/Users/facundoarteagasola/Documents/sgo/src/app/api/admin/adhesiones",

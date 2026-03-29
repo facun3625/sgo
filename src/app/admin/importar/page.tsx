@@ -3,23 +3,13 @@
 import { useState, useRef } from "react";
 import { Upload, UserPlus, DollarSign, FileText, CheckCircle2, AlertCircle, X, ChevronDown, Loader2 } from "lucide-react";
 
-type TipoFinanciero = "deudas" | "matriculaAnual" | "matriculaMensual" | "pagoAnual";
+type TipoFinanciero = "deudas" | "pagoAnual";
 
 const FINANCIERO_CONFIG: Record<TipoFinanciero, { label: string; columnas: string[]; ejemplo: string }> = {
     deudas: {
         label: "Deudas",
         columnas: ["expediente", "monto"],
         ejemplo: "expediente,monto\n564,15000\n792,8500",
-    },
-    matriculaAnual: {
-        label: "Matrícula Anual",
-        columnas: ["expediente", "monto"],
-        ejemplo: "expediente,monto\n564,48000\n792,48000",
-    },
-    matriculaMensual: {
-        label: "Matrícula Mensual",
-        columnas: ["expediente", "monto"],
-        ejemplo: "expediente,monto\n564,4500\n792,4500",
     },
     pagoAnual: {
         label: "Pago Anual",
@@ -47,8 +37,6 @@ const PLANTILLA_CONTENT: Record<string, { filename: string; content: string }> =
         content: "expediente,cod,apellido,nombre,documento,tomo,folio,domicilioLegal,postalLegal,localidadLegal,telefonosLegal,emailLegal,domicilioReal,postalReal,localidadReal,provinciaReal,telefonosReal,emailReal,codMovilLegal,movilLegal,codMovilReal,movilReal,fechaMatriculacion\n564,564,GARCIA,JUAN,12345678,1,100,AV SAN MARTIN 123,3000,SANTA FE,0342-123456,juan@email.com,,,,,,,,,,,",
     },
     deudas: { filename: "plantilla_deudas.csv", content: "expediente,monto\n564,15000\n792,8500" },
-    matriculaAnual: { filename: "plantilla_matricula_anual.csv", content: "expediente,monto\n564,48000\n792,48000" },
-    matriculaMensual: { filename: "plantilla_matricula_mensual.csv", content: "expediente,monto\n564,4500\n792,4500" },
     pagoAnual: { filename: "plantilla_pago_anual.csv", content: "expediente\n564\n792" },
 };
 

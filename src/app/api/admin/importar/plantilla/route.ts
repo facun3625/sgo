@@ -14,14 +14,6 @@ const PLANTILLAS: Record<string, { filename: string; content: string }> = {
         filename: "plantilla_deudas.csv",
         content: "expediente,monto\n564,15000\n792,8500"
     },
-    matriculaAnual: {
-        filename: "plantilla_matricula_anual.csv",
-        content: "expediente,monto\n564,48000\n792,48000"
-    },
-    matriculaMensual: {
-        filename: "plantilla_matricula_mensual.csv",
-        content: "expediente,monto\n564,4500\n792,4500"
-    },
     pagoAnual: {
         filename: "plantilla_pago_anual.csv",
         content: "expediente\n564\n792"
