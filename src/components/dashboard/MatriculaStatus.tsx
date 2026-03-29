@@ -30,6 +30,7 @@ interface CuotaMensualData {
 interface PagosData {
     deudas: Concepto[];
     cuotaActual: CuotaMensualData | null;
+    historialCuotas: CuotaMensualData[];
     montoAnual: number;
     hasDebitoAutomatico: boolean;
     hasDebitoEnTramite: boolean;
@@ -281,8 +282,19 @@ export default function MatriculaStatus() {
                 </div>
 
                 <div className="bg-white dark:bg-slate-900 rounded-[32px] border border-slate-100 dark:border-slate-800 overflow-hidden">
-                    <ConceptItem label="Matrícula Febrero 2026" date="10/02/2026" amount="4.500" status="paid" />
-                    <ConceptItem label="Matrícula Enero 2026" date="10/01/2026" amount="4.500" status="paid" isLast />
+                    {data?.historialCuotas && data.historialCuotas.length > 0 ? (
+                        data.historialCuotas.map((c, i) => (
+                            <ConceptItem
+                                key={c.id}
+                                label={`Cuota ${formatPeriodo(c.periodo)}`}
+                                amount={c.monto.toLocaleString("es-AR")}
+                                status={c.estado === "pagado" ? "paid" : "pending"}
+                                isLast={i === data.historialCuotas.length - 1}
+                            />
+                        ))
+                    ) : (
+                        <div className="p-6 text-[13px] text-slate-400 text-center">Sin historial de cuotas</div>
+                    )}
                 </div>
             </div>
 
@@ -300,21 +312,21 @@ export default function MatriculaStatus() {
     );
 }
 
-function ConceptItem({ label, date, amount, status, isLast }: { label: string; date: string; amount: string; status: "paid" | "pending"; isLast?: boolean }) {
+function ConceptItem({ label, amount, status, isLast }: { label: string; amount: string; status: "paid" | "pending"; isLast?: boolean }) {
+    const paid = status === "paid";
     return (
         <div className={`p-6 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors ${!isLast ? 'border-b border-slate-50 dark:border-slate-800' : ''}`}>
             <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-emerald-500">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${paid ? "bg-slate-50 dark:bg-slate-800 text-emerald-500" : "bg-amber-50 dark:bg-amber-900/20 text-amber-500"}`}>
                     <CheckCircle2 size={18} />
                 </div>
-                <div>
-                    <h5 className="text-[13px] font-bold text-black dark:text-white">{label}</h5>
-                    <p className="text-[11px] text-slate-400 font-medium">{date}</p>
-                </div>
+                <h5 className="text-[13px] font-bold text-black dark:text-white">{label}</h5>
             </div>
             <div className="text-right">
                 <p className="text-[14px] font-black text-black dark:text-white">${amount}</p>
-                <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">Pagado</p>
+                <p className={`text-[10px] font-bold uppercase tracking-widest ${paid ? "text-emerald-500" : "text-amber-500"}`}>
+                    {paid ? "Pagado" : "Pendiente"}
+                </p>
             </div>
         </div>
     );

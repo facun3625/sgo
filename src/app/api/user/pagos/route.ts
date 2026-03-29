@@ -39,8 +39,14 @@ export async function GET() {
             prisma.adhesionDebito.findFirst({
                 where: { expediente, estado: "pendiente", tipoAdhesion: "CANCELACION" }
             }),
-            prisma.pagoAnual.findFirst({ where: { expediente } })
+            prisma.pagoAnual.findFirst({ where: { expediente } }),
         ]);
+
+        const historialCuotas = await prisma.cuotaMensual.findMany({
+            where: { expediente },
+            orderBy: { periodo: "desc" },
+            take: 12,
+        });
 
         // Débito activo solo si hay adhesión aprobada y no hay cancelación aprobada
         const debitoActivo = !!debitoAprobado && !cancelacionAprobada;
@@ -52,6 +58,7 @@ export async function GET() {
         return NextResponse.json({
             deudas,
             cuotaActual,
+            historialCuotas,
             montoAnual,
             hasDebitoAutomatico: debitoActivo,
             hasDebitoEnTramite: debitoPendiente,
