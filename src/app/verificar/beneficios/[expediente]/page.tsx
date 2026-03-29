@@ -3,11 +3,12 @@ import { notFound } from "next/navigation";
 import { CheckCircle2, XCircle, ShieldCheck, CreditCard } from "lucide-react";
 import Image from "next/image";
 
-export default async function VerificarBeneficiosPage({ params }: { params: { expediente: string } }) {
-    const expediente = decodeURIComponent(params.expediente);
+export default async function VerificarBeneficiosPage({ params }: { params: Promise<{ expediente: string }> }) {
+    const { expediente: rawExpediente } = await params;
+    const expediente = decodeURIComponent(rawExpediente);
 
     const [user, deuda] = await Promise.all([
-        prisma.user.findUnique({ where: { expediente } }),
+        prisma.user.findFirst({ where: { expediente } }),
         prisma.deuda.findFirst({ where: { expediente } }),
     ]);
 

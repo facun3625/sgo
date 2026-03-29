@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import {
     ChevronLeft,
     CreditCard,
@@ -32,7 +33,10 @@ export default async function BeneficiosPage() {
 
     const isBlocked = !!hasDebt;
 
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+    const hdrs = await headers();
+    const host = hdrs.get("host") || "localhost:3000";
+    const proto = hdrs.get("x-forwarded-proto") || "http";
+    const baseUrl = `${proto}://${host}`;
     const verificationUrl = `${baseUrl}/verificar/beneficios/${session.expediente}`;
 
     return (

@@ -201,7 +201,7 @@ export default function ProfileForm({ initialUser }: ProfileFormProps) {
                         ref={signatureInputRef}
                         onChange={handleSignatureUpload}
                         className="hidden"
-                        accept="image/png"
+                        accept="image/*"
                     />
                 </div>
 
@@ -209,9 +209,9 @@ export default function ProfileForm({ initialUser }: ProfileFormProps) {
                     <h3 className="text-lg font-bold text-black dark:text-white tracking-tight mb-1">
                         Tu Firma Digital
                     </h3>
-                    <p className="text-[12px] text-slate-500 dark:text-slate-400 font-medium mb-4">Sube tu firma en formato PNG</p>
+                    <p className="text-[12px] text-slate-500 dark:text-slate-400 font-medium mb-4">Sube tu firma en formato de imagen</p>
                     <p className="text-[11px] text-slate-400 dark:text-slate-500 max-w-sm leading-relaxed">
-                        Esta firma aparecerá en tu credencial digital. Se recomienda un archivo PNG con fondo transparente o blanco.
+                        Esta firma aparecerá en tu credencial digital. Se recomienda un archivo PNG o JPG con fondo transparente o blanco.
                     </p>
                 </div>
             </div>

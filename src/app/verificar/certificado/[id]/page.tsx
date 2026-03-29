@@ -3,8 +3,9 @@ import { notFound } from "next/navigation";
 import { CheckCircle2, ShieldCheck, Calendar, FileText, Building2 } from "lucide-react";
 import Image from "next/image";
 
-export default async function VerificarCertificadoPage({ params }: { params: { id: string } }) {
-    const id = parseInt(params.id);
+export default async function VerificarCertificadoPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id: rawId } = await params;
+    const id = parseInt(rawId);
     if (isNaN(id)) notFound();
 
     const solicitud = await prisma.solicitud.findUnique({ where: { id } });
