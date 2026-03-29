@@ -151,7 +151,7 @@ export default async function BeneficiosPage() {
                                             </div>
                                         )}
                                         <div className="bg-white/10 rounded-lg p-0.5">
-                                            <QRComponent value={verificationUrl} size={36} />
+                                            <QRComponent value={verificationUrl} size={56} />
                                         </div>
                                     </div>
                                 </div>
