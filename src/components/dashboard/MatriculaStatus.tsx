@@ -19,14 +19,30 @@ interface Concepto {
     monto: number;
 }
 
+interface CuotaMensualData {
+    id: number;
+    expediente: string;
+    periodo: string;
+    monto: number;
+    estado: string;
+}
+
 interface PagosData {
     deudas: Concepto[];
-    matriculaAnual: Concepto[];
-    matriculaMensual: Concepto[];
+    cuotaActual: CuotaMensualData | null;
+    montoAnual: number;
     hasDebitoAutomatico: boolean;
     hasDebitoEnTramite: boolean;
     hasPagoAnualActivo: boolean;
+    hasCancelacionPendiente: boolean;
     totalDeuda: number;
+}
+
+function formatPeriodo(periodo: string): string {
+    const [year, month] = periodo.split("-");
+    const date = new Date(parseInt(year), parseInt(month) - 1, 1);
+    return date.toLocaleDateString("es-AR", { month: "long", year: "numeric" })
+        .replace(/^\w/, (c) => c.toUpperCase());
 }
 
 export default function MatriculaStatus() {
@@ -59,12 +75,18 @@ export default function MatriculaStatus() {
         );
     }
 
-    // Si no hay datos (base de datos vacía), mostramos estados por defecto / mock amigable
     const hasDeuda = data?.deudas && data.deudas.length > 0;
     const totalDeuda = data?.totalDeuda || 0;
-    const mesActual = "Marzo 2026";
-    const montoMensual = data?.matriculaMensual?.[0]?.monto || "4.500";
-    const montoAnual = data?.matriculaAnual?.[0]?.monto || "48.000";
+    const montoAnual = data?.montoAnual ?? 48000;
+
+    // Annual payment card only shows in Jan (0), Feb (1), Mar (2)
+    const currentMonth = new Date().getMonth();
+    const showAnualCard = currentMonth <= 2;
+
+    // Período label for monthly card
+    const periodoLabel = data?.cuotaActual?.periodo
+        ? formatPeriodo(data.cuotaActual.periodo)
+        : formatPeriodo(new Date().toISOString().slice(0, 7));
 
     return (
         <div className="space-y-10 animate-fade-in pb-20">
@@ -124,46 +146,57 @@ export default function MatriculaStatus() {
             {/* 2. OPCIONES DE MATRÍCULA */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
-                {/* MATRÍCULA ANUAL */}
-                <div className="group relative overflow-hidden rounded-[32px] bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-8 transition-all hover:shadow-2xl hover:-translate-y-1">
-                    <div className="absolute top-0 right-0 w-40 h-40 bg-blue-500/5 rounded-full blur-3xl -mr-10 -mt-10"></div>
+                {/* MATRÍCULA ANUAL — solo Jan/Feb/Mar */}
+                {showAnualCard && (
+                    <div className="group relative overflow-hidden rounded-[32px] bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-8 transition-all hover:shadow-2xl hover:-translate-y-1">
+                        <div className="absolute top-0 right-0 w-40 h-40 bg-blue-500/5 rounded-full blur-3xl -mr-10 -mt-10"></div>
 
-                    <div className="relative z-10 space-y-6">
-                        <div className="flex items-center justify-between">
-                            <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 flex items-center justify-center">
-                                <Calendar size={24} />
-                            </div>
-                            <span className="px-3 py-1 bg-blue-50 dark:bg-blue-400/10 text-blue-600 dark:text-blue-400 rounded-lg text-[10px] font-bold uppercase tracking-widest border border-blue-100 dark:border-blue-900/50">
-                                Ciclo 2026
-                            </span>
-                        </div>
-
-                        <div>
-                            <h4 className="text-xl font-bold text-black dark:text-white tracking-tight">Matrícula Anual</h4>
-                            <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Aboná el año completo con bonificación exclusiva.</p>
-                        </div>
-
-                        <div className="flex items-end justify-between pt-4">
-                            <div>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Monto Final</p>
-                                <p className="text-3xl font-black text-black dark:text-white">${montoAnual.toLocaleString()}</p>
-                            </div>
-                            {data?.hasPagoAnualActivo ? (
-                                <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl border border-emerald-100 dark:border-emerald-500/20 font-bold text-[10px] uppercase tracking-widest">
-                                    <CheckCircle2 size={14} />
-                                    Abonado
+                        <div className="relative z-10 space-y-6">
+                            <div className="flex items-center justify-between">
+                                <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                                    <Calendar size={24} />
                                 </div>
-                            ) : (
-                                <button className="h-12 px-6 bg-[#063f68] dark:bg-blue-600 text-white rounded-xl font-bold text-xs hover:bg-[#0a4d7a] dark:hover:bg-blue-500 transition-all flex items-center gap-2">
-                                    Pagar Anual
-                                    <CreditCard size={16} />
-                                </button>
-                            )}
+                                <span className="px-3 py-1 bg-blue-50 dark:bg-blue-400/10 text-blue-600 dark:text-blue-400 rounded-lg text-[10px] font-bold uppercase tracking-widest border border-blue-100 dark:border-blue-900/50">
+                                    Ciclo 2026
+                                </span>
+                            </div>
+
+                            <div>
+                                <h4 className="text-xl font-bold text-black dark:text-white tracking-tight">Matrícula Anual</h4>
+                                <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Aboná el año completo con bonificación exclusiva.</p>
+                            </div>
+
+                            <div className="flex items-end justify-between pt-4">
+                                {data?.hasPagoAnualActivo || data?.hasDebitoAutomatico ? (
+                                    <div className="w-full flex items-center justify-between">
+                                        <div>
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Estado</p>
+                                            <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
+                                                {data?.hasPagoAnualActivo ? "Cubierto — Pago Anual" : "Cubierto — Débito Automático"}
+                                            </p>
+                                        </div>
+                                        <div className="w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 border border-emerald-100 dark:border-emerald-500/20 flex items-center justify-center">
+                                            <CheckCircle2 size={20} />
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <div>
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Monto Final</p>
+                                            <p className="text-3xl font-black text-black dark:text-white">${montoAnual.toLocaleString()}</p>
+                                        </div>
+                                        <button className="h-12 px-6 bg-[#063f68] dark:bg-blue-600 text-white rounded-xl font-bold text-xs hover:bg-[#0a4d7a] dark:hover:bg-blue-500 transition-all flex items-center gap-2">
+                                            Pagar Anual
+                                            <CreditCard size={16} />
+                                        </button>
+                                    </>
+                                )}
+                            </div>
                         </div>
                     </div>
-                </div>
+                )}
 
-                {/* MATRÍCULA MENSUAL */}
+                {/* CUOTA MENSUAL */}
                 <div className="group relative overflow-hidden rounded-[32px] bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-8 transition-all hover:shadow-2xl hover:-translate-y-1">
                     <div className="absolute top-0 right-0 w-40 h-40 bg-emerald-500/5 rounded-full blur-3xl -mr-10 -mt-10"></div>
 
@@ -178,39 +211,59 @@ export default function MatriculaStatus() {
                         </div>
 
                         <div>
-                            <h4 className="text-xl font-bold text-black dark:text-white tracking-tight">Matrícula Mensual</h4>
-                            <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Cuota correspondiente al período {mesActual}.</p>
+                            <h4 className="text-xl font-bold text-black dark:text-white tracking-tight">Cuota Mensual</h4>
+                            <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Cuota correspondiente al período {periodoLabel}.</p>
                         </div>
 
                         <div className="flex items-end justify-between pt-4">
-                            {data?.hasPagoAnualActivo || data?.hasDebitoAutomatico || data?.hasDebitoEnTramite ? (
+                            {data?.hasDebitoAutomatico ? (
                                 <div className="w-full flex items-center justify-between">
                                     <div>
                                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Estado de Pago</p>
-                                        <p className={`text-sm font-bold flex items-center gap-2 ${data?.hasDebitoEnTramite ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
-                                            {data?.hasPagoAnualActivo ? "Cubierto por Pago Anual" :
-                                                data?.hasDebitoAutomatico ? "Adherido al Débito Automático" :
-                                                    "Adhesión en proceso de aprobación"}
-                                        </p>
+                                        <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">Cubierto — Débito Automático</p>
                                     </div>
-                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center border ${data?.hasDebitoEnTramite
-                                            ? 'bg-amber-50 dark:bg-amber-500/10 text-amber-600 border-amber-100 dark:border-amber-500/20'
-                                            : 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 border-emerald-100 dark:border-emerald-500/20'
-                                        }`}>
-                                        {data?.hasDebitoEnTramite ? <Loader2 size={20} className="animate-spin" /> : <CheckCircle2 size={20} />}
+                                    <div className="w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 border border-emerald-100 dark:border-emerald-500/20 flex items-center justify-center">
+                                        <CheckCircle2 size={20} />
                                     </div>
                                 </div>
-                            ) : (
+                            ) : data?.hasPagoAnualActivo ? (
+                                <div className="w-full flex items-center justify-between">
+                                    <div>
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Estado de Pago</p>
+                                        <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">Cubierto — Pago Anual</p>
+                                    </div>
+                                    <div className="w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 border border-emerald-100 dark:border-emerald-500/20 flex items-center justify-center">
+                                        <CheckCircle2 size={20} />
+                                    </div>
+                                </div>
+                            ) : data?.cuotaActual?.estado === "pagado" ? (
+                                <div className="w-full flex items-center justify-between">
+                                    <div>
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Estado de Pago</p>
+                                        <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                                            Abonado — {formatPeriodo(data.cuotaActual.periodo)}
+                                        </p>
+                                    </div>
+                                    <div className="w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 border border-emerald-100 dark:border-emerald-500/20 flex items-center justify-center">
+                                        <CheckCircle2 size={20} />
+                                    </div>
+                                </div>
+                            ) : data?.cuotaActual?.estado === "pendiente" ? (
                                 <>
                                     <div>
                                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Monto a Pagar</p>
-                                        <p className="text-3xl font-black text-black dark:text-white">${montoMensual.toLocaleString()}</p>
+                                        <p className="text-3xl font-black text-black dark:text-white">${data.cuotaActual.monto.toLocaleString()}</p>
                                     </div>
                                     <button className="h-12 px-6 bg-emerald-600 text-white rounded-xl font-bold text-xs hover:bg-emerald-700 transition-all flex items-center gap-2">
                                         Pagar Cuota
                                         <CreditCard size={16} />
                                     </button>
                                 </>
+                            ) : (
+                                <div className="w-full">
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Estado</p>
+                                    <p className="text-sm font-bold text-slate-500 dark:text-slate-400">Sin cuota generada para este período</p>
+                                </div>
                             )}
                         </div>
                     </div>
@@ -228,7 +281,6 @@ export default function MatriculaStatus() {
                 </div>
 
                 <div className="bg-white dark:bg-slate-900 rounded-[32px] border border-slate-100 dark:border-slate-800 overflow-hidden">
-                    {/* Aquí podríamos mapear conceptos reales si los tuviéramos, por ahora queda el diseño base */}
                     <ConceptItem label="Matrícula Febrero 2026" date="10/02/2026" amount="4.500" status="paid" />
                     <ConceptItem label="Matrícula Enero 2026" date="10/01/2026" amount="4.500" status="paid" isLast />
                 </div>

@@ -27,6 +27,9 @@ import {
     Scale,
     ClipboardList,
     Banknote,
+    UserCheck,
+    DatabaseZap,
+    Settings2,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { SessionPayload } from "@/lib/auth";
@@ -55,8 +58,11 @@ const navItems = [
     { href: "/admin/envios", label: "Envíos Masivos", icon: Send, color: "text-amber-500" },
     { href: "/admin/firmas", label: "Firmas de Autoridades", icon: PenLine, color: "text-indigo-500" },
     { href: "/admin/adhesiones", label: "Débito Automático", icon: Banknote, color: "text-emerald-500" },
+    { href: "/admin/cambios-datos", label: "Modificaciones de Datos", icon: UserCheck, color: "text-violet-500" },
+    { href: "/admin/importar", label: "Importar Datos", icon: DatabaseZap, color: "text-cyan-500" },
     { href: "/admin/tribunal-etica", label: "Tribunal de Ética", icon: Scale, color: "text-rose-500" },
     { href: "/admin/repositorio", label: "Repositorio de Archivos", icon: FolderOpen, color: "text-indigo-500" },
+    { href: "/admin/config", label: "Configuración", icon: Settings2, color: "text-slate-400" },
 ];
 
 export default function AdminShell({ session, image, children }: AdminShellProps) {
@@ -109,7 +115,7 @@ export default function AdminShell({ session, image, children }: AdminShellProps
                     </div>
                 </div>
 
-                <nav className="flex-1 p-3 space-y-1">
+                <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
                     {navItems.map((item) => {
                         const active = isActive(item);
                         return (

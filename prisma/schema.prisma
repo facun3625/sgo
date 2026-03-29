@@ -68,22 +68,27 @@ model Deuda {
   @@map("deudas")
 }
 
-model MatriculaAnual {
-  id         Int    @id @default(autoincrement())
-  expediente String
-  monto      Float
+model Config {
+  id        Int      @id @default(autoincrement())
+  clave     String   @unique
+  valor     String
+  updatedAt DateTime @updatedAt
 
-  @@map("matricula_anual")
+  @@map("config")
 }
 
-model MatriculaMensual {
-  id         Int    @id @default(autoincrement())
+model CuotaMensual {
+  id         Int       @id @default(autoincrement())
   expediente String
+  periodo    String    // "2026-03"
   monto      Float
+  estado     String    @default("pendiente") // pendiente / pagado
+  fechaPago  DateTime?
+  createdAt  DateTime  @default(now())
 
-  @@map("matricula_mensual")
+  @@unique([expediente, periodo])
+  @@map("cuotas_mensuales")
 }
-
 
 model PagoAnual {
   id         Int    @id @default(autoincrement())
@@ -376,6 +381,16 @@ model RepositorioCategoria {
   createdAt DateTime             @default(now())
 
   @@map("repositorio_categorias")
+}
+
+model CambioDatos {
+  id          Int      @id @default(autoincrement())
+  expediente  String
+  campos      Json     // { fieldName: { anterior: string, nuevo: string } }
+  leido       Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@map("cambios_datos")
 }
 
 model RepositorioArchivo {

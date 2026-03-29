@@ -178,6 +178,7 @@ export default function NotificacionesBell() {
                                     n.tipo === "tramite" ? "/dashboard/solicitudes/enviadas" :
                                     n.tipo === "debito" ? "/dashboard/solicitudes/adhesion-debito" :
                                     n.tipo === "admin_debito" ? "/admin/adhesiones" :
+                                    n.tipo === "admin_cambios" ? "/admin/cambios-datos" :
                                     null;
                                 return linkHref ? (
                                     <Link key={n.id} href={linkHref} onClick={handleClick}>

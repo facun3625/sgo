@@ -11,12 +11,13 @@ export async function GET() {
         }
 
         const expediente = session.expediente;
+        const currentPeriod = new Date().toISOString().slice(0, 7); // "2026-03"
 
         // Fetch de todos los conceptos financieros en paralelo
         const [
             deudas,
-            matriculaAnual,
-            matriculaMensual,
+            cuotaActual,
+            configMontoAnual,
             debitoAprobado,
             cancelacionAprobada,
             debitoEnTramite,
@@ -24,8 +25,8 @@ export async function GET() {
             pagoAnual
         ] = await Promise.all([
             prisma.deuda.findMany({ where: { expediente } }),
-            prisma.matriculaAnual.findMany({ where: { expediente } }),
-            prisma.matriculaMensual.findMany({ where: { expediente } }),
+            prisma.cuotaMensual.findFirst({ where: { expediente, periodo: currentPeriod } }),
+            prisma.config.findUnique({ where: { clave: "montoAnual" } }),
             prisma.adhesionDebito.findFirst({
                 where: { expediente, estado: "aprobada", tipoAdhesion: { not: "CANCELACION" } }
             }),
@@ -46,16 +47,16 @@ export async function GET() {
         const debitoPendiente = !!debitoEnTramite;
         const cancelacionEnTramite = !!cancelacionPendiente;
 
+        const montoAnual = configMontoAnual ? parseFloat(configMontoAnual.valor) : 48000;
+
         return NextResponse.json({
             deudas,
-            matriculaAnual,
-            matriculaMensual,
+            cuotaActual,
+            montoAnual,
             hasDebitoAutomatico: debitoActivo,
             hasDebitoEnTramite: debitoPendiente,
             hasCancelacionPendiente: cancelacionEnTramite,
             hasPagoAnualActivo: !!pagoAnual,
-            montoAnual: matriculaAnual[0]?.monto || 48000,
-            montoMensual: matriculaMensual[0]?.monto || 4500,
             totalDeuda: deudas.reduce((acc, curr) => acc + curr.monto, 0)
         });
 
