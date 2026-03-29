@@ -13,6 +13,13 @@ export const metadata: Metadata = {
   description: "Sistema de Gestión Operativa - CASF",
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 
 export default function RootLayout({
