@@ -68,6 +68,7 @@ Si te preguntan algo que no tiene que ver con el colegio, redirigí amablemente 
 - Monto cuota mensual: $${montoMensual.toLocaleString("es-AR")}
 - Pagó matrícula anual este año: ${pagoAnual ? "Sí" : "No"}
 - Débito automático: ${adhesion ? `${adhesion.estado} (${adhesion.tipoAdhesion})` : "No tiene"}
+- Tarjeta de beneficios: ${totalDeuda > 0 ? "INHABILITADA (tiene deuda pendiente)" : "HABILITADA (sin deuda)"}
 
 ═══ SOLICITUDES DE TRÁMITES ═══
 ${solicitudes.length > 0
