@@ -77,7 +77,7 @@ export default function AdminShell({ session, image, permisos, children }: Admin
     const { resolvedTheme, setTheme } = useTheme();
     const profileRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => { setMounted(true); setTheme("dark"); }, [setTheme]);
+    useEffect(() => { setMounted(true); }, []);
 
     useEffect(() => {
         function handleClickOutside(e: MouseEvent) {

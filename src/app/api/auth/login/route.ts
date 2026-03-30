@@ -49,8 +49,8 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        // Verificar estado del usuario
-        if (user.status !== "active") {
+        // Verificar estado del usuario — suspendido puede entrar, bloqueado no
+        if (user.status !== "active" && user.status !== "suspended") {
             return NextResponse.json(
                 { error: "Tu cuenta no está activa. Contactá al administrador." },
                 { status: 403 }
