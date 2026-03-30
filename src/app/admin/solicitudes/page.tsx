@@ -61,7 +61,7 @@ function estadoBadge(estado: string) {
     }
 }
 
-const TABS = [
+const ALL_TABS = [
     { key: "", label: "Todos" },
     { key: "pendiente", label: "Pendientes" },
     { key: "Certificado", label: "Certificados" },
@@ -70,6 +70,15 @@ const TABS = [
     { key: "Jurisprudencia", label: "Jurisprudencia" },
     { key: "Suspensión", label: "Suspensión" },
 ];
+
+// Sub-tab key → tab filter key mapping
+const SUBTAB_MAP: Record<string, string> = {
+    "solicitudes:Certificado": "Certificado",
+    "solicitudes:SISFE": "SISFE",
+    "solicitudes:CATASTRO": "CATASTRO",
+    "solicitudes:Jurisprudencia": "Jurisprudencia",
+    "solicitudes:Suspension": "Suspensión",
+};
 
 // ─── main component ──────────────────────────────────────────────────────────
 
@@ -81,6 +90,7 @@ export default function AdminSolicitudesPage() {
     const [search, setSearch] = useState("");
     const [activeTab, setActiveTab] = useState("");
     const [selected, setSelected] = useState<SolicitudItem | null>(null);
+    const [permisos, setPermisos] = useState<string[] | null>(null); // null = superadmin
     const [panelOpen, setPanelOpen] = useState(false);
 
     // Action states
@@ -94,10 +104,23 @@ export default function AdminSolicitudesPage() {
     const load = useCallback(async () => {
         setLoading(true);
         try {
-            const res = await fetch("/api/admin/solicitudes");
-            if (res.ok) {
-                const data = await res.json();
+            const [resSol, resMe] = await Promise.all([
+                fetch("/api/admin/solicitudes"),
+                fetch("/api/admin/me"),
+            ]);
+            if (resSol.ok) {
+                const data = await resSol.json();
                 setSolicitudes(Array.isArray(data) ? data : []);
+            }
+            if (resMe.ok) {
+                const me = await resMe.json();
+                if (me.accessLevel === "superadmin") {
+                    setPermisos(null);
+                } else {
+                    setPermisos(me.permisos || []);
+                    // Si tiene sub-tabs restringidos, forzar tab "pendiente"
+                    // Sin forzar tab: el admin restringido puede navegar entre estados
+                }
             }
         } catch {
             showToast("Error al cargar trámites", "error");
@@ -107,6 +130,18 @@ export default function AdminSolicitudesPage() {
     }, [showToast]);
 
     useEffect(() => { load(); }, [load]);
+
+    // Tabs visibles según permisos
+    const subtabsActivos = permisos === null ? null : permisos.filter(p => p.startsWith("solicitudes:"));
+    const TABS = (() => {
+        if (permisos === null || !subtabsActivos || subtabsActivos.length === 0) return ALL_TABS;
+        // Solo mostrar las tabs habilitadas (siempre en modo pendiente)
+        return ALL_TABS.filter(t => {
+            if (t.key === "pendiente") return true;
+            const needed = Object.entries(SUBTAB_MAP).find(([, v]) => v === t.key)?.[0];
+            return needed ? subtabsActivos.includes(needed) : false;
+        });
+    })();
 
     // Reset inputs when selected changes
     useEffect(() => {
@@ -118,6 +153,13 @@ export default function AdminSolicitudesPage() {
     // ── filtering ────────────────────────────────────────────────────────────
 
     const filtered = solicitudes.filter((s) => {
+        // Si admin con sub-tabs restringidos: solo ver sus categorías (todos los estados)
+        if (subtabsActivos && subtabsActivos.length > 0) {
+            const allowedTipos = subtabsActivos.map(k => SUBTAB_MAP[k]).filter(Boolean);
+            const tipoMatch = allowedTipos.some(t => s.tipo.includes(t));
+            if (!tipoMatch) return false;
+        }
+
         // Tab filter
         if (activeTab === "pendiente" && s.estado !== "pendiente") return false;
         if (activeTab === "Certificado" && !s.tipo.includes("Certificado")) return false;

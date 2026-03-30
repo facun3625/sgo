@@ -13,6 +13,7 @@ export interface SessionPayload {
     nombre: string;
     apellido: string;
     accessLevel: string;
+    permisos?: string[];
 }
 
 export async function createSession(payload: SessionPayload) {

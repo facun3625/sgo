@@ -14,6 +14,10 @@ export default async function DashboardLayout({
         redirect("/login");
     }
 
+    if (session.accessLevel === "superadmin" || session.accessLevel === "admin") {
+        redirect("/admin");
+    }
+
     const dbUser = await prisma.user.findUnique({
         where: { expediente: session.expediente }
     });

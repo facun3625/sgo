@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { Upload, UserPlus, DollarSign, FileText, CheckCircle2, AlertCircle, X, ChevronDown, Loader2 } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Upload, UserPlus, DollarSign, FileText, CheckCircle2, AlertCircle, X, Loader2, List, Search, CreditCard, Ban, Clock } from "lucide-react";
 
 type TipoFinanciero = "deudas" | "pagoAnual";
 
@@ -22,9 +22,10 @@ const FINANCIERO_CONFIG: Record<TipoFinanciero, { label: string; columnas: strin
 function parseCSV(text: string): Record<string, string>[] {
     const lines = text.trim().split(/\r?\n/).filter(l => l.trim());
     if (lines.length < 2) return [];
-    const headers = lines[0].split(",").map(h => h.trim().replace(/^"|"$/g, ""));
+    const sep = lines[0].includes(";") ? ";" : ",";
+    const headers = lines[0].split(sep).map(h => h.trim().replace(/^"|"$/g, "").toLowerCase());
     return lines.slice(1).map(line => {
-        const values = line.split(",").map(v => v.trim().replace(/^"|"$/g, ""));
+        const values = line.split(sep).map(v => v.trim().replace(/^"|"$/g, ""));
         const row: Record<string, string> = {};
         headers.forEach((h, i) => { row[h] = values[i] ?? ""; });
         return row;
@@ -47,8 +48,24 @@ interface ResultadoImport {
     detalles?: string[];
 }
 
+interface RegistrosData {
+    deudas: { id: number; expediente: string; monto: number }[];
+    pagosAnuales: { id: number; expediente: string }[];
+    adhesiones: { id: number; expediente: string; tipoAdhesion: string; estado: string; createdAt: string }[];
+}
+
 export default function ImportarPage() {
-    const [seccion, setSeccion] = useState<"matriculados" | "financiero">("matriculados");
+    const [seccion, setSeccion] = useState<"matriculados" | "financiero" | "registros">("matriculados");
+    function triggerDownload(url: string, filename: string) {
+        const a = document.createElement("a");
+        a.style.display = "none";
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 2000);
+    }
+
     async function downloadTemplate(tipo: string) {
         const p = PLANTILLA_CONTENT[tipo];
         if (!p) return;
@@ -56,23 +73,31 @@ export default function ImportarPage() {
             const res = await fetch(`/api/admin/importar/plantilla?tipo=${tipo}`);
             if (!res.ok) throw new Error("auth");
             const blob = await res.blob();
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = p.filename;
-            a.click();
-            setTimeout(() => URL.revokeObjectURL(url), 1000);
+            triggerDownload(URL.createObjectURL(blob), p.filename);
         } catch {
-            // fallback: contenido local
             const blob = new Blob(["\uFEFF" + p.content], { type: "text/csv;charset=utf-8;" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = p.filename;
-            a.click();
-            setTimeout(() => URL.revokeObjectURL(url), 1000);
+            triggerDownload(URL.createObjectURL(blob), p.filename);
         }
     }
+
+    // Registros (ver listados)
+    const [registros, setRegistros] = useState<RegistrosData | null>(null);
+    const [registrosLoading, setRegistrosLoading] = useState(false);
+    const [debitoSearch, setDebitoSearch] = useState("");
+
+    const cargarRegistros = async () => {
+        setRegistrosLoading(true);
+        try {
+            const res = await fetch("/api/admin/importar/registros");
+            if (res.ok) setRegistros(await res.json());
+        } finally {
+            setRegistrosLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (seccion === "registros" && !registros) cargarRegistros();
+    }, [seccion]);
 
     // Matriculados
     const [matRegistros, setMatRegistros] = useState<Record<string, string>[]>([]);
@@ -195,6 +220,15 @@ export default function ImportarPage() {
                     <DollarSign size={15} />
                     Deudas y Matrículas
                 </button>
+                <button
+                    onClick={() => setSeccion("registros")}
+                    className={`flex items-center gap-2 px-5 py-2.5 text-[13px] font-bold rounded-t-xl transition-all border-b-2 -mb-px ${seccion === "registros"
+                        ? "border-violet-500 text-violet-600 dark:text-violet-400 bg-violet-50/50 dark:bg-violet-900/10"
+                        : "border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"}`}
+                >
+                    <List size={15} />
+                    Ver Registros
+                </button>
             </div>
 
             {/* SECCIÓN: MATRICULADOS */}
@@ -279,6 +313,175 @@ export default function ImportarPage() {
                             </button>
                         </div>
                     </div>
+                </div>
+            )}
+
+            {/* SECCIÓN: REGISTROS */}
+            {seccion === "registros" && (
+                <div className="space-y-6">
+                    <div className="flex items-center justify-between">
+                        <p className="text-[12px] text-slate-400">Listado actual de registros en el sistema.</p>
+                        <button
+                            onClick={cargarRegistros}
+                            disabled={registrosLoading}
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/20 rounded-lg hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-all disabled:opacity-50"
+                        >
+                            {registrosLoading ? <Loader2 size={12} className="animate-spin" /> : null}
+                            Actualizar
+                        </button>
+                    </div>
+
+                    {registrosLoading && !registros && (
+                        <div className="flex items-center justify-center py-16">
+                            <Loader2 size={24} className="animate-spin text-violet-400" />
+                        </div>
+                    )}
+
+                    {registros && (
+                        <div className="space-y-6">
+                            {/* Deudas */}
+                            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden">
+                                <div className="px-5 py-3.5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-7 h-7 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                                            <Ban size={13} className="text-red-500" />
+                                        </div>
+                                        <span className="text-[13px] font-bold text-slate-700 dark:text-slate-300">Deudas</span>
+                                    </div>
+                                    <span className="text-[11px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-full">{registros.deudas.length}</span>
+                                </div>
+                                {registros.deudas.length === 0 ? (
+                                    <p className="text-center text-[12px] text-slate-400 py-8">Sin deudas registradas</p>
+                                ) : (
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-[12px]">
+                                            <thead className="bg-slate-50 dark:bg-slate-800/40">
+                                                <tr>
+                                                    <th className="px-5 py-2.5 text-left font-bold text-slate-400 uppercase tracking-wider text-[10px]">Expediente</th>
+                                                    <th className="px-5 py-2.5 text-right font-bold text-slate-400 uppercase tracking-wider text-[10px]">Monto</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-50 dark:divide-slate-800/60">
+                                                {registros.deudas.map(d => (
+                                                    <tr key={d.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20">
+                                                        <td className="px-5 py-2.5 font-medium text-slate-700 dark:text-slate-300">{d.expediente}</td>
+                                                        <td className="px-5 py-2.5 text-right text-red-600 dark:text-red-400 font-bold">
+                                                            ${d.monto.toLocaleString("es-AR")}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Pago Anual */}
+                            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden">
+                                <div className="px-5 py-3.5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+                                            <CheckCircle2 size={13} className="text-emerald-500" />
+                                        </div>
+                                        <span className="text-[13px] font-bold text-slate-700 dark:text-slate-300">Pago Anual</span>
+                                    </div>
+                                    <span className="text-[11px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-full">{registros.pagosAnuales.length}</span>
+                                </div>
+                                {registros.pagosAnuales.length === 0 ? (
+                                    <p className="text-center text-[12px] text-slate-400 py-8">Sin pagos anuales registrados</p>
+                                ) : (
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-[12px]">
+                                            <thead className="bg-slate-50 dark:bg-slate-800/40">
+                                                <tr>
+                                                    <th className="px-5 py-2.5 text-left font-bold text-slate-400 uppercase tracking-wider text-[10px]">Expediente</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-50 dark:divide-slate-800/60">
+                                                {registros.pagosAnuales.map(p => (
+                                                    <tr key={p.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20">
+                                                        <td className="px-5 py-2.5 font-medium text-slate-700 dark:text-slate-300">{p.expediente}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Débito Automático */}
+                            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden">
+                                <div className="px-5 py-3.5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                                            <CreditCard size={13} className="text-blue-500" />
+                                        </div>
+                                        <span className="text-[13px] font-bold text-slate-700 dark:text-slate-300">Débito Automático</span>
+                                    </div>
+                                    <span className="text-[11px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-full">{registros.adhesiones.length}</span>
+                                </div>
+                                {/* Buscador */}
+                                <div className="px-5 py-3 border-b border-slate-50 dark:border-slate-800/60">
+                                    <div className="relative">
+                                        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                                        <input
+                                            type="text"
+                                            placeholder="Buscar por expediente..."
+                                            value={debitoSearch}
+                                            onChange={e => setDebitoSearch(e.target.value)}
+                                            className="w-full pl-8 pr-4 py-2 text-[12px] bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl focus:outline-none focus:border-blue-300 dark:focus:border-blue-600 text-slate-700 dark:text-slate-300 placeholder:text-slate-400"
+                                        />
+                                    </div>
+                                </div>
+                                {(() => {
+                                    const filtered = debitoSearch.trim()
+                                        ? registros.adhesiones.filter(a => a.expediente.includes(debitoSearch.trim()))
+                                        : registros.adhesiones;
+                                    return filtered.length === 0 ? (
+                                        <p className="text-center text-[12px] text-slate-400 py-8">
+                                            {debitoSearch ? "Sin resultados para ese expediente" : "Sin adhesiones registradas"}
+                                        </p>
+                                    ) : (
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full text-[12px]">
+                                                <thead className="bg-slate-50 dark:bg-slate-800/40">
+                                                    <tr>
+                                                        <th className="px-5 py-2.5 text-left font-bold text-slate-400 uppercase tracking-wider text-[10px]">Expediente</th>
+                                                        <th className="px-5 py-2.5 text-left font-bold text-slate-400 uppercase tracking-wider text-[10px]">Tipo</th>
+                                                        <th className="px-5 py-2.5 text-left font-bold text-slate-400 uppercase tracking-wider text-[10px]">Estado</th>
+                                                        <th className="px-5 py-2.5 text-left font-bold text-slate-400 uppercase tracking-wider text-[10px]">Fecha</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-slate-50 dark:divide-slate-800/60">
+                                                    {filtered.map(a => (
+                                                        <tr key={a.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20">
+                                                            <td className="px-5 py-2.5 font-medium text-slate-700 dark:text-slate-300">{a.expediente}</td>
+                                                            <td className="px-5 py-2.5 text-slate-500 dark:text-slate-400">{a.tipoAdhesion}</td>
+                                                            <td className="px-5 py-2.5">
+                                                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                                                    a.estado === "aprobada"
+                                                                        ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400"
+                                                                        : a.estado === "rechazada"
+                                                                        ? "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400"
+                                                                        : "bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400"
+                                                                }`}>
+                                                                    {a.estado === "aprobada" ? <CheckCircle2 size={9} /> : a.estado === "rechazada" ? <Ban size={9} /> : <Clock size={9} />}
+                                                                    {a.estado.charAt(0).toUpperCase() + a.estado.slice(1)}
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-5 py-2.5 text-slate-400">
+                                                                {new Date(a.createdAt).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric" })}
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    );
+                                })()}
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
 

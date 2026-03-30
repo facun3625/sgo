@@ -13,11 +13,19 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
     const dbUser = await prisma.user.findUnique({
         where: { expediente: session.expediente },
-        select: { image: true }
+        select: { image: true, permisos: true }
     });
 
+    // Always read permisos from DB (fresh, not from JWT which may be stale)
+    let permisos: string[] = [];
+    if (session.accessLevel !== "superadmin") {
+        try {
+            permisos = JSON.parse(dbUser?.permisos || "[]");
+        } catch { permisos = []; }
+    }
+
     return (
-        <AdminShell session={session} image={dbUser?.image || null}>
+        <AdminShell session={session} image={dbUser?.image || null} permisos={session.accessLevel === "superadmin" ? null : permisos}>
             {children}
         </AdminShell>
     );

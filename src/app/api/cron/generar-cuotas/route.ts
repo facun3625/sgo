@@ -15,16 +15,6 @@ export async function GET(req: NextRequest) {
 
     const periodo = new Date().toISOString().slice(0, 7); // "2026-03"
 
-    // Verificar si ya se generaron cuotas para este período
-    const existente = await prisma.cuotaMensual.findFirst({ where: { periodo } });
-    if (existente) {
-        return NextResponse.json({
-            message: `Las cuotas para el período ${periodo} ya fueron generadas.`,
-            periodo,
-            creadas: 0,
-        });
-    }
-
     // Leer monto mensual de Config, default 4500
     const configMonto = await prisma.config.findUnique({ where: { clave: "montoMensual" } });
     const monto = configMonto ? parseFloat(configMonto.valor) : 4500;

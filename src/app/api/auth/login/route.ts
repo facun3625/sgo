@@ -57,6 +57,12 @@ export async function POST(req: NextRequest) {
             );
         }
 
+        // Parse permisos from user record
+        let permisos: string[] = [];
+        try {
+            permisos = JSON.parse(user.permisos || "[]");
+        } catch { permisos = []; }
+
         // Crear sesión
         await createSession({
             id: user.id,
@@ -64,6 +70,7 @@ export async function POST(req: NextRequest) {
             nombre: user.nombre,
             apellido: user.apellido,
             accessLevel: user.accessLevel,
+            permisos,
         });
 
         return NextResponse.json({

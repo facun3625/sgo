@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import {
     Banknote, Loader2, CheckCircle2, XCircle, Clock, Inbox,
-    ChevronRight, X, CreditCard, FileText, User,
+    ChevronRight, X, CreditCard, FileText, User, Search,
 } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 
@@ -46,6 +46,7 @@ export default function AdminAdhesionesPage() {
     const [selected, setSelected] = useState<AdhesionItem | null>(null);
     const [panelOpen, setPanelOpen] = useState(false);
     const [submitting, setSubmitting] = useState(false);
+    const [search, setSearch] = useState("");
 
     const load = useCallback(async () => {
         setLoading(true);
@@ -62,9 +63,10 @@ export default function AdminAdhesionesPage() {
     useEffect(() => { load(); }, [load]);
 
     const filtered = adhesiones.filter((a) => {
-        if (activeTab === "pendiente") return a.estado === "pendiente";
-        if (activeTab === "aprobada") return a.estado === "aprobada";
-        if (activeTab === "rechazada") return a.estado === "rechazada";
+        if (activeTab === "pendiente" && a.estado !== "pendiente") return false;
+        if (activeTab === "aprobada" && a.estado !== "aprobada") return false;
+        if (activeTab === "rechazada" && a.estado !== "rechazada") return false;
+        if (search.trim()) return a.expediente.includes(search.trim());
         return true;
     });
 
@@ -150,6 +152,18 @@ export default function AdminAdhesionesPage() {
                         {tab.label}
                     </button>
                 ))}
+            </div>
+
+            {/* Buscador */}
+            <div className="relative mb-4">
+                <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                    type="text"
+                    placeholder="Buscar por número de expediente..."
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                    className="w-full pl-9 pr-4 py-2.5 text-[13px] bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl focus:outline-none focus:border-blue-300 dark:focus:border-blue-600 text-slate-700 dark:text-slate-300 placeholder:text-slate-400"
+                />
             </div>
 
             {/* Table */}

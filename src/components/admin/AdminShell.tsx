@@ -30,6 +30,7 @@ import {
     UserCheck,
     DatabaseZap,
     Settings2,
+    UserCog,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { SessionPayload } from "@/lib/auth";
@@ -41,6 +42,7 @@ import { ToastProvider } from "@/components/ui/Toast";
 interface AdminShellProps {
     session: SessionPayload;
     image: string | null;
+    permisos: string[] | null; // null = superadmin (all access)
     children: React.ReactNode;
 }
 
@@ -48,6 +50,7 @@ const navItems = [
     { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true, color: "text-slate-400" },
     { href: "/admin/solicitudes", label: "Gestión de Trámites", icon: ClipboardList, color: "text-amber-500" },
     { href: "/admin/usuarios", label: "Usuarios", icon: Users, color: "text-indigo-500" },
+    { href: "/admin/gestionar-admins", label: "Gestionar Admins", icon: UserCog, color: "text-violet-500" },
     { href: "/admin/cursos", label: "Cursos", icon: GraduationCap, color: "text-pink-500" },
     { href: "/admin/noticias", label: "Actividades Institucionales", icon: Newspaper, color: "text-amber-500" },
     { href: "/admin/biblioteca", label: "Biblioteca", icon: Library, color: "text-blue-500" },
@@ -65,7 +68,7 @@ const navItems = [
     { href: "/admin/config", label: "Configuración", icon: Settings2, color: "text-slate-400" },
 ];
 
-export default function AdminShell({ session, image, children }: AdminShellProps) {
+export default function AdminShell({ session, image, permisos, children }: AdminShellProps) {
     const pathname = usePathname();
     const router = useRouter();
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -94,6 +97,25 @@ export default function AdminShell({ session, image, children }: AdminShellProps
     const isActive = (item: typeof navItems[0]) =>
         item.exact ? pathname === item.href : pathname.startsWith(item.href);
 
+    // Filter navItems based on permisos
+    // permisos === null means superadmin → show all
+    // permisos = string[] means admin → show only items in permisos (plus dashboard always)
+    const visibleNavItems = navItems.filter(item => {
+        if (permisos === null) return true; // superadmin sees all
+        // Dashboard always visible
+        if (item.href === "/admin") return true;
+        // Extract section key from href: /admin/{key}
+        const key = item.href.split("/")[2]; // e.g. "solicitudes"
+        if (!key) return true;
+        // config and gestionar-admins are superadmin only
+        if (key === "config" || key === "gestionar-admins") return false;
+        return permisos.includes(key);
+    });
+
+    const isSuperAdmin = permisos === null;
+    const roleLabel = isSuperAdmin ? "Superadmin" : "Admin";
+    const roleLabelLong = isSuperAdmin ? "Superadministrador" : "Administrador";
+
     return (
         <ToastProvider>
         <div className="flex min-h-screen bg-[#f8fafc] dark:bg-[#02182b] transition-colors duration-300">
@@ -116,7 +138,7 @@ export default function AdminShell({ session, image, children }: AdminShellProps
                 </div>
 
                 <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-                    {navItems.map((item) => {
+                    {visibleNavItems.map((item) => {
                         const active = isActive(item);
                         return (
                             <Link key={item.href} href={item.href} onClick={() => setSidebarOpen(false)}
@@ -145,7 +167,7 @@ export default function AdminShell({ session, image, children }: AdminShellProps
                         </div>
                         <div>
                             <p className="text-slate-700 dark:text-slate-200 text-[12px] font-bold leading-tight">{session.nombre} {session.apellido[0]}.</p>
-                            <p className="text-slate-400 dark:text-slate-500 text-[9px] uppercase tracking-wider">Superadmin</p>
+                            <p className="text-slate-400 dark:text-slate-500 text-[9px] uppercase tracking-wider">{roleLabel}</p>
                         </div>
                     </div>
                     <a href="https://kubbo.com.ar" target="_blank" rel="noopener noreferrer"
@@ -169,7 +191,7 @@ export default function AdminShell({ session, image, children }: AdminShellProps
                     {/* Badge admin */}
                     <div className="hidden md:flex items-center gap-2 h-8 px-3 bg-white/10 rounded-lg">
                         <Shield size={12} className="text-amber-400" />
-                        <span className="text-[10px] font-extrabold text-white uppercase tracking-widest">Superadministrador</span>
+                        <span className="text-[10px] font-extrabold text-white uppercase tracking-widest">{roleLabelLong}</span>
                     </div>
 
                     {/* Acciones derecha */}
@@ -209,7 +231,7 @@ export default function AdminShell({ session, image, children }: AdminShellProps
                                 </div>
                                 <div className="text-left hidden sm:block">
                                     <p className="text-[13px] font-bold text-white leading-tight">{session.apellido}, {session.nombre}</p>
-                                    <p className="text-[10px] text-white/50">Superadmin</p>
+                                    <p className="text-[10px] text-white/50">{roleLabel}</p>
                                 </div>
                                 <ChevronDown size={14} className={`text-white/30 transition-transform duration-300 ${profileOpen ? "rotate-180" : ""}`} />
                             </button>

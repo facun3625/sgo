@@ -8,11 +8,14 @@
       "Bash(git add:*)",
       "Bash(git -C /Users/facundoarteagasola/Documents/sgo status)",
       "Bash(ssh -p 5341 -i ~/.ssh/id_rsa root@149.50.148.28 \"pm2 logs sgo --lines 30 --nostream\")",
-      "Bash(ssh -p 5341 -i ~/.ssh/id_ed25519 root@149.50.148.28 \"pm2 logs sgo --lines 30 --nostream\")"
+      "Bash(ssh -p 5341 -i ~/.ssh/id_ed25519 root@149.50.148.28 \"pm2 logs sgo --lines 30 --nostream\")",
+      "Bash(npx tsc:*)",
+      "Bash(ls /Users/facundoarteagasola/Documents/sgo/src/app/api/admin/gestionar-admins/[id]/route.ts)"
     ],
     "additionalDirectories": [
       "/Users/facundoarteagasola/Documents/sgo/src/app/api/admin/adhesiones",
-      "/Users/facundoarteagasola/Documents/sgo/src/app/api/admin/cambios-datos"
+      "/Users/facundoarteagasola/Documents/sgo/src/app/api/admin/cambios-datos",
+      "/Users/facundoarteagasola/Documents/sgo/src/app/api/admin/gestionar-admins"
     ]
   }
 }

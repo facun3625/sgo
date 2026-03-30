@@ -21,6 +21,7 @@ model User {
   accessLevel String   @default("user") @map("access_level")
   registered  Int      @default(1)
   image       String?
+  permisos    String   @default("[]")
   signature   String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

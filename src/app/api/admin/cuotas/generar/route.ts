@@ -14,11 +14,6 @@ export async function POST() {
 
     const periodo = new Date().toISOString().slice(0, 7);
 
-    const existente = await prisma.cuotaMensual.findFirst({ where: { periodo } });
-    if (existente) {
-        return NextResponse.json({ message: `Ya generadas para ${periodo}`, periodo, creadas: 0 });
-    }
-
     const configMonto = await prisma.config.findUnique({ where: { clave: "montoMensual" } });
     const monto = configMonto ? parseFloat(configMonto.valor) : 4500;
 
