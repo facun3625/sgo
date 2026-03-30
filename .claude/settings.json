@@ -10,7 +10,8 @@
       "Bash(ssh -p 5341 -i ~/.ssh/id_rsa root@149.50.148.28 \"pm2 logs sgo --lines 30 --nostream\")",
       "Bash(ssh -p 5341 -i ~/.ssh/id_ed25519 root@149.50.148.28 \"pm2 logs sgo --lines 30 --nostream\")",
       "Bash(npx tsc:*)",
-      "Bash(ls /Users/facundoarteagasola/Documents/sgo/src/app/api/admin/gestionar-admins/[id]/route.ts)"
+      "Bash(ls /Users/facundoarteagasola/Documents/sgo/src/app/api/admin/gestionar-admins/[id]/route.ts)",
+      "Bash(ssh -p 5341 root@149.50.148.28 \"pm2 logs sgo --lines 30 --nostream\")"
     ],
     "additionalDirectories": [
       "/Users/facundoarteagasola/Documents/sgo/src/app/api/admin/adhesiones",

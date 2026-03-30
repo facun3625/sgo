@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
     const session = await getSession();
-    if (!session?.isAdmin) {
+    if (!session || (session.accessLevel !== "superadmin" && session.accessLevel !== "admin")) {
         return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
