@@ -57,7 +57,10 @@ export default function CursosPage() {
     useEffect(() => {
         fetch("/api/user/cursos", { cache: "no-store" })
             .then(r => r.json())
-            .then(data => { if (Array.isArray(data)) setCursos(data); })
+            .then(data => {
+                const list = Array.isArray(data) ? data : (data.cursos ?? []);
+                setCursos(list);
+            })
             .finally(() => setLoading(false));
     }, []);
 

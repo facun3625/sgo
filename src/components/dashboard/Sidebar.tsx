@@ -128,7 +128,7 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
                 { icon: <GraduationCap />, label: "Cursos", href: "/dashboard/cursos", color: "text-pink-500" },
                 { icon: <Newspaper />, label: "Actividades Institucionales", href: "/dashboard/noticias", color: "text-amber-500" },
                 { icon: <Calendar />, label: "Calendario", href: "/dashboard/calendario", color: "text-orange-500" },
-                { icon: <Cpu />, label: "Tokens", href: "/dashboard/tokens", color: "text-violet-500" },
+                { icon: <Cpu />, label: "Ventas", href: "/dashboard/ventas", color: "text-violet-500" },
                 { icon: <Library />, label: "Biblioteca", href: "/dashboard/biblioteca", color: "text-[#063f68] dark:text-blue-400" },
                 { icon: <FolderOpen />, label: "Repositorio de Archivos", href: "/dashboard/archivos", color: "text-indigo-500" },
                 { icon: <HelpCircle />, label: "Preguntas Frecuentes", href: "/dashboard/faq", color: "text-slate-400" },

@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
     const [
         datos, user, deudas, cuotaActual, pagoAnual,
         configMensual, configAnual,
-        solicitudes, adhesion, inscripciones, tokenPedidos,
+        solicitudes, adhesion, inscripciones, pedidosVentas,
         cursos, eventos, noticias, faqs, tribunalEtica, biblioteca,
     ] = await Promise.all([
         prisma.dato.findFirst({ where: { expediente: exp } }),
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
         prisma.solicitud.findMany({ where: { expediente: exp }, orderBy: { fecha: "desc" }, take: 10 }),
         prisma.adhesionDebito.findFirst({ where: { expediente: exp }, orderBy: { createdAt: "desc" } }),
         prisma.inscripcionCurso.findMany({ where: { expediente: exp }, include: { curso: true, opcion: true } }),
-        prisma.tokenPedido.findMany({ where: { expediente: exp }, orderBy: { createdAt: "desc" }, take: 5 }),
+        prisma.pedido.findMany({ where: { expediente: exp }, orderBy: { createdAt: "desc" }, take: 5, include: { producto: { select: { nombre: true } } } }),
         prisma.curso.findMany({ where: { activo: true, fecha: { gte: new Date() } }, orderBy: { fecha: "asc" }, take: 10, include: { opciones: true } }),
         prisma.evento.findMany({ where: { fecha: { gte: new Date() } }, orderBy: { fecha: "asc" }, take: 10 }),
         prisma.noticia.findMany({ where: { activa: true }, orderBy: { createdAt: "desc" }, take: 5 }),
@@ -84,10 +84,10 @@ ${inscripciones.length > 0
     ? inscripciones.map(i => `- ${i.curso.titulo} (${fmt(i.curso.fecha)}) | Opción: ${i.opcion?.nombre || "N/A"} | Estado: ${i.estado}`).join("\n")
     : "- No está inscripto en ningún curso"}
 
-═══ TOKENS ═══
-${tokenPedidos.length > 0
-    ? tokenPedidos.map(t => `- ${t.cantidad} token(s) | ${t.metodoPago} | Estado: ${t.estado} | Fecha: ${fmt(t.createdAt)}`).join("\n")
-    : "- Sin pedidos de tokens"}
+═══ VENTAS / PEDIDOS ═══
+${pedidosVentas.length > 0
+    ? pedidosVentas.map(t => `- ${t.producto.nombre} x${t.cantidad} | ${t.metodoPago} | Estado: ${t.estado} | Fecha: ${fmt(t.createdAt)}`).join("\n")
+    : "- Sin pedidos"}
 
 ═══ TRIBUNAL DE ÉTICA ═══
 ${(tribunalEtica as any[]).length > 0

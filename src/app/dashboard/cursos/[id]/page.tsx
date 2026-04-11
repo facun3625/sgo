@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Calendar, Clock, MapPin, Users, GraduationCap, Loader2, CheckCircle2, AlertCircle, Building2 } from "lucide-react";
+import MpPayButton from "@/components/MpPayButton";
+import TransferenciaPayButton from "@/components/TransferenciaPayButton";
 
 interface Opcion {
     id: number;
@@ -27,7 +29,7 @@ interface Curso {
     modalidad: string;
     fechaLimiteInscripcion: string | null;
     opciones: Opcion[];
-    inscripcion: { cursoId: number; opcionId: number | null; estado: string } | null;
+    inscripcion: { id: number; cursoId: number; opcionId: number | null; estado: string } | null;
 }
 
 const UTC = { timeZone: "UTC" } as const;
@@ -47,8 +49,8 @@ function formatFecha(fecha: string, fechaFin: string | null): string {
 
 export default function CursoDetailPage() {
     const params = useParams();
-    const router = useRouter();
     const [curso, setCurso] = useState<Curso | null>(null);
+    const [transferenciaHabilitada, setTransferenciaHabilitada] = useState(false);
     const [loading, setLoading] = useState(true);
     const [opcionSeleccionada, setOpcionSeleccionada] = useState<number | null>(null);
     const [inscribiendo, setInscribiendo] = useState(false);
@@ -58,11 +60,11 @@ export default function CursoDetailPage() {
     useEffect(() => {
         fetch("/api/user/cursos")
             .then(r => r.json())
-            .then((data: Curso[]) => {
-                const found = data.find(c => c.id === Number(params.id));
+            .then((data: { cursos: Curso[]; transferenciaHabilitada: boolean }) => {
+                setTransferenciaHabilitada(!!data.transferenciaHabilitada);
+                const found = data.cursos.find(c => c.id === Number(params.id));
                 if (found) {
                     setCurso(found);
-                    // Preselect if only one option
                     if (found.opciones.length === 1) setOpcionSeleccionada(found.opciones[0].id);
                 }
             })
@@ -87,7 +89,7 @@ export default function CursoDetailPage() {
             setSuccess(true);
             // Refresh course data
             const updated = await fetch("/api/user/cursos").then(r => r.json());
-            const found = updated.find((c: Curso) => c.id === Number(params.id));
+            const found = updated.cursos?.find((c: Curso) => c.id === Number(params.id));
             if (found) setCurso(found);
         } catch {
             setError("Error de conexión. Intentá de nuevo.");
@@ -189,14 +191,50 @@ export default function CursoDetailPage() {
 
             {/* Estado si ya inscrito */}
             {yaInscrito && curso.inscripcion && (
-                <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border text-[13px] font-medium ${estadoBadge[curso.inscripcion.estado]?.cls || ""}`}>
-                    <CheckCircle2 size={16} />
-                    {estadoBadge[curso.inscripcion.estado]?.label || curso.inscripcion.estado}
-                    {curso.inscripcion.opcionId && (
-                        <span className="ml-auto text-[12px] opacity-70">
-                            {curso.opciones.find(o => o.id === curso.inscripcion!.opcionId)?.nombre}
-                        </span>
-                    )}
+                <div className="space-y-3">
+                    <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border text-[13px] font-medium ${estadoBadge[curso.inscripcion.estado]?.cls || ""}`}>
+                        <CheckCircle2 size={16} />
+                        {estadoBadge[curso.inscripcion.estado]?.label || curso.inscripcion.estado}
+                        {curso.inscripcion.opcionId && (
+                            <span className="ml-auto text-[12px] opacity-70">
+                                {curso.opciones.find(o => o.id === curso.inscripcion!.opcionId)?.nombre}
+                            </span>
+                        )}
+                    </div>
+
+                    {curso.inscripcion.estado === "pendiente_pago" && (() => {
+                        const opcion = curso.opciones.find(o => o.id === curso.inscripcion!.opcionId);
+                        return (
+                            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-5 space-y-3">
+                                <div className="flex items-center justify-between gap-4">
+                                    <div>
+                                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Monto a abonar</p>
+                                        <p className="text-2xl font-black text-slate-900 dark:text-white">
+                                            ${opcion?.precio.toLocaleString("es-AR") ?? "—"}
+                                        </p>
+                                    </div>
+                                    <div className="flex flex-col gap-2 w-full sm:w-auto items-stretch mt-3 sm:mt-0">
+                                        <MpPayButton
+                                            tipo="curso"
+                                            ref={String(curso.inscripcion!.id)}
+                                            label="Pagar con Mercado Pago"
+                                            className="w-full h-11 px-6 bg-[#063f68] hover:bg-[#0a4d7a] text-white rounded-xl font-bold text-[13px] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                                        />
+                                        {transferenciaHabilitada && (
+                                            <TransferenciaPayButton
+                                                tipo="curso"
+                                                ref={String(curso.inscripcion!.id)}
+                                                monto={opcion?.precio ?? 0}
+                                                label="Pagar con transferencia"
+                                                className="w-full h-11 px-6 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-bold text-[13px] transition-all flex items-center justify-center gap-2"
+                                            />
+                                        )}
+                                    </div>
+                                </div>
+                                <p className="text-[11px] text-slate-400">Al confirmar el pago, tu inscripción quedará activa automáticamente.</p>
+                            </div>
+                        );
+                    })()}
                 </div>
             )}
 

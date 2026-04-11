@@ -21,8 +21,13 @@ const TIPOS = [
 const tipoColor = (tipo: string) => TIPOS.find(t => t.value === tipo)?.color ?? "bg-slate-100 text-slate-600";
 const tipoLabel = (tipo: string) => TIPOS.find(t => t.value === tipo)?.label ?? tipo;
 
-function formatFecha(fechaStr: string) {
-    return new Date(fechaStr).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric" });
+const MESES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+
+function parseFecha(fechaStr: string) {
+    // Parsear desde el ISO string sin pasar por Date para evitar desfase de timezone
+    const part = fechaStr.split("T")[0]; // "2026-03-31"
+    const [y, m, d] = part.split("-").map(Number);
+    return { dia: d, mes: MESES[m - 1], fechaStr: `${String(d).padStart(2, "0")}/${String(m).padStart(2, "0")}/${y}` };
 }
 
 const emptyForm = { titulo: "", descripcion: "", fecha: "", tipo: "institucional" };
@@ -193,21 +198,23 @@ export default function CalendarioAdminPage() {
                     eventos.map(ev => (
                         <div key={ev.id} className={`flex items-center gap-4 px-5 py-4 transition-colors ${editingId === ev.id ? "bg-blue-50/30 dark:bg-blue-900/5" : ""}`}>
                             {/* Fecha badge */}
+                            {(() => { const f = parseFecha(ev.fecha); return (
                             <div className="flex flex-col items-center justify-center w-12 h-12 rounded-xl bg-slate-50 dark:bg-slate-800 flex-shrink-0">
                                 <span className="text-[15px] font-black text-slate-700 dark:text-white leading-none">
-                                    {new Date(ev.fecha).getDate().toString().padStart(2, "0")}
+                                    {String(f.dia).padStart(2, "0")}
                                 </span>
                                 <span className="text-[9px] font-bold uppercase text-slate-400 tracking-wide">
-                                    {new Date(ev.fecha).toLocaleDateString("es-AR", { month: "short" }).replace(".", "")}
+                                    {f.mes}
                                 </span>
                             </div>
+                            ); })()}
 
                             <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 mb-0.5">
                                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide ${tipoColor(ev.tipo)}`}>
                                         {tipoLabel(ev.tipo)}
                                     </span>
-                                    <span className="text-[11px] text-slate-400">{formatFecha(ev.fecha)}</span>
+                                    <span className="text-[11px] text-slate-400">{parseFecha(ev.fecha).fechaStr}</span>
                                 </div>
                                 <p className="text-[13px] font-semibold text-slate-800 dark:text-white truncate">{ev.titulo}</p>
                                 {ev.descripcion && <p className="text-[12px] text-slate-400 truncate">{ev.descripcion}</p>}

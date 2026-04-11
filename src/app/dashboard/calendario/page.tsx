@@ -52,10 +52,13 @@ export default function CalendarioPage() {
     }, []);
 
     const formatDate = (dateStr: string) => {
-        const date = new Date(dateStr);
-        const day = date.getDate();
-        const month = date.toLocaleDateString('es-ES', { month: 'short' }).replace('.', '');
-        const weekday = date.toLocaleDateString('es-ES', { weekday: 'long' });
+        const part = dateStr.split("T")[0]; // "2026-03-31"
+        const [y, m, d] = part.split("-").map(Number);
+        // Usar mediodía UTC para que getDate/toLocaleDateString no desfase por timezone
+        const date = new Date(Date.UTC(y, m - 1, d, 12, 0, 0));
+        const day = d;
+        const month = date.toLocaleDateString('es-ES', { month: 'short', timeZone: 'UTC' }).replace('.', '');
+        const weekday = date.toLocaleDateString('es-ES', { weekday: 'long', timeZone: 'UTC' });
         return { day, month, weekday };
     };
 
@@ -121,7 +124,12 @@ export default function CalendarioPage() {
                                     <div className="flex flex-col">
                                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Fecha</span>
                                         <span className="text-sm font-bold text-slate-900 dark:text-white">
-                                            {new Date(selectedEvent.fecha).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                                            {(() => {
+                                                const part = selectedEvent.fecha.split("T")[0];
+                                                const [y, m, d] = part.split("-").map(Number);
+                                                return new Date(Date.UTC(y, m - 1, d, 12, 0, 0))
+                                                    .toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+                                            })()}
                                         </span>
                                     </div>
                                 </div>

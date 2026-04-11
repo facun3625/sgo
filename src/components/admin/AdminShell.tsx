@@ -31,6 +31,8 @@ import {
     DatabaseZap,
     Settings2,
     UserCog,
+    KeyRound,
+    Landmark,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { SessionPayload } from "@/lib/auth";
@@ -54,7 +56,7 @@ const navItems = [
     { href: "/admin/cursos", label: "Cursos", icon: GraduationCap, color: "text-pink-500" },
     { href: "/admin/noticias", label: "Actividades Institucionales", icon: Newspaper, color: "text-amber-500" },
     { href: "/admin/biblioteca", label: "Biblioteca", icon: Library, color: "text-blue-500" },
-    { href: "/admin/tokens", label: "Tokens", icon: Cpu, color: "text-violet-500" },
+    { href: "/admin/ventas", label: "Ventas", icon: Cpu, color: "text-violet-500" },
     { href: "/admin/calendario", label: "Calendario", icon: CalendarDays, color: "text-orange-500" },
     { href: "/admin/faq", label: "Preguntas Frecuentes", icon: HelpCircle, color: "text-slate-400" },
     { href: "/admin/mensajes", label: "Mensajes Privados", icon: Mail, color: "text-sky-500" },
@@ -62,10 +64,10 @@ const navItems = [
     { href: "/admin/firmas", label: "Firmas de Autoridades", icon: PenLine, color: "text-indigo-500" },
     { href: "/admin/adhesiones", label: "Débito Automático", icon: Banknote, color: "text-emerald-500" },
     { href: "/admin/cambios-datos", label: "Modificaciones de Datos", icon: UserCheck, color: "text-violet-500" },
+    { href: "/admin/transferencias", label: "Transferencias", icon: Landmark, color: "text-slate-400" },
     { href: "/admin/importar", label: "Importar Datos", icon: DatabaseZap, color: "text-cyan-500" },
     { href: "/admin/tribunal-etica", label: "Tribunal de Ética", icon: Scale, color: "text-rose-500" },
     { href: "/admin/repositorio", label: "Repositorio de Archivos", icon: FolderOpen, color: "text-indigo-500" },
-    { href: "/admin/config", label: "Configuración", icon: Settings2, color: "text-slate-400" },
 ];
 
 export default function AdminShell({ session, image, permisos, children }: AdminShellProps) {
@@ -73,11 +75,24 @@ export default function AdminShell({ session, image, permisos, children }: Admin
     const router = useRouter();
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [profileOpen, setProfileOpen] = useState(false);
+    const [configOpen, setConfigOpen] = useState(false);
     const [mounted, setMounted] = useState(false);
     const { resolvedTheme, setTheme } = useTheme();
     const profileRef = useRef<HTMLDivElement>(null);
+    const navRef = useRef<HTMLElement>(null);
 
     useEffect(() => { setMounted(true); }, []);
+    useEffect(() => {
+        if (pathname.startsWith("/admin/config")) setConfigOpen(true);
+    }, [pathname]);
+
+    useEffect(() => {
+        if (configOpen && navRef.current) {
+            setTimeout(() => {
+                navRef.current?.scrollTo({ top: navRef.current.scrollHeight, behavior: "smooth" });
+            }, 50);
+        }
+    }, [configOpen]);
 
     useEffect(() => {
         function handleClickOutside(e: MouseEvent) {
@@ -107,8 +122,8 @@ export default function AdminShell({ session, image, permisos, children }: Admin
         // Extract section key from href: /admin/{key}
         const key = item.href.split("/")[2]; // e.g. "solicitudes"
         if (!key) return true;
-        // config and gestionar-admins are superadmin only
-        if (key === "config" || key === "gestionar-admins") return false;
+        // gestionar-admins is superadmin only
+        if (key === "gestionar-admins") return false;
         return permisos.includes(key);
     });
 
@@ -137,7 +152,7 @@ export default function AdminShell({ session, image, permisos, children }: Admin
                     </div>
                 </div>
 
-                <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+                <nav ref={navRef} className="flex-1 p-3 space-y-1 overflow-y-auto">
                     {visibleNavItems.map((item) => {
                         const active = isActive(item);
                         return (
@@ -153,6 +168,47 @@ export default function AdminShell({ session, image, permisos, children }: Admin
                             </Link>
                         );
                     })}
+
+                    {/* Configuración — solo superadmin */}
+                    {isSuperAdmin && (
+                        <div>
+                            <button
+                                onClick={() => setConfigOpen((v) => !v)}
+                                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-[13px] font-medium group
+                                    ${pathname.startsWith("/admin/config")
+                                        ? "bg-green-900/10 dark:bg-white/5 text-slate-700 dark:text-slate-200"
+                                        : "text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-700 dark:hover:text-slate-200"
+                                    }`}
+                            >
+                                <Settings2 size={17} className={`text-slate-400 ${!pathname.startsWith("/admin/config") ? "group-hover:scale-110 transition-transform" : ""}`} />
+                                Configuración
+                                <ChevronDown size={13} className={`ml-auto text-slate-400 transition-transform duration-200 ${configOpen ? "rotate-180" : ""}`} />
+                            </button>
+
+                            {configOpen && (
+                                <div className="mt-1 ml-4 space-y-0.5 border-l border-slate-100 dark:border-slate-800 pl-3">
+                                    {[
+                                        { href: "/admin/config/matricula", label: "Matrícula", icon: Settings2, color: "text-slate-400" },
+                                        { href: "/admin/config/pagos", label: "Métodos de Pago", icon: KeyRound, color: "text-[#009ee3]" },
+                                    ].map((sub) => {
+                                        const active = pathname.startsWith(sub.href);
+                                        return (
+                                            <Link key={sub.href} href={sub.href} onClick={() => setSidebarOpen(false)}
+                                                className={`flex items-center gap-3 px-3 py-2 rounded-xl transition-all text-[12.5px] font-medium group
+                                                    ${active
+                                                        ? "bg-green-900 text-white dark:bg-white/15"
+                                                        : "text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-700 dark:hover:text-slate-200"
+                                                    }`}>
+                                                <sub.icon size={15} className={active ? "text-white" : `${sub.color} group-hover:scale-110 transition-transform`} />
+                                                {sub.label}
+                                                {active && <ChevronRight size={12} className="ml-auto text-white/40" />}
+                                            </Link>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </nav>
 
                 {/* User info bottom */}

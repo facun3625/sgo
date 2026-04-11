@@ -11,7 +11,16 @@
       "Bash(ssh -p 5341 -i ~/.ssh/id_ed25519 root@149.50.148.28 \"pm2 logs sgo --lines 30 --nostream\")",
       "Bash(npx tsc:*)",
       "Bash(ls /Users/facundoarteagasola/Documents/sgo/src/app/api/admin/gestionar-admins/[id]/route.ts)",
-      "Bash(ssh -p 5341 root@149.50.148.28 \"pm2 logs sgo --lines 30 --nostream\")"
+      "Bash(ssh -p 5341 root@149.50.148.28 \"pm2 logs sgo --lines 30 --nostream\")",
+      "Bash(npm run:*)",
+      "Bash(cat /Users/facundoarteagasola/Documents/sgo/src/app/api/user/ventas/[id]/route.ts)",
+      "Bash(cat /Users/facundoarteagasola/Documents/sgo/src/app/api/admin/ventas/pedidos/[id]/route.ts)",
+      "Bash(cat /Users/facundoarteagasola/Documents/sgo/src/app/api/admin/ventas/productos/[id]/route.ts)",
+      "Bash(git diff:*)",
+      "Bash(grep -l \"productos\\\\|pedidos\\\\|token_config\\\\|token_pedidos\" /Users/facundoarteagasola/Documents/sgo/prisma/migrations/*/migration.sql)",
+      "Bash(find /Users/facundoarteagasola/Documents/sgo/src/lib -name *.ts)",
+      "Bash(npm install:*)",
+      "Bash(npm list:*)"
     ],
     "additionalDirectories": [
       "/Users/facundoarteagasola/Documents/sgo/src/app/api/admin/adhesiones",

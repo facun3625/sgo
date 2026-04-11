@@ -18,6 +18,11 @@ export async function GET() {
     return NextResponse.json({
         montoMensual: map.montoMensual ?? "4500",
         montoAnual: map.montoAnual ?? "48000",
+        pagoAnualDesde: map.pagoAnualDesde ?? "",
+        pagoAnualHasta: map.pagoAnualHasta ?? "",
+        // No devolvemos los valores reales — solo si están configurados
+        mpTokenConfigurado: !!map.mpAccessToken,
+        mpPublicKeyConfigurado: !!map.mpPublicKey,
     });
 }
 

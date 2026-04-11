@@ -12,7 +12,7 @@ export const ADMIN_SECCIONES = [
     { key: "cursos", label: "Cursos" },
     { key: "noticias", label: "Actividades Institucionales" },
     { key: "biblioteca", label: "Biblioteca" },
-    { key: "tokens", label: "Tokens" },
+    { key: "ventas", label: "Ventas" },
     { key: "calendario", label: "Calendario" },
     { key: "faq", label: "Preguntas Frecuentes" },
     { key: "mensajes", label: "Mensajes Privados" },

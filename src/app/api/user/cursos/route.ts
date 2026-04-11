@@ -7,7 +7,7 @@ export async function GET() {
     const session = await getSession();
     if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
-    const [cursos, inscripciones] = await Promise.all([
+    const [cursos, inscripciones, transferenciaConfig] = await Promise.all([
         prisma.curso.findMany({
             where: { activo: true },
             include: {
@@ -18,8 +18,9 @@ export async function GET() {
         }),
         prisma.inscripcionCurso.findMany({
             where: { expediente: session.expediente },
-            select: { cursoId: true, opcionId: true, estado: true },
+            select: { id: true, cursoId: true, opcionId: true, estado: true },
         }),
+        prisma.config.findUnique({ where: { clave: "transferencia_curso" } }),
     ]);
 
     const inscritosMap = new Map(inscripciones.map(i => [i.cursoId, i]));
@@ -48,5 +49,5 @@ export async function GET() {
         inscripcion: inscritosMap.get(curso.id) || null,
     }));
 
-    return NextResponse.json(data);
+    return NextResponse.json({ cursos: data, transferenciaHabilitada: transferenciaConfig?.valor === "1" });
 }

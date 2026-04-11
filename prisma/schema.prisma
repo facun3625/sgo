@@ -243,20 +243,25 @@ model Evento {
   @@map("eventos")
 }
 
-model TokenConfig {
+model Producto {
   id            Int      @id @default(autoincrement())
+  nombre        String
   precio        Float
   stock         Int
-  limiteMensual Int      @default(1)
-  activo        Boolean  @default(true)
+  habilitado    Boolean  @default(true)
+  limiteMensual Int?     // opcional — null = sin límite
+  createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+  pedidos       Pedido[]
 
-  @@map("token_config")
+  @@map("productos")
 }
 
-model TokenPedido {
+model Pedido {
   id          Int      @id @default(autoincrement())
   expediente  String
+  productoId  Int      @map("producto_id")
+  producto    Producto @relation(fields: [productoId], references: [id])
   cantidad    Int      @default(1)
   metodoPago  String   // "mercadopago" | "transferencia" | "efectivo"
   comprobante String?  // URL — solo transferencia
@@ -265,7 +270,7 @@ model TokenPedido {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  @@map("token_pedidos")
+  @@map("pedidos")
 }
 
 model Notificacion {
@@ -407,4 +412,19 @@ model RepositorioArchivo {
   createdAt   DateTime             @default(now())
 
   @@map("repositorio_archivos")
+}
+
+model PagoPendiente {
+  id          Int      @id @default(autoincrement())
+  expediente  String
+  tipo        String   // "matricula_mensual" | "matricula_anual" | "deuda" | "curso"
+  ref         String   // cuotaId / "anual" / comma-separated deudaIds / inscripcionId
+  monto       Float
+  comprobante String   // URL del comprobante
+  estado      String   @default("pendiente") // "pendiente" | "aprobado" | "rechazado"
+  nota        String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("pagos_pendientes")
 }

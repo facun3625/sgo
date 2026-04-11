@@ -18,6 +18,8 @@ export async function GET() {
             deudas,
             cuotaActual,
             configMontoAnual,
+            configPagoAnualDesde,
+            configPagoAnualHasta,
             debitoAprobado,
             cancelacionAprobada,
             debitoEnTramite,
@@ -27,6 +29,8 @@ export async function GET() {
             prisma.deuda.findMany({ where: { expediente } }),
             prisma.cuotaMensual.findFirst({ where: { expediente, periodo: currentPeriod } }),
             prisma.config.findUnique({ where: { clave: "montoAnual" } }),
+            prisma.config.findUnique({ where: { clave: "pagoAnualDesde" } }),
+            prisma.config.findUnique({ where: { clave: "pagoAnualHasta" } }),
             prisma.adhesionDebito.findFirst({
                 where: { expediente, estado: "aprobada", tipoAdhesion: { not: "CANCELACION" } }
             }),
@@ -42,6 +46,11 @@ export async function GET() {
             prisma.pagoAnual.findFirst({ where: { expediente } }),
         ]);
 
+        const configTransferencia = await prisma.config.findMany({
+            where: { clave: { in: ["transferencia_matricula_mensual", "transferencia_matricula_anual", "transferencia_deuda"] } },
+        });
+        const tMap = Object.fromEntries(configTransferencia.map((c) => [c.clave, c.valor === "1"]));
+
         const historialCuotas = await prisma.cuotaMensual.findMany({
             where: { expediente },
             orderBy: { periodo: "desc" },
@@ -55,16 +64,40 @@ export async function GET() {
 
         const montoAnual = configMontoAnual ? parseFloat(configMontoAnual.valor) : 48000;
 
+        // Ventana de pago anual — si no está configurada, fallback a ene-mar
+        let showPagoAnual = false;
+        const desde = configPagoAnualDesde?.valor;
+        const hasta = configPagoAnualHasta?.valor;
+        if (desde && hasta) {
+            const now = new Date();
+            const d = new Date(desde);
+            const h = new Date(hasta);
+            // Comparar solo fecha (sin hora)
+            const hoy = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const dFecha = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+            const hFecha = new Date(h.getFullYear(), h.getMonth(), h.getDate());
+            showPagoAnual = hoy >= dFecha && hoy <= hFecha;
+        } else {
+            // Fallback: enero a marzo
+            showPagoAnual = new Date().getMonth() <= 2;
+        }
+
         return NextResponse.json({
             deudas,
             cuotaActual,
             historialCuotas,
             montoAnual,
+            showPagoAnual,
             hasDebitoAutomatico: debitoActivo,
             hasDebitoEnTramite: debitoPendiente,
             hasCancelacionPendiente: cancelacionEnTramite,
             hasPagoAnualActivo: !!pagoAnual,
-            totalDeuda: deudas.reduce((acc, curr) => acc + curr.monto, 0)
+            totalDeuda: deudas.reduce((acc, curr) => acc + curr.monto, 0),
+            transferenciaHabilitada: {
+                matricula_mensual: !!tMap.transferencia_matricula_mensual,
+                matricula_anual:   !!tMap.transferencia_matricula_anual,
+                deuda:             !!tMap.transferencia_deuda,
+            }
         });
 
     } catch (error) {

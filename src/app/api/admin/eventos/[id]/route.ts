@@ -6,7 +6,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     const { titulo, descripcion, fecha, tipo } = await req.json();
     const evento = await prisma.evento.update({
         where: { id: parseInt(id) },
-        data: { titulo, descripcion: descripcion || null, fecha: new Date(fecha), tipo },
+        data: { titulo, descripcion: descripcion || null, fecha: new Date(`${fecha}T12:00:00Z`), tipo },
     });
     return NextResponse.json(evento);
 }

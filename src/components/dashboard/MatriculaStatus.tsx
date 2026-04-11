@@ -6,12 +6,13 @@ import {
     Calendar,
     CreditCard,
     CheckCircle2,
-    ArrowRight,
     Info,
     Wallet,
     History,
     Loader2
 } from "lucide-react";
+import MpPayButton from "@/components/MpPayButton";
+import TransferenciaPayButton from "@/components/TransferenciaPayButton";
 
 interface Concepto {
     id: number;
@@ -32,6 +33,8 @@ interface PagosData {
     cuotaActual: CuotaMensualData | null;
     historialCuotas: CuotaMensualData[];
     montoAnual: number;
+    showPagoAnual: boolean;
+    transferenciaHabilitada: { matricula_mensual: boolean; matricula_anual: boolean; deuda: boolean };
     hasDebitoAutomatico: boolean;
     hasDebitoEnTramite: boolean;
     hasPagoAnualActivo: boolean;
@@ -79,10 +82,7 @@ export default function MatriculaStatus() {
     const hasDeuda = data?.deudas && data.deudas.length > 0;
     const totalDeuda = data?.totalDeuda || 0;
     const montoAnual = data?.montoAnual ?? 48000;
-
-    // Annual payment card only shows in Jan (0), Feb (1), Mar (2)
-    const currentMonth = new Date().getMonth();
-    const showAnualCard = currentMonth <= 2;
+    const showAnualCard = data?.showPagoAnual ?? false;
 
     // Período label for monthly card
     const periodoLabel = data?.cuotaActual?.periodo
@@ -113,10 +113,23 @@ export default function MatriculaStatus() {
                                 <p className="text-[10px] font-bold text-red-800/40 dark:text-red-400/40 uppercase tracking-widest mb-1">Total a Pagar</p>
                                 <p className="text-3xl font-black text-red-600 dark:text-red-400">${totalDeuda.toLocaleString()}</p>
                             </div>
-                            <button className="flex-1 md:flex-none h-14 px-8 bg-red-600 hover:bg-red-700 text-white rounded-2xl font-bold text-sm transition-all transform hover:scale-105 active:scale-95 shadow-lg shadow-red-600/20 flex items-center justify-center gap-2">
-                                Pagar Ahora
-                                <ArrowRight size={18} />
-                            </button>
+                            <div className="flex flex-col gap-2">
+                                <MpPayButton
+                                    tipo="deuda"
+                                    ref={data!.deudas.map((d) => d.id).join(",")}
+                                    label="Pagar con Mercado Pago"
+                                    className="w-full h-12 px-6 bg-red-600 hover:bg-red-700 text-white rounded-2xl font-bold text-sm transition-all active:scale-95 shadow-lg shadow-red-600/20 flex items-center justify-center gap-2"
+                                />
+                                {data?.transferenciaHabilitada?.deuda && (
+                                    <TransferenciaPayButton
+                                        tipo="deuda"
+                                        ref={data!.deudas.map((d) => d.id).join(",")}
+                                        monto={totalDeuda}
+                                        label="Pagar con transferencia"
+                                        className="w-full h-12 px-6 bg-slate-700 hover:bg-slate-600 text-white rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-2"
+                                    />
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -181,16 +194,27 @@ export default function MatriculaStatus() {
                                         </div>
                                     </div>
                                 ) : (
-                                    <>
+                                    <div className="w-full space-y-3">
                                         <div>
                                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Monto Final</p>
                                             <p className="text-3xl font-black text-black dark:text-white">${montoAnual.toLocaleString()}</p>
                                         </div>
-                                        <button className="h-12 px-6 bg-[#063f68] dark:bg-blue-600 text-white rounded-xl font-bold text-xs hover:bg-[#0a4d7a] dark:hover:bg-blue-500 transition-all flex items-center gap-2">
-                                            Pagar Anual
-                                            <CreditCard size={16} />
-                                        </button>
-                                    </>
+                                        <MpPayButton
+                                            tipo="matricula_anual"
+                                            ref="anual"
+                                            label="Pagar con Mercado Pago"
+                                            className="w-full h-12 px-6 bg-[#063f68] dark:bg-blue-600 text-white rounded-xl font-bold text-xs hover:bg-[#0a4d7a] dark:hover:bg-blue-500 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                                        />
+                                        {data?.transferenciaHabilitada?.matricula_anual && (
+                                            <TransferenciaPayButton
+                                                tipo="matricula_anual"
+                                                ref="anual"
+                                                monto={montoAnual}
+                                                label="Pagar con transferencia"
+                                                className="w-full h-12 px-6 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2"
+                                            />
+                                        )}
+                                    </div>
                                 )}
                             </div>
                         </div>
@@ -250,16 +274,27 @@ export default function MatriculaStatus() {
                                     </div>
                                 </div>
                             ) : data?.cuotaActual?.estado === "pendiente" ? (
-                                <>
+                                <div className="w-full space-y-3">
                                     <div>
                                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Monto a Pagar</p>
                                         <p className="text-3xl font-black text-black dark:text-white">${data.cuotaActual.monto.toLocaleString()}</p>
                                     </div>
-                                    <button className="h-12 px-6 bg-emerald-600 text-white rounded-xl font-bold text-xs hover:bg-emerald-700 transition-all flex items-center gap-2">
-                                        Pagar Cuota
-                                        <CreditCard size={16} />
-                                    </button>
-                                </>
+                                    <MpPayButton
+                                        tipo="matricula_mensual"
+                                        ref={String(data.cuotaActual.id)}
+                                        label="Pagar con Mercado Pago"
+                                        className="w-full h-12 px-6 bg-emerald-600 text-white rounded-xl font-bold text-xs hover:bg-emerald-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                                    />
+                                    {data?.transferenciaHabilitada?.matricula_mensual && (
+                                        <TransferenciaPayButton
+                                            tipo="matricula_mensual"
+                                            ref={String(data.cuotaActual.id)}
+                                            monto={data.cuotaActual.monto}
+                                            label="Pagar con transferencia"
+                                            className="w-full h-12 px-6 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2"
+                                        />
+                                    )}
+                                </div>
                             ) : (
                                 <div className="w-full">
                                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Estado</p>

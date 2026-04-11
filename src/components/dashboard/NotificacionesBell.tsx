@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Bell, Megaphone } from "lucide-react";
+import { Bell, Megaphone, CalendarDays } from "lucide-react";
 import Link from "next/link";
 
 interface Notificacion {
@@ -139,18 +139,25 @@ export default function NotificacionesBell() {
                         ) : (
                             notificaciones.map((n) => {
                                 const isComunicado = n.tipo === "comunicado";
+                                const isEvento = n.tipo === "evento";
                                 const inner = (
                                     <div
                                         key={n.id}
                                         className={`px-4 py-3 border-b border-slate-50 dark:border-slate-800/60 last:border-0 flex gap-3 transition-colors
                                             ${!n.leida
-                                                ? isComunicado ? "bg-amber-50/60 dark:bg-amber-900/10" : "bg-blue-50/50 dark:bg-blue-900/10"
+                                                ? isComunicado ? "bg-amber-50/60 dark:bg-amber-900/10"
+                                                : isEvento ? "bg-orange-50/60 dark:bg-orange-900/10"
+                                                : "bg-blue-50/50 dark:bg-blue-900/10"
                                                 : "hover:bg-slate-50 dark:hover:bg-slate-800/30"}`}
                                     >
                                         <div className="pt-0.5 flex-shrink-0">
                                             {isComunicado ? (
                                                 <div className={`w-6 h-6 rounded-lg flex items-center justify-center ${!n.leida ? "bg-amber-100 dark:bg-amber-900/30" : "bg-slate-100 dark:bg-slate-800"}`}>
                                                     <Megaphone size={12} className={!n.leida ? "text-amber-500" : "text-slate-400"} />
+                                                </div>
+                                            ) : isEvento ? (
+                                                <div className={`w-6 h-6 rounded-lg flex items-center justify-center ${!n.leida ? "bg-orange-100 dark:bg-orange-900/30" : "bg-slate-100 dark:bg-slate-800"}`}>
+                                                    <CalendarDays size={12} className={!n.leida ? "text-orange-500" : "text-slate-400"} />
                                                 </div>
                                             ) : (
                                                 <div className="pt-1">
@@ -179,6 +186,7 @@ export default function NotificacionesBell() {
                                     n.tipo === "debito" ? "/dashboard/solicitudes/adhesion-debito" :
                                     n.tipo === "admin_debito" ? "/admin/adhesiones" :
                                     n.tipo === "admin_cambios" ? "/admin/cambios-datos" :
+                                    n.tipo === "evento" ? "/dashboard/calendario" :
                                     null;
                                 return linkHref ? (
                                     <Link key={n.id} href={linkHref} onClick={handleClick}>

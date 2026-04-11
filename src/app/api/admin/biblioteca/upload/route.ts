@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
-import { writeFile } from "fs/promises";
+import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 
 function isAdmin(accessLevel: string) {
@@ -21,7 +21,9 @@ export async function POST(req: NextRequest) {
     const buffer = Buffer.from(bytes);
     const ext = path.extname(file.name);
     const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}${ext}`;
-    const filePath = path.join(process.cwd(), "public", "uploads", "biblioteca", fileName);
+    const uploadDir = path.join(process.cwd(), "public", "uploads", "biblioteca");
+    await mkdir(uploadDir, { recursive: true });
+    const filePath = path.join(uploadDir, fileName);
     await writeFile(filePath, buffer);
 
     return NextResponse.json({ url: `/uploads/biblioteca/${fileName}` });
