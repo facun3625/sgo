@@ -12,14 +12,14 @@ export async function GET() {
     if (!session || !isAdmin(session.accessLevel))
         return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
-    const periodo = new Date().toISOString().slice(0, 7); // "2026-04"
+    const periodo = new Date().toISOString().slice(0, 7);
 
-    // Todos los usuarios activos matriculados
-    const users = await prisma.user.findMany({
-        where: { status: "active", accessLevel: "user", NOT: { expediente: null } },
+    // Base: todos los matriculados con expediente
+    const datos = await prisma.dato.findMany({
+        where: { NOT: { expediente: null } },
         select: { expediente: true, nombre: true, apellido: true },
     });
-    const expedientes = users.map((u) => u.expediente as string);
+    const expedientes = datos.map((d) => d.expediente as string);
 
     // Excluir: débito automático aprobado
     const debitosAprobados = await prisma.adhesionDebito.findMany({
@@ -35,10 +35,10 @@ export async function GET() {
     });
     const setAnual = new Set(pagosAnuales.map((p) => p.expediente));
 
-    const usuariosFiltrados = users.filter(
-        (u) => !setDebito.has(u.expediente!) && !setAnual.has(u.expediente!)
+    const matriculadosFiltrados = datos.filter(
+        (d) => !setDebito.has(d.expediente!) && !setAnual.has(d.expediente!)
     );
-    const expFiltrados = usuariosFiltrados.map((u) => u.expediente as string);
+    const expFiltrados = matriculadosFiltrados.map((d) => d.expediente as string);
 
     // Cuotas del período actual
     const cuotas = await prisma.cuotaMensual.findMany({
@@ -56,22 +56,41 @@ export async function GET() {
         mapDeudas.set(d.expediente, { total: prev.total + d.monto, count: prev.count + 1 });
     }
 
-    // PagosPendientes para detectar método (transferencia vs MP)
+    // PagosPendientes para detectar método de pago (transferencia)
     const pagosPendientes = await prisma.pagoPendiente.findMany({
-        where: {
-            expediente: { in: expFiltrados },
-            tipo: "matricula_mensual",
-        },
+        where: { expediente: { in: expFiltrados }, tipo: "matricula_mensual" },
         select: { expediente: true, ref: true, estado: true },
     });
-    // ref = cuotaId — buscar por cuotaId
-    const mapMetodoByCuotaId = new Map<string, string>(); // cuotaId → estado de PagoPendiente
+    const mapMetodoByCuotaId = new Map<string, string>();
     for (const pp of pagosPendientes) {
         mapMetodoByCuotaId.set(pp.ref, pp.estado);
     }
 
-    const resultado = usuariosFiltrados.map((u) => {
-        const exp = u.expediente as string;
+    // Stats del mes
+    const cuotasPagadas = cuotas.filter((c) => c.estado === "pagado");
+    const totalRecaudado = cuotasPagadas.reduce((acc, c) => acc + c.monto, 0);
+    const pagadasPorTransferencia = cuotasPagadas.filter((c) => {
+        const ppEstado = mapMetodoByCuotaId.get(String(c.id));
+        return ppEstado === "aprobado";
+    }).length;
+    const pagadasPorMP = cuotasPagadas.length - pagadasPorTransferencia;
+    const totalDeudaAcumulada = [...mapDeudas.values()].reduce((acc, d) => acc + d.total, 0);
+
+    const stats = {
+        totalMatriculados: expFiltrados.length,
+        cuotaGenerada: cuotas.length,
+        cuotaPagada: cuotasPagadas.length,
+        cuotaPendiente: cuotas.filter((c) => c.estado === "pendiente").length,
+        sinCuota: expFiltrados.length - cuotas.length,
+        pagadasPorMP,
+        pagadasPorTransferencia,
+        totalRecaudado,
+        conDeuda: [...mapDeudas.values()].filter((d) => d.total > 0).length,
+        totalDeudaAcumulada,
+    };
+
+    const resultado = matriculadosFiltrados.map((d) => {
+        const exp = d.expediente as string;
         const cuota = mapCuotas.get(exp) ?? null;
         const deuda = mapDeudas.get(exp) ?? null;
 
@@ -89,24 +108,22 @@ export async function GET() {
 
         return {
             expediente: exp,
-            nombre: u.nombre,
-            apellido: u.apellido,
-            cuota: cuota
-                ? {
-                      id: cuota.id,
-                      periodo: cuota.periodo,
-                      monto: cuota.monto,
-                      estado: cuota.estado,
-                      fechaPago: cuota.fechaPago,
-                      metodo: metodoCuota,
-                  }
-                : null,
+            nombre: d.nombre,
+            apellido: d.apellido,
+            cuota: cuota ? {
+                id: cuota.id,
+                periodo: cuota.periodo,
+                monto: cuota.monto,
+                estado: cuota.estado,
+                fechaPago: cuota.fechaPago,
+                metodo: metodoCuota,
+            } : null,
             deudaTotal: deuda?.total ?? 0,
             deudaCount: deuda?.count ?? 0,
         };
     });
 
-    // Ordenar: con deuda primero → cuota pendiente → al día → alfabético
+    // Ordenar: con deuda → cuota pendiente → al día → alfabético
     resultado.sort((a, b) => {
         const scoreA = (a.deudaTotal > 0 ? 2 : 0) + (a.cuota?.estado === "pendiente" ? 1 : 0);
         const scoreB = (b.deudaTotal > 0 ? 2 : 0) + (b.cuota?.estado === "pendiente" ? 1 : 0);
@@ -114,5 +131,5 @@ export async function GET() {
         return a.apellido.localeCompare(b.apellido);
     });
 
-    return NextResponse.json({ periodo, usuarios: resultado });
+    return NextResponse.json({ periodo, stats, usuarios: resultado });
 }
