@@ -16,7 +16,7 @@ export async function GET() {
 
     // Todos los usuarios activos matriculados
     const users = await prisma.user.findMany({
-        where: { status: "active", accessLevel: "user", registered: 1, NOT: { expediente: null } },
+        where: { status: "active", accessLevel: "user", NOT: { expediente: null } },
         select: { expediente: true, nombre: true, apellido: true },
     });
     const expedientes = users.map((u) => u.expediente as string);
