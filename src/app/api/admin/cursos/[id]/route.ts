@@ -109,6 +109,11 @@ export async function DELETE(_: NextRequest, { params }: { params: Promise<{ id:
     }
 
     const { id } = await params;
-    await prisma.curso.delete({ where: { id: parseInt(id) } });
+    const cursoId = parseInt(id);
+
+    // Eliminar relaciones sin cascade explícito
+    await prisma.inscripcionCurso.deleteMany({ where: { cursoId } });
+
+    await prisma.curso.delete({ where: { id: cursoId } });
     return NextResponse.json({ success: true });
 }

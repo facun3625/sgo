@@ -306,8 +306,13 @@ export default function EditarCursoPage() {
     async function handleDelete() {
         if (!confirm("¿Eliminás este curso? Se borrarán todas sus inscripciones.")) return;
         setDeleting(true);
-        await fetch(`/api/admin/cursos/${id}`, { method: "DELETE" });
-        router.push("/admin/cursos");
+        const res = await fetch(`/api/admin/cursos/${id}`, { method: "DELETE" });
+        if (res.ok) {
+            router.push("/admin/cursos");
+        } else {
+            alert("No se pudo eliminar el curso.");
+            setDeleting(false);
+        }
     }
 
     const estadoLabel: Record<string, { label: string; color: string }> = {
