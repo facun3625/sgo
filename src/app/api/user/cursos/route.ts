@@ -46,8 +46,9 @@ export async function GET() {
             inscritos: op.inscritos,
             disponible: op.cupo === 0 || op.inscritos < op.cupo,
         })),
+        tipoAsistencia: curso.tipoAsistencia,
         inscripcion: inscritosMap.get(curso.id) || null,
     }));
 
-    return NextResponse.json({ cursos: data, transferenciaHabilitada: transferenciaConfig?.valor === "1" });
+    return NextResponse.json({ cursos: data, transferenciaHabilitada: transferenciaConfig?.valor === "1", expediente: session.expediente });
 }

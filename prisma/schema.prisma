@@ -143,12 +143,72 @@ model Curso {
   fechaLimiteInscripcion DateTime?
   activo                 Boolean           @default(true)
   mostrarEnCalendario    Boolean           @default(false)
+  // Asistencia
+  tipoAsistencia         String            @default("ninguna") @map("tipo_asistencia") // "ninguna" | "por_dia" | "global"
+  porcentajeMin          Float?            @map("porcentaje_min") // para "global": % mínimo de sesiones asistidas
+  diasMinimos            Int?              @map("dias_minimos")   // para "por_dia": mínimo de días presentes
+  // Certificado
+  certTexto              String?           @map("cert_texto")     // cuerpo del texto del certificado
+  certCabecera           String?           @map("cert_cabecera")  // URL imagen cabecera
+  certFirmasIds          Int[]             @default([]) @map("cert_firmas_ids") // IDs de FirmaAutoridad
   opciones               CursoOpcion[]
   inscripciones          InscripcionCurso[]
+  dias                   CursoDia[]
+  sesiones               SesionAsistencia[]
+  certificados           CertificadoCurso[]
   createdAt              DateTime          @default(now())
   updatedAt              DateTime          @updatedAt
 
   @@map("cursos")
+}
+
+model CursoDia {
+  id        Int                @id @default(autoincrement())
+  cursoId   Int                @map("curso_id")
+  curso     Curso              @relation(fields: [cursoId], references: [id], onDelete: Cascade)
+  fecha     DateTime
+  nombre    String?
+  orden     Int                @default(0)
+  sesiones  SesionAsistencia[]
+  createdAt DateTime           @default(now())
+
+  @@map("curso_dias")
+}
+
+model SesionAsistencia {
+  id          Int               @id @default(autoincrement())
+  cursoId     Int               @map("curso_id")
+  curso       Curso             @relation(fields: [cursoId], references: [id], onDelete: Cascade)
+  diaId       Int?              @map("dia_id")
+  dia         CursoDia?         @relation(fields: [diaId], references: [id])
+  token       String            @unique @default(uuid())
+  activa      Boolean           @default(true)
+  asistencias AsistenciaCurso[]
+  createdAt   DateTime          @default(now())
+
+  @@map("sesiones_asistencia")
+}
+
+model AsistenciaCurso {
+  id         Int              @id @default(autoincrement())
+  sesionId   Int              @map("sesion_id")
+  sesion     SesionAsistencia @relation(fields: [sesionId], references: [id], onDelete: Cascade)
+  expediente String
+  createdAt  DateTime         @default(now())
+
+  @@unique([sesionId, expediente])
+  @@map("asistencias_cursos")
+}
+
+model CertificadoCurso {
+  id         Int      @id @default(autoincrement())
+  expediente String
+  cursoId    Int      @map("curso_id")
+  curso      Curso    @relation(fields: [cursoId], references: [id], onDelete: Cascade)
+  emitidoAt  DateTime @default(now())
+
+  @@unique([expediente, cursoId])
+  @@map("certificados_cursos")
 }
 
 model CursoOpcion {

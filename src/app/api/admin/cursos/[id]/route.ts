@@ -17,6 +17,7 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
         where: { id: parseInt(id) },
         include: {
             opciones: true,
+            dias: { orderBy: { orden: "asc" } },
             inscripciones: {
                 include: { opcion: true }
             }
@@ -36,7 +37,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const { id: idStr } = await params;
     const id = parseInt(idStr);
     const body = await req.json();
-    const { titulo, descripcion, organizador, fecha, fechaFin, hora, lugar, imagen, modalidad, fechaLimiteInscripcion, activo, mostrarEnCalendario, opciones } = body;
+    const { titulo, descripcion, organizador, fecha, fechaFin, hora, lugar, imagen, modalidad, fechaLimiteInscripcion, activo, mostrarEnCalendario, opciones, tipoAsistencia, porcentajeMin, diasMinimos, dias, certTexto, certCabecera, certFirmasIds } = body;
+
+    const mod = modalidad || "Presencial";
+    const tipoAsis = mod === "Virtual" ? "ninguna" : (tipoAsistencia || "ninguna");
 
     await prisma.curso.update({
         where: { id },
@@ -49,10 +53,16 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
             hora: hora || null,
             lugar: lugar || null,
             imagen: imagen || null,
-            modalidad,
+            modalidad: mod,
             fechaLimiteInscripcion: fechaLimiteInscripcion ? new Date(fechaLimiteInscripcion) : null,
             activo,
             mostrarEnCalendario: mostrarEnCalendario ?? false,
+            tipoAsistencia: tipoAsis,
+            porcentajeMin: tipoAsis === "global" ? (porcentajeMin ?? null) : null,
+            diasMinimos: tipoAsis === "por_dia" ? (diasMinimos ?? null) : null,
+            certTexto: certTexto ?? null,
+            certCabecera: certCabecera ?? null,
+            certFirmasIds: certFirmasIds ?? [],
         }
     });
 
@@ -68,9 +78,25 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         });
     }
 
+    if (tipoAsis === "por_dia" && dias) {
+        await prisma.cursoDia.deleteMany({ where: { cursoId: id } });
+        if (dias.length > 0) {
+            await prisma.cursoDia.createMany({
+                data: (dias as { fecha: string; nombre?: string }[]).map((d, i) => ({
+                    cursoId: id,
+                    fecha: new Date(d.fecha),
+                    nombre: d.nombre || null,
+                    orden: i,
+                }))
+            });
+        }
+    } else if (tipoAsis !== "por_dia") {
+        await prisma.cursoDia.deleteMany({ where: { cursoId: id } });
+    }
+
     const updated = await prisma.curso.findUnique({
         where: { id },
-        include: { opciones: true }
+        include: { opciones: true, dias: { orderBy: { orden: "asc" } } }
     });
 
     return NextResponse.json(updated);

@@ -3,12 +3,17 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Upload, X, Plus, Trash2, Loader2, GraduationCap } from "lucide-react";
+import { ArrowLeft, Upload, X, Plus, Trash2, Loader2, GraduationCap, CalendarDays } from "lucide-react";
 
 interface Opcion {
     nombre: string;
     precio: number;
     cupo: number;
+}
+
+interface Dia {
+    fecha: string;
+    nombre: string;
 }
 
 export default function NuevoCursoPage() {
@@ -29,14 +34,30 @@ export default function NuevoCursoPage() {
         fechaLimiteInscripcion: "",
         activo: true,
         mostrarEnCalendario: false,
+        tipoAsistencia: "ninguna",
+        porcentajeMin: 75,
+        diasMinimos: 1,
     });
     const [opciones, setOpciones] = useState<Opcion[]>([
         { nombre: "", precio: 0, cupo: 0 }
     ]);
+    const [dias, setDias] = useState<Dia[]>([]);
     const [error, setError] = useState("");
 
-    function setField(key: string, value: string | boolean) {
+    function setField(key: string, value: string | boolean | number) {
         setForm(prev => ({ ...prev, [key]: value }));
+    }
+
+    function addDia() {
+        setDias(prev => [...prev, { fecha: "", nombre: "" }]);
+    }
+
+    function removeDia(i: number) {
+        setDias(prev => prev.filter((_, idx) => idx !== i));
+    }
+
+    function updateDia(i: number, key: keyof Dia, value: string) {
+        setDias(prev => prev.map((d, idx) => idx === i ? { ...d, [key]: value } : d));
     }
 
     async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -81,6 +102,10 @@ export default function NuevoCursoPage() {
             setError("Todas las opciones deben tener un nombre.");
             return;
         }
+        if (form.tipoAsistencia === "por_dia" && dias.some(d => !d.fecha)) {
+            setError("Todos los días deben tener fecha.");
+            return;
+        }
 
         setSaving(true);
         try {
@@ -100,6 +125,7 @@ export default function NuevoCursoPage() {
                         precio: Number(o.precio),
                         cupo: Number(o.cupo),
                     })),
+                    dias: form.tipoAsistencia === "por_dia" ? dias : [],
                 }),
             });
             if (!res.ok) throw new Error("Error al crear curso");
@@ -283,6 +309,88 @@ export default function NuevoCursoPage() {
                             <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${form.mostrarEnCalendario ? "translate-x-5" : "translate-x-0"}`} />
                         </button>
                     </div>
+                </div>
+
+                {/* Asistencia */}
+                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-5 space-y-4">
+                    <div>
+                        <h2 className="text-[13px] font-semibold text-slate-600 dark:text-slate-300">Control de asistencia</h2>
+                        <p className="text-[11px] text-slate-400 mt-0.5">
+                            {form.modalidad === "Virtual" ? "No aplica para modalidad virtual." : "Aplica a días presenciales para habilitar el certificado."}
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2">
+                        {([
+                            { value: "ninguna", label: "Sin control" },
+                            { value: "por_dia", label: "Por día" },
+                            { value: "global", label: "Global (%)" },
+                        ] as const).map(opt => (
+                            <button key={opt.value} type="button"
+                                disabled={form.modalidad === "Virtual"}
+                                onClick={() => setField("tipoAsistencia", opt.value)}
+                                className={`py-2.5 rounded-xl border text-[12px] font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
+                                    form.tipoAsistencia === opt.value
+                                        ? "border-[#063f68] bg-[#063f68]/5 text-[#063f68] dark:text-blue-400"
+                                        : "border-slate-200 dark:border-slate-700 text-slate-500 hover:border-slate-300"
+                                }`}>
+                                {opt.label}
+                            </button>
+                        ))}
+                    </div>
+
+                    {form.tipoAsistencia === "por_dia" && (
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                                <label className="text-[12px] font-medium text-slate-500">Días del curso</label>
+                                <button type="button" onClick={addDia}
+                                    className="flex items-center gap-1.5 px-3 h-7 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-lg text-[11px] font-bold hover:bg-slate-100 dark:hover:bg-slate-700 transition-all">
+                                    <Plus size={11} /> Agregar día
+                                </button>
+                            </div>
+                            {dias.length === 0 && (
+                                <p className="text-[11px] text-slate-400 text-center py-3">No hay días cargados. Agregá al menos uno.</p>
+                            )}
+                            {dias.map((dia, i) => (
+                                <div key={i} className="flex items-end gap-2 p-3 bg-slate-50 dark:bg-slate-800 rounded-xl">
+                                    <div className="space-y-1.5">
+                                        <label className="text-[11px] font-medium text-slate-400">Fecha</label>
+                                        <input type="date" value={dia.fecha} onChange={e => updateDia(i, "fecha", e.target.value)}
+                                            className="h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white text-[12px] focus:outline-none focus:ring-2 focus:ring-[#063f68]/30 focus:border-[#063f68]" />
+                                    </div>
+                                    <div className="flex-1 space-y-1.5">
+                                        <label className="text-[11px] font-medium text-slate-400">Nombre <span className="font-normal opacity-60">(opcional)</span></label>
+                                        <input value={dia.nombre} onChange={e => updateDia(i, "nombre", e.target.value)}
+                                            placeholder="Ej: Módulo 1"
+                                            className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white text-[12px] focus:outline-none focus:ring-2 focus:ring-[#063f68]/30 focus:border-[#063f68]" />
+                                    </div>
+                                    <button type="button" onClick={() => removeDia(i)}
+                                        className="flex items-center justify-center w-9 h-9 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all">
+                                        <Trash2 size={13} />
+                                    </button>
+                                </div>
+                            ))}
+                            <div className="flex items-center gap-3 pt-1">
+                                <CalendarDays size={13} className="text-slate-400 flex-shrink-0" />
+                                <div className="flex items-center gap-2 flex-1">
+                                    <span className="text-[12px] text-slate-500">Mínimo de días para certificado:</span>
+                                    <input type="number" min="1" value={form.diasMinimos}
+                                        onChange={e => setField("diasMinimos", Number(e.target.value))}
+                                        className="w-16 h-8 px-2 text-center rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-[13px] font-bold focus:outline-none focus:ring-2 focus:ring-[#063f68]/30" />
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {form.tipoAsistencia === "global" && (
+                        <div className="flex items-center gap-3">
+                            <span className="text-[12px] text-slate-500">% mínimo de asistencia para certificado:</span>
+                            <input type="number" min="1" max="100" value={form.porcentajeMin}
+                                onChange={e => setField("porcentajeMin", Number(e.target.value))}
+                                className="w-16 h-8 px-2 text-center rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-[13px] font-bold focus:outline-none focus:ring-2 focus:ring-[#063f68]/30" />
+                            <span className="text-[12px] text-slate-400">%</span>
+                        </div>
+                    )}
                 </div>
 
                 {/* Opciones */}

@@ -1,6 +1,6 @@
 import prisma from "@/lib/prisma";
 import Link from "next/link";
-import { GraduationCap, Plus, Pencil, Users, Calendar, MapPin, ToggleLeft, ToggleRight } from "lucide-react";
+import { GraduationCap, Plus, Pencil, Users, Calendar, MapPin, ToggleLeft, ToggleRight, UserCheck, Award } from "lucide-react";
 
 export default async function AdminCursosPage() {
     const cursos = await prisma.curso.findMany({
@@ -100,9 +100,26 @@ export default async function AdminCursosPage() {
                                     )}
 
                                     {/* Acciones */}
-                                    <div className="flex items-center justify-end pt-1 border-t border-slate-50 dark:border-slate-800">
+                                    <div className="flex items-center gap-1.5 pt-1 border-t border-slate-50 dark:border-slate-800">
+                                        <Link href={`/admin/cursos/${curso.id}?tab=inscripciones`}
+                                            className="flex items-center gap-1.5 px-2.5 h-8 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-lg text-[11px] font-bold hover:bg-slate-100 dark:hover:bg-slate-700 transition-all">
+                                            <Users size={12} />
+                                            {curso._count.inscripciones}
+                                        </Link>
+                                        {curso.tipoAsistencia !== "ninguna" && (
+                                            <Link href={`/admin/cursos/${curso.id}/asistencia`}
+                                                className="flex items-center gap-1.5 px-2.5 h-8 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-lg text-[11px] font-bold hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/20 dark:hover:text-blue-400 transition-all">
+                                                <UserCheck size={12} />
+                                                Asistencia
+                                            </Link>
+                                        )}
+                                        <Link href={`/admin/cursos/${curso.id}?tab=certificados`}
+                                            className="flex items-center gap-1.5 px-2.5 h-8 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-lg text-[11px] font-bold hover:bg-amber-50 hover:text-amber-600 dark:hover:bg-amber-900/20 dark:hover:text-amber-400 transition-all">
+                                            <Award size={12} />
+                                            Certificados
+                                        </Link>
                                         <Link href={`/admin/cursos/${curso.id}`}
-                                            className="flex items-center gap-1.5 px-3 h-8 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-lg text-[11px] font-bold hover:bg-slate-100 dark:hover:bg-slate-700 transition-all">
+                                            className="flex items-center gap-1.5 px-2.5 h-8 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-lg text-[11px] font-bold hover:bg-slate-100 dark:hover:bg-slate-700 transition-all ml-auto">
                                             <Pencil size={12} />
                                             Editar
                                         </Link>

@@ -20,7 +20,9 @@
       "Bash(grep -l \"productos\\\\|pedidos\\\\|token_config\\\\|token_pedidos\" /Users/facundoarteagasola/Documents/sgo/prisma/migrations/*/migration.sql)",
       "Bash(find /Users/facundoarteagasola/Documents/sgo/src/lib -name *.ts)",
       "Bash(npm install:*)",
-      "Bash(npm list:*)"
+      "Bash(npm list:*)",
+      "Bash(ls -la /Users/facundoarteagasola/Documents/sgo/.env*)",
+      "Bash(wc -l /Users/facundoarteagasola/Documents/sgo/src/lib/*.ts /Users/facundoarteagasola/Documents/sgo/src/components/**/*.tsx)"
     ],
     "additionalDirectories": [
       "/Users/facundoarteagasola/Documents/sgo/src/app/api/admin/adhesiones",

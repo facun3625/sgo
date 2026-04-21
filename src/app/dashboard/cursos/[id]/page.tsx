@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Calendar, Clock, MapPin, Users, GraduationCap, Loader2, CheckCircle2, AlertCircle, Building2 } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, MapPin, Users, GraduationCap, Loader2, CheckCircle2, AlertCircle, Building2, ScanLine, Download, Award } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import MpPayButton from "@/components/MpPayButton";
 import TransferenciaPayButton from "@/components/TransferenciaPayButton";
 
@@ -28,8 +29,39 @@ interface Curso {
     imagen: string | null;
     modalidad: string;
     fechaLimiteInscripcion: string | null;
+    tipoAsistencia: string;
     opciones: Opcion[];
     inscripcion: { id: number; cursoId: number; opcionId: number | null; estado: string } | null;
+}
+
+function CertificadoCard({ cursoId, onDescargar, descargando }: { cursoId: number; onDescargar: () => void; descargando: boolean }) {
+    const [estado, setEstado] = useState<"loading" | "disponible" | "no_disponible">("loading");
+
+    useEffect(() => {
+        fetch(`/api/user/cursos/${cursoId}/certificado`)
+            .then(r => r.json())
+            .then(d => setEstado(d.certificado ? "disponible" : "no_disponible"))
+            .catch(() => setEstado("no_disponible"));
+    }, [cursoId]);
+
+    if (estado === "loading" || estado === "no_disponible") return null;
+
+    return (
+        <div className="flex items-center gap-4 px-4 py-3.5 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl">
+            <div className="w-9 h-9 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center flex-shrink-0">
+                <Award size={16} className="text-emerald-600 dark:text-emerald-400" />
+            </div>
+            <div className="flex-1 min-w-0">
+                <p className="text-[13px] font-bold text-emerald-800 dark:text-emerald-300">Certificado disponible</p>
+                <p className="text-[11px] text-emerald-600/70 dark:text-emerald-400/70">Tu certificado fue emitido</p>
+            </div>
+            <button onClick={onDescargar} disabled={descargando}
+                className="flex items-center gap-1.5 px-3 h-8 bg-emerald-600 text-white rounded-lg text-[11px] font-bold hover:bg-emerald-700 transition-all disabled:opacity-60 flex-shrink-0">
+                {descargando ? <Loader2 size={11} className="animate-spin" /> : <Download size={11} />}
+                {descargando ? "Generando..." : "Descargar"}
+            </button>
+        </div>
+    );
 }
 
 const UTC = { timeZone: "UTC" } as const;
@@ -56,12 +88,15 @@ export default function CursoDetailPage() {
     const [inscribiendo, setInscribiendo] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState(false);
+    const [expediente, setExpediente] = useState("");
+    const [descargando, setDescargando] = useState(false);
 
     useEffect(() => {
         fetch("/api/user/cursos")
             .then(r => r.json())
-            .then((data: { cursos: Curso[]; transferenciaHabilitada: boolean }) => {
+            .then((data: { cursos: Curso[]; transferenciaHabilitada: boolean; expediente: string }) => {
                 setTransferenciaHabilitada(!!data.transferenciaHabilitada);
+                setExpediente(data.expediente ?? "");
                 const found = data.cursos.find(c => c.id === Number(params.id));
                 if (found) {
                     setCurso(found);
@@ -70,6 +105,25 @@ export default function CursoDetailPage() {
             })
             .finally(() => setLoading(false));
     }, [params.id]);
+
+    async function handleDescargarCertificado() {
+        if (!curso) return;
+        setDescargando(true);
+        try {
+            const res = await fetch(`/api/user/cursos/${curso.id}/certificado`);
+            const data = await res.json();
+            if (!data.certificado) return;
+            const { generarCertificadoPdf } = await import("@/lib/certificadoPdf");
+            await generarCertificadoPdf({
+                alumno: data.alumno,
+                curso: data.curso,
+                firmas: data.firmas,
+                emitidoAt: data.certificado.emitidoAt,
+            });
+        } finally {
+            setDescargando(false);
+        }
+    }
 
     async function handleInscribirse() {
         if (!opcionSeleccionada || !curso) return;
@@ -201,6 +255,29 @@ export default function CursoDetailPage() {
                             </span>
                         )}
                     </div>
+
+                            {/* Certificado */}
+                    {curso.inscripcion.estado === "confirmada" && (
+                        <CertificadoCard cursoId={curso.id} onDescargar={handleDescargarCertificado} descargando={descargando} />
+                    )}
+
+                    {/* QR de asistencia */}
+                    {curso.inscripcion.estado === "confirmada" && curso.tipoAsistencia !== "ninguna" && expediente && (
+                        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-5">
+                            <div className="flex items-center gap-2 mb-4">
+                                <ScanLine size={15} className="text-[#063f68] dark:text-blue-400" />
+                                <p className="text-[13px] font-bold text-slate-700 dark:text-slate-200">Tu QR de asistencia</p>
+                            </div>
+                            <div className="flex flex-col items-center gap-3">
+                                <div className="p-4 bg-white rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
+                                    <QRCodeSVG value={expediente} size={180} />
+                                </div>
+                                <p className="text-[11px] text-slate-400 text-center max-w-xs">
+                                    Mostrá este QR al momento de registrar tu asistencia. El administrador lo escaneará con el lector.
+                                </p>
+                            </div>
+                        </div>
+                    )}
 
                     {curso.inscripcion.estado === "pendiente_pago" && (() => {
                         const opcion = curso.opciones.find(o => o.id === curso.inscripcion!.opcionId);

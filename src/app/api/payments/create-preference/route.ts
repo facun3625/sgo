@@ -92,24 +92,35 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "Pagos no configurados. Contactá al administrador." }, { status: 503 });
         }
 
+        const isPublicUrl = BASE_URL.startsWith("https://");
+
         const preference = await mpClients.preference.create({
             body: {
                 items: [{ id: externalReference, title, unit_price: unitPrice, quantity, currency_id: "ARS" }],
                 external_reference: externalReference,
-                back_urls: {
-                    success: `${BASE_URL}/dashboard/pagos?mp=success`,
-                    failure: `${BASE_URL}/dashboard/pagos?mp=failure`,
-                    pending: `${BASE_URL}/dashboard/pagos?mp=pending`,
-                },
-                auto_return: "approved",
-                notification_url: `${BASE_URL}/api/payments/webhook`,
+                ...(isPublicUrl && {
+                    back_urls: {
+                        success: `${BASE_URL}/dashboard/pagos?mp=success`,
+                        failure: `${BASE_URL}/dashboard/pagos?mp=failure`,
+                        pending: `${BASE_URL}/dashboard/pagos?mp=pending`,
+                    },
+                    auto_return: "approved",
+                    notification_url: `${BASE_URL}/api/payments/webhook`,
+                }),
             },
         });
 
-        return NextResponse.json({ init_point: preference.init_point });
+        // En sandbox usar sandbox_init_point, en producción usar init_point
+        const token = (await prisma.config.findUnique({ where: { clave: "mpAccessToken" } }))?.valor ?? process.env.MP_ACCESS_TOKEN ?? "";
+        const isSandbox = token.startsWith("TEST-");
+        const url = isSandbox ? preference.sandbox_init_point : preference.init_point;
 
-    } catch (err) {
-        console.error("[MP create-preference]", err);
-        return NextResponse.json({ error: "Error al generar el pago" }, { status: 500 });
+        return NextResponse.json({ init_point: url });
+
+    } catch (err: unknown) {
+        const mpErr = err as { cause?: unknown; message?: string };
+        console.error("[MP create-preference]", JSON.stringify(mpErr?.cause ?? err, null, 2));
+        const detail = mpErr?.cause ? JSON.stringify(mpErr.cause) : mpErr?.message ?? "desconocido";
+        return NextResponse.json({ error: `Error al generar el pago: ${detail}` }, { status: 500 });
     }
 }

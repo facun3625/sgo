@@ -33,6 +33,7 @@ import {
     UserCog,
     KeyRound,
     Landmark,
+    ReceiptText,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { SessionPayload } from "@/lib/auth";
@@ -64,6 +65,7 @@ const navItems = [
     { href: "/admin/firmas", label: "Firmas de Autoridades", icon: PenLine, color: "text-indigo-500" },
     { href: "/admin/adhesiones", label: "Débito Automático", icon: Banknote, color: "text-emerald-500" },
     { href: "/admin/cambios-datos", label: "Modificaciones de Datos", icon: UserCheck, color: "text-violet-500" },
+    { href: "/admin/pagos", label: "Estado de Pagos", icon: ReceiptText, color: "text-emerald-500" },
     { href: "/admin/transferencias", label: "Transferencias", icon: Landmark, color: "text-slate-400" },
     { href: "/admin/importar", label: "Importar Datos", icon: DatabaseZap, color: "text-cyan-500" },
     { href: "/admin/tribunal-etica", label: "Tribunal de Ética", icon: Scale, color: "text-rose-500" },
