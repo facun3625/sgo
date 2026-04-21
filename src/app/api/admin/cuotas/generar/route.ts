@@ -40,9 +40,16 @@ export async function POST() {
         (exp) => !pagoAnualExp.has(exp) && !debitoActivoExp.has(exp)
     );
 
+    // Crear las que no existen
     const result = await prisma.cuotaMensual.createMany({
         data: expedientesACobrar.map((expediente) => ({ expediente, periodo, monto, estado: "pendiente" })),
         skipDuplicates: true,
+    });
+
+    // Actualizar monto de las que ya existían y siguen pendientes
+    await prisma.cuotaMensual.updateMany({
+        where: { periodo, estado: "pendiente", expediente: { in: expedientesACobrar } },
+        data: { monto },
     });
 
     return NextResponse.json({ message: `Cuotas generadas para ${periodo}`, periodo, creadas: result.count });
