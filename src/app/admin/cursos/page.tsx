@@ -4,7 +4,10 @@ import { GraduationCap, Plus, Pencil, Users, Calendar, MapPin, ToggleLeft, Toggl
 
 export default async function AdminCursosPage() {
     const cursos = await prisma.curso.findMany({
-        include: {
+        select: {
+            id: true, titulo: true, descripcion: true, fecha: true, fechaFin: true,
+            hora: true, lugar: true, imagen: true, modalidad: true, activo: true,
+            tipoAsistencia: true, certTexto: true,
             opciones: true,
             _count: { select: { inscripciones: true } }
         },
