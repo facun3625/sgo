@@ -51,10 +51,28 @@ export async function GET() {
         });
         const tMap = Object.fromEntries(configTransferencia.map((c) => [c.clave, c.valor === "1"]));
 
-        const historialCuotas = await prisma.cuotaMensual.findMany({
+        const historialCuotasRaw = await prisma.cuotaMensual.findMany({
             where: { expediente },
             orderBy: { periodo: "desc" },
             take: 12,
+        });
+
+        const pagosPendientesHistorial = await prisma.pagoPendiente.findMany({
+            where: { expediente, ref: { in: historialCuotasRaw.map((c) => String(c.id)) } },
+            select: { ref: true, estado: true },
+        });
+        const mapPPHistorial = new Map(pagosPendientesHistorial.map((pp) => [pp.ref, pp.estado]));
+
+        type MetodoCuota = "mercadopago" | "transferencia" | "transferencia_pendiente" | null;
+        const historialCuotas = historialCuotasRaw.map((c) => {
+            const ppEstado = mapPPHistorial.get(String(c.id));
+            let metodo: MetodoCuota = null;
+            if (c.estado === "pagado") {
+                metodo = ppEstado === "aprobado" ? "transferencia" : "mercadopago";
+            } else if (ppEstado === "pendiente") {
+                metodo = "transferencia_pendiente";
+            }
+            return { ...c, metodo };
         });
 
         // Débito activo solo si hay adhesión aprobada y no hay cancelación aprobada

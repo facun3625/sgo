@@ -9,7 +9,9 @@ import {
     Info,
     Wallet,
     History,
-    Loader2
+    Loader2,
+    Landmark,
+    Clock,
 } from "lucide-react";
 import MpPayButton from "@/components/MpPayButton";
 import TransferenciaPayButton from "@/components/TransferenciaPayButton";
@@ -26,6 +28,7 @@ interface CuotaMensualData {
     periodo: string;
     monto: number;
     estado: string;
+    metodo?: "mercadopago" | "transferencia" | "transferencia_pendiente" | null;
 }
 
 interface PagosData {
@@ -324,6 +327,7 @@ export default function MatriculaStatus() {
                                 label={`Cuota ${formatPeriodo(c.periodo)}`}
                                 amount={c.monto.toLocaleString("es-AR")}
                                 status={c.estado === "pagado" ? "paid" : "pending"}
+                                metodo={c.metodo}
                                 isLast={i === data.historialCuotas.length - 1}
                             />
                         ))
@@ -347,15 +351,44 @@ export default function MatriculaStatus() {
     );
 }
 
-function ConceptItem({ label, amount, status, isLast }: { label: string; amount: string; status: "paid" | "pending"; isLast?: boolean }) {
+function ConceptItem({ label, amount, status, metodo, isLast }: {
+    label: string;
+    amount: string;
+    status: "paid" | "pending";
+    metodo?: "mercadopago" | "transferencia" | "transferencia_pendiente" | null;
+    isLast?: boolean;
+}) {
     const paid = status === "paid";
+
+    function MetodoTag() {
+        if (metodo === "transferencia") return (
+            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-slate-500 dark:text-slate-400">
+                <Landmark size={10} /> Transferencia
+            </span>
+        );
+        if (metodo === "mercadopago") return (
+            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-slate-500 dark:text-slate-400">
+                <CreditCard size={10} /> Mercado Pago
+            </span>
+        );
+        if (metodo === "transferencia_pendiente") return (
+            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-500">
+                <Clock size={10} /> Transferencia pendiente
+            </span>
+        );
+        return null;
+    }
+
     return (
         <div className={`p-6 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors ${!isLast ? 'border-b border-slate-50 dark:border-slate-800' : ''}`}>
             <div className="flex items-center gap-4">
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center ${paid ? "bg-slate-50 dark:bg-slate-800 text-emerald-500" : "bg-amber-50 dark:bg-amber-900/20 text-amber-500"}`}>
                     <CheckCircle2 size={18} />
                 </div>
-                <h5 className="text-[13px] font-bold text-black dark:text-white">{label}</h5>
+                <div>
+                    <h5 className="text-[13px] font-bold text-black dark:text-white">{label}</h5>
+                    <MetodoTag />
+                </div>
             </div>
             <div className="text-right">
                 <p className="text-[14px] font-black text-black dark:text-white">${amount}</p>
