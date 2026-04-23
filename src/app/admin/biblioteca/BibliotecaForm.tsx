@@ -151,7 +151,7 @@ export default function BibliotecaForm({ initialData }: BibliotecaFormProps) {
                     </Link>
                     <div>
                         <h1 className="text-xl font-bold text-slate-800 dark:text-white">{isEdit ? "Editar documento" : "Nuevo documento"}</h1>
-                        <p className="text-slate-400 text-sm mt-0.5">Biblioteca CASF</p>
+                        <p className="text-slate-400 text-sm mt-0.5">Biblioteca CPASF</p>
                     </div>
                 </div>
                 {isEdit && (

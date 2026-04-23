@@ -28,7 +28,7 @@ export default function ChatBot() {
         if (open && messages.length === 0) {
             setMessages([{
                 role: "assistant",
-                text: "¡Hola! Soy el asistente virtual del Colegio de Abogados de Santa Fe. ¿En qué puedo ayudarte hoy?"
+                text: "¡Hola! Soy el asistente virtual del Colegio de Profesionales de la Abogacía de Santa Fe. ¿En qué puedo ayudarte hoy?"
             }]);
         }
     }, [open]);
@@ -86,7 +86,7 @@ export default function ChatBot() {
                                 <Bot size={16} className="text-white" />
                             </div>
                             <div>
-                                <p className="text-white font-bold text-[13px]">Asistente CASF</p>
+                                <p className="text-white font-bold text-[13px]">Asistente CPASF</p>
                                 <p className="text-white/60 text-[10px]">Respondiendo al instante</p>
                             </div>
                         </div>

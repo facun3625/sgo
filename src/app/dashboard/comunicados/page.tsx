@@ -57,7 +57,7 @@ export default function ComunicadosPage() {
                     <Megaphone size={20} className="text-amber-500" /> Comunicados
                 </h1>
                 <p className="text-slate-400 text-sm mt-0.5">
-                    {selected ? selected.asunto : `Comunicaciones del CASF${unread > 0 ? ` · ${unread} sin leer` : ""}`}
+                    {selected ? selected.asunto : `Comunicaciones del CPASF${unread > 0 ? ` · ${unread} sin leer` : ""}`}
                 </p>
             </div>
 
@@ -68,7 +68,7 @@ export default function ComunicadosPage() {
                         <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-amber-50/50 dark:bg-amber-900/10">
                             <p className="text-[16px] font-bold text-slate-800 dark:text-white">{selected.asunto}</p>
                             <p className="text-[11px] text-slate-400 mt-1 flex items-center gap-2">
-                                <span>CASF · {timeAgo(selected.createdAt)}</span>
+                                <span>CPASF · {timeAgo(selected.createdAt)}</span>
                                 <span className="inline-flex items-center gap-1 text-emerald-500">
                                     <CheckCircle2 size={11} /> Leído
                                 </span>
@@ -108,7 +108,7 @@ export default function ComunicadosPage() {
                                         <p className={`text-[13px] truncate ${!c.leido ? "font-bold text-slate-800 dark:text-white" : "font-medium text-slate-600 dark:text-slate-300"}`}>
                                             {c.asunto}
                                         </p>
-                                        <p className="text-[11px] text-slate-400 mt-0.5">CASF</p>
+                                        <p className="text-[11px] text-slate-400 mt-0.5">CPASF</p>
                                     </div>
                                 </div>
                                 <div className="flex flex-col items-end gap-1.5 flex-shrink-0">

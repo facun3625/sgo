@@ -39,7 +39,7 @@ export default async function VerificarPage({ params }: { params: Promise<{ expe
                 {/* Header institucional */}
                 <div className="bg-[#063f68] px-8 py-6 flex items-center gap-4">
                     <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center p-1.5 shrink-0">
-                        <Image src="/sgo.png" alt="CASF" width={44} height={44} className="object-contain" />
+                        <Image src="/sgo.png" alt="CPASF" width={44} height={44} className="object-contain" />
                     </div>
                     <div>
                         <p className="text-white font-bold text-[15px] leading-tight">Colegio de la Abogacía</p>
@@ -92,7 +92,7 @@ export default async function VerificarPage({ params }: { params: Promise<{ expe
                         <h1 className="text-[18px] font-bold text-slate-900 leading-tight">
                             {user.apellido}, {user.nombre}
                         </h1>
-                        <p className="text-[12px] text-slate-400 font-medium mt-0.5">Abogado/a · CASF</p>
+                        <p className="text-[12px] text-slate-400 font-medium mt-0.5">Abogado/a · CPASF</p>
                     </div>
                 </div>
 

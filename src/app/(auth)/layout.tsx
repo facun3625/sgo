@@ -26,7 +26,7 @@ export default function AuthLayout({
                     <div className="w-[120px] h-[120px] flex items-center justify-center mb-6">
                         <Image
                             src="/sgo.png"
-                            alt="CASF"
+                            alt="CPASF"
                             width={120}
                             height={120}
                             className="drop-shadow-[0_8px_30px_rgba(0,0,0,0.4)]"
@@ -34,10 +34,10 @@ export default function AuthLayout({
                         />
                     </div>
                     <h1 className="text-white text-2xl font-bold tracking-tight mb-1">
-                        CASF
+                        CPASF
                     </h1>
                     <p className="text-white/50 text-[11px] font-semibold uppercase tracking-[0.2em]">
-                        Colegio de Abogados de Santa Fe
+                        Colegio de Profesionales de la Abogacía de Santa Fe
                     </p>
                     <div className="w-12 h-px bg-white/20 rounded-full mt-5 mb-5" />
                     <p className="text-white/40 text-[12px] leading-relaxed max-w-[200px]">
@@ -47,7 +47,7 @@ export default function AuthLayout({
 
                 {/* Footer */}
                 <div className="absolute bottom-6 z-10 text-white/20 text-[11px]">
-                    © {new Date().getFullYear()} SGO · CASF · 1ª Circunscripción
+                    © {new Date().getFullYear()} SGO · CPASF · 1ª Circunscripción
                 </div>
             </div>
 

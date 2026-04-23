@@ -31,11 +31,11 @@ export default async function VerificarBeneficiosPage({ params }: { params: Prom
                 {/* Header institucional */}
                 <div className="bg-[#063f68] px-8 py-6 flex items-center gap-4">
                     <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center p-1.5 shrink-0">
-                        <Image src="/sgo.png" alt="CASF" width={44} height={44} className="object-contain" />
+                        <Image src="/sgo.png" alt="CPASF" width={44} height={44} className="object-contain" />
                     </div>
                     <div>
                         <p className="text-white font-bold text-[15px] leading-tight">Tarjeta de Beneficios</p>
-                        <p className="text-white/60 text-[11px] font-semibold uppercase tracking-widest">Colegio de la Abogacía · CASF</p>
+                        <p className="text-white/60 text-[11px] font-semibold uppercase tracking-widest">Colegio de la Abogacía · CPASF</p>
                     </div>
                 </div>
 
@@ -85,7 +85,7 @@ export default async function VerificarBeneficiosPage({ params }: { params: Prom
                         <CreditCard size={16} className={habilitada ? "text-emerald-500 shrink-0" : "text-rose-400 shrink-0"} />
                         <p className={`text-[12px] font-semibold ${habilitada ? "text-emerald-700" : "text-rose-600"}`}>
                             {habilitada
-                                ? "Este profesional puede utilizar su tarjeta de beneficios en los comercios adheridos al CASF."
+                                ? "Este profesional puede utilizar su tarjeta de beneficios en los comercios adheridos al CPASF."
                                 : "La tarjeta de este profesional se encuentra temporalmente inhabilitada."
                             }
                         </p>

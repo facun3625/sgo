@@ -38,11 +38,11 @@ export default async function VerificarCertificadoPage({ params }: { params: Pro
                 {/* Header */}
                 <div className="bg-[#063f68] px-8 py-6 flex items-center gap-4">
                     <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center p-1.5 shrink-0">
-                        <Image src="/sgo.png" alt="CASF" width={44} height={44} className="object-contain" />
+                        <Image src="/sgo.png" alt="CPASF" width={44} height={44} className="object-contain" />
                     </div>
                     <div>
                         <p className="text-white font-bold text-[15px] leading-tight">Certificado de Matriculación</p>
-                        <p className="text-white/60 text-[11px] font-semibold uppercase tracking-widest">Colegio de la Abogacía · CASF</p>
+                        <p className="text-white/60 text-[11px] font-semibold uppercase tracking-widest">Colegio de la Abogacía · CPASF</p>
                     </div>
                 </div>
 
@@ -53,7 +53,7 @@ export default async function VerificarCertificadoPage({ params }: { params: Pro
                     </div>
                     <div>
                         <p className="text-[13px] font-black uppercase tracking-tight text-emerald-600">Certificado Válido y Auténtico</p>
-                        <p className="text-slate-400 text-[11px] font-medium">Emitido oficialmente por el CASF</p>
+                        <p className="text-slate-400 text-[11px] font-medium">Emitido oficialmente por el CPASF</p>
                     </div>
                 </div>
 

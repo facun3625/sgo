@@ -142,9 +142,9 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
         <aside className="w-72 bg-white dark:bg-[#02182b] flex flex-col h-screen sticky top-0 overflow-y-auto border-0">
             <div className="px-6 py-5 bg-[#063f68] flex items-center h-16 border-0">
                 <div className="flex items-center gap-3">
-                    <Image src="/sgo.png" alt="SGO CASF" width={48} height={48} className="object-contain" />
+                    <Image src="/sgo.png" alt="SGO CPASF" width={48} height={48} className="object-contain" />
                     <div>
-                        <h1 className="text-white font-bold text-[14px] leading-tight tracking-tight uppercase">SGO - CASF</h1>
+                        <h1 className="text-white font-bold text-[14px] leading-tight tracking-tight uppercase">SGO - CPASF</h1>
                         <p className="text-white/50 text-[8px] font-medium tracking-wider uppercase">Sistema de Gestión</p>
                     </div>
                 </div>

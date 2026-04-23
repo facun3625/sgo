@@ -48,7 +48,7 @@ export default async function CredencialPage() {
                         </div>
                         <div>
                             <p className="text-[14px] font-black text-rose-700 dark:text-rose-400 uppercase tracking-wide">Matrícula Suspendida</p>
-                            <p className="text-[12px] text-rose-500 dark:text-rose-500 mt-0.5">Esta credencial no es válida para ejercer la profesión. Comuníquese con el CASF.</p>
+                            <p className="text-[12px] text-rose-500 dark:text-rose-500 mt-0.5">Esta credencial no es válida para ejercer la profesión. Comuníquese con el CPASF.</p>
                         </div>
                     </div>
                 )}

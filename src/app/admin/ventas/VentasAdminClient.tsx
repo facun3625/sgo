@@ -69,7 +69,7 @@ function ProductoForm({
                         type="text"
                         value={form.nombre}
                         onChange={(e) => setForm((f) => ({ ...f, nombre: e.target.value }))}
-                        placeholder="Ej: Token CASF, Carnet, etc."
+                        placeholder="Ej: Token CPASF, Carnet, etc."
                         className="w-full h-9 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white text-[13px] focus:outline-none focus:ring-2 focus:ring-[#063f68]/30"
                     />
                 </div>

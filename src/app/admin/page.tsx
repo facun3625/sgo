@@ -90,7 +90,7 @@ export default async function AdminDashboard() {
                     <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
                         Bienvenido, {session?.nombre} 👋
                     </h1>
-                    <p className="text-slate-400 text-sm mt-1">Panel de administración · SGO CASF</p>
+                    <p className="text-slate-400 text-sm mt-1">Panel de administración · SGO CPASF</p>
                 </div>
                 <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl text-[12px] text-slate-400 font-medium">
                     <Clock size={14} />

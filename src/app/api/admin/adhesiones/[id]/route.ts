@@ -58,8 +58,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
             ? "Tu solicitud de cancelación de débito automático fue aprobada. El débito de tus cuotas ya no se procesará automáticamente."
             : "Tu solicitud de adhesión a débito automático fue aprobada. En breve se procesará el débito de tus cuotas.",
         rechazada: esCancelacion
-            ? "Tu solicitud de cancelación de débito automático fue rechazada. Comunicate con el CASF para más información."
-            : "Tu solicitud de adhesión a débito automático fue rechazada. Comunicate con el CASF para más información.",
+            ? "Tu solicitud de cancelación de débito automático fue rechazada. Comunicate con el CPASF para más información."
+            : "Tu solicitud de adhesión a débito automático fue rechazada. Comunicate con el CPASF para más información.",
     };
 
     if (mensajes[estado]) {

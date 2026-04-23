@@ -10,12 +10,12 @@ const montserrat = Montserrat({
 
 export const metadata: Metadata = {
   title: "SGO - Sistema de Gestión",
-  description: "Sistema de Gestión Operativa - CASF",
+  description: "Sistema de Gestión Operativa - CPASF",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "SGO CASF",
+    title: "SGO CPASF",
   },
 };
 

@@ -488,3 +488,14 @@ model PagoPendiente {
 
   @@map("pagos_pendientes")
 }
+
+model RecuperacionToken {
+  id         Int      @id @default(autoincrement())
+  expediente String
+  token      String
+  expira     DateTime
+  usado      Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@map("recuperacion_tokens")
+}

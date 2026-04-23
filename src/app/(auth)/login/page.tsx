@@ -125,7 +125,7 @@ export default function LoginPage() {
                 {/* Logo mobile */}
                 <div className="md:hidden flex flex-col items-center mb-10">
                     <Image src="/sgo.png" alt="SGO Logo" width={70} height={70} className="mb-3" priority />
-                    <h2 className="text-[#063f68] text-lg font-bold">SGO - CASF</h2>
+                    <h2 className="text-[#063f68] text-lg font-bold">SGO - CPASF</h2>
                 </div>
 
                 {/* Título */}
@@ -215,7 +215,7 @@ export default function LoginPage() {
                             <span className="text-[13px] text-gray-500">Recordarme</span>
                         </label>
                         <Link
-                            href="/forgot-password"
+                            href="/recuperar-contrasena"
                             className="text-[13px] text-[#063f68] font-semibold hover:underline underline-offset-2"
                         >
                             Olvidé mi contraseña

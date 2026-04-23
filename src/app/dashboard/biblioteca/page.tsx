@@ -162,7 +162,7 @@ export default function BibliotecaPage() {
                 <h1 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
                     <Library size={20} className="text-[#063f68] dark:text-blue-400" /> Biblioteca
                 </h1>
-                <p className="text-slate-400 text-sm mt-0.5">Libros y jurisprudencia del CASF</p>
+                <p className="text-slate-400 text-sm mt-0.5">Libros y jurisprudencia del CPASF</p>
             </div>
 
             {/* Barra de búsqueda y filtros */}
@@ -239,7 +239,7 @@ export default function BibliotecaPage() {
                             <SectionTitle
                                 icon={<Star size={16} className="text-amber-500 fill-amber-500" />}
                                 title="Destacados"
-                                subtitle="Seleccionados por el CASF"
+                                subtitle="Seleccionados por el CPASF"
                             />
                             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
                                 {destacados.map(item => <ItemCard key={item.id} item={item} {...cardProps} />)}

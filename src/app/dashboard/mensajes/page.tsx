@@ -92,7 +92,7 @@ export default function MensajesPage() {
                 <h1 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
                     <Mail size={20} className="text-sky-500" /> Mensajes
                 </h1>
-                <p className="text-slate-400 text-sm mt-0.5">Comunicaciones con el CASF</p>
+                <p className="text-slate-400 text-sm mt-0.5">Comunicaciones con el CPASF</p>
             </div>
 
             <div className="flex gap-4 h-[calc(100vh-220px)] min-h-[400px]">
@@ -129,7 +129,7 @@ export default function MensajesPage() {
                                             </div>
                                             {c.ultimoMensaje && (
                                                 <p className="text-[11px] text-slate-400 truncate mt-0.5 ml-4">
-                                                    {c.ultimoMensaje.de === "user" ? "Vos: " : "CASF: "}
+                                                    {c.ultimoMensaje.de === "user" ? "Vos: " : "CPASF: "}
                                                     {c.ultimoMensaje.contenido}
                                                 </p>
                                             )}
@@ -166,7 +166,7 @@ export default function MensajesPage() {
                                 </div>
                                 <div className="min-w-0">
                                     <p className="text-[13px] font-bold text-slate-800 dark:text-white truncate">{selected.asunto}</p>
-                                    <p className="text-[11px] text-slate-400">CASF</p>
+                                    <p className="text-[11px] text-slate-400">CPASF</p>
                                 </div>
                             </div>
 

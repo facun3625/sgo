@@ -103,11 +103,11 @@ export default async function BeneficiosPage() {
                                     <div className="relative z-10 flex justify-between items-start">
                                         <div className="flex items-center gap-3 md:gap-4">
                                             <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-2xl bg-white flex items-center justify-center border border-white/20 overflow-hidden p-1 md:p-1.5 shadow-xl">
-                                                <img src="/sgo.png" alt="CASF" className="w-9 md:w-12 h-auto opacity-100" />
+                                                <img src="/sgo.png" alt="CPASF" className="w-9 md:w-12 h-auto opacity-100" />
                                             </div>
                                             <div>
-                                                <p className="text-base md:text-xl font-bold tracking-tight leading-none mb-1 text-white">CASF</p>
-                                                <p className="text-[8px] md:text-[9px] font-semibold tracking-[0.1em] opacity-70 uppercase text-white/70">Colegio de Abogados Santa Fe</p>
+                                                <p className="text-base md:text-xl font-bold tracking-tight leading-none mb-1 text-white">CPASF</p>
+                                                <p className="text-[8px] md:text-[9px] font-semibold tracking-[0.1em] opacity-70 uppercase text-white/70">Colegio de Profesionales de la Abogacía de Santa Fe</p>
                                             </div>
                                         </div>
                                     </div>
@@ -178,7 +178,7 @@ export default async function BeneficiosPage() {
                             <div>
                                 <h4 className="text-[10px] font-bold text-black dark:text-white/40 uppercase tracking-widest mb-2 leading-none">Alcance</h4>
                                 <p className="text-black dark:text-white/80 text-[11px] font-medium leading-relaxed">
-                                    Documento personal de la 1era Circunscripción del CASF.
+                                    Documento personal de la 1era Circunscripción del CPASF.
                                 </p>
                             </div>
                             <div className="md:text-right">

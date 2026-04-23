@@ -212,7 +212,7 @@ export default function DashboardClient({ session }: { session: SessionPayload }
                             <CreditCard size={22} />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Club CASF</p>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Club CPASF</p>
                             <p className="text-[17px] font-black text-slate-900 dark:text-white tracking-tight">Tarjeta de beneficios</p>
                             <p className="text-[10px] text-slate-400 font-medium mt-0.5">Descuentos exclusivos</p>
                         </div>
