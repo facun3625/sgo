@@ -25,7 +25,7 @@ export default function AuthLayout({
                 <div className="relative z-10 flex flex-col items-center text-center">
                     <div className="w-[120px] h-[120px] flex items-center justify-center mb-6">
                         <Image
-                            src="/sgo.png"
+                            src="/sgo_nuevo.png"
                             alt="CPASF"
                             width={120}
                             height={120}

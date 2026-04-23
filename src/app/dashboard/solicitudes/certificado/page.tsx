@@ -73,7 +73,7 @@ function CertificateDocument({ datos, presentarAnte, solicitudId, baseUrl, firma
         >
             {/* Header */}
             <div style={{ display: "flex", alignItems: "flex-start", gap: "24px", marginBottom: "20px" }}>
-                <img src="/sgo.png" alt="Logo" style={{ width: "90px", height: "90px", objectFit: "contain", flexShrink: 0 }} />
+                <img src="/sgo_nuevo.png" alt="Logo" style={{ width: "90px", height: "90px", objectFit: "contain", flexShrink: 0 }} />
                 <div style={{ textAlign: "center", flex: 1 }}>
                     <p style={{ fontWeight: "bold", textDecoration: "underline", fontSize: "15px", margin: 0, lineHeight: "1.5" }}>
                         Colegio de Profesionales de la Abogacía de la Primera

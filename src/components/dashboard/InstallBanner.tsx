@@ -48,7 +48,7 @@ export default function InstallBanner() {
 
     return (
         <div className="mx-4 mt-4 rounded-2xl bg-[#063f68] text-white p-4 flex items-start gap-3 shadow-lg">
-            <Image src="/sgo.png" alt="SGO" width={40} height={40} className="rounded-xl shrink-0 mt-0.5" />
+            <Image src="/sgo_nuevo.png" alt="SGO" width={40} height={40} className="rounded-xl shrink-0 mt-0.5" />
             <div className="flex-1 min-w-0">
                 <p className="font-bold text-[13px] leading-tight">Instalá la app en tu cel</p>
                 {isIOS ? (

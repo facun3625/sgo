@@ -103,7 +103,7 @@ export default async function BeneficiosPage() {
                                     <div className="relative z-10 flex justify-between items-start">
                                         <div className="flex items-center gap-3 md:gap-4">
                                             <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-2xl bg-white flex items-center justify-center border border-white/20 overflow-hidden p-1 md:p-1.5 shadow-xl">
-                                                <img src="/sgo.png" alt="CPASF" className="w-9 md:w-12 h-auto opacity-100" />
+                                                <img src="/sgo_nuevo.png" alt="CPASF" className="w-9 md:w-12 h-auto opacity-100" />
                                             </div>
                                             <div>
                                                 <p className="text-base md:text-xl font-bold tracking-tight leading-none mb-1 text-white">CPASF</p>

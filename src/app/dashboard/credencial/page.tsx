@@ -93,7 +93,7 @@ export default async function CredencialPage() {
 
                                     {/* Top: Logo y Título */}
                                     <div className="flex items-center gap-3 mb-4 pb-3 border-b border-[#f1f5f9]">
-                                        <img src="/sgo.png" alt="Logo" className="w-10 h-10 object-contain" />
+                                        <img src="/sgo_nuevo.png" alt="Logo" className="w-10 h-10 object-contain" />
                                         <div>
                                             <h2 className="text-[#063f68] text-[11px] font-bold leading-tight">Colegio de la Abogacía de Santa Fe</h2>
                                             <h2 className="text-[#94a3b8] text-[9px] font-black uppercase tracking-tighter">Credencial Profesional</h2>

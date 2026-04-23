@@ -79,7 +79,7 @@ export default function RecuperarContrasenaPage() {
 
             {/* Logo mobile */}
             <div className="md:hidden flex flex-col items-center mb-10">
-                <img src="/sgo.png" alt="CPASF" className="w-16 h-16 object-contain mb-3" />
+                <img src="/sgo_nuevo.png" alt="CPASF" className="w-16 h-16 object-contain mb-3" />
                 <h2 className="text-[#063f68] text-lg font-bold">CPASF</h2>
             </div>
 

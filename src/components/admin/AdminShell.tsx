@@ -147,7 +147,7 @@ export default function AdminShell({ session, image, permisos, children }: Admin
 
                 {/* Logo */}
                 <div className="px-5 h-16 flex items-center gap-3 bg-green-900">
-                    <Image src="/sgo.png" alt="SGO" width={36} height={36} className="object-contain" />
+                    <Image src="/sgo_nuevo.png" alt="SGO" width={36} height={36} className="object-contain" />
                     <div>
                         <p className="text-white font-bold text-[13px] leading-tight">Panel Admin</p>
                         <p className="text-white/40 text-[9px] uppercase tracking-widest">SGO · CPASF</p>

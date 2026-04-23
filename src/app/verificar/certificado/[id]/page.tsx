@@ -38,7 +38,7 @@ export default async function VerificarCertificadoPage({ params }: { params: Pro
                 {/* Header */}
                 <div className="bg-[#063f68] px-8 py-6 flex items-center gap-4">
                     <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center p-1.5 shrink-0">
-                        <Image src="/sgo.png" alt="CPASF" width={44} height={44} className="object-contain" />
+                        <Image src="/sgo_nuevo.png" alt="CPASF" width={44} height={44} className="object-contain" />
                     </div>
                     <div>
                         <p className="text-white font-bold text-[15px] leading-tight">Certificado de Matriculación</p>

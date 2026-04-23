@@ -124,7 +124,7 @@ export default function LoginPage() {
             <div className="animate-fade-in">
                 {/* Logo mobile */}
                 <div className="md:hidden flex flex-col items-center mb-10">
-                    <Image src="/sgo.png" alt="SGO Logo" width={70} height={70} className="mb-3" priority />
+                    <Image src="/sgo_nuevo.png" alt="SGO Logo" width={70} height={70} className="mb-3" priority />
                     <h2 className="text-[#063f68] text-lg font-bold">SGO - CPASF</h2>
                 </div>
 
