@@ -63,12 +63,17 @@ export async function GET() {
         });
         const mapPPHistorial = new Map(pagosPendientesHistorial.map((pp) => [pp.ref, pp.estado]));
 
-        type MetodoCuota = "mercadopago" | "transferencia" | "transferencia_pendiente" | null;
+        type MetodoCuota = "mercadopago" | "transferencia" | "home_banking" | "banelco" | "transferencia_pendiente" | null;
         const historialCuotas = historialCuotasRaw.map((c) => {
             const ppEstado = mapPPHistorial.get(String(c.id));
+            const mp = (c as { metodoPago?: string }).metodoPago;
             let metodo: MetodoCuota = null;
             if (c.estado === "pagado") {
-                metodo = ppEstado === "aprobado" ? "transferencia" : "mercadopago";
+                if (mp === "banelco") metodo = "banelco";
+                else if (mp === "home_banking") metodo = "home_banking";
+                else if (mp === "transferencia") metodo = "transferencia";
+                else if (mp === "mercadopago") metodo = "mercadopago";
+                else metodo = ppEstado === "aprobado" ? "transferencia" : "mercadopago";
             } else if (ppEstado === "pendiente") {
                 metodo = "transferencia_pendiente";
             }

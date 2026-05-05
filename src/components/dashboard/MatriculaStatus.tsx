@@ -28,7 +28,7 @@ interface CuotaMensualData {
     periodo: string;
     monto: number;
     estado: string;
-    metodo?: "mercadopago" | "transferencia" | "transferencia_pendiente" | null;
+    metodo?: "mercadopago" | "transferencia" | "home_banking" | "transferencia_pendiente" | null;
 }
 
 interface PagosData {
@@ -83,6 +83,9 @@ export default function MatriculaStatus() {
     }
 
     const hasDeuda = data?.deudas && data.deudas.length > 0;
+    const cuotaPendiente = data?.cuotaActual?.estado === "pendiente"
+        && !data?.hasDebitoAutomatico
+        && !data?.hasPagoAnualActivo;
     const totalDeuda = data?.totalDeuda || 0;
     const montoAnual = data?.montoAnual ?? 48000;
     const showAnualCard = data?.showPagoAnual ?? false;
@@ -95,11 +98,10 @@ export default function MatriculaStatus() {
     return (
         <div className="space-y-10 animate-fade-in pb-20">
 
-            {/* 1. ESTADO DE DEUDA (Solo si existe) */}
+            {/* 1. ESTADO DE DEUDA / CUOTA PENDIENTE */}
             {hasDeuda ? (
                 <div className="relative group overflow-hidden rounded-[32px] bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30 p-8 transition-all hover:shadow-xl">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-red-500/5 rounded-full blur-3xl -mr-20 -mt-20"></div>
-
                     <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                         <div className="flex items-center gap-5">
                             <div className="w-14 h-14 rounded-2xl bg-red-500 text-white flex items-center justify-center shadow-lg shadow-red-500/20">
@@ -110,30 +112,30 @@ export default function MatriculaStatus() {
                                 <p className="text-red-700/70 dark:text-red-400/60 text-sm font-medium">Regularizá tu situación para mantener todos los beneficios activos.</p>
                             </div>
                         </div>
-
                         <div className="flex items-center gap-8 w-full md:w-auto">
                             <div className="text-left md:text-right">
                                 <p className="text-[10px] font-bold text-red-800/40 dark:text-red-400/40 uppercase tracking-widest mb-1">Total a Pagar</p>
                                 <p className="text-3xl font-black text-red-600 dark:text-red-400">${totalDeuda.toLocaleString()}</p>
                             </div>
                             <div className="flex flex-col gap-2">
-                                <MpPayButton
-                                    tipo="deuda"
-                                    ref={data!.deudas.map((d) => d.id).join(",")}
-                                    label="Pagar con Mercado Pago"
-                                    className="w-full h-12 px-6 bg-red-600 hover:bg-red-700 text-white rounded-2xl font-bold text-sm transition-all active:scale-95 shadow-lg shadow-red-600/20 flex items-center justify-center gap-2"
-                                />
+                                <MpPayButton tipo="deuda" ref={data!.deudas.map((d) => d.id).join(",")} label="Pagar con Mercado Pago"
+                                    className="w-full h-12 px-6 bg-red-600 hover:bg-red-700 text-white rounded-2xl font-bold text-sm transition-all active:scale-95 shadow-lg shadow-red-600/20 flex items-center justify-center gap-2" />
                                 {data?.transferenciaHabilitada?.deuda && (
-                                    <TransferenciaPayButton
-                                        tipo="deuda"
-                                        ref={data!.deudas.map((d) => d.id).join(",")}
-                                        monto={totalDeuda}
-                                        label="Pagar con transferencia"
-                                        className="w-full h-12 px-6 bg-slate-700 hover:bg-slate-600 text-white rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-2"
-                                    />
+                                    <TransferenciaPayButton tipo="deuda" ref={data!.deudas.map((d) => d.id).join(",")} monto={totalDeuda} label="Pagar con transferencia"
+                                        className="w-full h-12 px-6 bg-slate-700 hover:bg-slate-600 text-white rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-2" />
                                 )}
                             </div>
                         </div>
+                    </div>
+                </div>
+            ) : cuotaPendiente ? (
+                <div className="p-8 rounded-[32px] bg-amber-50 dark:bg-amber-950/10 border border-amber-100 dark:border-amber-900/30 flex items-center gap-5">
+                    <div className="w-12 h-12 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-lg shadow-amber-500/20 flex-shrink-0">
+                        <AlertTriangle size={24} />
+                    </div>
+                    <div>
+                        <h3 className="text-amber-900 dark:text-amber-400 font-bold text-lg tracking-tight">Cuota mensual pendiente</h3>
+                        <p className="text-amber-700/70 dark:text-amber-400/60 text-sm font-medium">Tenés la cuota del período actual sin abonar. Podés pagarla desde la sección de abajo.</p>
                     </div>
                 </div>
             ) : (
@@ -355,7 +357,7 @@ function ConceptItem({ label, amount, status, metodo, isLast }: {
     label: string;
     amount: string;
     status: "paid" | "pending";
-    metodo?: "mercadopago" | "transferencia" | "transferencia_pendiente" | null;
+    metodo?: "mercadopago" | "transferencia" | "home_banking" | "transferencia_pendiente" | null;
     isLast?: boolean;
 }) {
     const paid = status === "paid";
@@ -364,6 +366,11 @@ function ConceptItem({ label, amount, status, metodo, isLast }: {
         if (metodo === "transferencia") return (
             <span className="inline-flex items-center gap-1 text-[10px] font-bold text-slate-500 dark:text-slate-400">
                 <Landmark size={10} /> Transferencia
+            </span>
+        );
+        if (metodo === "home_banking") return (
+            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-slate-500 dark:text-slate-400">
+                <Landmark size={10} /> Home Banking
             </span>
         );
         if (metodo === "mercadopago") return (

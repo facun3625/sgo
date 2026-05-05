@@ -7,7 +7,6 @@ export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
 
-        // MP envía distintos tipos de notificaciones — solo nos interesan los pagos
         if (body.type !== "payment") {
             return NextResponse.json({ ok: true });
         }
@@ -15,12 +14,10 @@ export async function POST(req: NextRequest) {
         const paymentId = body.data?.id;
         if (!paymentId) return NextResponse.json({ ok: true });
 
-        // Obtener detalle del pago desde la API de MP
         const { payment: mpPayment } = await getMpClients();
         const payment = await mpPayment.get({ id: paymentId });
 
         if (payment.status !== "approved") {
-            // Pendiente o rechazado — nada que hacer por ahora
             return NextResponse.json({ ok: true });
         }
 
@@ -28,14 +25,15 @@ export async function POST(req: NextRequest) {
         if (!raw) return NextResponse.json({ ok: true });
 
         const { tipo, expediente, ref, extra } = decodeRef(raw);
+        const mpPaymentId = String(paymentId);
+        const fechaPago = new Date();
 
-        // ── Procesar según tipo ──────────────────────────────────────────────
         if (tipo === "matricula_mensual") {
             const cuota = await prisma.cuotaMensual.findUnique({ where: { id: parseInt(ref) } });
             if (cuota && cuota.estado !== "pagado") {
                 await prisma.cuotaMensual.update({
                     where: { id: cuota.id },
-                    data: { estado: "pagado" },
+                    data: { estado: "pagado", metodoPago: "mercadopago", mpPaymentId, fechaPago },
                 });
                 await crearNotificacion(
                     expediente,
@@ -48,7 +46,7 @@ export async function POST(req: NextRequest) {
         } else if (tipo === "matricula_anual") {
             const existente = await prisma.pagoAnual.findFirst({ where: { expediente } });
             if (!existente) {
-                await prisma.pagoAnual.create({ data: { expediente } });
+                await prisma.pagoAnual.create({ data: { expediente, mpPaymentId, fechaPago } });
                 await crearNotificacion(
                     expediente,
                     "Matrícula anual confirmada",
@@ -65,9 +63,8 @@ export async function POST(req: NextRequest) {
             if (inscripcion && inscripcion.estado !== "confirmada") {
                 await prisma.inscripcionCurso.update({
                     where: { id: inscripcion.id },
-                    data: { estado: "confirmada", metodoPago: "mercadopago" },
+                    data: { estado: "confirmada", metodoPago: "mercadopago", mpPaymentId, fechaPago },
                 });
-                // Incrementar inscritos en la opción
                 if (inscripcion.opcionId) {
                     await prisma.cursoOpcion.update({
                         where: { id: inscripcion.opcionId },
@@ -85,7 +82,15 @@ export async function POST(req: NextRequest) {
         } else if (tipo === "deuda") {
             const ids = ref.split(",").map((id) => parseInt(id)).filter((id) => !isNaN(id));
             if (ids.length > 0) {
-                await prisma.deuda.deleteMany({ where: { id: { in: ids }, expediente } });
+                const deudas = await prisma.deuda.findMany({ where: { id: { in: ids }, expediente } });
+                const montoTotal = deudas.reduce((acc, d) => acc + d.monto, 0);
+
+                await prisma.$transaction([
+                    prisma.deudaPagada.create({
+                        data: { expediente, monto: montoTotal, mpPaymentId, metodoPago: "mercadopago", fechaPago },
+                    }),
+                    prisma.deuda.deleteMany({ where: { id: { in: ids }, expediente } }),
+                ]);
                 await crearNotificacion(
                     expediente,
                     "Deuda saldada",
@@ -108,6 +113,7 @@ export async function POST(req: NextRequest) {
                             cantidad,
                             metodoPago: "mercadopago",
                             estado: "aprobado",
+                            mpPaymentId,
                         },
                     }),
                     prisma.producto.update({
@@ -128,7 +134,6 @@ export async function POST(req: NextRequest) {
 
     } catch (err) {
         console.error("[MP webhook]", err);
-        // Devolver 200 igual para que MP no reintente indefinidamente
         return NextResponse.json({ ok: true });
     }
 }

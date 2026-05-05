@@ -28,23 +28,30 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     // ── Aprobar: aplicar según tipo ──────────────────────────────────────────
     const { tipo, ref, expediente } = pago;
 
+    const fechaPago = new Date();
+
     if (tipo === "matricula_mensual") {
         const cuota = await prisma.cuotaMensual.findUnique({ where: { id: parseInt(ref) } });
         if (cuota && cuota.estado !== "pagado") {
-            await prisma.cuotaMensual.update({ where: { id: cuota.id }, data: { estado: "pagado" } });
+            await prisma.cuotaMensual.update({ where: { id: cuota.id }, data: { estado: "pagado", metodoPago: "transferencia", fechaPago } });
         }
         await crearNotificacion(expediente, "Cuota acreditada",
             `Tu transferencia para la cuota ${cuota?.periodo ?? ""} fue aprobada y acreditada.`, "pago");
 
     } else if (tipo === "matricula_anual") {
         const existente = await prisma.pagoAnual.findFirst({ where: { expediente } });
-        if (!existente) await prisma.pagoAnual.create({ data: { expediente } });
+        if (!existente) await prisma.pagoAnual.create({ data: { expediente, fechaPago } });
         await crearNotificacion(expediente, "Matrícula anual acreditada",
             "Tu transferencia de matrícula anual fue aprobada. ¡Gracias!", "pago");
 
     } else if (tipo === "deuda") {
         const ids = ref.split(",").map((x: string) => parseInt(x)).filter((x: number) => !isNaN(x));
-        await prisma.deuda.deleteMany({ where: { id: { in: ids }, expediente } });
+        const deudas = await prisma.deuda.findMany({ where: { id: { in: ids }, expediente } });
+        const montoTotal = deudas.reduce((acc, d) => acc + d.monto, 0);
+        await prisma.$transaction([
+            prisma.deudaPagada.create({ data: { expediente, monto: montoTotal, metodoPago: "transferencia", fechaPago } }),
+            prisma.deuda.deleteMany({ where: { id: { in: ids }, expediente } }),
+        ]);
         await crearNotificacion(expediente, "Deuda saldada",
             "Tu transferencia fue aprobada y la deuda ha sido cancelada.", "pago");
 

@@ -69,6 +69,20 @@ model Deuda {
   @@map("deudas")
 }
 
+model DeudaPagada {
+  id          Int      @id @default(autoincrement())
+  expediente  String
+  monto       Float
+  mpPaymentId String?  @map("mp_payment_id")
+  metodoPago  String   @default("mercadopago")
+  fechaPago   DateTime @default(now()) @map("fecha_pago")
+  exportado   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([expediente])
+  @@map("deudas_pagadas")
+}
+
 model Config {
   id        Int      @id @default(autoincrement())
   clave     String   @unique
@@ -79,21 +93,27 @@ model Config {
 }
 
 model CuotaMensual {
-  id         Int       @id @default(autoincrement())
-  expediente String
-  periodo    String    // "2026-03"
-  monto      Float
-  estado     String    @default("pendiente") // pendiente / pagado
-  fechaPago  DateTime?
-  createdAt  DateTime  @default(now())
+  id          Int       @id @default(autoincrement())
+  expediente  String
+  periodo     String    // "2026-03"
+  monto       Float
+  estado      String    @default("pendiente") // pendiente / pagado
+  fechaPago   DateTime?
+  metodoPago  String?   // mercadopago | transferencia | home_banking
+  mpPaymentId String?   @map("mp_payment_id")
+  exportado   Boolean   @default(false)
+  createdAt   DateTime  @default(now())
 
   @@unique([expediente, periodo])
   @@map("cuotas_mensuales")
 }
 
 model PagoAnual {
-  id         Int    @id @default(autoincrement())
-  expediente String
+  id          Int       @id @default(autoincrement())
+  expediente  String
+  mpPaymentId String?   @map("mp_payment_id")
+  fechaPago   DateTime?
+  exportado   Boolean   @default(false)
 
   @@map("pago_anual")
 }
@@ -232,6 +252,8 @@ model InscripcionCurso {
   opcionId    Int?         @map("opcion_id")
   estado      String       @default("pendiente_pago")
   metodoPago  String?      @map("metodo_pago")
+  mpPaymentId String?      @map("mp_payment_id")
+  fechaPago   DateTime?    @map("fecha_pago")
   curso       Curso        @relation(fields: [cursoId], references: [id])
   opcion      CursoOpcion? @relation(fields: [opcionId], references: [id])
   fecha       DateTime     @default(now())
@@ -327,6 +349,8 @@ model Pedido {
   comprobante String?  // URL — solo transferencia
   estado      String   @default("pendiente") // pendiente | aprobado | entregado | cancelado
   observacion String?
+  mpPaymentId String?  @map("mp_payment_id")
+  exportado   Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -498,4 +522,30 @@ model RecuperacionToken {
   createdAt  DateTime @default(now())
 
   @@map("recuperacion_tokens")
+}
+
+model HistorialMatricula {
+  id          Int      @id @default(autoincrement())
+  expediente  String
+  accion      String   // "suspension" | "habilitacion"
+  comentario  String
+  adminNombre String?
+  createdAt   DateTime @default(now())
+
+  @@index([expediente])
+  @@map("historial_matricula")
+}
+
+model SolicitudRehabilitacion {
+  id          Int      @id @default(autoincrement())
+  expediente  String
+  mensaje     String   // Explicación del matriculado
+  estado      String   @default("pendiente") // "pendiente" | "aprobada" | "rechazada"
+  respuesta   String?  // Respuesta del admin al aprobar/rechazar
+  adminNombre String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([expediente])
+  @@map("solicitudes_rehabilitacion")
 }

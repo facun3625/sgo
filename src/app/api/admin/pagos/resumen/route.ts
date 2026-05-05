@@ -14,41 +14,68 @@ export async function GET() {
 
     const periodo = new Date().toISOString().slice(0, 7);
 
-    // Base: todos los matriculados con expediente
-    const datos = await prisma.dato.findMany({
-        where: { NOT: { expediente: null } },
-        select: { expediente: true, nombre: true, apellido: true },
-    });
-    const expedientes = datos.map((d) => d.expediente as string);
+    // Unión Dato.expediente + User.expediente (no admin). Dato tiene prioridad en nombres.
+    const [datosTodos, usersTodos] = await Promise.all([
+        prisma.dato.findMany({
+            where: { expediente: { not: null } },
+            select: { expediente: true, nombre: true, apellido: true },
+        }),
+        prisma.user.findMany({
+            where: {
+                expediente: { not: null },
+                accessLevel: { notIn: ["admin", "superadmin"] },
+            },
+            select: { expediente: true, nombre: true, apellido: true },
+        }),
+    ]);
 
-    // Excluir: débito automático aprobado
-    const debitosAprobados = await prisma.adhesionDebito.findMany({
-        where: { expediente: { in: expedientes }, estado: "aprobada" },
-        select: { expediente: true },
-    });
-    const setDebito = new Set(debitosAprobados.map((d) => d.expediente));
+    const expMap = new Map<string, { nombre: string; apellido: string }>();
+    for (const u of usersTodos) expMap.set(u.expediente!, { nombre: u.nombre, apellido: u.apellido });
+    for (const d of datosTodos) expMap.set(d.expediente!, { nombre: d.nombre, apellido: d.apellido });
 
-    // Excluir: pago anual registrado
-    const pagosAnuales = await prisma.pagoAnual.findMany({
-        where: { expediente: { in: expedientes } },
-        select: { expediente: true },
-    });
+    const datos = Array.from(expMap.entries()).map(([expediente, info]) => ({
+        expediente,
+        nombre: info.nombre,
+        apellido: info.apellido,
+    }));
+
+    const expedientes = datos.map((d) => d.expediente);
+
+    // Determinar cobertura: débito activo (excluye CANCELACION) y pago anual
+    const [debitosActivos, cancelacionesAprobadas, pagosAnuales] = await Promise.all([
+        prisma.adhesionDebito.findMany({
+            where: { expediente: { in: expedientes }, estado: "aprobada", tipoAdhesion: { not: "CANCELACION" } },
+            select: { expediente: true },
+        }),
+        prisma.adhesionDebito.findMany({
+            where: { expediente: { in: expedientes }, estado: "aprobada", tipoAdhesion: "CANCELACION" },
+            select: { expediente: true },
+        }),
+        prisma.pagoAnual.findMany({
+            where: { expediente: { in: expedientes } },
+            select: { expediente: true },
+        }),
+    ]);
+
+    const setCancelados = new Set(cancelacionesAprobadas.map((d) => d.expediente));
+    // Débito activo solo si tiene adhesión aprobada no-CANCELACION Y no tiene cancelación aprobada
+    const setDebito = new Set(
+        debitosActivos.filter((d) => !setCancelados.has(d.expediente)).map((d) => d.expediente)
+    );
     const setAnual = new Set(pagosAnuales.map((p) => p.expediente));
 
-    const matriculadosFiltrados = datos.filter(
-        (d) => !setDebito.has(d.expediente!) && !setAnual.has(d.expediente!)
-    );
-    const expFiltrados = matriculadosFiltrados.map((d) => d.expediente as string);
+    // Solo pagan cuota mensual quienes no tienen débito activo ni pago anual
+    const expFiltrados = expedientes.filter((exp) => !setDebito.has(exp) && !setAnual.has(exp));
 
-    // Cuotas del período actual
+    // Cuotas del período actual (solo para pagadores mensuales)
     const cuotas = await prisma.cuotaMensual.findMany({
         where: { expediente: { in: expFiltrados }, periodo },
     });
     const mapCuotas = new Map(cuotas.map((c) => [c.expediente, c]));
 
-    // Deudas
+    // Deudas para TODOS los expedientes (no solo mensuales)
     const deudas = await prisma.deuda.findMany({
-        where: { expediente: { in: expFiltrados } },
+        where: { expediente: { in: expedientes } },
     });
     const mapDeudas = new Map<string, { total: number; count: number }>();
     for (const d of deudas) {
@@ -56,53 +83,77 @@ export async function GET() {
         mapDeudas.set(d.expediente, { total: prev.total + d.monto, count: prev.count + 1 });
     }
 
-    // PagosPendientes para detectar método de pago (transferencia)
+    // PagosPendientes para detectar método de pago (transferencia). Preferir "aprobado".
     const pagosPendientes = await prisma.pagoPendiente.findMany({
         where: { expediente: { in: expFiltrados }, tipo: "matricula_mensual" },
         select: { expediente: true, ref: true, estado: true },
     });
     const mapMetodoByCuotaId = new Map<string, string>();
     for (const pp of pagosPendientes) {
-        mapMetodoByCuotaId.set(pp.ref, pp.estado);
+        const current = mapMetodoByCuotaId.get(pp.ref);
+        if (!current || pp.estado === "aprobado") {
+            mapMetodoByCuotaId.set(pp.ref, pp.estado);
+        }
     }
 
     // Stats del mes
     const cuotasPagadas = cuotas.filter((c) => c.estado === "pagado");
     const totalRecaudado = cuotasPagadas.reduce((acc, c) => acc + c.monto, 0);
+    const pagadasPorHomeBanking = cuotasPagadas.filter((c) => c.metodoPago === "home_banking" || c.metodoPago === "banelco").length;
     const pagadasPorTransferencia = cuotasPagadas.filter((c) => {
+        if (c.metodoPago === "transferencia") return true;
+        if (c.metodoPago === "mercadopago" || c.metodoPago === "home_banking" || c.metodoPago === "banelco") return false;
+        // Fallback para cuotas históricas sin metodoPago
         const ppEstado = mapMetodoByCuotaId.get(String(c.id));
         return ppEstado === "aprobado";
     }).length;
-    const pagadasPorMP = cuotasPagadas.length - pagadasPorTransferencia;
+    const pagadasPorMP = cuotasPagadas.length - pagadasPorTransferencia - pagadasPorHomeBanking;
     const totalDeudaAcumulada = [...mapDeudas.values()].reduce((acc, d) => acc + d.total, 0);
 
     const stats = {
-        totalMatriculados: expFiltrados.length,
+        totalMatriculados: expedientes.length,
+        conDebito: setDebito.size,
+        conAnual: setAnual.size,
         cuotaGenerada: cuotas.length,
         cuotaPagada: cuotasPagadas.length,
         cuotaPendiente: cuotas.filter((c) => c.estado === "pendiente").length,
         sinCuota: expFiltrados.length - cuotas.length,
         pagadasPorMP,
         pagadasPorTransferencia,
+        pagadasPorHomeBanking,
         totalRecaudado,
         conDeuda: [...mapDeudas.values()].filter((d) => d.total > 0).length,
         totalDeudaAcumulada,
     };
 
-    const resultado = matriculadosFiltrados.map((d) => {
-        const exp = d.expediente as string;
-        const cuota = mapCuotas.get(exp) ?? null;
+    type Cobertura = "mensual" | "debito" | "anual";
+    type MetodoCuota = "mercadopago" | "transferencia" | "home_banking" | "banelco" | "transferencia_pendiente" | null;
+
+    const resultado = datos.map((d) => {
+        const exp = d.expediente;
+        const cobertura: Cobertura = setDebito.has(exp) ? "debito" : setAnual.has(exp) ? "anual" : "mensual";
+        const cuota = cobertura === "mensual" ? (mapCuotas.get(exp) ?? null) : null;
         const deuda = mapDeudas.get(exp) ?? null;
 
-        type MetodoCuota = "mercadopago" | "transferencia" | "transferencia_pendiente" | null;
         let metodoCuota: MetodoCuota = null;
-
         if (cuota) {
-            const ppEstado = mapMetodoByCuotaId.get(String(cuota.id));
             if (cuota.estado === "pagado") {
-                metodoCuota = ppEstado === "aprobado" ? "transferencia" : "mercadopago";
-            } else if (ppEstado === "pendiente") {
-                metodoCuota = "transferencia_pendiente";
+                if (cuota.metodoPago === "banelco") {
+                    metodoCuota = "banelco";
+                } else if (cuota.metodoPago === "home_banking") {
+                    metodoCuota = "home_banking";
+                } else if (cuota.metodoPago === "transferencia") {
+                    metodoCuota = "transferencia";
+                } else if (cuota.metodoPago === "mercadopago") {
+                    metodoCuota = "mercadopago";
+                } else {
+                    // Fallback para cuotas históricas sin metodoPago
+                    const ppEstado = mapMetodoByCuotaId.get(String(cuota.id));
+                    metodoCuota = ppEstado === "aprobado" ? "transferencia" : "mercadopago";
+                }
+            } else {
+                const ppEstado = mapMetodoByCuotaId.get(String(cuota.id));
+                if (ppEstado === "pendiente") metodoCuota = "transferencia_pendiente";
             }
         }
 
@@ -110,6 +161,7 @@ export async function GET() {
             expediente: exp,
             nombre: d.nombre,
             apellido: d.apellido,
+            cobertura,
             cuota: cuota ? {
                 id: cuota.id,
                 periodo: cuota.periodo,
@@ -123,11 +175,17 @@ export async function GET() {
         };
     });
 
-    // Ordenar: con deuda → cuota pendiente → al día → alfabético
+    // Ordenar: con deuda + pendiente → solo pendiente → solo deuda → cubiertos → al día
     resultado.sort((a, b) => {
-        const scoreA = (a.deudaTotal > 0 ? 2 : 0) + (a.cuota?.estado === "pendiente" ? 1 : 0);
-        const scoreB = (b.deudaTotal > 0 ? 2 : 0) + (b.cuota?.estado === "pendiente" ? 1 : 0);
-        if (scoreB !== scoreA) return scoreB - scoreA;
+        const score = (u: typeof resultado[0]) => {
+            if (u.deudaTotal > 0 && u.cuota?.estado === "pendiente") return 5;
+            if (u.cuota?.estado === "pendiente") return 4;
+            if (u.deudaTotal > 0) return 3;
+            if (u.cobertura === "mensual" && !u.cuota) return 2; // sin cuota generada
+            return 0;
+        };
+        const diff = score(b) - score(a);
+        if (diff !== 0) return diff;
         return a.apellido.localeCompare(b.apellido);
     });
 

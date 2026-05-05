@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
 
     await prisma.user.updateMany({
         where: { expediente: expediente.trim() },
-        data: { password: hash },
+        data: { password: hash, registered: 1 },
     });
 
     await prisma.recuperacionToken.update({

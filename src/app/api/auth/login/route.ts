@@ -15,10 +15,7 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        // Buscar usuario por expediente
-        const user = await prisma.user.findFirst({
-            where: { expediente },
-        });
+        const user = await prisma.user.findFirst({ where: { expediente } });
 
         if (!user) {
             return NextResponse.json(
@@ -27,29 +24,24 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        // Si es usuario migrado (registered=0), debe blanquear contraseña primero
-        if (user.registered === 0) {
-            return NextResponse.json(
-                {
-                    error: "reset_required",
-                    message: "Necesitás establecer tu contraseña para acceder por primera vez.",
-                    userName: `${user.apellido}, ${user.nombre}`,
-                },
-                { status: 403 }
-            );
-        }
-
-        // Verificar contraseña (solo para registered=1)
+        // bcryptjs verifica tanto $2y$ (PHP) como $2b$ (Node) sin distinción
         const passwordMatch = await bcrypt.compare(password, user.password);
 
         if (!passwordMatch) {
             return NextResponse.json(
-                { error: "Expediente o contraseña incorrectos" },
+                { error: "wrong_password" },
                 { status: 401 }
             );
         }
 
-        // Verificar estado del usuario — suspendido puede entrar, bloqueado no
+        // Si era usuario migrado, marcarlo como registrado en el nuevo sistema
+        if (user.registered === 0) {
+            await prisma.user.update({
+                where: { id: user.id },
+                data: { registered: 1 },
+            });
+        }
+
         if (user.status !== "active" && user.status !== "suspended") {
             return NextResponse.json(
                 { error: "Tu cuenta no está activa. Contactá al administrador." },
@@ -57,13 +49,9 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        // Parse permisos from user record
         let permisos: string[] = [];
-        try {
-            permisos = JSON.parse(user.permisos || "[]");
-        } catch { permisos = []; }
+        try { permisos = JSON.parse(user.permisos || "[]"); } catch { permisos = []; }
 
-        // Crear sesión
         await createSession({
             id: user.id,
             expediente: user.expediente || "",
@@ -75,7 +63,6 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json({
             success: true,
-            message: "Login exitoso",
             user: {
                 id: user.id,
                 nombre: user.nombre,
@@ -86,9 +73,6 @@ export async function POST(req: NextRequest) {
         });
     } catch (error) {
         console.error("Error en login:", error);
-        return NextResponse.json(
-            { error: "Error interno del servidor" },
-            { status: 500 }
-        );
+        return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
     }
 }

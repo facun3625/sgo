@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef } from "react";
 import {
-    Users, Search, Loader2, ShieldCheck, ShieldOff,
+    Users, Search, Loader2,
     Send, X, CheckCircle2, XCircle, Pencil
 } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
@@ -59,7 +59,6 @@ export default function UsuariosAdminPage() {
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
     const [filtroEstado, setFiltroEstado] = useState<"todos" | "active" | "suspended">("todos");
-    const [togglingId, setTogglingId] = useState<string | null>(null);
 
     // Modal mensaje
     const [mensajeModal, setMensajeModal] = useState<MensajeModal | null>(null);
@@ -97,23 +96,6 @@ export default function UsuariosAdminPage() {
             );
         });
     }, [usuarios, search, filtroEstado]);
-
-    async function toggleEstado(u: Usuario) {
-        const key = u.expediente || u.cod;
-        setTogglingId(key);
-        const nuevoEstado = u.status === "active" ? "suspended" : "active";
-        try {
-            const res = await fetch(`/api/admin/usuarios/${encodeURIComponent(key)}/estado`, {
-                method: "PATCH", headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ status: nuevoEstado }),
-            });
-            if (!res.ok) throw new Error();
-            setUsuarios(prev => prev.map(x => x.cod === u.cod ? { ...x, status: nuevoEstado } : x));
-            showToast(nuevoEstado === "suspended" ? `${u.apellido} suspendido` : `${u.apellido} habilitado`,
-                nuevoEstado === "suspended" ? "error" : "success");
-        } catch { showToast("Error al cambiar el estado", "error"); }
-        finally { setTogglingId(null); }
-    }
 
     async function openEdit(u: Usuario) {
         const key = u.expediente || u.cod;
@@ -228,8 +210,8 @@ export default function UsuariosAdminPage() {
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden">
                     <div className="overflow-x-auto">
                         {/* Thead */}
-                        <div className="min-w-[780px] grid grid-cols-[100px_70px_70px_1fr_120px_210px] gap-4 px-5 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
-                            {["Expediente", "Tomo", "Folio", "Nombre y Apellido", "Estado", "Acciones"].map(h => (
+                        <div className="min-w-[780px] grid grid-cols-[100px_90px_70px_70px_1fr_120px_120px] gap-4 px-5 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+                            {["Expediente", "Nº Cliente", "Tomo", "Folio", "Nombre y Apellido", "Estado", "Acciones"].map(h => (
                                 <p key={h} className="text-[10px] font-black uppercase tracking-widest text-slate-400">{h}</p>
                             ))}
                         </div>
@@ -237,15 +219,16 @@ export default function UsuariosAdminPage() {
                         <div className="min-w-[780px] divide-y divide-slate-50 dark:divide-slate-800/60">
                             {filtered.map(u => {
                                 const key = u.expediente || u.cod;
-                                const isToggling = togglingId === key;
                                 const isSuspended = u.status === "suspended";
                                 return (
                                     <div key={u.cod}
-                                        className={`grid grid-cols-[100px_70px_70px_1fr_120px_210px] gap-4 px-5 py-3.5 hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors items-center ${isSuspended ? "opacity-60" : ""}`}>
+                                        className={`grid grid-cols-[100px_90px_70px_70px_1fr_120px_120px] gap-4 px-5 py-3.5 hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors items-center ${isSuspended ? "opacity-60" : ""}`}>
 
                                         <p className="text-[12px] font-bold text-slate-700 dark:text-slate-200 font-mono truncate">
                                             {u.expediente || <span className="text-slate-300 dark:text-slate-600 font-sans font-normal">—</span>}
                                         </p>
+
+                                        <p className="text-[12px] font-mono text-slate-500 dark:text-slate-400">{u.cod || "—"}</p>
 
                                         <p className="text-[12px] text-slate-500 dark:text-slate-400">{u.tomo || "—"}</p>
 
@@ -272,17 +255,6 @@ export default function UsuariosAdminPage() {
                                                 className="flex items-center gap-1 px-2.5 h-8 rounded-xl text-[11px] font-bold border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:text-indigo-600 hover:border-indigo-200 transition-all">
                                                 <Pencil size={11} /> Datos
                                             </button>
-
-                                            {u.tieneUsuario && (
-                                                <button onClick={() => toggleEstado(u)} disabled={isToggling} title={isSuspended ? "Habilitar" : "Suspender"}
-                                                    className={`flex items-center gap-1 px-2.5 h-8 rounded-xl text-[11px] font-bold transition-all border disabled:opacity-50
-                                                        ${isSuspended
-                                                            ? "bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100"
-                                                            : "bg-rose-50 dark:bg-rose-900/20 border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 hover:bg-rose-100"}`}>
-                                                    {isToggling ? <Loader2 size={11} className="animate-spin" />
-                                                        : isSuspended ? <><ShieldCheck size={11} /> Habilitar</> : <><ShieldOff size={11} /> Suspender</>}
-                                                </button>
-                                            )}
 
                                             <button onClick={() => setMensajeModal({ expediente: key, nombre: u.nombre, apellido: u.apellido })} title="Enviar mensaje"
                                                 className="flex items-center gap-1 px-2.5 h-8 rounded-xl text-[11px] font-bold border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-sky-50 dark:hover:bg-sky-900/20 hover:text-sky-600 hover:border-sky-200 transition-all">

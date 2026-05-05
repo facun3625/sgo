@@ -8,10 +8,11 @@ import {
     CreditCard, IdCard, User, Wallet, FileText, ChevronDown, ChevronRight,
     XOctagon, Banknote, GraduationCap, Calendar, HelpCircle, FolderOpen,
     Home, CheckCircle2, Clock, Newspaper, Library, Cpu, Mail, Megaphone,
+    ShieldCheck, Scale,
 } from "lucide-react";
 
 interface SidebarProps {
-    user: { nombre: string; apellido: string; expediente: string; image: string | null; };
+    user: { nombre: string; apellido: string; expediente: string; image: string | null; isSuspended?: boolean; };
     onClose?: () => void;
 }
 
@@ -34,11 +35,11 @@ const SidebarLink = ({ icon, label, href, active, color, onClose, badge }: {
 }) => (
     <Link href={href} onClick={onClose}
         className={`flex items-center gap-2.5 px-3 py-2 rounded-lg mb-0.5 transition-all duration-200 group
-            ${active ? "bg-[#063f68] text-white" : "text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50 hover:text-[#063f68] dark:hover:text-blue-400"}`}>
+            ${active ? "bg-[#063f68] text-white" : "text-gray-500 dark:text-white/80 hover:bg-gray-50 dark:hover:bg-slate-800/50 hover:text-[#063f68] dark:hover:text-white"}`}>
         <span className={`transition-all duration-200 flex-shrink-0 ${active ? "text-white scale-110" : `group-hover:scale-110 ${color || "text-gray-400"}`}`}>
             {React.isValidElement(icon) ? React.cloneElement(icon as React.ReactElement<{ size?: number }>, { size: 17 }) : icon}
         </span>
-        <span className={`text-[12.5px] leading-tight ${active ? "font-semibold text-white" : "font-normal"}`}>{label}</span>
+        <span className={`text-[13.5px] leading-tight ${active ? "font-semibold text-white" : "font-normal"}`}>{label}</span>
         {badge && <span className="ml-auto">{badge}</span>}
     </Link>
 );
@@ -55,12 +56,12 @@ const SidebarSubmenu = ({ icon, label, color, children, onClose }: {
         <div className="mb-0.5">
             <button onClick={() => setIsOpen(!isOpen)}
                 className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-200 group
-                    ${isOpen || anyActive ? "bg-gray-50 dark:bg-slate-800/50 text-[#063f68] dark:text-blue-400" : "text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50 hover:text-[#063f68] dark:hover:text-blue-400"}`}>
+                    ${isOpen || anyActive ? "bg-gray-50 dark:bg-slate-800/50 text-[#063f68] dark:text-blue-400" : "text-gray-500 dark:text-white/80 hover:bg-gray-50 dark:hover:bg-slate-800/50 hover:text-[#063f68] dark:hover:text-white"}`}>
                 <div className="flex items-center gap-2.5">
                     <span className={`flex-shrink-0 transition-all duration-200 ${isOpen || anyActive ? "text-[#063f68]" : `group-hover:scale-110 ${color || "text-gray-400"}`}`}>
                         {React.isValidElement(icon) ? React.cloneElement(icon as React.ReactElement<{ size?: number }>, { size: 17 }) : icon}
                     </span>
-                    <span className="text-[12.5px] font-normal">{label}</span>
+                    <span className="text-[13.5px] font-normal">{label}</span>
                 </div>
                 {isOpen ? <ChevronDown size={13} className="text-gray-400" /> : <ChevronRight size={13} className="text-gray-400 group-hover:text-[#063f68]" />}
             </button>
@@ -69,8 +70,8 @@ const SidebarSubmenu = ({ icon, label, color, children, onClose }: {
                     <div className="ml-5 border-l border-slate-200 dark:border-slate-800 pl-3.5">
                         {children.map((child, i) => (
                             <Link key={i} href={child.href} onClick={onClose}
-                                className={`block py-1.5 text-[12px] font-normal transition-all duration-200 hover:translate-x-1
-                                    ${pathname === child.href ? "text-[#063f68] dark:text-blue-400 font-semibold" : "text-gray-400 dark:text-slate-500 hover:text-[#063f68] dark:hover:text-blue-400"}`}>
+                                className={`block py-1.5 text-[13px] font-normal transition-all duration-200 hover:translate-x-1
+                                    ${pathname === child.href ? "text-[#063f68] dark:text-blue-400 font-semibold" : "text-gray-400 dark:text-white/60 hover:text-[#063f68] dark:hover:text-white"}`}>
                                 {child.label}
                             </Link>
                         ))}
@@ -89,11 +90,19 @@ const SectionLabel = ({ label }: { label: string }) => (
 
 export default function Sidebar({ user, onClose }: SidebarProps) {
     const pathname = usePathname();
+    const isSuspended = user.isSuspended ?? false;
 
-    const groups: NavGroup[] = [
+    const groupsNormal: NavGroup[] = [
         {
             items: [
                 { icon: <Home />, label: "Inicio", href: "/dashboard", color: "text-slate-400" },
+            ],
+        },
+        {
+            label: "NOVEDADES",
+            items: [
+                { icon: <Newspaper />, label: "Actividades Institucionales", href: "/dashboard/noticias", color: "text-amber-500" },
+                { icon: <Megaphone />, label: "Comunicados", href: "/dashboard/comunicados", color: "text-amber-500" },
             ],
         },
         {
@@ -103,6 +112,7 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
                 { icon: <IdCard />, label: "Credencial digital", href: "/dashboard/credencial", color: "text-amber-500" },
                 { icon: <CreditCard />, label: "Tarjeta de beneficios", href: "/dashboard/beneficios", color: "text-blue-500" },
                 { icon: <Wallet />, label: "Estado de matrícula y Pagos", href: "/dashboard/pagos", color: "text-emerald-500" },
+                { icon: <Scale />, label: "Historial de matrícula", href: "/dashboard/historial-matricula", color: "text-slate-400" },
             ],
         },
         {
@@ -126,17 +136,52 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
             label: "INSTITUCIÓN",
             items: [
                 { icon: <GraduationCap />, label: "Cursos", href: "/dashboard/cursos", color: "text-pink-500" },
-                { icon: <Newspaper />, label: "Actividades Institucionales", href: "/dashboard/noticias", color: "text-amber-500" },
                 { icon: <Calendar />, label: "Calendario", href: "/dashboard/calendario", color: "text-orange-500" },
                 { icon: <Cpu />, label: "Ventas", href: "/dashboard/ventas", color: "text-violet-500" },
                 { icon: <Library />, label: "Biblioteca", href: "/dashboard/biblioteca", color: "text-[#063f68] dark:text-blue-400" },
                 { icon: <FolderOpen />, label: "Repositorio de Archivos", href: "/dashboard/archivos", color: "text-indigo-500" },
                 { icon: <HelpCircle />, label: "Preguntas Frecuentes", href: "/dashboard/faq", color: "text-slate-400" },
                 { icon: <Mail />, label: "Mensajes Privados", href: "/dashboard/mensajes", color: "text-sky-500" },
-                { icon: <Megaphone />, label: "Comunicados", href: "/dashboard/comunicados", color: "text-amber-500" },
             ],
         },
     ];
+
+    // Nav reducido para usuarios con matrícula suspendida
+    const groupsSuspended: NavGroup[] = [
+        {
+            items: [
+                { icon: <Home />, label: "Inicio", href: "/dashboard", color: "text-slate-400" },
+            ],
+        },
+        {
+            label: "MI MATRÍCULA",
+            items: [
+                { icon: <User />, label: "Mis datos", href: "/dashboard/mis-datos", color: "text-indigo-500" },
+                { icon: <IdCard />, label: "Credencial digital", href: "/dashboard/credencial", color: "text-amber-500" },
+                { icon: <Scale />, label: "Historial de matrícula", href: "/dashboard/historial-matricula", color: "text-slate-400" },
+            ],
+        },
+        {
+            label: "TRÁMITES",
+            items: [
+                { icon: <FileText />, label: "Certificado de matriculación", href: "/dashboard/solicitudes/certificado", color: "text-blue-600" },
+            ],
+        },
+        {
+            label: "REHABILITACIÓN",
+            items: [
+                { icon: <ShieldCheck />, label: "Solicitar rehabilitación", href: "/dashboard/rehabilitacion", color: "text-emerald-500" },
+            ],
+        },
+        {
+            label: "COMUNICACIÓN",
+            items: [
+                { icon: <Mail />, label: "Mensajes Privados", href: "/dashboard/mensajes", color: "text-sky-500" },
+            ],
+        },
+    ];
+
+    const groups = isSuspended ? groupsSuspended : groupsNormal;
 
     return (
         <aside className="w-72 bg-white dark:bg-[#02182b] flex flex-col h-screen sticky top-0 overflow-y-auto border-0">
@@ -200,7 +245,9 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
                         <p className="text-[13px] font-bold text-slate-700 dark:text-slate-200 truncate group-hover:text-[#063f68] dark:group-hover:text-blue-400 transition-colors">
                             {user.nombre} {user.apellido[0]}.
                         </p>
-                        <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">Matrícula {user.expediente}</p>
+                        <p className={`text-[10px] font-medium ${isSuspended ? "text-rose-500" : "text-slate-400 dark:text-slate-500"}`}>
+                            {isSuspended ? "Matrícula suspendida" : `Mat. ${user.expediente}`}
+                        </p>
                     </div>
                 </Link>
                 <a href="https://kubbo.com.ar" target="_blank" rel="noopener noreferrer"

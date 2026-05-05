@@ -17,8 +17,18 @@ export async function POST() {
     const configMonto = await prisma.config.findUnique({ where: { clave: "montoMensual" } });
     const monto = configMonto ? parseFloat(configMonto.valor) : 4500;
 
-    const datos = await prisma.dato.findMany({ select: { expediente: true } });
-    const todosExpedientes = datos.map((d) => d.expediente as string).filter(Boolean);
+    // Unión de expedientes: Dato + User (no admin) — igual que el resumen de pagos
+    const [datosTodos, usersTodos] = await Promise.all([
+        prisma.dato.findMany({ select: { expediente: true } }),
+        prisma.user.findMany({
+            where: { expediente: { not: null }, accessLevel: { notIn: ["admin", "superadmin"] } },
+            select: { expediente: true },
+        }),
+    ]);
+    const expSet = new Set<string>();
+    for (const d of datosTodos) if (d.expediente) expSet.add(d.expediente);
+    for (const u of usersTodos) if (u.expediente) expSet.add(u.expediente!);
+    const todosExpedientes = Array.from(expSet);
 
     const pagosAnuales = await prisma.pagoAnual.findMany({ select: { expediente: true } });
     const pagoAnualExp = new Set(pagosAnuales.map((p) => p.expediente));

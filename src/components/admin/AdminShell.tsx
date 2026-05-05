@@ -34,6 +34,7 @@ import {
     KeyRound,
     Landmark,
     ReceiptText,
+    ShieldOff,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { SessionPayload } from "@/lib/auth";
@@ -64,6 +65,7 @@ const navItems = [
     { href: "/admin/envios", label: "Envíos Masivos", icon: Send, color: "text-amber-500" },
     { href: "/admin/firmas", label: "Firmas de Autoridades", icon: PenLine, color: "text-indigo-500" },
     { href: "/admin/adhesiones", label: "Débito Automático", icon: Banknote, color: "text-emerald-500" },
+    { href: "/admin/suspensiones", label: "Suspensiones", icon: ShieldOff, color: "text-rose-500" },
     { href: "/admin/cambios-datos", label: "Modificaciones de Datos", icon: UserCheck, color: "text-violet-500" },
     { href: "/admin/pagos", label: "Estado de Pagos", icon: ReceiptText, color: "text-emerald-500" },
     { href: "/admin/transferencias", label: "Transferencias", icon: Landmark, color: "text-slate-400" },
@@ -129,6 +131,18 @@ export default function AdminShell({ session, image, permisos, children }: Admin
         return permisos.includes(key);
     });
 
+    const [rehabPendientes, setRehabPendientes] = useState(0);
+    useEffect(() => {
+        const load = () =>
+            fetch("/api/admin/suspensiones?tipo=rehabilitaciones")
+                .then(r => r.json())
+                .then(d => setRehabPendientes((d.solicitudes ?? []).filter((s: any) => s.estado === "pendiente").length))
+                .catch(() => {});
+        load();
+        const t = setInterval(load, 60000);
+        return () => clearInterval(t);
+    }, []);
+
     const isSuperAdmin = permisos === null;
     const roleLabel = isSuperAdmin ? "Superadmin" : "Admin";
     const roleLabelLong = isSuperAdmin ? "Superadministrador" : "Administrador";
@@ -157,16 +171,22 @@ export default function AdminShell({ session, image, permisos, children }: Admin
                 <nav ref={navRef} className="flex-1 p-3 space-y-1 overflow-y-auto">
                     {visibleNavItems.map((item) => {
                         const active = isActive(item);
+                        const showRehabBadge = item.href === "/admin/suspensiones" && rehabPendientes > 0;
                         return (
                             <Link key={item.href} href={item.href} onClick={() => setSidebarOpen(false)}
                                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-[13px] font-medium group
                                     ${active
                                         ? "bg-green-900 text-white dark:bg-white/15"
-                                        : "text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-700 dark:hover:text-slate-200"
+                                        : "text-slate-500 dark:text-white/80 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-700 dark:hover:text-white"
                                     }`}>
                                 <item.icon size={17} className={active ? "text-white" : `${item.color} group-hover:scale-110 transition-transform`} />
                                 {item.label}
-                                {active && <ChevronRight size={13} className="ml-auto text-white/40" />}
+                                {showRehabBadge && (
+                                    <span className="ml-auto min-w-[18px] h-[18px] px-1 bg-amber-400 text-white text-[9px] font-black rounded-full flex items-center justify-center leading-none">
+                                        {rehabPendientes > 9 ? "9+" : rehabPendientes}
+                                    </span>
+                                )}
+                                {active && !showRehabBadge && <ChevronRight size={13} className="ml-auto text-white/40" />}
                             </Link>
                         );
                     })}
@@ -179,7 +199,7 @@ export default function AdminShell({ session, image, permisos, children }: Admin
                                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-[13px] font-medium group
                                     ${pathname.startsWith("/admin/config")
                                         ? "bg-green-900/10 dark:bg-white/5 text-slate-700 dark:text-slate-200"
-                                        : "text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-700 dark:hover:text-slate-200"
+                                        : "text-slate-500 dark:text-white/80 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-700 dark:hover:text-white"
                                     }`}
                             >
                                 <Settings2 size={17} className={`text-slate-400 ${!pathname.startsWith("/admin/config") ? "group-hover:scale-110 transition-transform" : ""}`} />
@@ -196,10 +216,10 @@ export default function AdminShell({ session, image, permisos, children }: Admin
                                         const active = pathname.startsWith(sub.href);
                                         return (
                                             <Link key={sub.href} href={sub.href} onClick={() => setSidebarOpen(false)}
-                                                className={`flex items-center gap-3 px-3 py-2 rounded-xl transition-all text-[12.5px] font-medium group
+                                                className={`flex items-center gap-3 px-3 py-2 rounded-xl transition-all text-[13.5px] font-medium group
                                                     ${active
                                                         ? "bg-green-900 text-white dark:bg-white/15"
-                                                        : "text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-700 dark:hover:text-slate-200"
+                                                        : "text-slate-500 dark:text-white/80 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-700 dark:hover:text-white"
                                                     }`}>
                                                 <sub.icon size={15} className={active ? "text-white" : `${sub.color} group-hover:scale-110 transition-transform`} />
                                                 {sub.label}
