@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import {
     ShieldOff, ShieldCheck, Search, Loader2, X,
     CheckCircle2, XCircle, History, ChevronDown, ChevronUp,
-    AlertTriangle, Clock, RefreshCw,
+    AlertTriangle, Clock, RefreshCw, FileText, ChevronRight, Inbox,
 } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 
@@ -32,6 +32,17 @@ interface RegistroHistorial {
     comentario: string;
     adminNombre: string | null;
     createdAt: string;
+}
+
+interface SolicitudPedido {
+    id: number;
+    expediente: string;
+    tipo: string;
+    fecha: string;
+    estado: string;
+    detalles: any;
+    nombre: string | null;
+    apellido: string | null;
 }
 
 interface SolicitudRehab {
@@ -73,7 +84,7 @@ function fmtFecha(iso: string) {
 
 export default function SuspensionesPage() {
     const { showToast } = useToast();
-    const [tab, setTab] = useState<"matriculados" | "rehabilitaciones">("matriculados");
+    const [tab, setTab] = useState<"matriculados" | "rehabilitaciones" | "pedidos">("matriculados");
 
     // ── Tab Matriculados ──
     const [usuarios, setUsuarios] = useState<UsuarioSuspension[]>([]);
@@ -98,12 +109,23 @@ export default function SuspensionesPage() {
     const [procesando, setProcesando] = useState(false);
     const rehabTextareaRef = useRef<HTMLTextAreaElement>(null);
 
+    // ── Tab Pedidos ──
+    const [pedidos, setPedidos] = useState<SolicitudPedido[]>([]);
+    const [loadingPedidos, setLoadingPedidos] = useState(false);
+    const [pedidosCargados, setPedidosCargados] = useState(false);
+    const [filtroPedidos, setFiltroPedidos] = useState<"todos" | "pendiente" | "completada" | "rechazada">("pendiente");
+    const [selectedPedido, setSelectedPedido] = useState<SolicitudPedido | null>(null);
+    const [panelPedidoOpen, setPanelPedidoOpen] = useState(false);
+    const [motivoPedido, setMotivoPedido] = useState("");
+    const [procesandoPedido, setProcesandoPedido] = useState(false);
+
     // ── Load ──
 
     useEffect(() => { cargarUsuarios(); }, []);
 
     useEffect(() => {
         if (tab === "rehabilitaciones" && !rehabCargado) cargarRehabilitaciones();
+        if (tab === "pedidos" && !pedidosCargados) cargarPedidos();
     }, [tab]);
 
     useEffect(() => {
@@ -144,6 +166,42 @@ export default function SuspensionesPage() {
             setRehabCargado(true);
         } finally {
             setLoadingRehab(false);
+        }
+    }
+
+    async function cargarPedidos() {
+        setLoadingPedidos(true);
+        try {
+            const res = await fetch("/api/admin/solicitudes");
+            const data = await res.json();
+            const todos = Array.isArray(data) ? data : [];
+            setPedidos(todos.filter((s: SolicitudPedido) =>
+                s.tipo.includes("Suspensión") || s.tipo.includes("Cancelación") ||
+                s.tipo.toLowerCase().includes("suspension") || s.tipo.toLowerCase().includes("cancelacion")
+            ));
+            setPedidosCargados(true);
+        } finally {
+            setLoadingPedidos(false);
+        }
+    }
+
+    async function accionPedido(action: string, extra: Record<string, string> = {}) {
+        if (!selectedPedido) return;
+        setProcesandoPedido(true);
+        try {
+            const res = await fetch(`/api/admin/solicitudes/${selectedPedido.id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ action, ...extra }),
+            });
+            if (!res.ok) { const e = await res.json(); showToast(e.error ?? "Error", "error"); return; }
+            const updated = await res.json();
+            showToast("Solicitud procesada", "success");
+            setPedidos(prev => prev.map(p => p.id === selectedPedido.id ? { ...p, ...updated } : p));
+            setSelectedPedido(prev => prev ? { ...prev, ...updated } : prev);
+            setTimeout(() => { setPanelPedidoOpen(false); setSelectedPedido(null); setMotivoPedido(""); }, 1500);
+        } finally {
+            setProcesandoPedido(false);
         }
     }
 
@@ -234,6 +292,12 @@ export default function SuspensionesPage() {
     const pendientesCount = solicitudes.filter(s => s.estado === "pendiente").length;
     const totalSuspendidos = usuarios.filter(u => u.status === "suspended").length;
 
+    const pedidosFiltrados = useMemo(() =>
+        filtroPedidos === "todos" ? pedidos : pedidos.filter(p => p.estado === filtroPedidos),
+        [pedidos, filtroPedidos]
+    );
+    const pedidosCount = pedidos.filter(p => p.estado === "pendiente").length;
+
     return (
         <div className="p-6 md:p-10 space-y-6">
 
@@ -253,6 +317,7 @@ export default function SuspensionesPage() {
                 {[
                     { key: "matriculados" as const, label: "Matriculados" },
                     { key: "rehabilitaciones" as const, label: "Solicitudes de Rehabilitación", badge: pendientesCount },
+                    { key: "pedidos" as const, label: "Pedidos de Suspensión", badge: pedidosCount },
                 ].map(t => (
                     <button key={t.key} onClick={() => setTab(t.key)}
                         className={`flex items-center gap-2 px-5 py-3 text-[13px] font-semibold border-b-2 transition-all whitespace-nowrap
@@ -478,6 +543,202 @@ export default function SuspensionesPage() {
                 </>
             )}
 
+            {/* ── TAB PEDIDOS ──────────────────────────────────────────── */}
+            {tab === "pedidos" && (
+                <>
+                    <div className="flex items-center justify-between gap-3 flex-wrap">
+                        <div className="flex gap-2 flex-wrap">
+                            {(["pendiente", "todos", "completada", "rechazada"] as const).map(f => (
+                                <button key={f} onClick={() => setFiltroPedidos(f)}
+                                    className={`px-3 h-9 rounded-xl text-[12px] font-semibold border transition-all
+                                        ${filtroPedidos === f
+                                            ? f === "rechazada" ? "bg-rose-500 border-rose-500 text-white"
+                                                : f === "completada" ? "bg-emerald-500 border-emerald-500 text-white"
+                                                : f === "pendiente" ? "bg-amber-500 border-amber-500 text-white"
+                                                : "bg-[#063f68] border-[#063f68] text-white"
+                                            : "border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"}`}>
+                                    {f === "todos" ? "Todos" : f === "pendiente" ? "Pendientes" : f === "completada" ? "Aprobados" : "Rechazados"}
+                                </button>
+                            ))}
+                        </div>
+                        <button onClick={cargarPedidos}
+                            className="flex items-center gap-1.5 px-3 h-9 rounded-xl text-[12px] font-semibold border border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                            <RefreshCw size={13} /> Actualizar
+                        </button>
+                    </div>
+
+                    {loadingPedidos ? (
+                        <div className="flex items-center justify-center py-20"><Loader2 size={28} className="animate-spin text-slate-300" /></div>
+                    ) : pedidosFiltrados.length === 0 ? (
+                        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-16 text-center">
+                            <Inbox size={32} className="text-slate-200 dark:text-slate-700 mx-auto mb-3" />
+                            <p className="text-slate-500 font-medium">Sin pedidos {filtroPedidos !== "todos" ? filtroPedidos + "s" : ""}</p>
+                        </div>
+                    ) : (
+                        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden">
+                            <table className="w-full">
+                                <thead>
+                                    <tr className="border-b border-slate-100 dark:border-slate-800">
+                                        <th className="text-left px-5 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Matriculado</th>
+                                        <th className="text-left px-5 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider hidden sm:table-cell">Tipo</th>
+                                        <th className="text-left px-5 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider hidden md:table-cell">Fecha</th>
+                                        <th className="text-left px-5 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Estado</th>
+                                        <th className="px-5 py-3" />
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-50 dark:divide-slate-800/50">
+                                    {pedidosFiltrados.map(p => {
+                                        const esCancelacion = p.tipo.toLowerCase().includes("cancelación") || p.tipo.toLowerCase().includes("cancelacion");
+                                        return (
+                                            <tr key={p.id} onClick={() => { setSelectedPedido(p); setPanelPedidoOpen(true); setMotivoPedido(""); }}
+                                                className="hover:bg-slate-50 dark:hover:bg-slate-800/30 cursor-pointer transition-colors">
+                                                <td className="px-5 py-3.5">
+                                                    <p className="text-[13px] font-bold text-slate-800 dark:text-white">
+                                                        {p.apellido && p.nombre ? `${p.apellido}, ${p.nombre}` : p.expediente}
+                                                    </p>
+                                                    <p className="text-[11px] text-slate-400 font-mono mt-0.5">Mat. {p.expediente}</p>
+                                                </td>
+                                                <td className="px-5 py-3.5 hidden sm:table-cell">
+                                                    <span className={`inline-flex px-2.5 py-1 rounded-full border text-[10px] font-bold uppercase tracking-wider
+                                                        ${esCancelacion
+                                                            ? "bg-rose-50 text-rose-600 border-rose-100 dark:bg-rose-900/20 dark:text-rose-400 dark:border-rose-900/30"
+                                                            : "bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-900/30"}`}>
+                                                        {esCancelacion ? "Cancelación" : "Suspensión"}
+                                                    </span>
+                                                </td>
+                                                <td className="px-5 py-3.5 hidden md:table-cell">
+                                                    <p className="text-[12px] text-slate-500">{new Date(p.fecha).toLocaleDateString("es-AR")}</p>
+                                                </td>
+                                                <td className="px-5 py-3.5">
+                                                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-[10px] font-bold uppercase tracking-wider
+                                                        ${p.estado === "completada"
+                                                            ? "bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-900/30"
+                                                            : p.estado === "rechazada"
+                                                                ? "bg-rose-50 text-rose-600 border-rose-100 dark:bg-rose-900/20 dark:text-rose-400 dark:border-rose-900/30"
+                                                                : "bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-900/30"}`}>
+                                                        {p.estado === "completada" ? <><CheckCircle2 size={10} /> Aprobado</> : p.estado === "rechazada" ? <><XCircle size={10} /> Rechazado</> : <><Clock size={10} /> Pendiente</>}
+                                                    </span>
+                                                </td>
+                                                <td className="px-5 py-3.5">
+                                                    <ChevronRight size={14} className="text-slate-300 dark:text-slate-600" />
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </>
+            )}
+
+            {/* ── PANEL PEDIDO ─────────────────────────────────────────── */}
+            {panelPedidoOpen && selectedPedido && (
+                <>
+                    <div className="fixed inset-0 bg-black/40 z-40" onClick={() => { setPanelPedidoOpen(false); setTimeout(() => setSelectedPedido(null), 300); }} />
+                    <div className="fixed right-0 top-0 h-full w-full md:w-[480px] bg-white dark:bg-[#02182b] z-50 flex flex-col border-l border-slate-100 dark:border-slate-800 overflow-hidden animate-slide-in-right">
+                        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex-shrink-0">
+                            <div className="flex items-center gap-3">
+                                <div className="w-9 h-9 rounded-xl bg-rose-50 dark:bg-rose-900/20 flex items-center justify-center">
+                                    <FileText size={17} className="text-rose-500" />
+                                </div>
+                                <div>
+                                    <p className="text-[13px] font-bold text-slate-800 dark:text-white leading-tight">Pedido de {selectedPedido.tipo.toLowerCase().includes("cancelación") || selectedPedido.tipo.toLowerCase().includes("cancelacion") ? "Cancelación" : "Suspensión"}</p>
+                                    <p className="text-[11px] text-slate-400">#{selectedPedido.id}</p>
+                                </div>
+                            </div>
+                            <button onClick={() => { setPanelPedidoOpen(false); setTimeout(() => setSelectedPedido(null), 300); }}
+                                className="w-8 h-8 flex items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
+                                <X size={16} />
+                            </button>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto p-5 space-y-5">
+                            <div className="bg-slate-50 dark:bg-slate-800/40 rounded-2xl p-4">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Matriculado</p>
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-900/20 flex items-center justify-center text-rose-600 dark:text-rose-400 font-bold text-[14px]">
+                                        {selectedPedido.apellido ? selectedPedido.apellido[0] : "?"}
+                                    </div>
+                                    <div>
+                                        <p className="text-[14px] font-bold text-slate-800 dark:text-white">
+                                            {selectedPedido.apellido && selectedPedido.nombre ? `${selectedPedido.apellido}, ${selectedPedido.nombre}` : "—"}
+                                        </p>
+                                        <p className="text-[11px] text-slate-400">Mat. {selectedPedido.expediente}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <span className={`px-3 py-1.5 rounded-full border text-[11px] font-bold uppercase tracking-wider
+                                    ${selectedPedido.tipo.toLowerCase().includes("cancelación") || selectedPedido.tipo.toLowerCase().includes("cancelacion")
+                                        ? "bg-rose-50 text-rose-600 border-rose-100 dark:bg-rose-900/20 dark:text-rose-400 dark:border-rose-900/30"
+                                        : "bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-900/30"}`}>
+                                    {selectedPedido.tipo}
+                                </span>
+                                <span className="text-[11px] text-slate-400">{new Date(selectedPedido.fecha).toLocaleDateString("es-AR", { day: "2-digit", month: "long", year: "numeric" })}</span>
+                            </div>
+
+                            {selectedPedido.detalles && Object.keys(selectedPedido.detalles).length > 0 && (
+                                <div>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Datos del pedido</p>
+                                    <div className="bg-slate-50 dark:bg-slate-800/40 rounded-xl p-3 space-y-2">
+                                        {Object.entries(selectedPedido.detalles as Record<string, any>).map(([k, v]) => {
+                                            if (k === "rechazo") return null;
+                                            if (typeof v === "object" && v !== null) return null;
+                                            return (
+                                                <div key={k} className="flex items-start justify-between gap-3">
+                                                    <span className="text-[11px] font-semibold text-slate-400 capitalize min-w-[80px]">{k}</span>
+                                                    <span className="text-[12px] text-slate-700 dark:text-slate-300 text-right">{String(v)}</span>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+
+                            {selectedPedido.estado === "completada" && (
+                                <div className="bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900/30 rounded-2xl p-4">
+                                    <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider flex items-center gap-1">
+                                        <CheckCircle2 size={12} /> Solicitud aprobada
+                                    </p>
+                                    <p className="text-[12px] text-emerald-700 dark:text-emerald-300 mt-1">
+                                        El estado del matriculado fue actualizado automáticamente.
+                                    </p>
+                                </div>
+                            )}
+
+                            {selectedPedido.estado === "rechazada" && (selectedPedido.detalles as any)?.rechazo?.motivo && (
+                                <div className="bg-rose-50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-900/30 rounded-2xl p-4">
+                                    <p className="text-[10px] font-bold text-rose-600 uppercase tracking-wider mb-1">Motivo de rechazo</p>
+                                    <p className="text-[13px] text-rose-700 dark:text-rose-300">{(selectedPedido.detalles as any).rechazo.motivo}</p>
+                                </div>
+                            )}
+                        </div>
+
+                        {selectedPedido.estado === "pendiente" && (
+                            <div className="flex-shrink-0 border-t border-slate-100 dark:border-slate-800 p-5 space-y-3">
+                                <button onClick={() => accionPedido("suspender")} disabled={procesandoPedido}
+                                    className="w-full flex items-center justify-center gap-2 h-10 bg-emerald-600 text-white rounded-xl text-[13px] font-bold hover:bg-emerald-700 disabled:opacity-40 transition-all">
+                                    {procesandoPedido ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
+                                    Aprobar solicitud
+                                </button>
+                                <div className="flex gap-2">
+                                    <input value={motivoPedido} onChange={e => setMotivoPedido(e.target.value)}
+                                        placeholder="Motivo de rechazo (opcional)..."
+                                        className="flex-1 h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-[13px] focus:outline-none focus:ring-2 focus:ring-rose-300/40" />
+                                    <button onClick={() => accionPedido("rechazar", { motivo: motivoPedido })} disabled={procesandoPedido}
+                                        className="flex items-center gap-1.5 px-4 h-10 bg-rose-500 text-white rounded-xl text-[13px] font-bold hover:bg-rose-600 disabled:opacity-40 transition-all">
+                                        {procesandoPedido ? <Loader2 size={14} className="animate-spin" /> : <XCircle size={14} />}
+                                        Rechazar
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </>
+            )}
+
             {/* ── MODAL SUSPENSIÓN/HABILITACIÓN ──────────────────────────── */}
             {modalSusp && (
                 <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => { setModalSusp(null); setComentario(""); }}>
@@ -559,6 +820,15 @@ export default function SuspensionesPage() {
                     </div>
                 </div>
             )}
+            <style jsx global>{`
+                @keyframes slide-in-right {
+                    from { transform: translateX(100%); }
+                    to   { transform: translateX(0); }
+                }
+                .animate-slide-in-right {
+                    animation: slide-in-right 0.25s cubic-bezier(0.16,1,0.3,1) forwards;
+                }
+            `}</style>
         </div>
     );
 }

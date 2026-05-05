@@ -3,7 +3,6 @@ export const SOLICITUDES_SUBTABS = [
     { key: "solicitudes:SISFE", label: "SISFE" },
     { key: "solicitudes:CATASTRO", label: "CATASTRO / SIGIT" },
     { key: "solicitudes:Jurisprudencia", label: "Jurisprudencia" },
-    { key: "solicitudes:Suspension", label: "Suspensión / Cancelación" },
 ] as const;
 
 export const ADMIN_SECCIONES = [

@@ -68,7 +68,6 @@ const ALL_TABS = [
     { key: "SISFE", label: "SISFE" },
     { key: "CATASTRO", label: "CATASTRO" },
     { key: "Jurisprudencia", label: "Jurisprudencia" },
-    { key: "Suspensión", label: "Suspensión" },
 ];
 
 // Sub-tab key → tab filter key mapping
@@ -77,7 +76,6 @@ const SUBTAB_MAP: Record<string, string> = {
     "solicitudes:SISFE": "SISFE",
     "solicitudes:CATASTRO": "CATASTRO",
     "solicitudes:Jurisprudencia": "Jurisprudencia",
-    "solicitudes:Suspension": "Suspensión",
 };
 
 // ─── main component ──────────────────────────────────────────────────────────
