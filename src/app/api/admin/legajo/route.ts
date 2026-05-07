@@ -19,7 +19,6 @@ export async function GET(req: NextRequest) {
                   { expediente: { contains: search, mode: "insensitive" as const } },
                   { apellido: { contains: search, mode: "insensitive" as const } },
                   { nombre: { contains: search, mode: "insensitive" as const } },
-                  { documento: { contains: search } },
               ],
           }
         : {};

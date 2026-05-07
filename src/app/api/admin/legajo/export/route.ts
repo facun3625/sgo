@@ -54,7 +54,6 @@ export async function GET(req: NextRequest) {
                   { expediente: { contains: search, mode: "insensitive" as const } },
                   { apellido: { contains: search, mode: "insensitive" as const } },
                   { nombre: { contains: search, mode: "insensitive" as const } },
-                  { documento: { contains: search } },
               ],
           }
         : {};
@@ -81,32 +80,34 @@ export async function GET(req: NextRequest) {
     const sheetData = [
         headers,
         ...datos.map((d) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const r = d as any;
             const row: Record<string, string> = {
-                expediente: d.expediente ?? "",
-                apellido: d.apellido,
-                nombre: d.nombre,
-                documento: d.documento ?? "",
-                cuil: d.cuil ?? "",
-                emailLegal: d.emailLegal ?? "",
-                emailReal: d.emailReal ?? "",
-                telefonosLegal: d.telefonosLegal ?? "",
-                movilLegal: d.movilLegal ?? "",
-                telefonosReal: d.telefonosReal ?? "",
-                movilReal: d.movilReal ?? "",
-                domicilioLegal: d.domicilioLegal ?? "",
-                postalLegal: d.postalLegal ?? "",
-                localidadLegal: d.localidadLegal ?? "",
-                domicilioReal: d.domicilioReal ?? "",
-                postalReal: d.postalReal ?? "",
-                localidadReal: d.localidadReal ?? "",
-                folio: d.folio ?? "",
-                tomo: d.tomo ?? "",
-                tipo: d.tipo ?? "",
-                fechaMatriculacion: d.fechaMatriculacion
-                    ? d.fechaMatriculacion.toISOString().slice(0, 10)
+                expediente: r.expediente ?? "",
+                apellido: r.apellido ?? "",
+                nombre: r.nombre ?? "",
+                documento: r.documento ?? "",
+                cuil: r.cuil ?? "",
+                emailLegal: r.emailLegal ?? "",
+                emailReal: r.emailReal ?? "",
+                telefonosLegal: r.telefonosLegal ?? "",
+                movilLegal: r.movilLegal ?? "",
+                telefonosReal: r.telefonosReal ?? "",
+                movilReal: r.movilReal ?? "",
+                domicilioLegal: r.domicilioLegal ?? "",
+                postalLegal: r.postalLegal ?? "",
+                localidadLegal: r.localidadLegal ?? "",
+                domicilioReal: r.domicilioReal ?? "",
+                postalReal: r.postalReal ?? "",
+                localidadReal: r.localidadReal ?? "",
+                folio: r.folio ?? "",
+                tomo: r.tomo ?? "",
+                tipo: r.tipo ?? "",
+                fechaMatriculacion: r.fechaMatriculacion
+                    ? new Date(r.fechaMatriculacion).toISOString().slice(0, 10)
                     : "",
-                status: d.expediente
-                    ? STATUS_LABELS[userMap.get(d.expediente) ?? ""] ?? ""
+                status: r.expediente
+                    ? STATUS_LABELS[userMap.get(r.expediente) ?? ""] ?? ""
                     : "",
             };
             return allCols.map((c) => row[c] ?? "");
