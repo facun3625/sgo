@@ -17,7 +17,7 @@ export async function GET(
         prisma.dato.findFirst({ where: { expediente } }),
         prisma.user.findUnique({
             where: { expediente },
-            select: { status: true, suspendedUntil: true, createdAt: true, registered: true },
+            select: { status: true, createdAt: true, registered: true },
         }),
         prisma.cambioDatos.findMany({
             where: { expediente },

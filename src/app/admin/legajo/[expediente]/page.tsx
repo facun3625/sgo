@@ -63,7 +63,6 @@ interface Dato {
 
 interface UserData {
     status: string;
-    suspendedUntil: string | null;
     createdAt: string;
     registered: number;
 }
@@ -250,12 +249,6 @@ export default function LegajoDetallePage({
                                                         </span>
                                                     </dd>
                                                 </div>
-                                                {data.user.suspendedUntil && (
-                                                    <div className="flex items-center gap-3">
-                                                        <dt className="text-[11px] text-slate-400 min-w-[130px]">Suspendido hasta</dt>
-                                                        <dd className="text-[13px] text-amber-600 dark:text-amber-400 font-medium">{fmt(data.user.suspendedUntil)}</dd>
-                                                    </div>
-                                                )}
                                                 <div className="flex items-center gap-3">
                                                     <dt className="text-[11px] text-slate-400 min-w-[130px]">Registrado</dt>
                                                     <dd className="text-[13px] text-slate-700 dark:text-slate-200">{fmt(data.user.createdAt)}</dd>
