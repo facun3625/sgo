@@ -16,10 +16,11 @@ export async function getMpClients(): Promise<{ preference: Preference; payment:
 // ─── Tipos de pago soportados ─────────────────────────────────────────────────
 export type TipoPago =
     | "matricula_mensual"  // ref = cuotaId
-    | "matricula_anual"    // ref = expediente (no necesita ID extra)
+    | "matricula_anual"    // ref = expediente
     | "curso"              // ref = inscripcionId
     | "producto"           // ref = productoId, extra = cantidad
-    | "deuda";             // ref = IDs de deudas separados por coma
+    | "deuda"              // ref = IDs de deudas separados por coma
+    | "rehab_costo";       // ref = solicitudRehabilitacionId
 
 export interface PreferenceRef {
     tipo: TipoPago;

@@ -17,8 +17,9 @@ model User {
   expediente  String?  @unique
   cod         String?  @unique
   password    String
-  status      String   @default("active")
-  accessLevel String   @default("user") @map("access_level")
+  status         String    @default("active")
+  suspendedUntil DateTime? @map("suspended_until")
+  accessLevel    String    @default("user") @map("access_level")
   registered  Int      @default(1)
   image       String?
   permisos    String   @default("[]")
@@ -42,6 +43,7 @@ model Dato {
   expediente         String?
   folio              String?
   tipo               String?
+  cuil               String?
   documento          String?
   tomo               String?
   domicilioReal      String?   @map("domicilio_real")
@@ -525,26 +527,73 @@ model RecuperacionToken {
 }
 
 model HistorialMatricula {
-  id          Int      @id @default(autoincrement())
-  expediente  String
-  accion      String   // "suspension" | "habilitacion"
-  comentario  String
-  adminNombre String?
-  createdAt   DateTime @default(now())
+  id           Int      @id @default(autoincrement())
+  expediente   String
+  accion       String   // "suspension" | "habilitacion" | "cancelacion"
+  comentario   String
+  motivoNombre String?
+  motivoId     Int?
+  motivoCobra  Boolean?  // snapshot: si el motivo cobra al rehabilitar
+  fechaInicio  DateTime? @map("fecha_inicio")
+  fechaFin     DateTime? @map("fecha_fin")
+  adminNombre  String?
+  createdAt    DateTime  @default(now())
 
   @@index([expediente])
   @@map("historial_matricula")
 }
 
-model SolicitudRehabilitacion {
+model MotivoSuspension {
   id          Int      @id @default(autoincrement())
-  expediente  String
-  mensaje     String   // Explicación del matriculado
-  estado      String   @default("pendiente") // "pendiente" | "aprobada" | "rechazada"
-  respuesta   String?  // Respuesta del admin al aprobar/rechazar
-  adminNombre String?
+  nombre      String
+  tipo        String   // "suspension" | "cancelacion" | "ambos"
+  aplicaMulta Boolean  @default(false) // cobra al rehabilitar (usa valor global JUS)
+  activo      Boolean  @default(true)
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+
+  @@map("motivos_suspension")
+}
+
+model SolicitudRehabilitacion {
+  id            Int      @id @default(autoincrement())
+  expediente    String
+  estado        String   @default("borrador") // borrador | pendiente | aprobada | rechazada
+  pasoActual    Int      @default(1)
+
+  // Paso 1 — Pago de deuda
+  deudaOriginal Float?   // snapshot al iniciar
+  p1Metodo      String?  // sin_deuda | mercadopago | transferencia
+  p1Comprobante String?
+  p1MpPaymentId String?
+  p1Ok          Boolean  @default(false)
+
+  // Paso 2 — Formulario
+  p2Desde       String?  // "a partir de"
+  p2Razon       String?  // "en razón de"
+  p2Ok          Boolean  @default(false)
+
+  // Paso 3 — PDF Reincidencia
+  p3Pdf         String?
+  p3Ok          Boolean  @default(false)
+
+  // Paso 4 — Adhesión a débito
+  p4Tipo        String?  // CBU | Tarjeta
+  p4Dni         String?
+  p4Doc         String?
+  p4Ok          Boolean  @default(false)
+
+  // Paso 5 — Costo rehabilitación
+  p5JusAmount   Float?
+  p5Pesos       Float?
+  p5Metodo      String?  // mercadopago | transferencia
+  p5Comprobante String?
+  p5MpPaymentId String?
+  p5Ok          Boolean  @default(false)
+
+  respuesta     String?
+  adminNombre   String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   @@index([expediente])
   @@map("solicitudes_rehabilitacion")

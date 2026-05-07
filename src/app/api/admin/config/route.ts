@@ -20,6 +20,7 @@ export async function GET() {
         montoAnual: map.montoAnual ?? "48000",
         pagoAnualDesde: map.pagoAnualDesde ?? "",
         pagoAnualHasta: map.pagoAnualHasta ?? "",
+        jus: map.jus ?? "",
         // No devolvemos los valores reales — solo si están configurados
         mpTokenConfigurado: !!map.mpAccessToken,
         mpPublicKeyConfigurado: !!map.mpPublicKey,

@@ -99,6 +99,37 @@ export async function POST(req: NextRequest) {
                 );
             }
 
+        } else if (tipo === "rehab_costo") {
+            const solicitudId = parseInt(ref);
+            const solicitud = await prisma.solicitudRehabilitacion.findUnique({ where: { id: solicitudId } });
+            if (solicitud && solicitud.estado === "borrador" && !solicitud.p5Ok) {
+                await prisma.solicitudRehabilitacion.update({
+                    where: { id: solicitudId },
+                    data: { p5MpPaymentId: mpPaymentId, p5Metodo: "mercadopago", p5Ok: true, estado: "pendiente" },
+                });
+                await crearNotificacion(
+                    expediente,
+                    "Pago de rehabilitación confirmado",
+                    "Tu pago fue acreditado. Tu solicitud de rehabilitación está en revisión.",
+                    "general"
+                );
+                // Notificar admins
+                const admins = await prisma.user.findMany({
+                    where: { accessLevel: { in: ["admin", "superadmin"] } },
+                    select: { expediente: true },
+                });
+                const dato = await prisma.dato.findFirst({ where: { expediente }, select: { nombre: true, apellido: true } });
+                const nombre = dato ? `${dato.apellido}, ${dato.nombre}` : `Mat. ${expediente}`;
+                await prisma.notificacion.createMany({
+                    data: admins.filter(a => a.expediente).map(a => ({
+                        expediente: a.expediente!,
+                        titulo: "Nueva solicitud de rehabilitación",
+                        mensaje: `${nombre} completó el trámite y solicita rehabilitación de matrícula.`,
+                        tipo: "general",
+                    })),
+                });
+            }
+
         } else if (tipo === "producto") {
             const productoId = parseInt(ref);
             const cantidad = parseInt(extra ?? "1");

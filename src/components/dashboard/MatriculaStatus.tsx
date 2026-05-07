@@ -43,6 +43,7 @@ interface PagosData {
     hasPagoAnualActivo: boolean;
     hasCancelacionPendiente: boolean;
     totalDeuda: number;
+    userStatus: string;
 }
 
 function formatPeriodo(periodo: string): string {
@@ -82,6 +83,7 @@ export default function MatriculaStatus() {
         );
     }
 
+    const isSuspended = data?.userStatus === "suspended" || data?.userStatus === "cancelled";
     const hasDeuda = data?.deudas && data.deudas.length > 0;
     const cuotaPendiente = data?.cuotaActual?.estado === "pendiente"
         && !data?.hasDebitoAutomatico
@@ -198,6 +200,17 @@ export default function MatriculaStatus() {
                                             <CheckCircle2 size={20} />
                                         </div>
                                     </div>
+                                ) : isSuspended ? (
+                                    <div className="w-full flex items-center justify-between">
+                                        <div>
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Monto Final</p>
+                                            <p className="text-3xl font-black text-black dark:text-white">${montoAnual.toLocaleString()}</p>
+                                        </div>
+                                        <div className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">No disponible</p>
+                                            <p className="text-[11px] text-slate-500 dark:text-slate-400">Matrícula suspendida</p>
+                                        </div>
+                                    </div>
                                 ) : (
                                     <div className="w-full space-y-3">
                                         <div>
@@ -276,6 +289,17 @@ export default function MatriculaStatus() {
                                     </div>
                                     <div className="w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 border border-emerald-100 dark:border-emerald-500/20 flex items-center justify-center">
                                         <CheckCircle2 size={20} />
+                                    </div>
+                                </div>
+                            ) : data?.cuotaActual?.estado === "pendiente" && isSuspended ? (
+                                <div className="w-full flex items-center justify-between">
+                                    <div>
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Monto a Pagar</p>
+                                        <p className="text-3xl font-black text-black dark:text-white">${data.cuotaActual.monto.toLocaleString()}</p>
+                                    </div>
+                                    <div className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">No disponible</p>
+                                        <p className="text-[11px] text-slate-500 dark:text-slate-400">Matrícula suspendida</p>
                                     </div>
                                 </div>
                             ) : data?.cuotaActual?.estado === "pendiente" ? (

@@ -78,6 +78,15 @@ export async function POST(req: NextRequest) {
             title = `Deuda pendiente — ${deudas.length} concepto${deudas.length > 1 ? "s" : ""}`;
             unitPrice = deudas.reduce((acc, d) => acc + d.monto, 0);
 
+        } else if (tipo === "rehab_costo") {
+            const solicitud = await prisma.solicitudRehabilitacion.findUnique({ where: { id: parseInt(ref) } });
+            if (!solicitud || solicitud.expediente !== expediente)
+                return NextResponse.json({ error: "Solicitud no encontrada" }, { status: 404 });
+            if (!solicitud.p5Pesos || solicitud.p5Pesos === 0)
+                return NextResponse.json({ error: "Sin costo definido" }, { status: 400 });
+            title = `Costo de rehabilitación de matrícula (${solicitud.p5JusAmount} JUS)`;
+            unitPrice = solicitud.p5Pesos;
+
         } else {
             return NextResponse.json({ error: "Tipo de pago inválido" }, { status: 400 });
         }

@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 
 interface SidebarProps {
-    user: { nombre: string; apellido: string; expediente: string; image: string | null; isSuspended?: boolean; };
+    user: { nombre: string; apellido: string; expediente: string; image: string | null; status?: string; isSuspended?: boolean; };
     onClose?: () => void;
 }
 
@@ -245,8 +245,8 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
                         <p className="text-[13px] font-bold text-slate-700 dark:text-slate-200 truncate group-hover:text-[#063f68] dark:group-hover:text-blue-400 transition-colors">
                             {user.nombre} {user.apellido[0]}.
                         </p>
-                        <p className={`text-[10px] font-medium ${isSuspended ? "text-rose-500" : "text-slate-400 dark:text-slate-500"}`}>
-                            {isSuspended ? "Matrícula suspendida" : `Mat. ${user.expediente}`}
+                        <p className={`text-[10px] font-medium ${isSuspended ? (user.status === "cancelled" ? "text-purple-500" : "text-rose-500") : "text-slate-400 dark:text-slate-500"}`}>
+                            {isSuspended ? (user.status === "cancelled" ? "Matrícula cancelada" : "Matrícula suspendida") : `Mat. ${user.expediente}`}
                         </p>
                     </div>
                 </Link>

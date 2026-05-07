@@ -3,6 +3,7 @@ import { getSession } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 
 const fieldLabels: Record<string, string> = {
+    cuil: "CUIL",
     domicilioLegal: "Domicilio Legal",
     postalLegal: "Código Postal Legal",
     localidadLegal: "Localidad Legal",
@@ -64,6 +65,11 @@ export async function PATCH(request: Request) {
         const datoActual = await prisma.dato.findFirst({
             where: { expediente: session.expediente }
         });
+
+        // cuil: se puede establecer solo si actualmente está vacío
+        if ("cuil" in updateData && datoActual?.cuil) {
+            delete updateData.cuil;
+        }
 
         const updated = await prisma.dato.updateMany({
             where: { expediente: session.expediente },

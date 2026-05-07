@@ -5,6 +5,7 @@ import {
     ShieldOff, ShieldCheck, Search, Loader2, X,
     CheckCircle2, XCircle, History, ChevronDown, ChevronUp,
     AlertTriangle, Clock, RefreshCw, FileText, ChevronRight, Inbox,
+    Tag, Plus, Pencil, Trash2, Check, ToggleLeft, ToggleRight,
 } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 
@@ -50,10 +51,29 @@ interface SolicitudRehab {
     expediente: string;
     nombre: string;
     apellido: string;
-    mensaje: string;
     estado: string;
+    pasoActual: number;
+    // Paso 1
+    deudaOriginal?: number; p1Metodo?: string; p1Comprobante?: string; p1Ok: boolean;
+    // Paso 2
+    p2Desde?: string; p2Razon?: string; p2Ok: boolean;
+    // Paso 3
+    p3Pdf?: string; p3Ok: boolean;
+    // Paso 4
+    p4Tipo?: string; p4Dni?: string; p4Doc?: string; p4Ok: boolean;
+    // Paso 5
+    p5JusAmount?: number; p5Pesos?: number; p5Metodo?: string; p5Comprobante?: string; p5Ok: boolean;
     respuesta: string | null;
     adminNombre: string | null;
+    createdAt: string;
+}
+
+interface MotivoSuspension {
+    id: number;
+    nombre: string;
+    tipo: string;
+    aplicaMulta: boolean;
+    activo: boolean;
     createdAt: string;
 }
 
@@ -61,7 +81,7 @@ type ModalSuspension = {
     expediente: string;
     nombre: string;
     apellido: string;
-    targetStatus: "active" | "suspended";
+    targetStatus: "active" | "suspended" | "cancelled";
 };
 
 type ModalRehab = {
@@ -84,7 +104,7 @@ function fmtFecha(iso: string) {
 
 export default function SuspensionesPage() {
     const { showToast } = useToast();
-    const [tab, setTab] = useState<"matriculados" | "rehabilitaciones" | "pedidos">("matriculados");
+    const [tab, setTab] = useState<"matriculados" | "rehabilitaciones" | "pedidos" | "motivos">("matriculados");
 
     // ── Tab Matriculados ──
     const [usuarios, setUsuarios] = useState<UsuarioSuspension[]>([]);
@@ -103,7 +123,7 @@ export default function SuspensionesPage() {
     const [solicitudes, setSolicitudes] = useState<SolicitudRehab[]>([]);
     const [loadingRehab, setLoadingRehab] = useState(false);
     const [rehabCargado, setRehabCargado] = useState(false);
-    const [filtroRehab, setFiltroRehab] = useState<"todos" | "pendiente" | "aprobada" | "rechazada">("pendiente");
+    const [filtroRehab, setFiltroRehab] = useState<"todos" | "pendiente" | "borrador" | "aprobada" | "rechazada">("pendiente");
     const [modalRehab, setModalRehab] = useState<ModalRehab | null>(null);
     const [respuesta, setRespuesta] = useState("");
     const [procesando, setProcesando] = useState(false);
@@ -119,13 +139,29 @@ export default function SuspensionesPage() {
     const [motivoPedido, setMotivoPedido] = useState("");
     const [procesandoPedido, setProcesandoPedido] = useState(false);
 
+    // ── Tab Motivos ──
+    const [motivos, setMotivos] = useState<MotivoSuspension[]>([]);
+    const [loadingMotivos, setLoadingMotivos] = useState(false);
+    const [motivosCargados, setMotivosCargados] = useState(false);
+    const [nuevoMotivo, setNuevoMotivo] = useState({ nombre: "", tipo: "suspension" as string, aplicaMulta: false });
+    const [creandoMotivo, setCreandoMotivo] = useState(false);
+    const [editandoMotivo, setEditandoMotivo] = useState<number | null>(null);
+    const [editNombre, setEditNombre] = useState("");
+
+    // Modal suspensión — motivo seleccionado (guardamos el ID)
+    const [selectedMotivoId, setSelectedMotivoId] = useState<number | null>(null);
+    const [fechaInicio, setFechaInicio] = useState("");
+    const [fechaFin, setFechaFin] = useState("");
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
     // ── Load ──
 
-    useEffect(() => { cargarUsuarios(); }, []);
+    useEffect(() => { cargarUsuarios(); cargarMotivos(); }, []);
 
     useEffect(() => {
         if (tab === "rehabilitaciones" && !rehabCargado) cargarRehabilitaciones();
         if (tab === "pedidos" && !pedidosCargados) cargarPedidos();
+        if (tab === "motivos" && !motivosCargados) cargarMotivos();
     }, [tab]);
 
     useEffect(() => {
@@ -185,6 +221,77 @@ export default function SuspensionesPage() {
         }
     }
 
+    async function cargarMotivos() {
+        setLoadingMotivos(true);
+        try {
+            const res = await fetch("/api/admin/motivos-suspension");
+            const data = await res.json();
+            setMotivos(Array.isArray(data) ? data : []);
+            setMotivosCargados(true);
+        } finally {
+            setLoadingMotivos(false);
+        }
+    }
+
+    async function crearMotivo() {
+        if (!nuevoMotivo.nombre.trim()) return;
+        setCreandoMotivo(true);
+        try {
+            const res = await fetch("/api/admin/motivos-suspension", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(nuevoMotivo),
+            });
+            if (!res.ok) { const e = await res.json(); showToast(e.error ?? "Error", "error"); return; }
+            const creado = await res.json();
+            setMotivos(prev => [creado, ...prev]);
+            setNuevoMotivo({ nombre: "", tipo: "suspension", aplicaMulta: false });
+            showToast("Motivo creado", "success");
+        } finally {
+            setCreandoMotivo(false);
+        }
+    }
+
+    async function toggleActivoMotivo(id: number, activo: boolean) {
+        const res = await fetch(`/api/admin/motivos-suspension/${id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ activo: !activo }),
+        });
+        if (!res.ok) { showToast("Error", "error"); return; }
+        setMotivos(prev => prev.map(m => m.id === id ? { ...m, activo: !activo } : m));
+    }
+
+    async function guardarEdicionMotivo(id: number) {
+        if (!editNombre.trim()) return;
+        const res = await fetch(`/api/admin/motivos-suspension/${id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ nombre: editNombre.trim() }),
+        });
+        if (!res.ok) { showToast("Error al guardar", "error"); return; }
+        setMotivos(prev => prev.map(m => m.id === id ? { ...m, nombre: editNombre.trim() } : m));
+        setEditandoMotivo(null);
+        showToast("Motivo actualizado", "success");
+    }
+
+    async function toggleSeleccionarMotivo(id: number, aplicaMulta: boolean) {
+        const res = await fetch(`/api/admin/motivos-suspension/${id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ aplicaMulta: !aplicaMulta }),
+        });
+        if (!res.ok) { showToast("Error", "error"); return; }
+        setMotivos(prev => prev.map(m => m.id === id ? { ...m, aplicaMulta: !aplicaMulta } : m));
+    }
+
+    async function eliminarMotivo(id: number) {
+        const res = await fetch(`/api/admin/motivos-suspension/${id}`, { method: "DELETE" });
+        if (!res.ok) { showToast("No se puede eliminar", "error"); return; }
+        setMotivos(prev => prev.filter(m => m.id !== id));
+        showToast("Motivo eliminado", "success");
+    }
+
     async function accionPedido(action: string, extra: Record<string, string> = {}) {
         if (!selectedPedido) return;
         setProcesandoPedido(true);
@@ -227,20 +334,27 @@ export default function SuspensionesPage() {
             const res = await fetch(`/api/admin/usuarios/${encodeURIComponent(key)}/estado`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ status: modalSusp.targetStatus, comentario: comentario.trim() }),
+                body: JSON.stringify({
+                    status: modalSusp.targetStatus,
+                    comentario: comentario.trim(),
+                    motivoId: selectedMotivoId || undefined,
+                    fechaInicio: fechaInicio || undefined,
+                    fechaFin: fechaFin || undefined,
+                }),
             });
             if (!res.ok) { const e = await res.json(); showToast(e.error ?? "Error", "error"); return; }
-            showToast(
-                modalSusp.targetStatus === "suspended" ? `${modalSusp.apellido} suspendido` : `${modalSusp.apellido} habilitado`,
-                modalSusp.targetStatus === "suspended" ? "error" : "success"
-            );
+            const accionLabel = modalSusp.targetStatus === "suspended" ? `${modalSusp.apellido} suspendido`
+                : modalSusp.targetStatus === "cancelled" ? `${modalSusp.apellido} cancelado`
+                : `${modalSusp.apellido} habilitado`;
+            showToast(accionLabel, modalSusp.targetStatus === "active" ? "success" : "error");
+            const accionHistorial = modalSusp.targetStatus === "suspended" ? "suspension" : modalSusp.targetStatus === "cancelled" ? "cancelacion" : "habilitacion";
             setUsuarios(prev => prev.map(u =>
                 (u.expediente ?? u.cod) === key
-                    ? { ...u, status: modalSusp.targetStatus, ultimaAccion: { accion: modalSusp.targetStatus === "suspended" ? "suspension" : "habilitacion", comentario: comentario.trim(), adminNombre: null, createdAt: new Date().toISOString() } }
+                    ? { ...u, status: modalSusp.targetStatus, ultimaAccion: { accion: accionHistorial, comentario: comentario.trim(), adminNombre: null, createdAt: new Date().toISOString() } }
                     : u
             ));
             setHistorialMap(prev => { const n = { ...prev }; delete n[key]; return n; });
-            setModalSusp(null); setComentario("");
+            setModalSusp(null); setComentario(""); setSelectedMotivoId(null); setFechaInicio(""); setFechaFin("");
         } finally { setGuardando(false); }
     }
 
@@ -289,7 +403,7 @@ export default function SuspensionesPage() {
         [solicitudes, filtroRehab]
     );
 
-    const pendientesCount = solicitudes.filter(s => s.estado === "pendiente").length;
+    const pendientesCount = solicitudes.filter(s => s.estado === "pendiente" || s.estado === "borrador").length;
     const totalSuspendidos = usuarios.filter(u => u.status === "suspended").length;
 
     const pedidosFiltrados = useMemo(() =>
@@ -300,6 +414,19 @@ export default function SuspensionesPage() {
 
     return (
         <div className="p-6 md:p-10 space-y-6">
+
+            {/* Modal preview imagen */}
+            {previewUrl && (
+                <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setPreviewUrl(null)}>
+                    <div className="relative max-w-3xl max-h-[90vh] w-full" onClick={e => e.stopPropagation()}>
+                        <button onClick={() => setPreviewUrl(null)}
+                            className="absolute -top-10 right-0 text-white/70 hover:text-white flex items-center gap-1.5 text-[13px]">
+                            <X size={16} /> Cerrar
+                        </button>
+                        <img src={previewUrl} alt="Documento" className="w-full h-auto max-h-[85vh] object-contain rounded-xl" />
+                    </div>
+                </div>
+            )}
 
             {/* Header */}
             <div>
@@ -318,6 +445,7 @@ export default function SuspensionesPage() {
                     { key: "matriculados" as const, label: "Matriculados" },
                     { key: "rehabilitaciones" as const, label: "Solicitudes de Rehabilitación", badge: pendientesCount },
                     { key: "pedidos" as const, label: "Pedidos de Suspensión", badge: pedidosCount },
+                    { key: "motivos" as const, label: "Motivos", badge: null },
                 ].map(t => (
                     <button key={t.key} onClick={() => setTab(t.key)}
                         className={`flex items-center gap-2 px-5 py-3 text-[13px] font-semibold border-b-2 transition-all whitespace-nowrap
@@ -401,14 +529,28 @@ export default function SuspensionesPage() {
                                                     <History size={12} /> Historial {isExpanded ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
                                                 </button>
                                                 {u.tieneUsuario && (
-                                                    <button
-                                                        onClick={() => { setModalSusp({ expediente: key, nombre: u.nombre, apellido: u.apellido, targetStatus: isSuspended ? "active" : "suspended" }); setComentario(""); }}
-                                                        className={`flex items-center gap-1.5 px-3 h-8 rounded-xl text-[11px] font-bold border transition-all
-                                                            ${isSuspended
-                                                                ? "bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100"
-                                                                : "bg-rose-50 dark:bg-rose-900/20 border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 hover:bg-rose-100"}`}>
-                                                        {isSuspended ? <><ShieldCheck size={12} /> Habilitar</> : <><ShieldOff size={12} /> Suspender</>}
-                                                    </button>
+                                                    <>
+                                                        {isSuspended ? (
+                                                            <button
+                                                                onClick={() => { setModalSusp({ expediente: key, nombre: u.nombre, apellido: u.apellido, targetStatus: "active" }); setComentario(""); setSelectedMotivoId(null); }}
+                                                                className="flex items-center gap-1.5 px-3 h-8 rounded-xl text-[11px] font-bold border bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 transition-all">
+                                                                <ShieldCheck size={12} /> Habilitar
+                                                            </button>
+                                                        ) : (
+                                                            <>
+                                                                <button
+                                                                    onClick={() => { setModalSusp({ expediente: key, nombre: u.nombre, apellido: u.apellido, targetStatus: "suspended" }); setComentario(""); setSelectedMotivoId(null); }}
+                                                                    className="flex items-center gap-1.5 px-3 h-8 rounded-xl text-[11px] font-bold border bg-rose-50 dark:bg-rose-900/20 border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 hover:bg-rose-100 transition-all">
+                                                                    <ShieldOff size={12} /> Suspender
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => { setModalSusp({ expediente: key, nombre: u.nombre, apellido: u.apellido, targetStatus: "cancelled" }); setComentario(""); setSelectedMotivoId(null); }}
+                                                                    className="flex items-center gap-1.5 px-3 h-8 rounded-xl text-[11px] font-bold border bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800 text-purple-600 dark:text-purple-400 hover:bg-purple-100 transition-all">
+                                                                    <XCircle size={12} /> Cancelar
+                                                                </button>
+                                                            </>
+                                                        )}
+                                                    </>
                                                 )}
                                             </div>
                                         </div>
@@ -456,16 +598,17 @@ export default function SuspensionesPage() {
                 <>
                     <div className="flex items-center justify-between gap-3 flex-wrap">
                         <div className="flex gap-2 flex-wrap">
-                            {(["pendiente", "todos", "aprobada", "rechazada"] as const).map(f => (
-                                <button key={f} onClick={() => setFiltroRehab(f)}
+                            {(["pendiente", "todos", "borrador", "aprobada", "rechazada"] as const).map(f => (
+                                <button key={f} onClick={() => setFiltroRehab(f as typeof filtroRehab)}
                                     className={`px-3 h-9 rounded-xl text-[12px] font-semibold border transition-all
                                         ${filtroRehab === f
                                             ? f === "rechazada" ? "bg-rose-500 border-rose-500 text-white"
                                                 : f === "aprobada" ? "bg-emerald-500 border-emerald-500 text-white"
                                                 : f === "pendiente" ? "bg-amber-500 border-amber-500 text-white"
+                                                : f === "borrador" ? "bg-slate-500 border-slate-500 text-white"
                                                 : "bg-[#063f68] border-[#063f68] text-white"
                                             : "border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"}`}>
-                                    {f === "todos" ? "Todas" : f === "pendiente" ? "Pendientes" : f === "aprobada" ? "Aprobadas" : "Rechazadas"}
+                                    {f === "todos" ? "Todas" : f === "pendiente" ? "Pendientes" : f === "aprobada" ? "Aprobadas" : f === "rechazada" ? "Rechazadas" : "En trámite"}
                                 </button>
                             ))}
                         </div>
@@ -486,51 +629,118 @@ export default function SuspensionesPage() {
                         <div className="space-y-3">
                             {solicitudesFiltradas.map(s => (
                                 <div key={s.id} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-5 space-y-4">
+                                    {/* Header */}
                                     <div className="flex items-start justify-between gap-3 flex-wrap">
                                         <div>
                                             <p className="text-[13px] font-bold text-slate-800 dark:text-white">{s.apellido}, {s.nombre}</p>
                                             <p className="text-[11px] text-slate-400 font-mono">{s.expediente}</p>
-                                            <p className="text-[10px] text-slate-400 mt-1 flex items-center gap-1">
-                                                <Clock size={9} /> {fmtFecha(s.createdAt)}
-                                            </p>
+                                            <p className="text-[10px] text-slate-400 mt-1 flex items-center gap-1"><Clock size={9} /> {fmtFecha(s.createdAt)}</p>
                                         </div>
                                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold
                                             ${s.estado === "pendiente" ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400"
+                                                : s.estado === "borrador" ? "bg-slate-100 dark:bg-slate-800 text-slate-500"
                                                 : s.estado === "aprobada" ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400"
                                                 : "bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400"}`}>
-                                            {s.estado === "pendiente" ? <Clock size={11} /> : s.estado === "aprobada" ? <CheckCircle2 size={11} /> : <XCircle size={11} />}
-                                            {s.estado === "pendiente" ? "Pendiente" : s.estado === "aprobada" ? "Aprobada" : "Rechazada"}
+                                            {s.estado === "pendiente" ? <Clock size={11} /> : s.estado === "aprobada" ? <CheckCircle2 size={11} /> : s.estado === "borrador" ? <FileText size={11} /> : <XCircle size={11} />}
+                                            {s.estado === "pendiente" ? "Pendiente revisión" : s.estado === "aprobada" ? "Aprobada" : s.estado === "borrador" ? `En trámite (paso ${s.pasoActual}/5)` : "Rechazada"}
                                         </span>
                                     </div>
 
-                                    <div>
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1.5">Mensaje del matriculado</p>
-                                        <p className="text-[13px] text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 rounded-xl p-4 leading-relaxed">{s.mensaje}</p>
+                                    {/* Pasos completados */}
+                                    <div className="grid grid-cols-5 gap-1.5">
+                                        {[
+                                            { n: 1, label: "Deuda", ok: s.p1Ok },
+                                            { n: 2, label: "Formulario", ok: s.p2Ok },
+                                            { n: 3, label: "Reincidencia", ok: s.p3Ok },
+                                            { n: 4, label: "Adhesión", ok: s.p4Ok },
+                                            { n: 5, label: "Pago", ok: s.p5Ok },
+                                        ].map(p => (
+                                            <div key={p.n} className={`rounded-lg p-2 text-center border ${p.ok ? "bg-emerald-50 dark:bg-emerald-900/20 border-emerald-100 dark:border-emerald-800" : "bg-slate-50 dark:bg-slate-800/40 border-slate-100 dark:border-slate-800"}`}>
+                                                <p className={`text-[9px] font-black uppercase tracking-wide ${p.ok ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400"}`}>{p.label}</p>
+                                                <p className="text-[10px] mt-0.5">{p.ok ? "✓" : "—"}</p>
+                                            </div>
+                                        ))}
                                     </div>
 
+                                    {/* Detalles del legajo */}
+                                    {s.estado === "pendiente" && (
+                                        <div className="space-y-3 pt-1 border-t border-slate-50 dark:border-slate-800">
+                                            {/* Paso 1 */}
+                                            {s.p1Ok && s.p1Metodo !== "sin_deuda" && (
+                                                <div className="flex items-center justify-between gap-3">
+                                                    <div>
+                                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Deuda original · {s.p1Metodo}</p>
+                                                        {s.deudaOriginal != null && <p className="text-[12px] text-slate-600 dark:text-slate-300">${s.deudaOriginal.toLocaleString("es-AR")}</p>}
+                                                    </div>
+                                                    {s.p1Comprobante && (
+                                                        <button onClick={() => setPreviewUrl(s.p1Comprobante!)} className="text-[11px] font-bold text-blue-500 hover:underline flex items-center gap-1"><FileText size={11} /> Comprobante</button>
+                                                    )}
+                                                </div>
+                                            )}
+                                            {/* Paso 2 */}
+                                            {s.p2Ok && (
+                                                <div>
+                                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1">Formulario aceptado</p>
+                                                    <div className="bg-slate-50 dark:bg-slate-800/40 rounded-lg p-3 text-[12px] text-slate-600 dark:text-slate-300 space-y-1">
+                                                        {s.p2Desde && <p><strong>A partir de:</strong> {s.p2Desde}</p>}
+                                                        {s.p2Razon && <p><strong>En razón de:</strong> {s.p2Razon}</p>}
+                                                    </div>
+                                                </div>
+                                            )}
+                                            {/* Paso 3 */}
+                                            {s.p3Pdf && (
+                                                <div className="flex items-center justify-between">
+                                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Cert. Reincidencia</p>
+                                                    <a href={s.p3Pdf} target="_blank" rel="noopener noreferrer" className="text-[11px] font-bold text-purple-500 hover:underline flex items-center gap-1"><FileText size={11} /> Ver PDF</a>
+                                                </div>
+                                            )}
+                                            {/* Paso 4 */}
+                                            {s.p4Ok && (
+                                                <div className="flex items-center justify-between gap-3 flex-wrap">
+                                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Adhesión · {s.p4Tipo}</p>
+                                                    <div className="flex gap-2">
+                                                        {s.p4Dni && <button onClick={() => setPreviewUrl(s.p4Dni!)} className="text-[11px] font-bold text-cyan-500 hover:underline flex items-center gap-1"><FileText size={11} /> DNI</button>}
+                                                        {s.p4Doc && <button onClick={() => setPreviewUrl(s.p4Doc!)} className="text-[11px] font-bold text-cyan-500 hover:underline flex items-center gap-1"><FileText size={11} /> {s.p4Tipo === "CBU" ? "CBU" : "Tarjeta"}</button>}
+                                                    </div>
+                                                </div>
+                                            )}
+                                            {/* Paso 5 */}
+                                            {s.p5Ok && (
+                                                <div className="flex items-center justify-between gap-3">
+                                                    <div>
+                                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Pago rehab. · {s.p5Metodo}</p>
+                                                        {s.p5JusAmount && <p className="text-[12px] text-slate-600 dark:text-slate-300">{s.p5JusAmount} JUS = ${s.p5Pesos?.toLocaleString("es-AR")}</p>}
+                                                    </div>
+                                                    {s.p5Comprobante && (
+                                                        <button onClick={() => setPreviewUrl(s.p5Comprobante!)} className="text-[11px] font-bold text-emerald-500 hover:underline flex items-center gap-1"><FileText size={11} /> Comprobante</button>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {/* Respuesta admin */}
                                     {s.respuesta && (
                                         <div>
                                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1.5">
                                                 Respuesta {s.adminNombre && <span className="font-normal normal-case">— {s.adminNombre}</span>}
                                             </p>
                                             <p className={`text-[13px] rounded-xl p-4 leading-relaxed border
-                                                ${s.estado === "aprobada"
-                                                    ? "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-300 border-emerald-100 dark:border-emerald-800"
+                                                ${s.estado === "aprobada" ? "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-300 border-emerald-100 dark:border-emerald-800"
                                                     : "bg-rose-50 dark:bg-rose-900/20 text-rose-800 dark:text-rose-300 border-rose-100 dark:border-rose-800"}`}>
                                                 {s.respuesta}
                                             </p>
                                         </div>
                                     )}
 
+                                    {/* Acciones */}
                                     {s.estado === "pendiente" && (
                                         <div className="flex gap-2 pt-1">
-                                            <button
-                                                onClick={() => { setModalRehab({ id: s.id, expediente: s.expediente, nombre: s.nombre, apellido: s.apellido, accion: "aprobar" }); setRespuesta(""); }}
+                                            <button onClick={() => { setModalRehab({ id: s.id, expediente: s.expediente, nombre: s.nombre, apellido: s.apellido, accion: "aprobar" }); setRespuesta(""); }}
                                                 className="flex items-center gap-1.5 px-4 h-9 rounded-xl text-[12px] font-bold bg-emerald-500 hover:bg-emerald-600 text-white transition-all">
                                                 <ShieldCheck size={13} /> Aprobar y habilitar
                                             </button>
-                                            <button
-                                                onClick={() => { setModalRehab({ id: s.id, expediente: s.expediente, nombre: s.nombre, apellido: s.apellido, accion: "rechazar" }); setRespuesta(""); }}
+                                            <button onClick={() => { setModalRehab({ id: s.id, expediente: s.expediente, nombre: s.nombre, apellido: s.apellido, accion: "rechazar" }); setRespuesta(""); }}
                                                 className="flex items-center gap-1.5 px-4 h-9 rounded-xl text-[12px] font-bold bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 hover:bg-rose-100 transition-all">
                                                 <XCircle size={13} /> Rechazar
                                             </button>
@@ -739,19 +949,131 @@ export default function SuspensionesPage() {
                 </>
             )}
 
+            {/* ── TAB MOTIVOS ──────────────────────────────────────────── */}
+            {tab === "motivos" && (
+                <div className="space-y-6">
+                    {/* Formulario crear */}
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-5 space-y-4">
+                        <p className="text-[12px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                            <Plus size={13} /> Nuevo motivo
+                        </p>
+                        <div className="flex flex-col sm:flex-row gap-3">
+                            <input
+                                value={nuevoMotivo.nombre}
+                                onChange={e => setNuevoMotivo(p => ({ ...p, nombre: e.target.value }))}
+                                onKeyDown={e => { if (e.key === "Enter") crearMotivo(); }}
+                                placeholder="Ej: Falta de pago de matrícula"
+                                className="flex-1 h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-[13px] focus:outline-none focus:ring-2 focus:ring-rose-300/50"
+                            />
+                            <select
+                                value={nuevoMotivo.tipo}
+                                onChange={e => setNuevoMotivo(p => ({ ...p, tipo: e.target.value }))}
+                                className="h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-[13px] focus:outline-none focus:ring-2 focus:ring-rose-300/50"
+                            >
+                                <option value="suspension">Suspensión</option>
+                                <option value="cancelacion">Cancelación</option>
+                                <option value="ambos">Ambos</option>
+                            </select>
+                            <button
+                                onClick={crearMotivo}
+                                disabled={creandoMotivo || !nuevoMotivo.nombre.trim()}
+                                className="flex items-center gap-2 px-4 h-10 bg-rose-500 hover:bg-rose-600 text-white rounded-xl text-[13px] font-bold disabled:opacity-40 transition-all active:scale-95 whitespace-nowrap"
+                            >
+                                {creandoMotivo ? <Loader2 size={13} className="animate-spin" /> : <Plus size={13} />}
+                                Agregar
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Lista de motivos */}
+                    {loadingMotivos ? (
+                        <div className="flex items-center justify-center py-16"><Loader2 size={24} className="animate-spin text-slate-300" /></div>
+                    ) : motivos.length === 0 ? (
+                        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-14 text-center">
+                            <Tag size={28} className="text-slate-200 dark:text-slate-700 mx-auto mb-3" />
+                            <p className="text-slate-500 text-[13px] font-medium">No hay motivos configurados</p>
+                            <p className="text-slate-400 text-[12px] mt-1">Creá el primero con el formulario de arriba</p>
+                        </div>
+                    ) : (
+                        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden divide-y divide-slate-50 dark:divide-slate-800/60">
+                            {motivos.map(m => (
+                                <div key={m.id} className={`flex items-center gap-3 px-5 py-3.5 ${!m.activo ? "opacity-50" : ""}`}>
+                                    <Tag size={14} className={m.tipo === "suspension" ? "text-rose-400" : m.tipo === "cancelacion" ? "text-purple-400" : "text-amber-400"} />
+                                    <div className="flex-1 min-w-0">
+                                        {editandoMotivo === m.id ? (
+                                            <input
+                                                value={editNombre}
+                                                onChange={e => setEditNombre(e.target.value)}
+                                                onKeyDown={e => { if (e.key === "Enter") guardarEdicionMotivo(m.id); if (e.key === "Escape") setEditandoMotivo(null); }}
+                                                autoFocus
+                                                placeholder="Nombre del motivo"
+                                                className="w-full h-8 px-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-[13px] focus:outline-none focus:ring-2 focus:ring-rose-300/50"
+                                            />
+                                        ) : (
+                                            <p className="text-[13px] font-semibold text-slate-800 dark:text-white truncate">{m.nombre}</p>
+                                        )}
+                                        <p className="text-[11px] text-slate-400 mt-0.5">
+                                            {m.tipo === "suspension" ? "Suspensión" : m.tipo === "cancelacion" ? "Cancelación" : "Ambos"}
+                                            {" · "}{m.activo ? "Activo" : "Inactivo"}
+                                            {m.aplicaMulta && <span className="text-amber-500 font-semibold"> · Aplica multa</span>}
+                                        </p>
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                        {editandoMotivo === m.id ? (
+                                            <>
+                                                <button onClick={() => guardarEdicionMotivo(m.id)} className="w-8 h-8 flex items-center justify-center rounded-xl text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-all">
+                                                    <Check size={14} />
+                                                </button>
+                                                <button onClick={() => setEditandoMotivo(null)} className="w-8 h-8 flex items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
+                                                    <X size={14} />
+                                                </button>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <button onClick={() => { setEditandoMotivo(m.id); setEditNombre(m.nombre); }} className="w-8 h-8 flex items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
+                                                    <Pencil size={13} />
+                                                </button>
+                                                <button onClick={() => toggleSeleccionarMotivo(m.id, m.aplicaMulta)} title={m.aplicaMulta ? "Quitar selección" : "Seleccionar"} className="w-8 h-8 flex items-center justify-center rounded-xl transition-all hover:bg-amber-50 dark:hover:bg-amber-950/30">
+                                                    {m.aplicaMulta
+                                                        ? <CheckCircle2 size={15} className="text-amber-500" />
+                                                        : <CheckCircle2 size={15} className="text-slate-300 dark:text-slate-600" />}
+                                                </button>
+                                                <button onClick={() => toggleActivoMotivo(m.id, m.activo)} title={m.activo ? "Desactivar" : "Activar"} className="w-8 h-8 flex items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
+                                                    {m.activo ? <ToggleRight size={16} className="text-emerald-500" /> : <ToggleLeft size={16} />}
+                                                </button>
+                                                <button onClick={() => eliminarMotivo(m.id)} className="w-8 h-8 flex items-center justify-center rounded-xl text-slate-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 hover:text-rose-500 transition-all">
+                                                    <Trash2 size={13} />
+                                                </button>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
+
             {/* ── MODAL SUSPENSIÓN/HABILITACIÓN ──────────────────────────── */}
             {modalSusp && (
-                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => { setModalSusp(null); setComentario(""); }}>
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => { setModalSusp(null); setComentario(""); setSelectedMotivoId(null); setFechaInicio(""); setFechaFin(""); }}>
                     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 w-full max-w-md shadow-2xl" onClick={e => e.stopPropagation()}>
                         <div className={`flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800 rounded-t-2xl
-                            ${modalSusp.targetStatus === "suspended" ? "bg-rose-50/50 dark:bg-rose-950/20" : "bg-emerald-50/50 dark:bg-emerald-950/20"}`}>
+                            ${modalSusp.targetStatus === "suspended" ? "bg-rose-50/50 dark:bg-rose-950/20"
+                            : modalSusp.targetStatus === "cancelled" ? "bg-purple-50/50 dark:bg-purple-950/20"
+                            : "bg-emerald-50/50 dark:bg-emerald-950/20"}`}>
                             <div>
-                                <p className={`text-[14px] font-bold flex items-center gap-2 ${modalSusp.targetStatus === "suspended" ? "text-rose-700 dark:text-rose-400" : "text-emerald-700 dark:text-emerald-400"}`}>
-                                    {modalSusp.targetStatus === "suspended" ? <><ShieldOff size={15} /> Suspender matrícula</> : <><ShieldCheck size={15} /> Habilitar matrícula</>}
+                                <p className={`text-[14px] font-bold flex items-center gap-2
+                                    ${modalSusp.targetStatus === "suspended" ? "text-rose-700 dark:text-rose-400"
+                                    : modalSusp.targetStatus === "cancelled" ? "text-purple-700 dark:text-purple-400"
+                                    : "text-emerald-700 dark:text-emerald-400"}`}>
+                                    {modalSusp.targetStatus === "suspended" ? <><ShieldOff size={15} /> Suspender matrícula</>
+                                    : modalSusp.targetStatus === "cancelled" ? <><XCircle size={15} /> Cancelar matrícula</>
+                                    : <><ShieldCheck size={15} /> Habilitar matrícula</>}
                                 </p>
                                 <p className="text-[11px] text-slate-500 mt-0.5 font-semibold">{modalSusp.apellido}, {modalSusp.nombre}</p>
                             </div>
-                            <button onClick={() => { setModalSusp(null); setComentario(""); }} className="w-8 h-8 flex items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"><X size={15} /></button>
+                            <button onClick={() => { setModalSusp(null); setComentario(""); setSelectedMotivoId(null); setFechaInicio(""); setFechaFin(""); }} className="w-8 h-8 flex items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"><X size={15} /></button>
                         </div>
                         <div className="p-5 space-y-4">
                             {modalSusp.targetStatus === "suspended" && (
@@ -760,19 +1082,95 @@ export default function SuspensionesPage() {
                                     <p className="text-[11px] text-amber-700 dark:text-amber-400 font-medium">El matriculado verá su acceso restringido mientras esté suspendido.</p>
                                 </div>
                             )}
+                            {modalSusp.targetStatus === "cancelled" && (
+                                <div className="flex items-start gap-2 p-3 bg-purple-50 dark:bg-purple-950/20 rounded-xl border border-purple-100 dark:border-purple-900/30">
+                                    <AlertTriangle size={14} className="text-purple-500 flex-shrink-0 mt-0.5" />
+                                    <p className="text-[11px] text-purple-700 dark:text-purple-400 font-medium">La matrícula quedará cancelada. El matriculado perderá acceso a la plataforma.</p>
+                                </div>
+                            )}
+                            {(modalSusp.targetStatus === "suspended" || modalSusp.targetStatus === "cancelled") && (() => {
+                                const tipoFiltro = modalSusp.targetStatus === "suspended" ? ["suspension", "ambos"] : ["cancelacion", "ambos"];
+                                const motivosFiltrados = motivos.filter(m => m.activo && tipoFiltro.includes(m.tipo));
+                                const isSusp = modalSusp.targetStatus === "suspended";
+                                const selectedM = motivosFiltrados.find(m => m.id === selectedMotivoId);
+                                if (motivosFiltrados.length === 0) return (
+                                    <div className="p-3 bg-amber-50 dark:bg-amber-950/20 rounded-xl border border-amber-100 dark:border-amber-900/30">
+                                        <p className="text-[11px] text-amber-700 dark:text-amber-400 font-medium">No hay motivos configurados para este tipo. Creá uno en el tab "Motivos".</p>
+                                    </div>
+                                );
+                                return (
+                                    <div className="space-y-1.5">
+                                        <label className="text-[12px] font-semibold text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
+                                            <Tag size={12} className={!isSusp ? "text-purple-400" : "text-rose-400"} />
+                                            Motivo <span className="text-rose-500">*</span>
+                                        </label>
+                                        <select
+                                            value={selectedMotivoId ?? ""}
+                                            onChange={e => setSelectedMotivoId(e.target.value ? Number(e.target.value) : null)}
+                                            className={`w-full h-10 px-3 rounded-xl border bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-[13px] focus:outline-none focus:ring-2
+                                                ${!selectedMotivoId ? "border-rose-300 dark:border-rose-700" : "border-slate-200 dark:border-slate-700"}
+                                                ${!isSusp ? "focus:ring-purple-300/50" : "focus:ring-rose-300/50"}`}
+                                        >
+                                            <option value="">— Seleccioná un motivo —</option>
+                                            {motivosFiltrados.map(m => (
+                                                <option key={m.id} value={m.id}>{m.nombre}{m.aplicaMulta ? " ✓" : ""}</option>
+                                            ))}
+                                        </select>
+                                        {selectedM?.aplicaMulta && (
+                                            <p className="text-[11px] text-amber-600 dark:text-amber-400 font-medium flex items-center gap-1.5">
+                                                <CheckCircle2 size={11} /> Este motivo cobrará un cargo al rehabilitar basado en el valor del JUS.
+                                            </p>
+                                        )}
+                                    </div>
+                                );
+                            })()}
+                            {(modalSusp.targetStatus === "suspended" || modalSusp.targetStatus === "cancelled") && (
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className="space-y-1.5">
+                                        <label className="text-[12px] font-semibold text-slate-600 dark:text-slate-300">Fecha de inicio <span className="text-slate-400 font-normal">(opc.)</span></label>
+                                        <input
+                                            type="date"
+                                            value={fechaInicio}
+                                            onChange={e => setFechaInicio(e.target.value)}
+                                            className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-[13px] focus:outline-none focus:ring-2 focus:ring-rose-300/50"
+                                        />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[12px] font-semibold text-slate-600 dark:text-slate-300">Fecha de fin <span className="text-slate-400 font-normal">(opc.)</span></label>
+                                        <input
+                                            type="date"
+                                            value={fechaFin}
+                                            min={fechaInicio || undefined}
+                                            onChange={e => setFechaFin(e.target.value)}
+                                            className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-[13px] focus:outline-none focus:ring-2 focus:ring-rose-300/50"
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                            {fechaFin && (
+                                <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1.5">
+                                    <ShieldCheck size={11} /> El matriculado se habilitará automáticamente al vencer el plazo.
+                                </p>
+                            )}
                             <div className="space-y-1.5">
-                                <label className="text-[12px] font-semibold text-slate-600 dark:text-slate-300">Motivo / Comentario <span className="text-rose-500">*</span></label>
+                                <label className="text-[12px] font-semibold text-slate-600 dark:text-slate-300">Comentario <span className="text-rose-500">*</span></label>
                                 <textarea ref={suspTextareaRef} value={comentario} onChange={e => setComentario(e.target.value)} rows={4}
-                                    placeholder={modalSusp.targetStatus === "suspended" ? "Ej: Deuda pendiente de pago..." : "Ej: Regularizó situación..."}
+                                    placeholder={modalSusp.targetStatus === "suspended" ? "Ej: Deuda pendiente de pago..." : modalSusp.targetStatus === "cancelled" ? "Ej: Baja voluntaria..." : "Ej: Regularizó situación..."}
                                     className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-[13px] focus:outline-none focus:ring-2 focus:ring-rose-300/50 resize-none" />
                                 <p className="text-[10px] text-slate-400">Quedará registrado con fecha y hora.</p>
                             </div>
                         </div>
                         <div className="flex gap-3 px-5 pb-5">
-                            <button onClick={() => { setModalSusp(null); setComentario(""); }} className="flex-1 h-10 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-[13px] font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">Cancelar</button>
-                            <button onClick={confirmarSuspension} disabled={guardando || !comentario.trim()}
-                                className={`flex-1 flex items-center justify-center gap-2 h-10 rounded-xl text-[13px] font-bold disabled:opacity-50 transition-all text-white ${modalSusp.targetStatus === "suspended" ? "bg-rose-500 hover:bg-rose-600" : "bg-emerald-500 hover:bg-emerald-600"}`}>
-                                {guardando ? <Loader2 size={14} className="animate-spin" /> : modalSusp.targetStatus === "suspended" ? <><ShieldOff size={14} /> Confirmar suspensión</> : <><ShieldCheck size={14} /> Confirmar habilitación</>}
+                            <button onClick={() => { setModalSusp(null); setComentario(""); setSelectedMotivoId(null); setFechaInicio(""); setFechaFin(""); }} className="flex-1 h-10 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-[13px] font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">Cancelar</button>
+                            <button onClick={confirmarSuspension} disabled={guardando || !comentario.trim() || (modalSusp.targetStatus === "suspended" && !selectedMotivoId)}
+                                className={`flex-1 flex items-center justify-center gap-2 h-10 rounded-xl text-[13px] font-bold disabled:opacity-50 transition-all text-white
+                                    ${modalSusp.targetStatus === "suspended" ? "bg-rose-500 hover:bg-rose-600"
+                                    : modalSusp.targetStatus === "cancelled" ? "bg-purple-600 hover:bg-purple-700"
+                                    : "bg-emerald-500 hover:bg-emerald-600"}`}>
+                                {guardando ? <Loader2 size={14} className="animate-spin" />
+                                : modalSusp.targetStatus === "suspended" ? <><ShieldOff size={14} /> Confirmar suspensión</>
+                                : modalSusp.targetStatus === "cancelled" ? <><XCircle size={14} /> Confirmar cancelación</>
+                                : <><ShieldCheck size={14} /> Confirmar habilitación</>}
                             </button>
                         </div>
                     </div>

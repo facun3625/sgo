@@ -24,7 +24,8 @@ export async function GET() {
             cancelacionAprobada,
             debitoEnTramite,
             cancelacionPendiente,
-            pagoAnual
+            pagoAnual,
+            dbUser,
         ] = await Promise.all([
             prisma.deuda.findMany({ where: { expediente } }),
             prisma.cuotaMensual.findFirst({ where: { expediente, periodo: currentPeriod } }),
@@ -44,6 +45,7 @@ export async function GET() {
                 where: { expediente, estado: "pendiente", tipoAdhesion: "CANCELACION" }
             }),
             prisma.pagoAnual.findFirst({ where: { expediente } }),
+            prisma.user.findUnique({ where: { expediente }, select: { status: true } }),
         ]);
 
         const configTransferencia = await prisma.config.findMany({
@@ -120,7 +122,8 @@ export async function GET() {
                 matricula_mensual: !!tMap.transferencia_matricula_mensual,
                 matricula_anual:   !!tMap.transferencia_matricula_anual,
                 deuda:             !!tMap.transferencia_deuda,
-            }
+            },
+            userStatus: dbUser?.status ?? "active",
         });
 
     } catch (error) {

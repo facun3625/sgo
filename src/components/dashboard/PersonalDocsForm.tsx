@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
     User,
     Home,
@@ -11,13 +12,15 @@ import {
     AlertCircle,
     Info,
     Pencil,
-    X
+    X,
+    Lock,
 } from "lucide-react";
 
 interface DatoPayload {
     id: number;
     apellido: string;
     nombre: string;
+    cuil: string | null;
     documento: string | null;
     expediente: string | null;
     folio: string | null;
@@ -41,6 +44,7 @@ interface DatoPayload {
 }
 
 export default function PersonalDocsForm() {
+    const router = useRouter();
     const [formData, setFormData] = useState<DatoPayload | null>(null);
     const [savedData, setSavedData] = useState<DatoPayload | null>(null);
     const [loading, setLoading] = useState(true);
@@ -59,6 +63,7 @@ export default function PersonalDocsForm() {
             if (res.ok) {
                 setFormData(data);
                 setSavedData(data);
+                if (!data.cuil) setIsEditing(true);
             } else {
                 setMessage({ type: "error", text: data.error || "Error al cargar datos" });
             }
@@ -76,6 +81,7 @@ export default function PersonalDocsForm() {
     };
 
     const handleCancel = () => {
+        if (!savedData?.cuil) return;
         setFormData(savedData);
         setIsEditing(false);
         setMessage(null);
@@ -83,6 +89,10 @@ export default function PersonalDocsForm() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!savedData?.cuil && !formData?.cuil?.trim()) {
+            setMessage({ type: "error", text: "El CUIL es obligatorio para continuar" });
+            return;
+        }
         setSaving(true);
         setMessage(null);
 
@@ -96,8 +106,10 @@ export default function PersonalDocsForm() {
             const data = await res.json();
             if (res.ok) {
                 setMessage({ type: "success", text: "Cambios guardados exitosamente" });
+                const eraPrimerCuil = !savedData?.cuil && !!formData?.cuil;
                 setSavedData(formData);
                 setIsEditing(false);
+                if (eraPrimerCuil) router.refresh();
             } else {
                 setMessage({ type: "error", text: data.error || "Error al guardar cambios" });
             }
@@ -127,6 +139,19 @@ export default function PersonalDocsForm() {
     return (
         <form onSubmit={handleSubmit} className="space-y-10 animate-fade-in pb-12">
 
+            {/* Banner CUIL faltante */}
+            {!savedData?.cuil && (
+                <div className="p-4 rounded-2xl border border-amber-200 dark:border-amber-800/50 bg-amber-50 dark:bg-amber-950/20 flex items-start gap-3">
+                    <AlertCircle size={18} className="text-amber-500 mt-0.5 flex-shrink-0" />
+                    <div>
+                        <p className="text-[13px] font-bold text-amber-700 dark:text-amber-400">Completá tu CUIL para continuar usando la plataforma</p>
+                        <p className="text-[12px] text-amber-600 dark:text-amber-500 mt-0.5">
+                            Ingresá tu número de CUIL y aprovechá para verificar que el resto de tus datos estén actualizados.
+                        </p>
+                    </div>
+                </div>
+            )}
+
             {/* Mensaje de feedback */}
             {message && (
                 <div className={`p-4 rounded-2xl border flex items-center gap-3 text-sm animate-fade-in ${message.type === "success"
@@ -155,14 +180,16 @@ export default function PersonalDocsForm() {
                     </button>
                 ) : (
                     <div className="flex items-center gap-2">
-                        <button
-                            type="button"
-                            onClick={handleCancel}
-                            className="flex items-center gap-2 px-4 h-10 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-bold text-[12px] hover:bg-slate-50 dark:hover:bg-slate-800 transition-all active:scale-95"
-                        >
-                            <X size={14} />
-                            Cancelar
-                        </button>
+                        {savedData?.cuil && (
+                            <button
+                                type="button"
+                                onClick={handleCancel}
+                                className="flex items-center gap-2 px-4 h-10 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-bold text-[12px] hover:bg-slate-50 dark:hover:bg-slate-800 transition-all active:scale-95"
+                            >
+                                <X size={14} />
+                                Cancelar
+                            </button>
+                        )}
                         <button
                             type="submit"
                             disabled={saving}
@@ -201,6 +228,30 @@ export default function PersonalDocsForm() {
                         label="Fecha Matriculación"
                         value={formData.fechaMatriculacion ? new Date(formData.fechaMatriculacion).toLocaleDateString("es-AR") : "--"}
                     />
+                    {/* CUIL — editable solo la primera vez */}
+                    {!savedData?.cuil ? (
+                        <div className="space-y-1.5 group md:col-span-1">
+                            <label className="text-[10px] font-bold text-amber-500 uppercase tracking-widest ml-1">
+                                CUIL *
+                            </label>
+                            <input
+                                type="text"
+                                value={formData.cuil || ""}
+                                onChange={(e) => handleChange("cuil", e.target.value)}
+                                placeholder="Ej: 20-12345678-9"
+                                className="w-full h-11 px-4 rounded-2xl border-2 border-amber-300 dark:border-amber-700 bg-white dark:bg-slate-900 focus:border-amber-500 focus:ring-1 focus:ring-amber-200 transition-all outline-none text-[13px] text-black dark:text-white font-medium"
+                            />
+                        </div>
+                    ) : (
+                        <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1 flex items-center gap-1">
+                                CUIL <Lock size={9} />
+                            </label>
+                            <div className="w-full h-11 px-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/20 flex items-center text-[13px] text-slate-600 dark:text-slate-400 font-medium">
+                                {formData.cuil}
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -261,14 +312,16 @@ export default function PersonalDocsForm() {
             {/* Botón guardar inferior (solo en modo edición) */}
             {isEditing && (
                 <div className="flex items-center justify-end gap-2 pt-2">
-                    <button
-                        type="button"
-                        onClick={handleCancel}
-                        className="flex items-center gap-2 px-4 h-10 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-bold text-[12px] hover:bg-slate-50 dark:hover:bg-slate-800 transition-all active:scale-95"
-                    >
-                        <X size={14} />
-                        Cancelar
-                    </button>
+                    {savedData?.cuil && (
+                        <button
+                            type="button"
+                            onClick={handleCancel}
+                            className="flex items-center gap-2 px-4 h-10 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-bold text-[12px] hover:bg-slate-50 dark:hover:bg-slate-800 transition-all active:scale-95"
+                        >
+                            <X size={14} />
+                            Cancelar
+                        </button>
+                    )}
                     <button
                         type="submit"
                         disabled={saving}

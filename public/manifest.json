@@ -5,20 +5,26 @@
   "start_url": "/dashboard",
   "display": "standalone",
   "background_color": "#02182b",
-  "theme_color": "#14532d",
+  "theme_color": "#063f68",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "/sgo.png",
+      "src": "/sgo_nuevo.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
-      "src": "/sgo.png",
+      "src": "/sgo_nuevo.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/sgo_nuevo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }

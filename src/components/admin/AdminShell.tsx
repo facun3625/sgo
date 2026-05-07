@@ -35,6 +35,7 @@ import {
     Landmark,
     ReceiptText,
     ShieldOff,
+    BookUser,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { SessionPayload } from "@/lib/auth";
@@ -54,6 +55,7 @@ const navItems = [
     { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true, color: "text-slate-400" },
     { href: "/admin/solicitudes", label: "Gestión de Trámites", icon: ClipboardList, color: "text-amber-500" },
     { href: "/admin/usuarios", label: "Usuarios", icon: Users, color: "text-indigo-500" },
+    { href: "/admin/legajo", label: "Legajo", icon: BookUser, color: "text-teal-500" },
     { href: "/admin/gestionar-admins", label: "Gestionar Admins", icon: UserCog, color: "text-violet-500" },
     { href: "/admin/cursos", label: "Cursos", icon: GraduationCap, color: "text-pink-500" },
     { href: "/admin/noticias", label: "Actividades Institucionales", icon: Newspaper, color: "text-amber-500" },
@@ -212,6 +214,7 @@ export default function AdminShell({ session, image, permisos, children }: Admin
                                     {[
                                         { href: "/admin/config/matricula", label: "Matrícula", icon: Settings2, color: "text-slate-400" },
                                         { href: "/admin/config/pagos", label: "Métodos de Pago", icon: KeyRound, color: "text-[#009ee3]" },
+                                        { href: "/admin/config/jus", label: "Valor JUS", icon: Landmark, color: "text-amber-500" },
                                     ].map((sub) => {
                                         const active = pathname.startsWith(sub.href);
                                         return (

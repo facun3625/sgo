@@ -12,6 +12,11 @@ export const metadata: Metadata = {
   title: "SGO - Sistema de Gestión",
   description: "Sistema de Gestión Operativa - CPASF",
   manifest: "/manifest.json",
+  icons: {
+    icon: "/sgo_nuevo.png",
+    shortcut: "/sgo_nuevo.png",
+    apple: "/sgo_nuevo.png",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
