@@ -598,3 +598,18 @@ model SolicitudRehabilitacion {
   @@index([expediente])
   @@map("solicitudes_rehabilitacion")
 }
+
+model FacturaSantaFe {
+  id         Int      @id @default(autoincrement())
+  tipo       String   // "mensual" | "anual" | "deuda"
+  periodo    String
+  expediente String
+  cod        String
+  factura    String?
+  archivo    String
+  createdAt  DateTime @default(now())
+
+  @@index([expediente])
+  @@index([tipo])
+  @@map("facturas_santa_fe")
+}

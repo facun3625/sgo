@@ -72,6 +72,7 @@ const navItems = [
     { href: "/admin/pagos", label: "Estado de Pagos", icon: ReceiptText, color: "text-emerald-500" },
     { href: "/admin/transferencias", label: "Transferencias", icon: Landmark, color: "text-slate-400" },
     { href: "/admin/importar", label: "Importar Datos", icon: DatabaseZap, color: "text-cyan-500" },
+    { href: "/admin/boletas", label: "Boletas SF Servicios", icon: ReceiptText, color: "text-orange-500" },
     { href: "/admin/tribunal-etica", label: "Tribunal de Ética", icon: Scale, color: "text-rose-500" },
     { href: "/admin/repositorio", label: "Repositorio de Archivos", icon: FolderOpen, color: "text-indigo-500" },
 ];

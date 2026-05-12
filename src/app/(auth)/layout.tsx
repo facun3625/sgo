@@ -40,8 +40,8 @@ export default function AuthLayout({
                         Colegio de Profesionales de la Abogacía de Santa Fe
                     </p>
                     <div className="w-12 h-px bg-white/20 rounded-full mt-5 mb-5" />
-                    <p className="text-white/40 text-[12px] leading-relaxed max-w-[200px]">
-                        Sistema de Gestión Operativa
+                    <p className="text-white/70 text-[15px] font-medium leading-relaxed max-w-[200px]">
+                        SGO
                     </p>
                 </div>
 

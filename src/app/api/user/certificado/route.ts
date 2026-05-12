@@ -7,22 +7,7 @@ import { join } from "path";
 export async function GET() {
     const session = await getSession();
     if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-
-    const cutoff = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
-    const existing = await prisma.solicitud.findFirst({
-        where: {
-            expediente: session.expediente || "",
-            tipo: "Certificado de Matriculación",
-            estado: "completada",
-            fecha: { gte: cutoff },
-        },
-        orderBy: { fecha: "desc" },
-    });
-
-    if (!existing) return NextResponse.json({ blocked: false });
-
-    const expiresAt = new Date(new Date(existing.fecha).getTime() + 60 * 24 * 60 * 60 * 1000);
-    return NextResponse.json({ blocked: true, solicitud: existing, expiresAt: expiresAt.toISOString() });
+    return NextResponse.json({ blocked: false });
 }
 
 export async function POST(req: NextRequest) {

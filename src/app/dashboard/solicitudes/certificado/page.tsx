@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { ChevronLeft, FileText, Info, Loader2, Send, AlertCircle, ExternalLink } from "lucide-react";
+import { ChevronLeft, FileText, Info, Loader2, Send } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { QRCodeSVG } from "qrcode.react";
@@ -158,7 +158,6 @@ export default function SolicitudCertificadoPage() {
 
     const [datos, setDatos] = useState<UserDatos | null>(null);
     const [loading, setLoading] = useState(true);
-    const [certVigente, setCertVigente] = useState<{ id: number; adjunto: string | null; expiresAt: string } | null>(null);
     const [presentarAnte, setPresentarAnte] = useState("");
     const [status, setStatus] = useState<"idle" | "creating" | "generating" | "uploading">("idle");
     const [solicitudId, setSolicitudId] = useState<number | null>(null);
@@ -167,15 +166,7 @@ export default function SolicitudCertificadoPage() {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
     useEffect(() => {
-        Promise.all([
-            fetch("/api/user/datos").then(r => r.json()),
-            fetch("/api/user/certificado").then(r => r.json()),
-        ]).then(([datosData, certData]) => {
-            setDatos(datosData);
-            if (certData.blocked) {
-                setCertVigente({ id: certData.solicitud.id, adjunto: certData.solicitud.adjunto, expiresAt: certData.expiresAt });
-            }
-        }).finally(() => setLoading(false));
+        fetch("/api/user/datos").then(r => r.json()).then(setDatos).finally(() => setLoading(false));
     }, []);
 
     // Cuando tenemos el solicitudId, el QR ya se actualizó en el DOM → generamos el PDF
@@ -291,33 +282,6 @@ export default function SolicitudCertificadoPage() {
 
             <div className="p-4 md:p-10 space-y-6 animate-fade-in">
 
-                {/* Certificado vigente — bloqueo 60 días */}
-                {certVigente && (
-                    <div className="p-5 rounded-2xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 flex gap-4 items-start">
-                        <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center shrink-0">
-                            <AlertCircle size={20} className="text-amber-600" />
-                        </div>
-                        <div className="flex-1">
-                            <p className="text-[14px] font-black text-amber-800 dark:text-amber-300 mb-1">Ya tenés un certificado vigente</p>
-                            <p className="text-[12px] text-amber-700 dark:text-amber-400 leading-relaxed">
-                                Podés generar uno nuevo a partir del <strong>{new Date(certVigente.expiresAt).toLocaleDateString("es-AR", { day: "2-digit", month: "long", year: "numeric" })}</strong>.
-                            </p>
-                            <div className="flex gap-3 mt-3 flex-wrap">
-                                {certVigente.adjunto && (
-                                    <a href={certVigente.adjunto} target="_blank" rel="noopener noreferrer"
-                                        className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 text-white rounded-xl text-[11px] font-bold hover:bg-amber-700 transition-all">
-                                        <FileText size={12} /> Ver certificado
-                                    </a>
-                                )}
-                                <a href={`/verificar/certificado/${certVigente.id}`} target="_blank" rel="noopener noreferrer"
-                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-slate-800 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-400 rounded-xl text-[11px] font-bold hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-all">
-                                    <ExternalLink size={12} /> Verificar
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
                 {/* Aviso */}
                 <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 flex gap-3 items-start">
                     <div className="p-2 rounded-lg bg-white dark:bg-slate-800 text-amber-500 shadow-sm shrink-0">
@@ -325,8 +289,8 @@ export default function SolicitudCertificadoPage() {
                     </div>
                     <p className="text-[11px] text-amber-700 dark:text-amber-400/80 leading-relaxed font-medium">
                         El certificado se genera automáticamente en PDF y quedará disponible en{" "}
-                        <Link href="/dashboard/solicitudes/enviadas" className="underline font-bold">Solicitudes enviadas</Link>.
-                        Los datos institucionales son de solo lectura.
+                        <Link href="/dashboard/solicitudes/enviadas" className="underline font-bold">Solicitudes enviadas</Link>.{" "}
+                        Si necesitás presentarlo ante más de un organismo, podés generar uno nuevo por cada destino.
                     </p>
                 </div>
 
@@ -358,7 +322,7 @@ export default function SolicitudCertificadoPage() {
 
                     <button
                         type="submit"
-                        disabled={isProcessing || !presentarAnte.trim() || !!certVigente}
+                        disabled={isProcessing || !presentarAnte.trim()}
                         className="w-full h-14 bg-[#063f68] dark:bg-blue-600 hover:bg-[#0a4d7a] text-white rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-blue-500/10"
                     >
                         {isProcessing ? (

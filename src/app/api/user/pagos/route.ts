@@ -26,6 +26,7 @@ export async function GET() {
             cancelacionPendiente,
             pagoAnual,
             dbUser,
+            boletasRaw,
         ] = await Promise.all([
             prisma.deuda.findMany({ where: { expediente } }),
             prisma.cuotaMensual.findFirst({ where: { expediente, periodo: currentPeriod } }),
@@ -46,6 +47,12 @@ export async function GET() {
             }),
             prisma.pagoAnual.findFirst({ where: { expediente } }),
             prisma.user.findUnique({ where: { expediente }, select: { status: true } }),
+            (prisma as any).facturaSantaFe.findMany({
+                where: { expediente },
+                orderBy: { createdAt: "desc" },
+                select: { tipo: true, periodo: true, archivo: true, factura: true },
+                take: 9,
+            }).catch(() => []),
         ]);
 
         const configTransferencia = await prisma.config.findMany({
@@ -107,6 +114,11 @@ export async function GET() {
             showPagoAnual = new Date().getMonth() <= 2;
         }
 
+        // Pick latest boleta per tipo
+        const getBoleta = (tipo: string) =>
+            (boletasRaw as { tipo: string; periodo: string; archivo: string; factura: string | null }[])
+                .find(b => b.tipo === tipo) ?? null;
+
         return NextResponse.json({
             deudas,
             cuotaActual,
@@ -124,6 +136,11 @@ export async function GET() {
                 deuda:             !!tMap.transferencia_deuda,
             },
             userStatus: dbUser?.status ?? "active",
+            boletas: {
+                mensual: getBoleta("mensual"),
+                anual: getBoleta("anual"),
+                deuda: getBoleta("deuda"),
+            },
         });
 
     } catch (error) {

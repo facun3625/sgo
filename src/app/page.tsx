@@ -22,7 +22,7 @@ export default function Home() {
           <h1 className="text-4xl font-bold tracking-tight mb-2">
             <span className="text-gradient">SGO</span>
           </h1>
-          <p className="text-lg text-muted">Sistema de Gestión Operativa</p>
+          <p className="text-lg text-muted">SGO</p>
         </div>
 
         {/* Status Card */}

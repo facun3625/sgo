@@ -159,6 +159,7 @@ export default function RecuperarContrasenaPage() {
                         <p className="text-gray-400 text-[13px]">
                             Seleccioná uno de tus correos registrados. El código expirará en <strong className="text-gray-600">30 minutos</strong>.
                         </p>
+                        <p className="text-gray-400 text-[12px] mt-1">Si no lo recibís, revisá la carpeta de correo no deseado o spam.</p>
                     </div>
                     <div className="space-y-3 mb-5">
                         {correos.map((c) => (

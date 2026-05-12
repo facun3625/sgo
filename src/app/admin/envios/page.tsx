@@ -78,6 +78,7 @@ export default function AdminEnviosPage() {
     const [newAsunto, setNewAsunto] = useState("");
     const [newContenido, setNewContenido] = useState("");
     const [newExpRaw, setNewExpRaw] = useState("");
+    const [enviarATodos, setEnviarATodos] = useState(false);
     const [creando, setCreando] = useState(false);
 
     const parsed = parseExpedientes(newExpRaw);
@@ -103,20 +104,20 @@ export default function AdminEnviosPage() {
     }
 
     async function crear() {
-        if (!newAsunto.trim() || !newContenido.trim() || uniqueParsed.length === 0) return;
+        if (!newAsunto.trim() || !newContenido.trim()) return;
+        if (!enviarATodos && uniqueParsed.length === 0) return;
         setCreando(true);
         const res = await fetch("/api/admin/envios", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ asunto: newAsunto, contenido: newContenido, expedientes: uniqueParsed }),
+            body: JSON.stringify({ asunto: newAsunto, contenido: newContenido, expedientes: uniqueParsed, enviarATodos }),
         });
         const data = await res.json();
         if (res.ok) {
             const inv = data.invalid?.length ? ` (${data.invalid.length} no encontrados)` : "";
             showToast(`Enviado a ${data.totalEnvios} usuarios${inv}`, "success");
             setShowModal(false);
-            setNewAsunto(""); setNewContenido(""); setNewExpRaw("");
-            // Notificar a tabs de usuario en el mismo browser
+            setNewAsunto(""); setNewContenido(""); setNewExpRaw(""); setEnviarATodos(false);
             try { new BroadcastChannel("sgo-updates").postMessage({ type: "new-comunicado" }); } catch {}
             load();
         } else {
@@ -349,20 +350,51 @@ export default function AdminEnviosPage() {
                             </div>
                             <div className="space-y-1.5">
                                 <label className="text-[12px] font-semibold text-slate-500">Destinatarios *</label>
-                                <p className="text-[11px] text-slate-400 leading-relaxed">
-                                    Pegá los expedientes separados por <strong>coma</strong> o <strong>uno por línea</strong>. Ej:<br />
-                                    <span className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded text-[10px]">1234, 5678, 9012</span>
-                                    &nbsp;o&nbsp;
-                                    <span className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded text-[10px]">1234↵5678↵9012</span>
-                                </p>
-                                <textarea value={newExpRaw} onChange={e => setNewExpRaw(e.target.value)}
-                                    placeholder={"1234, 5678\n9012\n3456"} rows={5}
-                                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-[13px] font-mono focus:outline-none focus:ring-2 focus:ring-sky-300/50 resize-none" />
-                                {uniqueParsed.length > 0 && (
-                                    <div className="flex items-center gap-2 px-3 py-2 bg-sky-50 dark:bg-sky-900/20 border border-sky-100 dark:border-sky-800 rounded-xl">
-                                        <AlertCircle size={13} className="text-sky-500 flex-shrink-0" />
-                                        <p className="text-[12px] text-sky-700 dark:text-sky-300">
-                                            <strong>{uniqueParsed.length}</strong> expediente{uniqueParsed.length !== 1 ? "s" : ""} detectado{uniqueParsed.length !== 1 ? "s" : ""}. Los inválidos serán ignorados al enviar.
+
+                                {/* Tilde enviar a todos */}
+                                <label className="flex items-center gap-2.5 cursor-pointer select-none group">
+                                    <div
+                                        onClick={() => setEnviarATodos(v => !v)}
+                                        className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${enviarATodos ? "bg-sky-500 border-sky-500" : "border-slate-300 dark:border-slate-600 group-hover:border-sky-400"}`}
+                                    >
+                                        {enviarATodos && (
+                                            <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                                                <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                                            </svg>
+                                        )}
+                                    </div>
+                                    <span onClick={() => setEnviarATodos(v => !v)} className="text-[13px] font-semibold text-slate-700 dark:text-slate-200">
+                                        Enviar a todos los usuarios
+                                    </span>
+                                </label>
+
+                                {!enviarATodos && (
+                                    <>
+                                        <p className="text-[11px] text-slate-400 leading-relaxed">
+                                            Pegá los expedientes separados por <strong>coma</strong> o <strong>uno por línea</strong>. Ej:<br />
+                                            <span className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded text-[10px]">1234, 5678, 9012</span>
+                                            &nbsp;o&nbsp;
+                                            <span className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded text-[10px]">1234↵5678↵9012</span>
+                                        </p>
+                                        <textarea value={newExpRaw} onChange={e => setNewExpRaw(e.target.value)}
+                                            placeholder={"1234, 5678\n9012\n3456"} rows={5}
+                                            className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-[13px] font-mono focus:outline-none focus:ring-2 focus:ring-sky-300/50 resize-none" />
+                                        {uniqueParsed.length > 0 && (
+                                            <div className="flex items-center gap-2 px-3 py-2 bg-sky-50 dark:bg-sky-900/20 border border-sky-100 dark:border-sky-800 rounded-xl">
+                                                <AlertCircle size={13} className="text-sky-500 flex-shrink-0" />
+                                                <p className="text-[12px] text-sky-700 dark:text-sky-300">
+                                                    <strong>{uniqueParsed.length}</strong> expediente{uniqueParsed.length !== 1 ? "s" : ""} detectado{uniqueParsed.length !== 1 ? "s" : ""}. Los inválidos serán ignorados al enviar.
+                                                </p>
+                                            </div>
+                                        )}
+                                    </>
+                                )}
+
+                                {enviarATodos && (
+                                    <div className="flex items-center gap-2 px-3 py-2.5 bg-sky-50 dark:bg-sky-900/20 border border-sky-100 dark:border-sky-800 rounded-xl">
+                                        <Users size={13} className="text-sky-500 flex-shrink-0" />
+                                        <p className="text-[12px] text-sky-700 dark:text-sky-300 font-medium">
+                                            Se enviará a <strong>todos los usuarios registrados</strong> en el sistema.
                                         </p>
                                     </div>
                                 )}
@@ -374,10 +406,10 @@ export default function AdminEnviosPage() {
                                 Cancelar
                             </button>
                             <button onClick={crear}
-                                disabled={creando || !newAsunto.trim() || !newContenido.trim() || uniqueParsed.length === 0}
+                                disabled={creando || !newAsunto.trim() || !newContenido.trim() || (!enviarATodos && uniqueParsed.length === 0)}
                                 className="flex-1 flex items-center justify-center gap-2 h-10 bg-sky-500 text-white rounded-xl text-[13px] font-bold hover:bg-sky-600 disabled:opacity-50 transition-all">
                                 {creando ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
-                                Enviar a {uniqueParsed.length || "0"} usuarios
+                                {enviarATodos ? "Enviar a todos" : `Enviar a ${uniqueParsed.length || "0"} usuarios`}
                             </button>
                         </div>
                     </div>

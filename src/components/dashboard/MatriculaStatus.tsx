@@ -12,6 +12,7 @@ import {
     Loader2,
     Landmark,
     Clock,
+    Download,
 } from "lucide-react";
 import MpPayButton from "@/components/MpPayButton";
 import TransferenciaPayButton from "@/components/TransferenciaPayButton";
@@ -31,6 +32,13 @@ interface CuotaMensualData {
     metodo?: "mercadopago" | "transferencia" | "home_banking" | "transferencia_pendiente" | null;
 }
 
+interface Boleta {
+    tipo: string;
+    periodo: string;
+    archivo: string;
+    factura: string | null;
+}
+
 interface PagosData {
     deudas: Concepto[];
     cuotaActual: CuotaMensualData | null;
@@ -44,6 +52,7 @@ interface PagosData {
     hasCancelacionPendiente: boolean;
     totalDeuda: number;
     userStatus: string;
+    boletas: { mensual: Boleta | null; anual: Boleta | null; deuda: Boleta | null };
 }
 
 function formatPeriodo(periodo: string): string {
@@ -125,6 +134,12 @@ export default function MatriculaStatus() {
                                 {data?.transferenciaHabilitada?.deuda && (
                                     <TransferenciaPayButton tipo="deuda" ref={data!.deudas.map((d) => d.id).join(",")} monto={totalDeuda} label="Pagar con transferencia"
                                         className="w-full h-12 px-6 bg-slate-700 hover:bg-slate-600 text-white rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-2" />
+                                )}
+                                {data?.boletas?.deuda && (
+                                    <a href={data.boletas.deuda.archivo} target="_blank" rel="noopener noreferrer"
+                                        className="w-full h-10 px-4 bg-white dark:bg-slate-800 border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-2xl font-bold text-[11px] transition-all flex items-center justify-center gap-2">
+                                        <Download size={13} /> Descargar boleta
+                                    </a>
                                 )}
                             </div>
                         </div>
@@ -232,6 +247,12 @@ export default function MatriculaStatus() {
                                                 className="w-full h-12 px-6 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2"
                                             />
                                         )}
+                                        {data?.boletas?.anual && (
+                                            <a href={data.boletas.anual.archivo} target="_blank" rel="noopener noreferrer"
+                                                className="w-full h-10 px-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/50 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-950/40 rounded-xl font-bold text-[11px] transition-all flex items-center justify-center gap-2">
+                                                <Download size={13} /> Descargar boleta
+                                            </a>
+                                        )}
                                     </div>
                                 )}
                             </div>
@@ -280,16 +301,24 @@ export default function MatriculaStatus() {
                                     </div>
                                 </div>
                             ) : data?.cuotaActual?.estado === "pagado" ? (
-                                <div className="w-full flex items-center justify-between">
-                                    <div>
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Estado de Pago</p>
-                                        <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
-                                            Abonado — {formatPeriodo(data.cuotaActual.periodo)}
-                                        </p>
+                                <div className="w-full space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Estado de Pago</p>
+                                            <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                                                Abonado — {formatPeriodo(data.cuotaActual.periodo)}
+                                            </p>
+                                        </div>
+                                        <div className="w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 border border-emerald-100 dark:border-emerald-500/20 flex items-center justify-center">
+                                            <CheckCircle2 size={20} />
+                                        </div>
                                     </div>
-                                    <div className="w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 border border-emerald-100 dark:border-emerald-500/20 flex items-center justify-center">
-                                        <CheckCircle2 size={20} />
-                                    </div>
+                                    {data?.boletas?.mensual && (
+                                        <a href={data.boletas.mensual.archivo} target="_blank" rel="noopener noreferrer"
+                                            className="w-full h-10 px-4 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/50 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-950/40 rounded-xl font-bold text-[11px] transition-all flex items-center justify-center gap-2">
+                                            <Download size={13} /> Descargar boleta
+                                        </a>
+                                    )}
                                 </div>
                             ) : data?.cuotaActual?.estado === "pendiente" && isSuspended ? (
                                 <div className="w-full flex items-center justify-between">
@@ -322,6 +351,12 @@ export default function MatriculaStatus() {
                                             label="Pagar con transferencia"
                                             className="w-full h-12 px-6 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2"
                                         />
+                                    )}
+                                    {data?.boletas?.mensual && (
+                                        <a href={data.boletas.mensual.archivo} target="_blank" rel="noopener noreferrer"
+                                            className="w-full h-10 px-4 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/50 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-950/40 rounded-xl font-bold text-[11px] transition-all flex items-center justify-center gap-2">
+                                            <Download size={13} /> Descargar boleta
+                                        </a>
                                     )}
                                 </div>
                             ) : (
