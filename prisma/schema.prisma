@@ -613,3 +613,17 @@ model FacturaSantaFe {
   @@index([tipo])
   @@map("facturas_santa_fe")
 }
+
+model Tutorial {
+  id          Int      @id @default(autoincrement())
+  titulo      String
+  descripcion String?
+  videoUrl    String
+  tipo        String   @default("url") // "url" | "embed"
+  orden       Int      @default(0)
+  activo      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("tutoriales")
+}

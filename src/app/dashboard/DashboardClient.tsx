@@ -5,7 +5,7 @@ import {
     CreditCard, ArrowRight, ChevronRight, IdCard, Home, Wallet,
     Clock, FileText, LockKeyhole, Search, Gavel,
     CheckCircle2, Loader2, Newspaper, ChevronLeft,
-    Star, CalendarDays, GraduationCap, Zap,
+    Star, CalendarDays, GraduationCap, Zap, BookUser, PlayCircle,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -239,12 +239,14 @@ export default function DashboardClient({ session }: { session: SessionPayload }
                     <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-3 flex items-center gap-2">
                         <Zap size={12} /> Accesos Directos
                     </h3>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                         {[
                             { href: "/dashboard/solicitudes/certificado", icon: <FileText size={18} />, label: "Certificado de Matriculación", color: "text-blue-600 bg-blue-600/10 group-hover:bg-blue-600 group-hover:text-white" },
                             { href: "/dashboard/solicitudes/sisfe", icon: <LockKeyhole size={18} />, label: "Clave SISFE", color: "text-violet-600 bg-violet-600/10 group-hover:bg-violet-600 group-hover:text-white" },
                             { href: "/dashboard/solicitudes/catastro", icon: <Search size={18} />, label: "Catastro / SIGIT", color: "text-orange-600 bg-orange-600/10 group-hover:bg-orange-600 group-hover:text-white" },
                             { href: "/dashboard/solicitudes/jurisprudencia", icon: <Gavel size={18} />, label: "Jurisprudencia", color: "text-teal-600 bg-teal-600/10 group-hover:bg-teal-600 group-hover:text-white" },
+                            { href: "/dashboard/guia", icon: <BookUser size={18} />, label: "Guía de Abogados", color: "text-teal-600 bg-teal-600/10 group-hover:bg-teal-600 group-hover:text-white" },
+                            { href: "/dashboard/tutoriales", icon: <PlayCircle size={18} />, label: "Tutoriales", color: "text-pink-500 bg-pink-500/10 group-hover:bg-pink-500 group-hover:text-white" },
                         ].map(item => (
                             <Link key={item.href} href={item.href}
                                 className="group flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 transition-all">

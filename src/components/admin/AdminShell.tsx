@@ -36,6 +36,7 @@ import {
     ReceiptText,
     ShieldOff,
     BookUser,
+    PlayCircle,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { SessionPayload } from "@/lib/auth";
@@ -74,6 +75,7 @@ const navItems = [
     { href: "/admin/importar", label: "Importar Datos", icon: DatabaseZap, color: "text-cyan-500" },
     { href: "/admin/boletas", label: "Boletas SF Servicios", icon: ReceiptText, color: "text-orange-500" },
     { href: "/admin/tribunal-etica", label: "Tribunal de Ética", icon: Scale, color: "text-rose-500" },
+    { href: "/admin/tutoriales", label: "Tutoriales", icon: PlayCircle, color: "text-pink-400" },
     { href: "/admin/repositorio", label: "Repositorio de Archivos", icon: FolderOpen, color: "text-indigo-500" },
 ];
 

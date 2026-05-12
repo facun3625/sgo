@@ -8,7 +8,7 @@ import {
     CreditCard, IdCard, User, Wallet, FileText, ChevronDown, ChevronRight,
     XOctagon, Banknote, GraduationCap, Calendar, HelpCircle, FolderOpen,
     Home, CheckCircle2, Clock, Newspaper, Library, Cpu, Mail, Megaphone,
-    ShieldCheck, Scale,
+    ShieldCheck, Scale, BookUser, PlayCircle,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -141,6 +141,8 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
                 { icon: <Library />, label: "Biblioteca", href: "/dashboard/biblioteca", color: "text-[#063f68] dark:text-blue-400" },
                 { icon: <FolderOpen />, label: "Repositorio de Archivos", href: "/dashboard/archivos", color: "text-indigo-500" },
                 { icon: <HelpCircle />, label: "Preguntas Frecuentes", href: "/dashboard/faq", color: "text-slate-400" },
+                { icon: <PlayCircle />, label: "Tutoriales", href: "/dashboard/tutoriales", color: "text-pink-400" },
+                { icon: <BookUser />, label: "Guía de Abogados", href: "/dashboard/guia", color: "text-teal-500" },
                 { icon: <Mail />, label: "Mensajes Privados", href: "/dashboard/mensajes", color: "text-sky-500" },
             ],
         },
