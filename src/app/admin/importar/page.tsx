@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Upload, UserPlus, DollarSign, FileText, CheckCircle2, AlertCircle, X, Loader2, List, Search, CreditCard, Ban, Clock, Landmark } from "lucide-react";
+import { Upload, UserPlus, DollarSign, FileText, CheckCircle2, AlertCircle, X, Loader2, List, Search, CreditCard, Ban, Clock, Landmark, HandshakeIcon } from "lucide-react";
 import * as XLSX from "xlsx";
 
 type TipoFinanciero = "deudas" | "pagoAnual";
-type Seccion = "matriculados" | "financiero" | "banelco" | "registros";
+type Seccion = "matriculados" | "financiero" | "banelco" | "registros" | "fiadores";
 
 const FINANCIERO_CONFIG: Record<TipoFinanciero, { label: string; columnas: string[]; ejemplo: string }> = {
     deudas: { label: "Deudas", columnas: ["expediente", "monto"], ejemplo: "expediente,monto\n564,15000\n792,8500" },
@@ -136,6 +136,12 @@ export default function ImportarPage() {
     const [banResultado, setBanResultado] = useState<ResultadoImport | null>(null);
     const banFileRef = useRef<HTMLInputElement>(null);
 
+    // Fiadores
+    const [fiadRegistros, setFiadRegistros] = useState<Record<string, string>[]>([]);
+    const [fiadLoading, setFiadLoading] = useState(false);
+    const [fiadResultado, setFiadResultado] = useState<ResultadoImport | null>(null);
+    const fiadFileRef = useRef<HTMLInputElement>(null);
+
     const handleCSVChange = (
         e: React.ChangeEvent<HTMLInputElement>,
         setReg: (r: Record<string, string>[]) => void,
@@ -214,6 +220,35 @@ export default function ImportarPage() {
         finally { setFinLoading(false); }
     };
 
+    const handleImportarFiadores = async () => {
+        setFiadLoading(true); setFiadResultado(null);
+        try {
+            const res = await fetch("/api/admin/fiadores/import", {
+                method: "POST", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ registros: fiadRegistros }),
+            });
+            const data = await res.json();
+            if (res.ok) {
+                const partes = [];
+                if (data.creados > 0) partes.push(`${data.creados} nuevo${data.creados !== 1 ? "s" : ""}`);
+                if (data.reemplazados > 0) partes.push(`${data.reemplazados} reemplazado${data.reemplazados !== 1 ? "s" : ""}`);
+                if (data.omitidos > 0) partes.push(`${data.omitidos} omitido${data.omitidos !== 1 ? "s" : ""} (sin cambios)`);
+                setFiadResultado({
+                    tipo: data.errores?.length > 0 ? "warning" : "success",
+                    mensaje: partes.length > 0 ? partes.join(", ") + "." : "Sin cambios.",
+                    detalles: data.errores,
+                });
+                if (data.creados > 0 || data.reemplazados > 0) {
+                    setFiadRegistros([]);
+                    if (fiadFileRef.current) fiadFileRef.current.value = "";
+                }
+            } else {
+                setFiadResultado({ tipo: "error", mensaje: data.error ?? "Error al importar" });
+            }
+        } catch { setFiadResultado({ tipo: "error", mensaje: "Error de conexión" }); }
+        finally { setFiadLoading(false); }
+    };
+
     const [banDuplicados, setBanDuplicados] = useState<{ cliente: string; expediente: string; comprobante: string }[]>([]);
 
     const handleImportarBanelco = async () => {
@@ -247,6 +282,7 @@ export default function ImportarPage() {
         { id: "matriculados", label: "Nuevos Matriculados", icon: <UserPlus size={15} />, color: "text-cyan-600 dark:text-cyan-400", activeColor: "border-cyan-500 bg-cyan-50/50 dark:bg-cyan-900/10" },
         { id: "financiero", label: "Deudas y Matrículas", icon: <DollarSign size={15} />, color: "text-emerald-600 dark:text-emerald-400", activeColor: "border-emerald-500 bg-emerald-50/50 dark:bg-emerald-900/10" },
         { id: "banelco", label: "Pagos Home Banking", icon: <Landmark size={15} />, color: "text-blue-600 dark:text-blue-400", activeColor: "border-blue-500 bg-blue-50/50 dark:bg-blue-900/10" },
+        { id: "fiadores", label: "Fiadores", icon: <HandshakeIcon size={15} />, color: "text-orange-600 dark:text-orange-400", activeColor: "border-orange-500 bg-orange-50/50 dark:bg-orange-900/10" },
         { id: "registros", label: "Ver Registros", icon: <List size={15} />, color: "text-violet-600 dark:text-violet-400", activeColor: "border-violet-500 bg-violet-50/50 dark:bg-violet-900/10" },
     ];
 
@@ -443,6 +479,50 @@ export default function ImportarPage() {
                                 className="ml-auto flex items-center gap-2 px-6 h-10 bg-blue-500 text-white rounded-xl text-[13px] font-bold hover:bg-blue-600 disabled:opacity-40 transition-all active:scale-95">
                                 {banLoading ? <Loader2 size={15} className="animate-spin" /> : <Landmark size={15} />}
                                 {banLoading ? "Procesando..." : `Procesar${banRegistros.length > 0 ? ` ${banRegistros.length} registros` : ""}`}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* FIADORES */}
+            {seccion === "fiadores" && (
+                <div className="space-y-5">
+                    <div className="p-5 rounded-2xl bg-orange-50/50 dark:bg-orange-900/10 border border-orange-100 dark:border-orange-900/30">
+                        <p className="text-[13px] font-bold text-orange-800 dark:text-orange-400 mb-1">¿Cómo funciona?</p>
+                        <p className="text-[12px] text-orange-700/70 dark:text-orange-400/60 leading-relaxed">
+                            Subí un CSV con columnas <strong>expediente</strong> y <strong>fiador</strong>. Si el expediente ya tiene fiador asignado, se reemplaza; si son iguales, se omite.
+                            Los expedientes pueden no existir en el sistema (se guardan igualmente).
+                        </p>
+                        <button
+                            onClick={() => {
+                                const content = "expediente,fiador\n564,792\n831,1045";
+                                const blob = new Blob(["﻿" + content], { type: "text/csv;charset=utf-8;" });
+                                triggerDownload(URL.createObjectURL(blob), "plantilla_fiadores.csv");
+                            }}
+                            className="mt-3 inline-flex items-center gap-2 text-[11px] font-bold text-orange-600 dark:text-orange-400 hover:underline"
+                        >
+                            <FileText size={12} /> Descargar plantilla CSV
+                        </button>
+                    </div>
+
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6 space-y-4">
+                        <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Archivo CSV</label>
+                        <UploadZone fileRef={fiadFileRef} hasData={fiadRegistros.length > 0} count={fiadRegistros.length}
+                            onChange={e => handleCSVChange(e, setFiadRegistros, setFiadResultado)} accept=".csv,text/csv" color="orange" />
+                        <PreviewTable rows={fiadRegistros} />
+                        {fiadResultado && <Resultado resultado={fiadResultado} onClose={() => setFiadResultado(null)} />}
+                        <div className="flex items-center justify-between pt-2">
+                            {fiadRegistros.length > 0 && (
+                                <button onClick={() => { setFiadRegistros([]); if (fiadFileRef.current) fiadFileRef.current.value = ""; }}
+                                    className="text-[12px] text-slate-400 hover:text-slate-600 flex items-center gap-1">
+                                    <X size={13} /> Limpiar
+                                </button>
+                            )}
+                            <button onClick={handleImportarFiadores} disabled={fiadRegistros.length === 0 || fiadLoading}
+                                className="ml-auto flex items-center gap-2 px-6 h-10 bg-orange-500 text-white rounded-xl text-[13px] font-bold hover:bg-orange-600 disabled:opacity-40 transition-all active:scale-95">
+                                {fiadLoading ? <Loader2 size={15} className="animate-spin" /> : <HandshakeIcon size={15} />}
+                                {fiadLoading ? "Importando..." : `Importar${fiadRegistros.length > 0 ? ` ${fiadRegistros.length} registros` : ""}`}
                             </button>
                         </div>
                     </div>

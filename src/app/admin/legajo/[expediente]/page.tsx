@@ -10,6 +10,11 @@ import {
     Scale,
     Loader2,
     AlertCircle,
+    HandshakeIcon,
+    Trash2,
+    Plus,
+    Check,
+    X,
 } from "lucide-react";
 
 const FIELD_LABELS: Record<string, string> = {
@@ -94,15 +99,28 @@ interface TribunalItem {
     createdAt: string;
 }
 
+interface FiadorPersona {
+    id: number;
+    expediente: string;
+    apellido: string | null;
+    nombre: string | null;
+}
+
+interface FiadorData {
+    misFiador: FiadorPersona | null;
+    avalaA: FiadorPersona[];
+}
+
 interface LegajoData {
     dato: Dato | null;
     user: UserData | null;
     cambioDatos: CambioDato[];
     historialMatricula: HistorialItem[];
     tribunalEtica: TribunalItem[];
+    fiador: FiadorData;
 }
 
-type Tab = "datos" | "cambios" | "historial" | "tribunal";
+type Tab = "datos" | "cambios" | "historial" | "tribunal" | "fiador";
 
 function fmt(d: string) {
     return new Date(d).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric" });
@@ -122,6 +140,13 @@ export default function LegajoDetallePage({
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [tab, setTab] = useState<Tab>("datos");
+    const [deletingId, setDeletingId] = useState<number | null>(null);
+    const [asignarInput, setAsignarInput] = useState("");
+    const [asignarLoading, setAsignarLoading] = useState(false);
+    const [asignarError, setAsignarError] = useState("");
+    const [avalaInput, setAvalaInput] = useState("");
+    const [avalaLoading, setAvalaLoading] = useState(false);
+    const [avalaError, setAvalaError] = useState("");
 
     useEffect(() => {
         fetch(`/api/admin/legajo/${expediente}`)
@@ -131,15 +156,106 @@ export default function LegajoDetallePage({
             .finally(() => setLoading(false));
     }, [expediente]);
 
+    async function handleAsignarFiador() {
+        const fExp = asignarInput.trim();
+        if (!fExp) return;
+        setAsignarLoading(true);
+        setAsignarError("");
+        try {
+            const res = await fetch("/api/admin/fiadores", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ expediente, fiadorExpediente: fExp }),
+            });
+            const json = await res.json();
+            if (!res.ok) {
+                setAsignarError(json.error ?? "Error al asignar");
+                return;
+            }
+            setData((prev) => {
+                if (!prev) return prev;
+                return {
+                    ...prev,
+                    fiador: {
+                        ...prev.fiador,
+                        misFiador: { id: json.id, expediente: json.expediente, apellido: json.apellido, nombre: json.nombre },
+                    },
+                };
+            });
+            setAsignarInput("");
+        } finally {
+            setAsignarLoading(false);
+        }
+    }
+
+    async function handleAgregarAvala() {
+        const aExp = avalaInput.trim();
+        if (!aExp) return;
+        setAvalaLoading(true);
+        setAvalaError("");
+        try {
+            const res = await fetch("/api/admin/fiadores", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ expediente: aExp, fiadorExpediente: expediente }),
+            });
+            const json = await res.json();
+            if (!res.ok) {
+                setAvalaError(json.error ?? "Error al asignar");
+                return;
+            }
+            setData((prev) => {
+                if (!prev) return prev;
+                const yaExiste = prev.fiador.avalaA.some(a => a.expediente === aExp);
+                if (yaExiste) return prev;
+                return {
+                    ...prev,
+                    fiador: {
+                        ...prev.fiador,
+                        avalaA: [...prev.fiador.avalaA, { id: json.id, expediente: aExp, apellido: json.apellido, nombre: json.nombre }],
+                    },
+                };
+            });
+            setAvalaInput("");
+        } finally {
+            setAvalaLoading(false);
+        }
+    }
+
+    async function handleDeleteFiador(id: number) {
+        if (!confirm("¿Eliminar esta relación de fiador?")) return;
+        setDeletingId(id);
+        try {
+            const res = await fetch(`/api/admin/fiadores/${id}`, { method: "DELETE" });
+            if (res.ok) {
+                setData((prev) => {
+                    if (!prev) return prev;
+                    return {
+                        ...prev,
+                        fiador: {
+                            misFiador: prev.fiador.misFiador?.id === id ? null : prev.fiador.misFiador,
+                            avalaA: prev.fiador.avalaA.filter((a) => a.id !== id),
+                        },
+                    };
+                });
+            }
+        } finally {
+            setDeletingId(null);
+        }
+    }
+
     const nombre = data?.dato
         ? `${data.dato.apellido}, ${data.dato.nombre}`
         : expediente;
+
+    const fiadorCount = data ? (data.fiador.misFiador ? 1 : 0) + data.fiador.avalaA.length : 0;
 
     const tabs = [
         { key: "datos" as Tab, label: "Datos", icon: User, count: null },
         { key: "cambios" as Tab, label: "Modificaciones", icon: ClipboardList, count: data?.cambioDatos.length ?? 0 },
         { key: "historial" as Tab, label: "Historial Matrícula", icon: ShieldOff, count: data?.historialMatricula.length ?? 0 },
         { key: "tribunal" as Tab, label: "Tribunal de Ética", icon: Scale, count: data?.tribunalEtica.length ?? 0 },
+        { key: "fiador" as Tab, label: "Fiador", icon: HandshakeIcon, count: fiadorCount },
     ];
 
     return (
@@ -380,6 +496,138 @@ export default function LegajoDetallePage({
                                         </div>
                                     ))
                                 )}
+                            </div>
+                        )}
+
+                        {/* ── TAB FIADOR ── */}
+                        {tab === "fiador" && (
+                            <div className="grid md:grid-cols-2 gap-6">
+                                {/* Su fiador */}
+                                <div className="bg-slate-50 dark:bg-slate-800/40 rounded-2xl p-6 border border-slate-100 dark:border-slate-800 space-y-4">
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Su fiador</p>
+
+                                    {data.fiador.misFiador ? (
+                                        <div className="flex items-center justify-between gap-3">
+                                            <div>
+                                                <p className="text-[13px] font-bold text-slate-800 dark:text-white">
+                                                    {data.fiador.misFiador.apellido && data.fiador.misFiador.nombre
+                                                        ? `${data.fiador.misFiador.apellido}, ${data.fiador.misFiador.nombre}`
+                                                        : "Sin datos en el sistema"}
+                                                </p>
+                                                <p className="text-[11px] text-slate-400 mt-0.5">Exp. {data.fiador.misFiador.expediente}</p>
+                                            </div>
+                                            <button
+                                                onClick={() => handleDeleteFiador(data.fiador.misFiador!.id)}
+                                                disabled={deletingId === data.fiador.misFiador.id}
+                                                className="p-2 rounded-xl text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 hover:text-rose-600 transition-all disabled:opacity-40"
+                                                title="Eliminar fiador"
+                                            >
+                                                {deletingId === data.fiador.misFiador.id
+                                                    ? <Loader2 size={15} className="animate-spin" />
+                                                    : <Trash2 size={15} />
+                                                }
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <p className="text-[12px] text-slate-400">Sin fiador asignado.</p>
+                                    )}
+
+                                    {/* Asignar / reemplazar */}
+                                    <div className="pt-2 border-t border-slate-200 dark:border-slate-700">
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
+                                            {data.fiador.misFiador ? "Reemplazar fiador" : "Asignar fiador"}
+                                        </p>
+                                        <div className="flex gap-2">
+                                            <input
+                                                type="text"
+                                                value={asignarInput}
+                                                onChange={e => { setAsignarInput(e.target.value); setAsignarError(""); }}
+                                                onKeyDown={e => e.key === "Enter" && handleAsignarFiador()}
+                                                placeholder="Expediente del fiador"
+                                                className="flex-1 h-9 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-[13px] text-slate-700 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:border-[#063f68] dark:focus:border-blue-400 transition-colors"
+                                            />
+                                            <button
+                                                onClick={handleAsignarFiador}
+                                                disabled={!asignarInput.trim() || asignarLoading}
+                                                className="h-9 px-4 rounded-xl bg-[#063f68] text-white text-[12px] font-bold hover:bg-[#052e4e] disabled:opacity-40 transition-all flex items-center gap-1.5"
+                                            >
+                                                {asignarLoading ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />}
+                                                Guardar
+                                            </button>
+                                        </div>
+                                        {asignarError && (
+                                            <p className="mt-1.5 text-[11px] text-rose-500 flex items-center gap-1">
+                                                <X size={11} /> {asignarError}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Es fiador de */}
+                                <div className="bg-slate-50 dark:bg-slate-800/40 rounded-2xl p-6 border border-slate-100 dark:border-slate-800 space-y-4">
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                        Es fiador de
+                                    </p>
+                                    {data.fiador.avalaA.length === 0 ? (
+                                        <p className="text-[12px] text-slate-400">No avala a ningún matriculado.</p>
+                                    ) : (
+                                        <div className="space-y-3">
+                                            {data.fiador.avalaA.map((a) => (
+                                                <div key={a.id} className="flex items-center justify-between gap-3">
+                                                    <div>
+                                                        <p className="text-[13px] font-bold text-slate-800 dark:text-white">
+                                                            {a.apellido && a.nombre
+                                                                ? `${a.apellido}, ${a.nombre}`
+                                                                : "Sin datos en el sistema"}
+                                                        </p>
+                                                        <p className="text-[11px] text-slate-400 mt-0.5">Exp. {a.expediente}</p>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => handleDeleteFiador(a.id)}
+                                                        disabled={deletingId === a.id}
+                                                        className="p-2 rounded-xl text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 hover:text-rose-600 transition-all disabled:opacity-40"
+                                                        title="Eliminar relación"
+                                                    >
+                                                        {deletingId === a.id
+                                                            ? <Loader2 size={15} className="animate-spin" />
+                                                            : <Trash2 size={15} />
+                                                        }
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {/* Agregar avalado */}
+                                    <div className="pt-2 border-t border-slate-200 dark:border-slate-700">
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
+                                            Agregar avalado
+                                        </p>
+                                        <div className="flex gap-2">
+                                            <input
+                                                type="text"
+                                                value={avalaInput}
+                                                onChange={e => { setAvalaInput(e.target.value); setAvalaError(""); }}
+                                                onKeyDown={e => e.key === "Enter" && handleAgregarAvala()}
+                                                placeholder="Expediente del matriculado"
+                                                className="flex-1 h-9 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-[13px] text-slate-700 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:border-[#063f68] dark:focus:border-blue-400 transition-colors"
+                                            />
+                                            <button
+                                                onClick={handleAgregarAvala}
+                                                disabled={!avalaInput.trim() || avalaLoading}
+                                                className="h-9 px-4 rounded-xl bg-[#063f68] text-white text-[12px] font-bold hover:bg-[#052e4e] disabled:opacity-40 transition-all flex items-center gap-1.5"
+                                            >
+                                                {avalaLoading ? <Loader2 size={13} className="animate-spin" /> : <Plus size={13} />}
+                                                Agregar
+                                            </button>
+                                        </div>
+                                        {avalaError && (
+                                            <p className="mt-1.5 text-[11px] text-rose-500 flex items-center gap-1">
+                                                <X size={11} /> {avalaError}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                         )}
                     </>

@@ -13,7 +13,7 @@ export async function GET(
 
     const { expediente } = await params;
 
-    const [dato, user, cambioDatos, historialMatricula, tribunalEtica] = await Promise.all([
+    const [dato, user, cambioDatos, historialMatricula, tribunalEtica, fiadorRel, soyFiadorDe] = await Promise.all([
         prisma.dato.findFirst({ where: { expediente } }),
         prisma.user.findUnique({
             where: { expediente },
@@ -31,7 +31,38 @@ export async function GET(
             where: { expediente },
             orderBy: { createdAt: "desc" },
         }),
+        prisma.fiador.findUnique({ where: { expediente } }),
+        prisma.fiador.findMany({ where: { fiadorExpediente: expediente } }),
     ]);
 
-    return NextResponse.json({ dato, user, cambioDatos, historialMatricula, tribunalEtica });
+    let misFiador = null;
+    if (fiadorRel) {
+        const datoFiador = await prisma.dato.findFirst({
+            where: { expediente: fiadorRel.fiadorExpediente },
+            select: { expediente: true, apellido: true, nombre: true },
+        });
+        misFiador = {
+            id: fiadorRel.id,
+            expediente: fiadorRel.fiadorExpediente,
+            apellido: datoFiador?.apellido ?? null,
+            nombre: datoFiador?.nombre ?? null,
+        };
+    }
+
+    const avalaA = await Promise.all(
+        soyFiadorDe.map(async (rel) => {
+            const datoAvalado = await prisma.dato.findFirst({
+                where: { expediente: rel.expediente },
+                select: { expediente: true, apellido: true, nombre: true },
+            });
+            return {
+                id: rel.id,
+                expediente: rel.expediente,
+                apellido: datoAvalado?.apellido ?? null,
+                nombre: datoAvalado?.nombre ?? null,
+            };
+        })
+    );
+
+    return NextResponse.json({ dato, user, cambioDatos, historialMatricula, tribunalEtica, fiador: { misFiador, avalaA } });
 }

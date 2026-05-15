@@ -316,7 +316,7 @@ export default function LegajoPage() {
                                                 {linkKey(row) ? (
                                                     <Link
                                                         href={`/admin/legajo/${linkKey(row)}`}
-                                                        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[11px] font-semibold text-[#063f68] dark:text-blue-400 hover:bg-[#063f68]/10 transition-all opacity-0 group-hover:opacity-100"
+                                                        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[11px] font-semibold text-[#063f68] dark:text-blue-400 hover:bg-[#063f68]/10 transition-all"
                                                     >
                                                         Ver legajo <ExternalLink size={11} />
                                                     </Link>

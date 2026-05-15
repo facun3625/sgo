@@ -627,3 +627,13 @@ model Tutorial {
 
   @@map("tutoriales")
 }
+
+model Fiador {
+  id               Int      @id @default(autoincrement())
+  expediente       String   @unique
+  fiadorExpediente String   @map("fiador_expediente")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("fiadores")
+}
