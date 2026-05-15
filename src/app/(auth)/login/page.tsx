@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -10,9 +10,15 @@ export default function LoginPage() {
     const [expediente, setExpediente] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
+    const [recordarme, setRecordarme] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
     const [wrongPassword, setWrongPassword] = useState(false);
+
+    useEffect(() => {
+        const guardado = localStorage.getItem("sgo_expediente");
+        if (guardado) { setExpediente(guardado); setRecordarme(true); }
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -21,6 +27,9 @@ export default function LoginPage() {
         setIsLoading(true);
 
         try {
+            if (recordarme) localStorage.setItem("sgo_expediente", expediente);
+            else localStorage.removeItem("sgo_expediente");
+
             const res = await fetch("/api/auth/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -105,6 +114,7 @@ export default function LoginPage() {
                         value={expediente}
                         onChange={(e) => setExpediente(e.target.value)}
                         placeholder="Ej: 1234"
+                        autoComplete="username"
                         required
                         className="w-full px-5 py-4 rounded-2xl border border-gray-200 text-gray-800 text-[14px]
                        placeholder:text-gray-300 bg-gray-50/50
@@ -124,6 +134,7 @@ export default function LoginPage() {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             placeholder="••••••••"
+                            autoComplete="current-password"
                             required
                             className="w-full px-5 py-4 rounded-2xl border border-gray-200 text-gray-800 text-[14px]
                          placeholder:text-gray-300 bg-gray-50/50
@@ -150,7 +161,16 @@ export default function LoginPage() {
                     </div>
                 </div>
 
-                <div className="flex items-center justify-end py-1">
+                <div className="flex items-center justify-between py-1">
+                    <label className="flex items-center gap-2 cursor-pointer select-none">
+                        <input
+                            type="checkbox"
+                            checked={recordarme}
+                            onChange={(e) => setRecordarme(e.target.checked)}
+                            className="w-4 h-4 rounded border-gray-300 text-[#063f68] accent-[#063f68] cursor-pointer"
+                        />
+                        <span className="text-[13px] text-gray-500">Recordarme</span>
+                    </label>
                     <Link
                         href="/recuperar-contrasena"
                         className="text-[13px] text-[#063f68] font-semibold hover:underline underline-offset-2"
