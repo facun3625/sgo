@@ -32,5 +32,5 @@ export async function GET() {
         };
     });
 
-    return NextResponse.json(result);
+    return NextResponse.json({ usuarios: result, isSuperAdmin: session.accessLevel === "superadmin" });
 }

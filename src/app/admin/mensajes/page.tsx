@@ -95,7 +95,8 @@ export default function AdminMensajesPage() {
         if (usuarios.length === 0) {
             const res = await fetch("/api/admin/usuarios");
             const data = await res.json();
-            if (Array.isArray(data)) setUsuarios(data);
+            const lista = data.usuarios ?? data;
+            if (Array.isArray(lista)) setUsuarios(lista);
         }
     }
 

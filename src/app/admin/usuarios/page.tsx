@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import {
     Users, Search, Loader2,
-    Send, X, CheckCircle2, XCircle, Pencil
+    Send, X, CheckCircle2, XCircle, Pencil, Trash2, ShieldAlert
 } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 
@@ -56,7 +56,10 @@ const Section = ({ title, children }: { title: string; children: React.ReactNode
 export default function UsuariosAdminPage() {
     const { showToast } = useToast();
     const [usuarios, setUsuarios] = useState<Usuario[]>([]);
+    const [isSuperAdmin, setIsSuperAdmin] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [deleteTarget, setDeleteTarget] = useState<Usuario | null>(null);
+    const [deleting, setDeleting] = useState(false);
     const [search, setSearch] = useState("");
     const [filtroEstado, setFiltroEstado] = useState<"todos" | "active" | "suspended">("todos");
 
@@ -76,9 +79,33 @@ export default function UsuariosAdminPage() {
     useEffect(() => {
         fetch("/api/admin/usuarios")
             .then(r => r.json())
-            .then(data => { if (Array.isArray(data)) setUsuarios(data); })
+            .then(data => {
+                if (data.usuarios) {
+                    setUsuarios(data.usuarios);
+                    setIsSuperAdmin(data.isSuperAdmin ?? false);
+                } else if (Array.isArray(data)) {
+                    setUsuarios(data);
+                }
+            })
             .finally(() => setLoading(false));
     }, []);
+
+    async function handleEliminar() {
+        if (!deleteTarget) return;
+        const key = deleteTarget.expediente || deleteTarget.cod;
+        setDeleting(true);
+        try {
+            const res = await fetch(`/api/admin/usuarios/${encodeURIComponent(key)}`, { method: "DELETE" });
+            if (!res.ok) throw new Error();
+            setUsuarios(prev => prev.filter(u => u.cod !== deleteTarget.cod));
+            showToast("Usuario eliminado", "success");
+            setDeleteTarget(null);
+        } catch {
+            showToast("Error al eliminar", "error");
+        } finally {
+            setDeleting(false);
+        }
+    }
 
     useEffect(() => { if (mensajeModal) setTimeout(() => tituloRef.current?.focus(), 50); }, [mensajeModal]);
 
@@ -260,6 +287,13 @@ export default function UsuariosAdminPage() {
                                                 className="flex items-center gap-1 px-2.5 h-8 rounded-xl text-[11px] font-bold border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-sky-50 dark:hover:bg-sky-900/20 hover:text-sky-600 hover:border-sky-200 transition-all">
                                                 <Send size={11} />
                                             </button>
+
+                                            {isSuperAdmin && (
+                                                <button onClick={() => setDeleteTarget(u)} title="Eliminar usuario"
+                                                    className="flex items-center gap-1 px-2.5 h-8 rounded-xl text-[11px] font-bold border border-slate-200 dark:border-slate-700 text-slate-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 hover:border-red-200 transition-all">
+                                                    <Trash2 size={11} />
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
                                 );
@@ -403,6 +437,42 @@ export default function UsuariosAdminPage() {
                                 className="flex-1 flex items-center justify-center gap-2 h-10 bg-sky-500 text-white rounded-xl text-[13px] font-bold hover:bg-sky-600 disabled:opacity-50 transition-all">
                                 {enviando ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
                                 {enviando ? "Enviando..." : "Enviar"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal Eliminar — solo superadmin */}
+            {deleteTarget && (
+                <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 animate-fade-in">
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 w-full max-w-md shadow-2xl p-6 space-y-4"
+                        onClick={e => e.stopPropagation()}>
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center shrink-0">
+                                <ShieldAlert size={20} className="text-red-500" />
+                            </div>
+                            <div>
+                                <p className="text-[14px] font-black text-slate-900 dark:text-white">Eliminar usuario</p>
+                                <p className="text-[12px] text-slate-500 dark:text-slate-400">Esta acción es irreversible</p>
+                            </div>
+                        </div>
+                        <div className="p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30">
+                            <p className="text-[13px] font-bold text-red-800 dark:text-red-300">{deleteTarget.apellido}, {deleteTarget.nombre}</p>
+                            <p className="text-[11px] text-red-600 dark:text-red-400 mt-0.5">Exp. {deleteTarget.expediente || deleteTarget.cod}</p>
+                            <p className="text-[11px] text-red-600/70 dark:text-red-400/70 mt-2 leading-relaxed">
+                                Se eliminará el dato, la cuenta de acceso y todos los trámites asociados.
+                            </p>
+                        </div>
+                        <div className="flex gap-2">
+                            <button onClick={() => setDeleteTarget(null)} disabled={deleting}
+                                className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-[13px] font-bold text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                                Cancelar
+                            </button>
+                            <button onClick={handleEliminar} disabled={deleting}
+                                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-red-500 text-white text-[13px] font-bold hover:bg-red-600 disabled:opacity-50 transition-all active:scale-95">
+                                {deleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                                {deleting ? "Eliminando..." : "Eliminar"}
                             </button>
                         </div>
                     </div>

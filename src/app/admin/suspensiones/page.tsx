@@ -184,7 +184,8 @@ export default function SuspensionesPage() {
             for (const r of registros) {
                 if (!ultimaMap.has(r.expediente)) ultimaMap.set(r.expediente, r);
             }
-            setUsuarios((usRes ?? []).map((u: UsuarioSuspension) => ({
+            const usLista = usRes?.usuarios ?? usRes ?? [];
+            setUsuarios((usLista).map((u: UsuarioSuspension) => ({
                 ...u,
                 ultimaAccion: ultimaMap.get(u.expediente ?? "") ?? null,
             })));
