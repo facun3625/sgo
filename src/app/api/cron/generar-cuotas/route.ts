@@ -1,36 +1,32 @@
 export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { esMatriculadoJoven, montoConDescuento } from "@/lib/matricula";
 
 export async function GET(req: NextRequest) {
     const secret = process.env.CRON_SECRET;
-    if (!secret) {
-        return NextResponse.json({ error: "CRON_SECRET no configurado" }, { status: 401 });
-    }
-
+    if (!secret) return NextResponse.json({ error: "CRON_SECRET no configurado" }, { status: 401 });
     const { searchParams } = new URL(req.url);
-    if (searchParams.get("secret") !== secret) {
-        return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-    }
+    if (searchParams.get("secret") !== secret) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
-    const periodo = new Date().toISOString().slice(0, 7); // "2026-03"
+    const periodo = new Date().toISOString().slice(0, 7);
 
-    // Leer monto mensual de Config, default 4500
     const configMonto = await prisma.config.findUnique({ where: { clave: "montoMensual" } });
-    const monto = configMonto ? parseFloat(configMonto.valor) : 4500;
+    const montoBase = configMonto ? parseFloat(configMonto.valor) : 4500;
 
-    // Obtener todos los expedientes del padrón
     const datos = await prisma.dato.findMany({
         where: { expediente: { not: null } },
-        select: { expediente: true },
+        select: { expediente: true, fechaMatriculacion: true },
     });
-    const todosExpedientes = datos.map((d) => d.expediente as string).filter(Boolean);
 
-    // Obtener expedientes con pago anual activo
+    const fechaMap = new Map<string, Date | null>();
+    for (const d of datos) if (d.expediente) fechaMap.set(d.expediente, d.fechaMatriculacion);
+
+    const todosExpedientes = datos.map(d => d.expediente as string).filter(Boolean);
+
     const pagosAnuales = await prisma.pagoAnual.findMany({ select: { expediente: true } });
-    const pagoAnualExp = new Set(pagosAnuales.map((p) => p.expediente));
+    const pagoAnualExp = new Set(pagosAnuales.map(p => p.expediente));
 
-    // Obtener expedientes con débito automático activo (aprobado sin cancelación aprobada)
     const debitosActivos = await prisma.adhesionDebito.findMany({
         where: { estado: "aprobada", tipoAdhesion: { not: "CANCELACION" } },
         select: { expediente: true },
@@ -39,31 +35,34 @@ export async function GET(req: NextRequest) {
         where: { estado: "aprobada", tipoAdhesion: "CANCELACION" },
         select: { expediente: true },
     });
-    const canceladosExp = new Set(cancelaciones.map((c) => c.expediente));
+    const canceladosExp = new Set(cancelaciones.map(c => c.expediente));
     const debitoActivoExp = new Set(
-        debitosActivos
-            .filter((d) => !canceladosExp.has(d.expediente))
-            .map((d) => d.expediente)
+        debitosActivos.filter(d => !canceladosExp.has(d.expediente)).map(d => d.expediente)
     );
 
-    // Crear cuotas solo para quienes no tienen pago anual ni débito activo
     const expedientesACobrar = todosExpedientes.filter(
-        (exp) => !pagoAnualExp.has(exp) && !debitoActivoExp.has(exp)
+        exp => !pagoAnualExp.has(exp) && !debitoActivoExp.has(exp)
     );
 
-    const result = await prisma.cuotaMensual.createMany({
-        data: expedientesACobrar.map((expediente) => ({
-            expediente,
-            periodo,
-            monto,
-            estado: "pendiente",
-        })),
-        skipDuplicates: true,
-    });
+    const jovenes = expedientesACobrar.filter(exp => esMatriculadoJoven(fechaMap.get(exp)));
+    const normales = expedientesACobrar.filter(exp => !esMatriculadoJoven(fechaMap.get(exp)));
+    const montoJoven = montoConDescuento(montoBase, true);
+
+    const [creaNormales, creaJovenes] = await Promise.all([
+        prisma.cuotaMensual.createMany({
+            data: normales.map(expediente => ({ expediente, periodo, monto: montoBase, estado: "pendiente" })),
+            skipDuplicates: true,
+        }),
+        prisma.cuotaMensual.createMany({
+            data: jovenes.map(expediente => ({ expediente, periodo, monto: montoJoven, estado: "pendiente" })),
+            skipDuplicates: true,
+        }),
+    ]);
 
     return NextResponse.json({
-        message: `Cuotas generadas para el período ${periodo}.`,
+        message: `Cuotas generadas para ${periodo}.`,
         periodo,
-        creadas: result.count,
+        creadas: creaNormales.count + creaJovenes.count,
+        jovenes: jovenes.length,
     });
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { getMpClients, encodeRef, TipoPago } from "@/lib/mercadopago";
+import { esMatriculadoJoven, montoConDescuento } from "@/lib/matricula";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
 
@@ -32,13 +33,17 @@ export async function POST(req: NextRequest) {
             unitPrice = cuota.monto;
 
         } else if (tipo === "matricula_anual") {
-            const config = await prisma.config.findUnique({ where: { clave: "montoAnual" } });
-            const existente = await prisma.pagoAnual.findFirst({ where: { expediente } });
+            const [config, existente, dato] = await Promise.all([
+                prisma.config.findUnique({ where: { clave: "montoAnual" } }),
+                prisma.pagoAnual.findFirst({ where: { expediente } }),
+                prisma.dato.findFirst({ where: { expediente }, select: { fechaMatriculacion: true } }),
+            ]);
             if (existente) {
                 return NextResponse.json({ error: "Ya tenés el pago anual registrado" }, { status: 400 });
             }
+            const montoBase = config ? parseFloat(config.valor) : 48000;
             title = "Matrícula anual";
-            unitPrice = config ? parseFloat(config.valor) : 48000;
+            unitPrice = montoConDescuento(montoBase, esMatriculadoJoven(dato?.fechaMatriculacion));
 
         } else if (tipo === "curso") {
             const inscripcion = await prisma.inscripcionCurso.findUnique({

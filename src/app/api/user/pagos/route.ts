@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { esMatriculadoJoven, montoConDescuento } from "@/lib/matricula";
 
 export async function GET() {
     try {
@@ -26,6 +27,7 @@ export async function GET() {
             cancelacionPendiente,
             pagoAnual,
             dbUser,
+            datoMatricula,
             boletasRaw,
         ] = await Promise.all([
             prisma.deuda.findMany({ where: { expediente } }),
@@ -47,6 +49,7 @@ export async function GET() {
             }),
             prisma.pagoAnual.findFirst({ where: { expediente } }),
             prisma.user.findUnique({ where: { expediente }, select: { status: true } }),
+            prisma.dato.findFirst({ where: { expediente }, select: { fechaMatriculacion: true } }),
             (prisma as any).facturaSantaFe.findMany({
                 where: { expediente },
                 orderBy: { createdAt: "desc" },
@@ -94,7 +97,9 @@ export async function GET() {
         const debitoPendiente = !!debitoEnTramite;
         const cancelacionEnTramite = !!cancelacionPendiente;
 
-        const montoAnual = configMontoAnual ? parseFloat(configMontoAnual.valor) : 48000;
+        const montoAnualBase = configMontoAnual ? parseFloat(configMontoAnual.valor) : 48000;
+        const joven = esMatriculadoJoven(datoMatricula?.fechaMatriculacion);
+        const montoAnual = montoConDescuento(montoAnualBase, joven);
 
         // Ventana de pago anual — si no está configurada, fallback a ene-mar
         let showPagoAnual = false;
@@ -129,6 +134,7 @@ export async function GET() {
             hasDebitoEnTramite: debitoPendiente,
             hasCancelacionPendiente: cancelacionEnTramite,
             hasPagoAnualActivo: !!pagoAnual,
+            esJoven: joven,
             totalDeuda: deudas.reduce((acc, curr) => acc + curr.monto, 0),
             transferenciaHabilitada: {
                 matricula_mensual: !!tMap.transferencia_matricula_mensual,
