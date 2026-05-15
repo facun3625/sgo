@@ -38,6 +38,7 @@ import {
     BookUser,
     PlayCircle,
     HardDrive,
+    ShieldCheck,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { SessionPayload } from "@/lib/auth";
@@ -59,6 +60,7 @@ const navItems = [
     { href: "/admin/usuarios", label: "Usuarios", icon: Users, color: "text-indigo-500" },
     { href: "/admin/legajo", label: "Legajo", icon: BookUser, color: "text-teal-500" },
     { href: "/admin/gestionar-admins", label: "Gestionar Admins", icon: UserCog, color: "text-violet-500" },
+    { href: "/admin/cuentas", label: "Cuentas Registradas", icon: ShieldCheck, color: "text-violet-400" },
     { href: "/admin/cursos", label: "Cursos", icon: GraduationCap, color: "text-pink-500" },
     { href: "/admin/noticias", label: "Actividades Institucionales", icon: Newspaper, color: "text-amber-500" },
     { href: "/admin/biblioteca", label: "Biblioteca", icon: Library, color: "text-blue-500" },

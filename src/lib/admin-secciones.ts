@@ -30,6 +30,7 @@ export const ADMIN_SECCIONES = [
     { key: "transferencias", label: "Transferencias", group: "" },
     { key: "importar", label: "Importar Datos", group: "" },
     { key: "fiadores", label: "Fiadores", group: "" },
+    { key: "cuentas", label: "Cuentas Registradas", group: "" },
     { key: "tribunal-etica", label: "Tribunal de Ética", group: "" },
     { key: "repositorio", label: "Repositorio de Archivos", group: "" },
 ] as const;

@@ -24,6 +24,7 @@ interface DashboardShellProps {
         hasDebt: boolean;
         status: string;
         isSuspended: boolean;
+        needsCuil?: boolean;
     };
     children: React.ReactNode;
 }
@@ -34,7 +35,7 @@ export default function DashboardShell({ user, children }: DashboardShellProps) 
 
     useEffect(() => {
         const seen = sessionStorage.getItem("noticia_popup_seen");
-        if (seen) return;
+        if (seen || user.needsCuil) return;
 
         fetch("/api/user/noticias")
             .then(r => r.json())

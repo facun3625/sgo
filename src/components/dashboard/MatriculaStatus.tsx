@@ -13,6 +13,7 @@ import {
     Landmark,
     Clock,
     Download,
+    GraduationCap,
 } from "lucide-react";
 import MpPayButton from "@/components/MpPayButton";
 import TransferenciaPayButton from "@/components/TransferenciaPayButton";
@@ -52,6 +53,7 @@ interface PagosData {
     hasCancelacionPendiente: boolean;
     totalDeuda: number;
     userStatus: string;
+    esJoven: boolean;
     boletas: { mensual: Boleta | null; anual: Boleta | null; deuda: Boleta | null };
 }
 
@@ -108,6 +110,19 @@ export default function MatriculaStatus() {
 
     return (
         <div className="space-y-10 animate-fade-in pb-20">
+
+            {/* BANNER JOVEN MATRICULADO */}
+            {data?.esJoven && (
+                <div className="flex items-center gap-4 px-6 py-4 rounded-2xl bg-teal-50 dark:bg-teal-900/15 border border-teal-100 dark:border-teal-800/40">
+                    <div className="w-10 h-10 rounded-xl bg-teal-500 flex items-center justify-center shrink-0 shadow-md shadow-teal-500/20">
+                        <GraduationCap size={20} className="text-white" />
+                    </div>
+                    <div>
+                        <p className="text-[13px] font-bold text-teal-800 dark:text-teal-300">Beneficio Joven Matriculado activo</p>
+                        <p className="text-[12px] text-teal-700/70 dark:text-teal-400/60">Tu matrícula tiene menos de 60 meses — aplicás el 50% de descuento en cuotas mensuales y anuales.</p>
+                    </div>
+                </div>
+            )}
 
             {/* 1. ESTADO DE DEUDA / CUOTA PENDIENTE */}
             {hasDeuda ? (

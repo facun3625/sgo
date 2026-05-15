@@ -72,6 +72,7 @@ export default async function DashboardLayout({
         hasDebt,
         status: dbUser.status,
         isSuspended: dbUser.status === "suspended" || dbUser.status === "cancelled",
+        needsCuil,
     };
 
     return (
