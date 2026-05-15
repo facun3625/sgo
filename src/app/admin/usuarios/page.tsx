@@ -237,7 +237,7 @@ export default function UsuariosAdminPage() {
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden">
                     <div className="overflow-x-auto">
                         {/* Thead */}
-                        <div className="min-w-[780px] grid grid-cols-[100px_90px_70px_70px_1fr_120px_120px] gap-4 px-5 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+                        <div className="min-w-[780px] grid grid-cols-[100px_90px_70px_70px_1fr_120px_160px] gap-4 px-5 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
                             {["Expediente", "Nº Cliente", "Tomo", "Folio", "Nombre y Apellido", "Estado", "Acciones"].map(h => (
                                 <p key={h} className="text-[10px] font-black uppercase tracking-widest text-slate-400">{h}</p>
                             ))}
@@ -249,7 +249,7 @@ export default function UsuariosAdminPage() {
                                 const isSuspended = u.status === "suspended";
                                 return (
                                     <div key={u.cod}
-                                        className={`grid grid-cols-[100px_90px_70px_70px_1fr_120px_120px] gap-4 px-5 py-3.5 hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors items-center ${isSuspended ? "opacity-60" : ""}`}>
+                                        className={`grid grid-cols-[100px_90px_70px_70px_1fr_120px_160px] gap-4 px-5 py-3.5 hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors items-center ${isSuspended ? "opacity-60" : ""}`}>
 
                                         <p className="text-[12px] font-bold text-slate-700 dark:text-slate-200 font-mono truncate">
                                             {u.expediente || <span className="text-slate-300 dark:text-slate-600 font-sans font-normal">—</span>}
