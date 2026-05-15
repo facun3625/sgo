@@ -133,70 +133,63 @@ export default function GestionarAdminsPage() {
                     {currentPermisos.length === ADMIN_SECCIONES.length ? "Deseleccionar todo" : "Seleccionar todo"}
                 </button>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                {ADMIN_SECCIONES.map(sec => {
-                    const checked = currentPermisos.includes(sec.key);
-                    const isSolicitudes = sec.key === "solicitudes";
-                    return (
-                        <div key={sec.key} className={isSolicitudes ? "md:col-span-2" : ""}>
-                            <label
-                                className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${checked ? "bg-violet-50 dark:bg-violet-900/20 border-violet-200 dark:border-violet-700" : "bg-slate-50 dark:bg-slate-800/50 border-slate-100 dark:border-slate-700 hover:border-violet-200 dark:hover:border-violet-700/50"}`}
-                            >
-                                <div className={`w-5 h-5 rounded-md flex items-center justify-center transition-all flex-shrink-0 ${checked ? "bg-violet-600 dark:bg-violet-500" : "bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600"}`}>
-                                    {checked && <Check size={12} className="text-white" />}
-                                </div>
-                                <input
-                                    type="checkbox"
-                                    className="hidden"
-                                    checked={checked}
-                                    onChange={() => {
-                                        if (isSolicitudes && checked) {
-                                            // Al destildar solicitudes, quitar también sub-tabs
-                                            setCurrentPermisos(currentPermisos.filter(k => k !== "solicitudes" && !k.startsWith("solicitudes:")));
-                                        } else {
-                                            togglePermiso(sec.key, currentPermisos, setCurrentPermisos);
-                                        }
-                                    }}
-                                />
-                                <span className={`text-[12px] font-medium flex-1 ${checked ? "text-violet-700 dark:text-violet-300" : "text-slate-600 dark:text-slate-400"}`}>{sec.label}</span>
-                                {isSolicitudes && checked && (
-                                    <ChevronDown size={13} className="text-violet-400" />
-                                )}
-                            </label>
-
-                            {/* Sub-tabs de Gestión de Trámites */}
-                            {isSolicitudes && checked && (
-                                <div className="mt-2 ml-4 p-3 rounded-xl border border-violet-100 dark:border-violet-900/40 bg-violet-50/30 dark:bg-violet-900/5 space-y-2">
-                                    <p className="text-[10px] font-black text-violet-500 uppercase tracking-widest mb-2">
-                                        ¿Qué categorías puede ver? <span className="font-normal text-violet-400 normal-case">(vacío = todas)</span>
-                                    </p>
-                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-1.5">
-                                        {SOLICITUDES_SUBTABS.map(sub => {
-                                            const subChecked = currentPermisos.includes(sub.key);
-                                            return (
-                                                <label
-                                                    key={sub.key}
-                                                    className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-all text-[11px] font-medium ${subChecked ? "bg-violet-100 dark:bg-violet-900/30 border-violet-300 dark:border-violet-600 text-violet-700 dark:text-violet-300" : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-violet-200"}`}
-                                                >
-                                                    <div className={`w-4 h-4 rounded flex items-center justify-center flex-shrink-0 ${subChecked ? "bg-violet-500" : "border border-slate-300 dark:border-slate-600"}`}>
-                                                        {subChecked && <Check size={9} className="text-white" />}
-                                                    </div>
-                                                    <input type="checkbox" className="hidden" checked={subChecked} onChange={() => togglePermiso(sub.key, currentPermisos, setCurrentPermisos)} />
-                                                    {sub.label}
-                                                </label>
-                                            );
-                                        })}
+            <div className="space-y-4">
+                {/* Grupo Trámites */}
+                <div>
+                    <div className="flex items-center gap-2 mb-2">
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Trámites</p>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                const tramiteKeys = ADMIN_SECCIONES.filter(s => s.group === "Trámites").map(s => s.key as string);
+                                const allChecked = tramiteKeys.every(k => currentPermisos.includes(k));
+                                if (allChecked) {
+                                    setCurrentPermisos(currentPermisos.filter(k => !tramiteKeys.includes(k)));
+                                } else {
+                                    const newPermisos = [...currentPermisos];
+                                    tramiteKeys.forEach(k => { if (!newPermisos.includes(k)) newPermisos.push(k); });
+                                    setCurrentPermisos(newPermisos);
+                                }
+                            }}
+                            className="text-[10px] text-violet-500 hover:underline"
+                        >
+                            {ADMIN_SECCIONES.filter(s => s.group === "Trámites").every(s => currentPermisos.includes(s.key)) ? "Quitar todos" : "Seleccionar todos"}
+                        </button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                        {ADMIN_SECCIONES.filter(s => s.group === "Trámites").map(sec => {
+                            const checked = currentPermisos.includes(sec.key);
+                            return (
+                                <label key={sec.key} className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${checked ? "bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-700" : "bg-slate-50 dark:bg-slate-800/50 border-slate-100 dark:border-slate-700 hover:border-amber-200 dark:hover:border-amber-700/50"}`}>
+                                    <div className={`w-5 h-5 rounded-md flex items-center justify-center transition-all flex-shrink-0 ${checked ? "bg-amber-500" : "bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600"}`}>
+                                        {checked && <Check size={12} className="text-white" />}
                                     </div>
-                                    {hasSubtabsSolicitudes && (
-                                        <p className="text-[10px] text-amber-600 dark:text-amber-400 font-medium mt-1">
-                                            ⚠ Solo verá las categorías seleccionadas (todos los estados)
-                                        </p>
-                                    )}
-                                </div>
-                            )}
-                        </div>
-                    );
-                })}
+                                    <input type="checkbox" className="hidden" checked={checked} onChange={() => togglePermiso(sec.key, currentPermisos, setCurrentPermisos)} />
+                                    <span className={`text-[12px] font-medium ${checked ? "text-amber-700 dark:text-amber-300" : "text-slate-600 dark:text-slate-400"}`}>{sec.label}</span>
+                                </label>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                {/* Resto de secciones */}
+                <div>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Secciones</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        {ADMIN_SECCIONES.filter(s => s.group === "").map(sec => {
+                            const checked = currentPermisos.includes(sec.key);
+                            return (
+                                <label key={sec.key} className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${checked ? "bg-violet-50 dark:bg-violet-900/20 border-violet-200 dark:border-violet-700" : "bg-slate-50 dark:bg-slate-800/50 border-slate-100 dark:border-slate-700 hover:border-violet-200 dark:hover:border-violet-700/50"}`}>
+                                    <div className={`w-5 h-5 rounded-md flex items-center justify-center transition-all flex-shrink-0 ${checked ? "bg-violet-600 dark:bg-violet-500" : "bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600"}`}>
+                                        {checked && <Check size={12} className="text-white" />}
+                                    </div>
+                                    <input type="checkbox" className="hidden" checked={checked} onChange={() => togglePermiso(sec.key, currentPermisos, setCurrentPermisos)} />
+                                    <span className={`text-[12px] font-medium ${checked ? "text-violet-700 dark:text-violet-300" : "text-slate-600 dark:text-slate-400"}`}>{sec.label}</span>
+                                </label>
+                            );
+                        })}
+                    </div>
+                </div>
             </div>
         </div>
     );

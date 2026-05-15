@@ -133,6 +133,10 @@ export default function AdminShell({ session, image, permisos, children }: Admin
         if (!key) return true;
         // gestionar-admins is superadmin only
         if (key === "gestionar-admins") return false;
+        // Solicitudes: visible si tiene al menos un permiso individual o el legacy
+        if (key === "solicitudes") {
+            return permisos.includes("solicitudes") || permisos.some(p => p.startsWith("solicitudes:"));
+        }
         return permisos.includes(key);
     });
 
