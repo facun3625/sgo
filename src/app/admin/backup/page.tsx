@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { DatabaseZap, Download, Trash2, RotateCcw, Loader2, CheckCircle2, AlertCircle, ShieldAlert, HardDrive } from "lucide-react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { DatabaseZap, Download, Trash2, RotateCcw, Loader2, CheckCircle2, AlertCircle, ShieldAlert, HardDrive, Upload } from "lucide-react";
 
 interface Backup {
     filename: string;
@@ -30,6 +30,8 @@ export default function BackupPage() {
     const [restaurando, setRestaurando] = useState<string | null>(null);
     const [confirmFile, setConfirmFile] = useState<string | null>(null);
     const [confirmInput, setConfirmInput] = useState("");
+    const [subiendo, setSubiendo] = useState(false);
+    const uploadRef = useRef<HTMLInputElement>(null);
     const [mensaje, setMensaje] = useState<{ tipo: "success" | "error"; texto: string } | null>(null);
 
     const cargar = useCallback(async () => {
@@ -90,6 +92,29 @@ export default function BackupPage() {
         }
     };
 
+    const handleSubir = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setSubiendo(true);
+        try {
+            const form = new FormData();
+            form.append("file", file);
+            const res = await fetch("/api/superadmin/backup", { method: "PUT", body: form });
+            const data = await res.json();
+            if (res.ok) {
+                mostrarMensaje("success", `Archivo subido: ${data.filename}`);
+                await cargar();
+            } else {
+                mostrarMensaje("error", data.error ?? "Error al subir");
+            }
+        } catch {
+            mostrarMensaje("error", "Error de conexión");
+        } finally {
+            setSubiendo(false);
+            if (uploadRef.current) uploadRef.current.value = "";
+        }
+    };
+
     const handleRestaurar = async () => {
         if (!confirmFile || confirmInput !== "RESTAURAR") return;
         setRestaurando(confirmFile);
@@ -127,11 +152,22 @@ export default function BackupPage() {
                         <p className="text-sm text-slate-500 dark:text-slate-400">Creá, descargá y restaurá copias de seguridad</p>
                     </div>
                 </div>
-                <button onClick={handleCrear} disabled={creando}
-                    className="flex items-center gap-2 px-5 h-10 bg-emerald-500 text-white rounded-xl text-[13px] font-bold hover:bg-emerald-600 disabled:opacity-50 transition-all active:scale-95">
-                    {creando ? <Loader2 size={15} className="animate-spin" /> : <DatabaseZap size={15} />}
-                    {creando ? "Creando..." : "Crear Backup"}
-                </button>
+                <div className="flex items-center gap-2">
+                    <div className="relative">
+                        <input ref={uploadRef} type="file" accept=".sql" onChange={handleSubir}
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                        <button disabled={subiendo}
+                            className="flex items-center gap-2 px-5 h-10 bg-blue-500 text-white rounded-xl text-[13px] font-bold hover:bg-blue-600 disabled:opacity-50 transition-all active:scale-95">
+                            {subiendo ? <Loader2 size={15} className="animate-spin" /> : <Upload size={15} />}
+                            {subiendo ? "Subiendo..." : "Subir .sql"}
+                        </button>
+                    </div>
+                    <button onClick={handleCrear} disabled={creando}
+                        className="flex items-center gap-2 px-5 h-10 bg-emerald-500 text-white rounded-xl text-[13px] font-bold hover:bg-emerald-600 disabled:opacity-50 transition-all active:scale-95">
+                        {creando ? <Loader2 size={15} className="animate-spin" /> : <DatabaseZap size={15} />}
+                        {creando ? "Creando..." : "Crear Backup"}
+                    </button>
+                </div>
             </div>
 
             {/* Mensaje */}

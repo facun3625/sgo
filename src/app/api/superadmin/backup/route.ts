@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { exec } from "child_process";
 import { promisify } from "util";
-import { mkdir, readdir, stat } from "fs/promises";
+import { mkdir, readdir, stat, writeFile } from "fs/promises";
 import path from "path";
 
 const execAsync = promisify(exec);
@@ -37,6 +37,34 @@ export async function GET() {
         );
         backups.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
         return NextResponse.json({ backups });
+    } catch (e) {
+        return NextResponse.json({ error: String(e) }, { status: 500 });
+    }
+}
+
+// PUT — subir backup desde archivo
+export async function PUT(req: NextRequest) {
+    const session = await getSession();
+    if (!session || !isSuperAdmin(session.accessLevel))
+        return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+
+    try {
+        await mkdir(BACKUP_DIR, { recursive: true });
+        const form = await req.formData();
+        const file = form.get("file") as File | null;
+        if (!file || !file.name.endsWith(".sql"))
+            return NextResponse.json({ error: "Archivo inválido, debe ser .sql" }, { status: 400 });
+
+        const now = new Date();
+        const ts = now.toISOString().replace(/[:.]/g, "-").slice(0, 19);
+        const filename = `backup_${ts}_subido.sql`;
+        const filepath = path.join(BACKUP_DIR, filename);
+
+        const buffer = Buffer.from(await file.arrayBuffer());
+        await writeFile(filepath, buffer);
+
+        const s = await stat(filepath);
+        return NextResponse.json({ filename, size: s.size, createdAt: now.toISOString() });
     } catch (e) {
         return NextResponse.json({ error: String(e) }, { status: 500 });
     }
