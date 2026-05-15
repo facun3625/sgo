@@ -37,6 +37,7 @@ import {
     ShieldOff,
     BookUser,
     PlayCircle,
+    HardDrive,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { SessionPayload } from "@/lib/auth";
@@ -199,6 +200,20 @@ export default function AdminShell({ session, image, permisos, children }: Admin
                             </Link>
                         );
                     })}
+
+                    {/* Backup — solo superadmin */}
+                    {isSuperAdmin && (
+                        <Link href="/admin/backup" onClick={() => setSidebarOpen(false)}
+                            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-[13px] font-medium group
+                                ${pathname.startsWith("/admin/backup")
+                                    ? "bg-green-900 text-white dark:bg-white/15"
+                                    : "text-slate-500 dark:text-white/80 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-700 dark:hover:text-white"
+                                }`}>
+                            <HardDrive size={17} className={pathname.startsWith("/admin/backup") ? "text-white" : "text-emerald-500 group-hover:scale-110 transition-transform"} />
+                            Backups BD
+                            {pathname.startsWith("/admin/backup") && <ChevronRight size={13} className="ml-auto text-white/40" />}
+                        </Link>
+                    )}
 
                     {/* Configuración — solo superadmin */}
                     {isSuperAdmin && (
