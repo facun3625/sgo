@@ -40,7 +40,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ ex
             data[key] = body[key] === "" ? null : body[key];
         }
     }
-    if (data.fechaMatriculacion) data.fechaMatriculacion = new Date(data.fechaMatriculacion);
+    if (data.fechaMatriculacion) {
+        const parts = String(data.fechaMatriculacion).match(/^(\d{4})-(\d{2})-(\d{2})/);
+        data.fechaMatriculacion = parts
+            ? new Date(Date.UTC(+parts[1], +parts[2] - 1, +parts[3]))
+            : new Date(data.fechaMatriculacion);
+    }
 
     const updated = await prisma.dato.update({ where: { id: dato.id }, data });
     return NextResponse.json(updated);

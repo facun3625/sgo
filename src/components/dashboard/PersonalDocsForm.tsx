@@ -226,7 +226,12 @@ export default function PersonalDocsForm() {
                     <DisplayField label="Tomo" value={formData.tomo} />
                     <DisplayField
                         label="Fecha Matriculación"
-                        value={formData.fechaMatriculacion ? new Date(formData.fechaMatriculacion).toLocaleDateString("es-AR") : "--"}
+                        value={(() => {
+                            if (!formData.fechaMatriculacion) return "--";
+                            const d = new Date(formData.fechaMatriculacion);
+                            if (isNaN(d.getTime())) return "--";
+                            return `${d.getUTCDate().toString().padStart(2,"0")}/${(d.getUTCMonth()+1).toString().padStart(2,"0")}/${d.getUTCFullYear()}`;
+                        })()}
                     />
                     {/* CUIL — editable solo la primera vez */}
                     {!savedData?.cuil ? (

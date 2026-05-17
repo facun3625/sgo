@@ -11,6 +11,7 @@ interface Resultado {
     telefonosLegal: string | null;
     movilLegal: string | null;
     emailLegal: string | null;
+    image: string | null;
 }
 
 export default function GuiaPage() {
@@ -102,8 +103,14 @@ export default function GuiaPage() {
                         </p>
                         {resultados.map((r, i) => (
                             <div key={i} className="bg-slate-50 dark:bg-slate-900/40 rounded-2xl border border-slate-100 dark:border-slate-800 p-4 flex items-start gap-4 hover:border-slate-200 dark:hover:border-slate-700 transition-all">
-                                <div className="w-10 h-10 rounded-xl bg-teal-500/10 dark:bg-teal-500/20 flex items-center justify-center flex-shrink-0">
-                                    <User size={18} className="text-teal-600 dark:text-teal-400" />
+                                <div className="w-10 h-10 rounded-xl overflow-hidden flex-shrink-0 bg-teal-500/10 dark:bg-teal-500/20">
+                                    {r.image ? (
+                                        <img src={r.image} alt={r.apellido} className="w-full h-full object-cover object-center" />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center">
+                                            <User size={18} className="text-teal-600 dark:text-teal-400" />
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="flex-1 min-w-0 space-y-2">
                                     <div>

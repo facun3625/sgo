@@ -25,9 +25,14 @@ export default async function CredencialPage() {
         redirect("/login");
     }
 
-    const fechaMatriculacion = dato?.fechaMatriculacion
-        ? new Date(dato.fechaMatriculacion).toLocaleDateString("es-AR")
-        : "--/--/----";
+    const fechaMatriculacion = (() => {
+        if (!dato?.fechaMatriculacion) return "--/--/----";
+        const d = new Date(dato.fechaMatriculacion);
+        if (isNaN(d.getTime())) return "--/--/----";
+        const day = d.getUTCDate().toString().padStart(2, "0");
+        const month = (d.getUTCMonth() + 1).toString().padStart(2, "0");
+        return `${day}/${month}/${d.getUTCFullYear()}`;
+    })();
 
     const hdrs = await headers();
     const host = hdrs.get("host") || "localhost:3000";

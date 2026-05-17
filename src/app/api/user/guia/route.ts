@@ -29,5 +29,17 @@ export async function GET(req: NextRequest) {
         take: 30,
     });
 
-    return NextResponse.json(datos);
+    const expedientes = datos.map(d => d.expediente).filter(Boolean) as string[];
+    const users = expedientes.length
+        ? await prisma.user.findMany({
+            where: { expediente: { in: expedientes } },
+            select: { expediente: true, image: true },
+        })
+        : [];
+    const imageMap = new Map(users.map(u => [u.expediente, u.image]));
+
+    return NextResponse.json(datos.map(d => ({
+        ...d,
+        image: d.expediente ? (imageMap.get(d.expediente) ?? null) : null,
+    })));
 }

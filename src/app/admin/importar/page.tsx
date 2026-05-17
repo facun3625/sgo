@@ -130,6 +130,7 @@ export default function ImportarPage() {
     const [matRegistros, setMatRegistros] = useState<Record<string, string>[]>([]);
     const [matLoading, setMatLoading] = useState(false);
     const [matResultado, setMatResultado] = useState<ResultadoImport | null>(null);
+    const [matModo, setMatModo] = useState<"crear" | "actualizar_fecha">("crear");
     const matFileRef = useRef<HTMLInputElement>(null);
 
     // Financiero
@@ -213,16 +214,24 @@ export default function ImportarPage() {
         try {
             const res = await fetch("/api/admin/importar/matriculados", {
                 method: "POST", headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ registros: matRegistros }),
+                body: JSON.stringify({ registros: matRegistros, modo: matModo }),
             });
             const data = await res.json();
             if (res.ok) {
-                setMatResultado({
-                    tipo: data.errores?.length > 0 ? "warning" : "success",
-                    mensaje: `${data.creados} creado${data.creados !== 1 ? "s" : ""}. ${data.omitidos} omitido${data.omitidos !== 1 ? "s" : ""} (ya existían o errores).`,
-                    detalles: data.errores,
-                });
-                if (data.creados > 0) { setMatRegistros([]); if (matFileRef.current) matFileRef.current.value = ""; }
+                if (matModo === "actualizar_fecha") {
+                    setMatResultado({
+                        tipo: data.errores?.length > 0 ? "warning" : "success",
+                        mensaje: `${data.actualizados} fecha${data.actualizados !== 1 ? "s" : ""} actualizada${data.actualizados !== 1 ? "s" : ""}. ${data.omitidos} sin fecha o sin registro.`,
+                        detalles: data.errores,
+                    });
+                } else {
+                    setMatResultado({
+                        tipo: data.errores?.length > 0 ? "warning" : "success",
+                        mensaje: `${data.creados} creado${data.creados !== 1 ? "s" : ""}. ${data.omitidos} omitido${data.omitidos !== 1 ? "s" : ""} (ya existían o errores).`,
+                        detalles: data.errores,
+                    });
+                }
+                if ((data.creados > 0 || data.actualizados > 0)) { setMatRegistros([]); if (matFileRef.current) matFileRef.current.value = ""; }
             } else {
                 setMatResultado({ tipo: "error", mensaje: data.error ?? "Error al importar" });
             }
@@ -433,6 +442,19 @@ export default function ImportarPage() {
                         </button>
                     </div>
 
+                    <div className="grid grid-cols-2 gap-3">
+                        {[
+                            { key: "crear", label: "Crear nuevos", desc: "Agrega registros que no existen. Omite los que ya están." },
+                            { key: "actualizar_fecha", label: "Actualizar fecha de matriculación", desc: "Solo pisa la fecha (fechaInscripcion / fechaMatriculacion) en registros existentes." },
+                        ].map(opt => (
+                            <button key={opt.key} onClick={() => { setMatModo(opt.key as typeof matModo); setMatRegistros([]); setMatResultado(null); if (matFileRef.current) matFileRef.current.value = ""; }}
+                                className={`p-3 rounded-xl border-2 text-left transition-all ${matModo === opt.key ? "border-cyan-500 bg-cyan-50/50 dark:bg-cyan-900/10" : "border-slate-100 dark:border-slate-800 hover:border-slate-200"}`}>
+                                <p className={`text-[12px] font-bold ${matModo === opt.key ? "text-cyan-600 dark:text-cyan-400" : "text-slate-600 dark:text-slate-400"}`}>{opt.label}</p>
+                                <p className="text-[10px] text-slate-400 mt-0.5">{opt.desc}</p>
+                            </button>
+                        ))}
+                    </div>
+
                     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6 space-y-4">
                         <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Archivo CSV o Excel</label>
                         <UploadZone fileRef={matFileRef} hasData={matRegistros.length > 0} count={matRegistros.length}
@@ -454,7 +476,7 @@ export default function ImportarPage() {
                             <button onClick={handleImportarMatriculados} disabled={matRegistros.length === 0 || matLoading}
                                 className="ml-auto flex items-center gap-2 px-6 h-10 bg-cyan-500 text-white rounded-xl text-[13px] font-bold hover:bg-cyan-600 disabled:opacity-40 transition-all active:scale-95">
                                 {matLoading ? <Loader2 size={15} className="animate-spin" /> : <UserPlus size={15} />}
-                                {matLoading ? "Importando..." : `Importar${matRegistros.length > 0 ? ` ${matRegistros.length} registros` : ""}`}
+                                {matLoading ? "Procesando..." : matModo === "actualizar_fecha" ? `Actualizar fechas${matRegistros.length > 0 ? ` (${matRegistros.length})` : ""}` : `Importar${matRegistros.length > 0 ? ` ${matRegistros.length} registros` : ""}`}
                             </button>
                         </div>
                     </div>
