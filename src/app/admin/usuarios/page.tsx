@@ -62,6 +62,8 @@ export default function UsuariosAdminPage() {
     const [deleting, setDeleting] = useState(false);
     const [search, setSearch] = useState("");
     const [filtroEstado, setFiltroEstado] = useState<"todos" | "active" | "suspended">("todos");
+    const [page, setPage] = useState(0);
+    const PAGE_SIZE = 100;
 
     // Modal mensaje
     const [mensajeModal, setMensajeModal] = useState<MensajeModal | null>(null);
@@ -110,6 +112,7 @@ export default function UsuariosAdminPage() {
     useEffect(() => { if (mensajeModal) setTimeout(() => tituloRef.current?.focus(), 50); }, [mensajeModal]);
 
     const filtered = useMemo(() => {
+        setPage(0);
         const q = search.toLowerCase().trim();
         return usuarios.filter(u => {
             if (filtroEstado !== "todos" && u.status !== filtroEstado) return false;
@@ -123,6 +126,9 @@ export default function UsuariosAdminPage() {
             );
         });
     }, [usuarios, search, filtroEstado]);
+
+    const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+    const paginated = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
     async function openEdit(u: Usuario) {
         const key = u.expediente || u.cod;
@@ -244,7 +250,7 @@ export default function UsuariosAdminPage() {
                         </div>
 
                         <div className="min-w-[780px] divide-y divide-slate-50 dark:divide-slate-800/60">
-                            {filtered.map(u => {
+                            {paginated.map(u => {
                                 const key = u.expediente || u.cod;
                                 const isSuspended = u.status === "suspended";
                                 return (
@@ -301,8 +307,33 @@ export default function UsuariosAdminPage() {
                         </div>
                     </div>
 
-                    <div className="px-5 py-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/20">
-                        <p className="text-[11px] text-slate-400">{filtered.length} de {usuarios.length} usuarios</p>
+                    <div className="px-5 py-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/20 flex items-center justify-between gap-4">
+                        <p className="text-[11px] text-slate-400">
+                            Mostrando {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, filtered.length)} de {filtered.length} {filtered.length !== usuarios.length ? `(filtrados de ${usuarios.length})` : "usuarios"}
+                        </p>
+                        {totalPages > 1 && (
+                            <div className="flex items-center gap-1.5">
+                                <button onClick={() => setPage(0)} disabled={page === 0}
+                                    className="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-30 transition-all">
+                                    «
+                                </button>
+                                <button onClick={() => setPage(p => p - 1)} disabled={page === 0}
+                                    className="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-30 transition-all">
+                                    ‹ Ant.
+                                </button>
+                                <span className="px-3 py-1 text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                                    {page + 1} / {totalPages}
+                                </span>
+                                <button onClick={() => setPage(p => p + 1)} disabled={page >= totalPages - 1}
+                                    className="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-30 transition-all">
+                                    Sig. ›
+                                </button>
+                                <button onClick={() => setPage(totalPages - 1)} disabled={page >= totalPages - 1}
+                                    className="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-30 transition-all">
+                                    »
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}
