@@ -80,6 +80,8 @@ export default function AdminEnviosPage() {
     const [newExpRaw, setNewExpRaw] = useState("");
     const [enviarATodos, setEnviarATodos] = useState(false);
     const [creando, setCreando] = useState(false);
+    const [emailAsunto, setEmailAsunto] = useState("");
+    const [emailCuerpo, setEmailCuerpo] = useState("");
 
     const parsed = parseExpedientes(newExpRaw);
     const uniqueParsed = [...new Set(parsed)];
@@ -110,7 +112,7 @@ export default function AdminEnviosPage() {
         const res = await fetch("/api/admin/envios", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ asunto: newAsunto, contenido: newContenido, expedientes: uniqueParsed, enviarATodos }),
+            body: JSON.stringify({ asunto: newAsunto, contenido: newContenido, expedientes: uniqueParsed, enviarATodos, emailAsunto, emailCuerpo }),
         });
         const data = await res.json();
         if (res.ok) {
@@ -118,6 +120,7 @@ export default function AdminEnviosPage() {
             showToast(`Enviado a ${data.totalEnvios} usuarios${inv}`, "success");
             setShowModal(false);
             setNewAsunto(""); setNewContenido(""); setNewExpRaw(""); setEnviarATodos(false);
+            setEmailAsunto(""); setEmailCuerpo("");
             try { new BroadcastChannel("sgo-updates").postMessage({ type: "new-comunicado" }); } catch {}
             load();
         } else {
@@ -398,6 +401,31 @@ export default function AdminEnviosPage() {
                                         </p>
                                     </div>
                                 )}
+                            </div>
+                        </div>
+                            {/* Sección email */}
+                            <div className="border-t border-slate-100 dark:border-slate-800 pt-4 space-y-3">
+                                <p className="text-[11px] font-black uppercase tracking-widest text-slate-400">Correo electrónico</p>
+                                <p className="text-[11px] text-slate-400">Se enviará a los matriculados que tengan email registrado. El link al portal se incluye siempre.</p>
+                                <div className="space-y-1.5">
+                                    <label className="text-[12px] font-semibold text-slate-500">Asunto del email</label>
+                                    <input
+                                        value={emailAsunto}
+                                        onChange={e => setEmailAsunto(e.target.value)}
+                                        placeholder={newAsunto || "Igual al asunto del comunicado"}
+                                        className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-[13px] focus:outline-none focus:ring-2 focus:ring-sky-300/50"
+                                    />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-[12px] font-semibold text-slate-500">Cuerpo del email</label>
+                                    <textarea
+                                        value={emailCuerpo}
+                                        onChange={e => setEmailCuerpo(e.target.value)}
+                                        placeholder={"Escribí el texto del email...\n\nAl final siempre se incluye el botón con el link a sgo-casf.online"}
+                                        rows={4}
+                                        className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-[13px] focus:outline-none focus:ring-2 focus:ring-sky-300/50 resize-none"
+                                    />
+                                </div>
                             </div>
                         </div>
                         <div className="flex gap-3 px-5 pb-5">

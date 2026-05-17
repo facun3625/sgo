@@ -65,18 +65,32 @@ export async function enviarNotificacionMensaje(destinatario: string) {
     });
 }
 
-export async function enviarComunicadoMasivo(destinatarios: string[], asunto: string) {
+const MAIL_CHUNK = 20;       // emails por lote
+const MAIL_DELAY_MS = 5000;  // pausa entre lotes (5 seg)
+
+export async function enviarComunicadoMasivo(destinatarios: string[], asunto: string, cuerpo?: string) {
+    const cuerpoHtml = cuerpo
+        ? cuerpo.replace(/\n/g, "<br>")
+        : "Ingresá al portal SGO para leer el comunicado.";
+
     const html = baseLayout(`
-        <h2 style="font-size:20px;font-weight:800;color:#0f172a;margin:0 0 12px">Nuevo comunicado</h2>
-        <p style="color:#475569;font-size:15px;margin:0 0 8px">Se te envió un nuevo comunicado:</p>
-        <p style="font-weight:700;color:#063f68;font-size:15px;margin:0 0 28px">${asunto}</p>
-        <p style="color:#64748b;font-size:14px;margin:0 0 28px">Ingresá al portal SGO para leerlo.</p>
+        <h2 style="font-size:20px;font-weight:800;color:#0f172a;margin:0 0 12px">${asunto}</h2>
+        <p style="color:#475569;font-size:15px;line-height:1.6;margin:0 0 28px">${cuerpoHtml}</p>
         <div style="text-align:center;">
-            <a href="https://sgo-casf.online/dashboard/comunicados" style="display:inline-block;background:#063f68;color:#fff;font-weight:700;font-size:14px;padding:14px 32px;border-radius:8px;text-decoration:none;">Ir al portal</a>
+            <a href="https://sgo-casf.online" style="display:inline-block;background:#063f68;color:#fff;font-weight:700;font-size:14px;padding:14px 32px;border-radius:8px;text-decoration:none;">Ir al portal</a>
         </div>
     `);
 
-    for (const email of destinatarios) {
-        poolTransporter.sendMail({ from: FROM, to: email, subject: `Comunicado: ${asunto}`, html }).catch(() => {});
-    }
+    // Enviar en lotes para no saturar el servidor SMTP ni la memoria
+    (async () => {
+        for (let i = 0; i < destinatarios.length; i += MAIL_CHUNK) {
+            const lote = destinatarios.slice(i, i + MAIL_CHUNK);
+            await Promise.allSettled(
+                lote.map(email => transporter.sendMail({ from: FROM, to: email, subject: asunto, html }))
+            );
+            if (i + MAIL_CHUNK < destinatarios.length) {
+                await new Promise(r => setTimeout(r, MAIL_DELAY_MS));
+            }
+        }
+    })().catch(() => {});
 }
