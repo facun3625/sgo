@@ -39,35 +39,57 @@ export async function POST(req: NextRequest) {
         rows.map(r => r["id_cliente"] || r["cod_cliente"] || "").filter(Boolean)
     )];
 
-    // Buscar expediente primero en Dato, luego en User como fallback
-    const datos = await prisma.dato.findMany({
+    // Buscar expediente: por Dato.cod, Dato.expediente, User.cod, User.expediente
+    const codToExp = new Map<string, string>();
+
+    const datosByCod = await prisma.dato.findMany({
         where: { cod: { in: cods } },
         select: { cod: true, expediente: true },
     });
-    const codToExp = new Map<string, string>();
-    for (const d of datos) {
+    for (const d of datosByCod) {
         if (d.expediente) codToExp.set(d.cod, d.expediente);
     }
 
-    const codsSinExp = cods.filter(c => !codToExp.has(c));
-    if (codsSinExp.length > 0) {
-        const users = await prisma.user.findMany({
-            where: { cod: { in: codsSinExp }, expediente: { not: null } },
-            select: { cod: true, expediente: true },
+    const sinMatch = cods.filter(c => !codToExp.has(c));
+    if (sinMatch.length > 0) {
+        // Algunos Excel usan expediente como identificador (ej: deudas)
+        const datosByExp = await prisma.dato.findMany({
+            where: { expediente: { in: sinMatch } },
+            select: { expediente: true },
         });
-        for (const u of users) {
-            if (u.cod && u.expediente) codToExp.set(u.cod, u.expediente);
+        for (const d of datosByExp) {
+            if (d.expediente) codToExp.set(d.expediente, d.expediente);
         }
     }
 
-    // Leer directorio una sola vez y armar Set para lookups O(1)
-    const uploadDir = `${process.cwd()}/public/uploads/boletas/${tipo}`;
-    let archivosEnCarpeta: Set<string>;
-    try {
-        archivosEnCarpeta = new Set(readdirSync(uploadDir));
-    } catch {
-        archivosEnCarpeta = new Set();
+    const sinMatch2 = cods.filter(c => !codToExp.has(c));
+    if (sinMatch2.length > 0) {
+        const usersByCod = await prisma.user.findMany({
+            where: { cod: { in: sinMatch2 }, expediente: { not: null } },
+            select: { cod: true, expediente: true },
+        });
+        for (const u of usersByCod) {
+            if (u.cod && u.expediente) codToExp.set(u.cod, u.expediente);
+        }
+
+        const sinMatch3 = sinMatch2.filter(c => !codToExp.has(c));
+        if (sinMatch3.length > 0) {
+            const usersByExp = await prisma.user.findMany({
+                where: { expediente: { in: sinMatch3 } },
+                select: { expediente: true },
+            });
+            for (const u of usersByExp) {
+                if (u.expediente) codToExp.set(u.expediente, u.expediente);
+            }
+        }
     }
+
+    // Leer directorio una sola vez — Map lowercase→nombre real para lookup case-insensitive
+    const uploadDir = `${process.cwd()}/public/uploads/boletas/${tipo}`;
+    const archivosEnCarpeta = new Map<string, string>();
+    try {
+        for (const f of readdirSync(uploadDir)) archivosEnCarpeta.set(f.toLowerCase(), f);
+    } catch { /* carpeta vacía o no existe */ }
 
     // Limpiar registros anteriores del mismo tipo
     await prisma.facturaSantaFe.deleteMany({ where: { tipo } });
@@ -89,11 +111,12 @@ export async function POST(req: NextRequest) {
         const expediente = codToExp.get(cod);
         if (!expediente) { sinExpediente.push({ cod, pdf: pdfName }); continue; }
 
-        if (!archivosEnCarpeta.has(pdfName)) { sinPdf.push({ cod, pdf: pdfName, expediente }); continue; }
+        const actualName = archivosEnCarpeta.get(pdfName.toLowerCase());
+        if (!actualName) { sinPdf.push({ cod, pdf: pdfName, expediente }); continue; }
 
         records.push({
             tipo, periodo, expediente, cod, factura,
-            archivo: `/uploads/boletas/${tipo}/${pdfName}`,
+            archivo: `/uploads/boletas/${tipo}/${actualName}`,
         });
     }
 
