@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Upload, UserPlus, DollarSign, FileText, CheckCircle2, AlertCircle, X, Loader2, List, Search, CreditCard, Ban, Clock, Landmark, HandshakeIcon } from "lucide-react";
+import { Upload, UserPlus, DollarSign, FileText, CheckCircle2, AlertCircle, X, Loader2, List, Search, CreditCard, Ban, Clock, Landmark, HandshakeIcon, KeyRound } from "lucide-react";
 import * as XLSX from "xlsx";
 
 type TipoFinanciero = "deudas" | "pagoAnual";
-type Seccion = "matriculados" | "financiero" | "banelco" | "registros" | "fiadores";
+type Seccion = "matriculados" | "financiero" | "banelco" | "registros" | "fiadores" | "usuarios";
 
 const FINANCIERO_CONFIG: Record<TipoFinanciero, { label: string; columnas: string[]; ejemplo: string }> = {
     deudas: { label: "Deudas", columnas: ["expediente", "monto"], ejemplo: "expediente,monto\n564,15000\n792,8500" },
@@ -136,6 +136,12 @@ export default function ImportarPage() {
     const [banResultado, setBanResultado] = useState<ResultadoImport | null>(null);
     const banFileRef = useRef<HTMLInputElement>(null);
 
+    // Usuarios
+    const [usrRegistros, setUsrRegistros] = useState<Record<string, string>[]>([]);
+    const [usrLoading, setUsrLoading] = useState(false);
+    const [usrResultado, setUsrResultado] = useState<ResultadoImport | null>(null);
+    const usrFileRef = useRef<HTMLInputElement>(null);
+
     // Fiadores
     const [fiadRegistros, setFiadRegistros] = useState<Record<string, string>[]>([]);
     const [fiadLoading, setFiadLoading] = useState(false);
@@ -220,6 +226,28 @@ export default function ImportarPage() {
         finally { setFinLoading(false); }
     };
 
+    const handleImportarUsuarios = async () => {
+        setUsrLoading(true); setUsrResultado(null);
+        try {
+            const res = await fetch("/api/admin/importar/users", {
+                method: "POST", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ registros: usrRegistros }),
+            });
+            const data = await res.json();
+            if (res.ok) {
+                setUsrResultado({
+                    tipo: data.errores?.length > 0 ? "warning" : "success",
+                    mensaje: `${data.creados} cuenta${data.creados !== 1 ? "s" : ""} creada${data.creados !== 1 ? "s" : ""}. ${data.omitidos} ya tenían cuenta.`,
+                    detalles: data.errores,
+                });
+                if (data.creados > 0) { setUsrRegistros([]); if (usrFileRef.current) usrFileRef.current.value = ""; }
+            } else {
+                setUsrResultado({ tipo: "error", mensaje: data.error ?? "Error al importar" });
+            }
+        } catch { setUsrResultado({ tipo: "error", mensaje: "Error de conexión" }); }
+        finally { setUsrLoading(false); }
+    };
+
     const handleImportarFiadores = async () => {
         setFiadLoading(true); setFiadResultado(null);
         try {
@@ -283,6 +311,7 @@ export default function ImportarPage() {
         { id: "financiero", label: "Deudas y Matrículas", icon: <DollarSign size={15} />, color: "text-emerald-600 dark:text-emerald-400", activeColor: "border-emerald-500 bg-emerald-50/50 dark:bg-emerald-900/10" },
         { id: "banelco", label: "Pagos Home Banking", icon: <Landmark size={15} />, color: "text-blue-600 dark:text-blue-400", activeColor: "border-blue-500 bg-blue-50/50 dark:bg-blue-900/10" },
         { id: "fiadores", label: "Fiadores", icon: <HandshakeIcon size={15} />, color: "text-orange-600 dark:text-orange-400", activeColor: "border-orange-500 bg-orange-50/50 dark:bg-orange-900/10" },
+        { id: "usuarios", label: "Cuentas de Usuarios", icon: <KeyRound size={15} />, color: "text-purple-600 dark:text-purple-400", activeColor: "border-purple-500 bg-purple-50/50 dark:bg-purple-900/10" },
         { id: "registros", label: "Ver Registros", icon: <List size={15} />, color: "text-violet-600 dark:text-violet-400", activeColor: "border-violet-500 bg-violet-50/50 dark:bg-violet-900/10" },
     ];
 
@@ -523,6 +552,52 @@ export default function ImportarPage() {
                                 className="ml-auto flex items-center gap-2 px-6 h-10 bg-orange-500 text-white rounded-xl text-[13px] font-bold hover:bg-orange-600 disabled:opacity-40 transition-all active:scale-95">
                                 {fiadLoading ? <Loader2 size={15} className="animate-spin" /> : <HandshakeIcon size={15} />}
                                 {fiadLoading ? "Importando..." : `Importar${fiadRegistros.length > 0 ? ` ${fiadRegistros.length} registros` : ""}`}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* USUARIOS */}
+            {seccion === "usuarios" && (
+                <div className="space-y-5">
+                    <div className="p-5 rounded-2xl bg-purple-50/50 dark:bg-purple-900/10 border border-purple-100 dark:border-purple-900/30">
+                        <p className="text-[13px] font-bold text-purple-800 dark:text-purple-400 mb-1">¿Cómo funciona?</p>
+                        <p className="text-[12px] text-purple-700/70 dark:text-purple-400/60 leading-relaxed">
+                            Importá cuentas de usuarios desde el sistema anterior. El CSV debe tener la columna <strong>expediente</strong> y opcionalmente <strong>password</strong>.
+                            Si no se indica contraseña, se usa el <strong>DNI del matriculado</strong> como contraseña por defecto.
+                            El nombre y apellido se toman automáticamente desde los datos del matriculado.
+                            Si el expediente ya tiene una cuenta, se omite.
+                        </p>
+                        <button
+                            onClick={() => {
+                                const content = "expediente,password\n564,miClave123\n792,";
+                                const blob = new Blob(["﻿" + content], { type: "text/csv;charset=utf-8;" });
+                                triggerDownload(URL.createObjectURL(blob), "plantilla_usuarios.csv");
+                            }}
+                            className="mt-3 inline-flex items-center gap-2 text-[11px] font-bold text-purple-600 dark:text-purple-400 hover:underline"
+                        >
+                            <FileText size={12} /> Descargar plantilla CSV
+                        </button>
+                    </div>
+
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6 space-y-4">
+                        <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Archivo CSV</label>
+                        <UploadZone fileRef={usrFileRef} hasData={usrRegistros.length > 0} count={usrRegistros.length}
+                            onChange={e => handleCSVChange(e, setUsrRegistros, setUsrResultado)} accept=".csv,text/csv" color="purple" />
+                        <PreviewTable rows={usrRegistros} />
+                        {usrResultado && <Resultado resultado={usrResultado} onClose={() => setUsrResultado(null)} />}
+                        <div className="flex items-center justify-between pt-2">
+                            {usrRegistros.length > 0 && (
+                                <button onClick={() => { setUsrRegistros([]); if (usrFileRef.current) usrFileRef.current.value = ""; }}
+                                    className="text-[12px] text-slate-400 hover:text-slate-600 flex items-center gap-1">
+                                    <X size={13} /> Limpiar
+                                </button>
+                            )}
+                            <button onClick={handleImportarUsuarios} disabled={usrRegistros.length === 0 || usrLoading}
+                                className="ml-auto flex items-center gap-2 px-6 h-10 bg-purple-600 text-white rounded-xl text-[13px] font-bold hover:bg-purple-700 disabled:opacity-40 transition-all active:scale-95">
+                                {usrLoading ? <Loader2 size={15} className="animate-spin" /> : <KeyRound size={15} />}
+                                {usrLoading ? "Importando..." : `Importar${usrRegistros.length > 0 ? ` ${usrRegistros.length} registros` : ""}`}
                             </button>
                         </div>
                     </div>
