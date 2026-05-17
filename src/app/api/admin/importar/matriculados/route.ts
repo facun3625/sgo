@@ -2,13 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 
-function isAdmin(lvl: string) {
-    return lvl === "superadmin" || lvl === "admin";
-}
+function isAdmin(lvl: string) { return lvl === "superadmin" || lvl === "admin"; }
 
 function parseFecha(val: string): Date | null {
     if (!val) return null;
-    // dd/mm/yyyy o dd-mm-yyyy
     const m1 = val.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
     if (m1) {
         let [, d, mo, y] = m1;
@@ -16,7 +13,6 @@ function parseFecha(val: string): Date | null {
         const date = new Date(Date.UTC(parseInt(y), parseInt(mo) - 1, parseInt(d)));
         if (!isNaN(date.getTime())) return date;
     }
-    // yyyy-mm-dd
     const m2 = val.match(/^(\d{4})-(\d{2})-(\d{2})/);
     if (m2) {
         const date = new Date(Date.UTC(parseInt(m2[1]), parseInt(m2[2]) - 1, parseInt(m2[3])));
@@ -26,7 +22,6 @@ function parseFecha(val: string): Date | null {
 }
 
 function getFecha(r: Record<string, string>): Date | null {
-    // El frontend lowercasea todas las claves antes de enviar
     const raw =
         r["fechamatriculacion"] ||
         r["fechainscripcion"] ||
@@ -39,6 +34,8 @@ function getFecha(r: Record<string, string>): Date | null {
     return raw ? parseFecha(String(raw).trim()) : null;
 }
 
+const BATCH = 200;
+
 export async function POST(req: NextRequest) {
     const session = await getSession();
     if (!session || !isAdmin(session.accessLevel))
@@ -50,75 +47,95 @@ export async function POST(req: NextRequest) {
 
     const actualizarFecha = modo === "actualizar_fecha";
 
+    // Traer todos los expedientes existentes de una sola query
+    const expedientesEnArchivo = registros
+        .map(r => String(r.expediente ?? "").trim())
+        .filter(Boolean);
+
+    const existentes = await prisma.dato.findMany({
+        where: { expediente: { in: expedientesEnArchivo } },
+        select: { id: true, expediente: true },
+    });
+    const mapaExistentes = new Map(existentes.map(d => [d.expediente, d.id]));
+
     let creados = 0;
     let actualizados = 0;
     let omitidos = 0;
     const errores: string[] = [];
 
+    if (actualizarFecha) {
+        // Actualizar en lotes de BATCH
+        const updates: { id: number; fecha: Date }[] = [];
+        for (const r of registros) {
+            const expediente = String(r.expediente ?? "").trim();
+            if (!expediente) { omitidos++; continue; }
+            const id = mapaExistentes.get(expediente);
+            if (!id) { omitidos++; continue; }
+            const fecha = getFecha(r);
+            if (!fecha) { omitidos++; continue; }
+            updates.push({ id, fecha });
+        }
+
+        for (let i = 0; i < updates.length; i += BATCH) {
+            const lote = updates.slice(i, i + BATCH);
+            await Promise.all(
+                lote.map(({ id, fecha }) =>
+                    prisma.dato.update({ where: { id }, data: { fechaMatriculacion: fecha } })
+                )
+            );
+            actualizados += lote.length;
+        }
+
+        return NextResponse.json({ creados: 0, actualizados, omitidos, errores });
+    }
+
+    // Modo crear: filtrar los que no existen y hacer createMany en lotes
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const nuevos: any[] = [];
+
     for (const r of registros) {
         const expediente = String(r.expediente ?? "").trim();
         const cod = String(r.cod ?? r.expediente ?? "").trim();
+        if (!expediente || !r.apellido || !r.nombre) { omitidos++; continue; }
+        if (mapaExistentes.has(expediente)) { omitidos++; continue; }
+        nuevos.push({
+            cod,
+            apellido: String(r.apellido).trim().toUpperCase(),
+            nombre: String(r.nombre).trim().toUpperCase(),
+            expediente,
+            documento: r.documento || null,
+            tomo: r.tomo || null,
+            folio: r.folio || null,
+            domicilioLegal: r.domiciliolegal || r.domicilioLegal || null,
+            postalLegal: r.postallegal || r.postalLegal || null,
+            localidadLegal: r.localidadlegal || r.localidadLegal || null,
+            telefonosLegal: r.telefonoslegal || r.telefonosLegal || null,
+            emailLegal: r.emaillegal || r.emailLegal || null,
+            domicilioReal: r.domicilioreal || r.domicilioReal || null,
+            postalReal: r.postalreal || r.postalReal || null,
+            localidadReal: r.localidadreal || r.localidadReal || null,
+            provinciaReal: r.provinciareal || r.provinciaReal || null,
+            telefonosReal: r.telefonosreal || r.telefonosReal || null,
+            emailReal: r.emailreal || r.emailReal || null,
+            codMovilLegal: r.codmovillegal || r.codMovilLegal || null,
+            movilLegal: r.movIllegal || r.movilLegal || null,
+            codMovilReal: r.codmovilreal || r.codMovilReal || null,
+            movilReal: r.movilreal || r.movilReal || null,
+            fechaMatriculacion: getFecha(r),
+        });
+    }
 
-        if (!expediente) {
-            omitidos++;
-            continue;
-        }
-
-        const existe = await prisma.dato.findFirst({ where: { expediente } });
-
-        if (actualizarFecha) {
-            // Modo actualizar: solo pisa fechaMatriculacion si hay fecha en el archivo
-            if (!existe) { omitidos++; continue; }
-            const fecha = getFecha(r);
-            if (!fecha) { omitidos++; continue; }
-            await prisma.dato.update({ where: { id: existe.id }, data: { fechaMatriculacion: fecha } });
-            actualizados++;
-            continue;
-        }
-
-        // Modo crear (default)
-        if (!r.apellido || !r.nombre) {
-            errores.push(`Fila sin apellido/nombre — omitida (exp. ${expediente})`);
-            omitidos++;
-            continue;
-        }
-
-        if (existe) { omitidos++; continue; }
-
+    for (let i = 0; i < nuevos.length; i += BATCH) {
         try {
-            await prisma.dato.create({
-                data: {
-                    cod,
-                    apellido: String(r.apellido).trim().toUpperCase(),
-                    nombre: String(r.nombre).trim().toUpperCase(),
-                    expediente,
-                    documento: r.documento ? String(r.documento).trim() : null,
-                    tomo: r.tomo ? String(r.tomo).trim() : null,
-                    folio: r.folio ? String(r.folio).trim() : null,
-                    domicilioLegal: r.domicilioLegal ? String(r.domicilioLegal).trim() : null,
-                    postalLegal: r.postalLegal ? String(r.postalLegal).trim() : null,
-                    localidadLegal: r.localidadLegal ? String(r.localidadLegal).trim() : null,
-                    telefonosLegal: r.telefonosLegal ? String(r.telefonosLegal).trim() : null,
-                    emailLegal: r.emailLegal ? String(r.emailLegal).trim() : null,
-                    domicilioReal: r.domicilioReal ? String(r.domicilioReal).trim() : null,
-                    postalReal: r.postalReal ? String(r.postalReal).trim() : null,
-                    localidadReal: r.localidadReal ? String(r.localidadReal).trim() : null,
-                    provinciaReal: r.provinciaReal ? String(r.provinciaReal).trim() : null,
-                    telefonosReal: r.telefonosReal ? String(r.telefonosReal).trim() : null,
-                    emailReal: r.emailReal ? String(r.emailReal).trim() : null,
-                    codMovilLegal: r.codMovilLegal ? String(r.codMovilLegal).trim() : null,
-                    movilLegal: r.movilLegal ? String(r.movilLegal).trim() : null,
-                    codMovilReal: r.codMovilReal ? String(r.codMovilReal).trim() : null,
-                    movilReal: r.movilReal ? String(r.movilReal).trim() : null,
-                    fechaMatriculacion: getFecha(r),
-                }
+            const res = await prisma.dato.createMany({
+                data: nuevos.slice(i, i + BATCH),
+                skipDuplicates: true,
             });
-            creados++;
+            creados += res.count;
         } catch (e) {
-            errores.push(`Mat. ${expediente}: ${e instanceof Error ? e.message : "error"}`);
-            omitidos++;
+            errores.push(`Lote ${i / BATCH + 1}: ${e instanceof Error ? e.message : "error"}`);
         }
     }
 
-    return NextResponse.json({ creados, actualizados, omitidos, errores });
+    return NextResponse.json({ creados, actualizados: 0, omitidos, errores });
 }

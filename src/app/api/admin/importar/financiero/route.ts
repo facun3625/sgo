@@ -61,14 +61,9 @@ export async function POST(req: NextRequest) {
     if (tipo === "consultor") {
         const expedientes = registros.map(r => getExpediente(r)).filter(Boolean);
         if (expedientes.length === 0) return NextResponse.json({ error: "Sin expedientes válidos" }, { status: 400 });
-        // Limpiar todos los consultores actuales y reasignar
         await prisma.dato.updateMany({ where: { tipo: "consultor" }, data: { tipo: null } });
-        let actualizados = 0;
-        for (const exp of expedientes) {
-            const res = await prisma.dato.updateMany({ where: { expediente: exp }, data: { tipo: "consultor" } });
-            actualizados += res.count;
-        }
-        return NextResponse.json({ actualizados });
+        const res = await prisma.dato.updateMany({ where: { expediente: { in: expedientes } }, data: { tipo: "consultor" } });
+        return NextResponse.json({ actualizados: res.count });
     }
 
     return NextResponse.json({ error: "Error inesperado" }, { status: 500 });

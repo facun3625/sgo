@@ -24,6 +24,8 @@ const STATUS_MAP: Record<string, string> = {
     habilitacion: "active",
 };
 
+const BATCH = 200;
+
 export async function GET() {
     const blob = [
         "﻿", // BOM para Excel
@@ -49,8 +51,11 @@ export async function POST(req: NextRequest) {
     if (!Array.isArray(registros) || registros.length === 0)
         return NextResponse.json({ error: "Sin registros" }, { status: 400 });
 
-    let procesados = 0;
-    const omitidos: string[] = [];
+    const adminNombre = `${session.apellido}, ${session.nombre}`;
+
+    // Validate rows and collect valid expedientes
+    type RowValida = { expediente: string; accionRaw: string; comentario: string };
+    const rowsValidas: RowValida[] = [];
     const errores: string[] = [];
 
     for (const row of registros) {
@@ -64,28 +69,42 @@ export async function POST(req: NextRequest) {
         }
 
         const comentario = getCol(row, "comentario", "motivo", "observacion", "obs") || "Importado masivamente";
-        const nuevoStatus = STATUS_MAP[accionRaw];
-
-        const user = await prisma.user.findFirst({ where: { expediente } });
-        if (!user) {
-            omitidos.push(`Expediente ${expediente}: sin cuenta de usuario.`);
-            continue;
-        }
-
-        await Promise.all([
-            prisma.user.update({ where: { id: user.id }, data: { status: nuevoStatus } }),
-            (prisma as any).historialMatricula.create({
-                data: {
-                    expediente,
-                    accion: accionRaw,
-                    comentario,
-                    adminNombre: `${session.apellido}, ${session.nombre}`,
-                },
-            }),
-        ]);
-
-        procesados++;
+        rowsValidas.push({ expediente, accionRaw, comentario });
     }
 
-    return NextResponse.json({ procesados, omitidos: omitidos.length, errores: [...omitidos, ...errores] });
+    if (rowsValidas.length === 0)
+        return NextResponse.json({ procesados: 0, omitidos: 0, errores });
+
+    // Fetch all users upfront
+    const expedientesArchivo = rowsValidas.map(r => r.expediente);
+    const usuarios = await prisma.user.findMany({
+        where: { expediente: { in: expedientesArchivo } },
+        select: { id: true, expediente: true },
+    });
+    const mapExpUser = new Map(usuarios.map(u => [u.expediente, u.id]));
+
+    const omitidos: string[] = [];
+    type AccionItem = { userId: number; expediente: string; nuevoStatus: string; accionRaw: string; comentario: string };
+    const porProcesar: AccionItem[] = [];
+
+    for (const { expediente, accionRaw, comentario } of rowsValidas) {
+        const userId = mapExpUser.get(expediente);
+        if (!userId) { omitidos.push(`Expediente ${expediente}: sin cuenta de usuario.`); continue; }
+        porProcesar.push({ userId, expediente, nuevoStatus: STATUS_MAP[accionRaw], accionRaw, comentario });
+    }
+
+    // Batch updates
+    for (let i = 0; i < porProcesar.length; i += BATCH) {
+        const lote = porProcesar.slice(i, i + BATCH);
+        await Promise.all(lote.map(({ userId, nuevoStatus }) =>
+            prisma.user.update({ where: { id: userId }, data: { status: nuevoStatus } })
+        ));
+        await Promise.all(lote.map(({ expediente, accionRaw, comentario }) =>
+            (prisma as any).historialMatricula.create({
+                data: { expediente, accion: accionRaw, comentario, adminNombre },
+            })
+        ));
+    }
+
+    return NextResponse.json({ procesados: porProcesar.length, omitidos: omitidos.length, errores: [...omitidos, ...errores] });
 }

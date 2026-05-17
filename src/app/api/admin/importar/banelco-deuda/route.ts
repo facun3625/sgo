@@ -7,15 +7,18 @@ function isAdmin(lvl: string) { return lvl === "superadmin" || lvl === "admin"; 
 
 function parseFecha(val: string): Date | null {
     if (!val) return null;
-    const m1 = val.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+    const m1 = val.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
     if (m1) {
         let [, d, mo, y] = m1;
         if (y.length === 2) y = `20${y}`;
-        const date = new Date(parseInt(y), parseInt(mo) - 1, parseInt(d));
+        const date = new Date(Date.UTC(parseInt(y), parseInt(mo) - 1, parseInt(d)));
         if (!isNaN(date.getTime())) return date;
     }
     const m2 = val.match(/^(\d{4})-(\d{2})-(\d{2})/);
-    if (m2) { const date = new Date(val); if (!isNaN(date.getTime())) return date; }
+    if (m2) {
+        const date = new Date(Date.UTC(parseInt(m2[1]), parseInt(m2[2]) - 1, parseInt(m2[3])));
+        if (!isNaN(date.getTime())) return date;
+    }
     return null;
 }
 
@@ -26,6 +29,8 @@ function getCol(row: Record<string, string>, ...keys: string[]): string {
     }
     return "";
 }
+
+const BATCH = 100;
 
 export async function POST(req: NextRequest) {
     const session = await getSession();
@@ -44,16 +49,31 @@ export async function POST(req: NextRequest) {
     if (clientesUnicos.length === 0)
         return NextResponse.json({ error: "No se encontró la columna 'Cliente'" }, { status: 400 });
 
+    // 1. cod→expediente en bulk
     const datos = await prisma.dato.findMany({
         where: { cod: { in: clientesUnicos } },
         select: { cod: true, expediente: true },
     });
     const mapCodExp = new Map(datos.map(d => [d.cod, d.expediente ?? ""]));
+    const expedientesDelArchivo = [...new Set([...mapCodExp.values()].filter(Boolean))];
 
-    let procesados = 0;
+    // 2. Deudas en bulk
+    const deudasExistentes = await prisma.deuda.findMany({
+        where: { expediente: { in: expedientesDelArchivo } },
+        select: { id: true, expediente: true, monto: true },
+    });
+    const mapExpDeuda = new Map(deudasExistentes.map(d => [d.expediente, d]));
+
     const sinExpediente: string[] = [];
     const sinDeuda: string[] = [];
     const errores: string[] = [];
+
+    type DeudaRecord = { id: number; expediente: string; monto: number };
+    type PagoParcial = { deuda: DeudaRecord; montoPagado: number; fechaPago: Date; nroComprobante: string };
+    type PagoTotal = { deuda: DeudaRecord; fechaPago: Date; nroComprobante: string };
+
+    const pagosTotal: PagoTotal[] = [];
+    const pagosParciales: PagoParcial[] = [];
 
     for (const row of registros) {
         const cliente = getCol(row, "cliente", "Cliente");
@@ -63,7 +83,6 @@ export async function POST(req: NextRequest) {
         const fechaStr = getCol(row, "fecha cobro", "Fecha cobro", "fecha_cobro");
         const fechaPago = parseFecha(fechaStr) ?? ahora;
 
-        // Monto pagado: búsqueda por nombre exacto o por clave que contenga "importe"/"monto"
         let montoRaw = getCol(row, "importe", "monto", "total", "saldo", "importe en $", "importe en pesos");
         if (!montoRaw) {
             const found = Object.entries(row).find(([k]) => k.toLowerCase().includes("importe") || k.toLowerCase().includes("monto"));
@@ -76,46 +95,54 @@ export async function POST(req: NextRequest) {
         }
 
         const expediente = mapCodExp.get(cliente);
-        if (!expediente) {
-            sinExpediente.push(`Cliente ${cliente}: no encontrado en el padrón.`);
-            continue;
+        if (!expediente) { sinExpediente.push(`Cliente ${cliente}: no encontrado en el padrón.`); continue; }
+
+        const deuda = mapExpDeuda.get(expediente);
+        if (!deuda) { sinDeuda.push(`Cliente ${cliente} (exp. ${expediente}): sin deuda registrada.`); continue; }
+
+        if (deuda.monto - montoPagado <= 0) {
+            pagosTotal.push({ deuda, fechaPago, nroComprobante });
+        } else {
+            pagosParciales.push({ deuda, montoPagado, fechaPago, nroComprobante });
         }
+    }
 
-        const deuda = await prisma.deuda.findFirst({ where: { expediente } });
-        if (!deuda) {
-            sinDeuda.push(`Cliente ${cliente} (exp. ${expediente}): sin deuda registrada.`);
-            continue;
-        }
-
-        const montoRestante = deuda.monto - montoPagado;
-
-        if (montoRestante <= 0) {
-            // Pago total — eliminar deuda
-            await Promise.all([
+    // 3. Batch pagos totales (delete deuda + create deudaPagada)
+    for (let i = 0; i < pagosTotal.length; i += BATCH) {
+        const lote = pagosTotal.slice(i, i + BATCH);
+        await Promise.all(lote.map(({ deuda, fechaPago, nroComprobante }) =>
+            Promise.all([
                 prisma.deuda.delete({ where: { id: deuda.id } }),
                 prisma.deudaPagada.create({
-                    data: { expediente, monto: deuda.monto, metodoPago: "banelco", fechaPago, mpPaymentId: nroComprobante || null },
+                    data: { expediente: deuda.expediente, monto: deuda.monto, metodoPago: "banelco", fechaPago, mpPaymentId: nroComprobante || null },
                 }),
-            ]);
-            await crearNotificacion(expediente, "Deuda saldada",
-                `Tu pago vía Banelco/Home Banking fue registrado y la deuda ha sido cancelada. Comprobante: ${nroComprobante || "N/D"}.`, "pago");
-        } else {
-            // Pago parcial — reducir monto
-            await Promise.all([
-                prisma.deuda.update({ where: { id: deuda.id }, data: { monto: montoRestante } }),
-                prisma.deudaPagada.create({
-                    data: { expediente, monto: montoPagado, metodoPago: "banelco", fechaPago, mpPaymentId: nroComprobante || null },
-                }),
-            ]);
-            await crearNotificacion(expediente, "Pago parcial de deuda registrado",
-                `Se registró un pago parcial de $${montoPagado.toLocaleString("es-AR")} vía Banelco/Home Banking. Comprobante: ${nroComprobante || "N/D"}.`, "pago");
-        }
+            ])
+        ));
+        await Promise.all(lote.map(({ deuda, nroComprobante }) =>
+            crearNotificacion(deuda.expediente, "Deuda saldada",
+                `Tu pago vía Banelco/Home Banking fue registrado y la deuda ha sido cancelada. Comprobante: ${nroComprobante || "N/D"}.`, "pago")
+        ));
+    }
 
-        procesados++;
+    // 4. Batch pagos parciales (update deuda + create deudaPagada)
+    for (let i = 0; i < pagosParciales.length; i += BATCH) {
+        const lote = pagosParciales.slice(i, i + BATCH);
+        await Promise.all(lote.map(({ deuda, montoPagado, fechaPago, nroComprobante }) =>
+            Promise.all([
+                prisma.deuda.update({ where: { id: deuda.id }, data: { monto: deuda.monto - montoPagado } }),
+                prisma.deudaPagada.create({
+                    data: { expediente: deuda.expediente, monto: montoPagado, metodoPago: "banelco", fechaPago, mpPaymentId: nroComprobante || null },
+                }),
+            ])
+        ));
+        await Promise.all(lote.map(({ deuda, montoPagado, nroComprobante }) =>
+            crearNotificacion(deuda.expediente, "Pago parcial de deuda registrado",
+                `Se registró un pago parcial de $${montoPagado.toLocaleString("es-AR")} vía Banelco/Home Banking. Comprobante: ${nroComprobante || "N/D"}.`, "pago")
+        ));
     }
 
     return NextResponse.json({
-        procesados,
+        procesados: pagosTotal.length + pagosParciales.length,
         sinExpediente: sinExpediente.length,
         sinDeuda: sinDeuda.length,
         errores: [...sinExpediente, ...sinDeuda, ...errores],

@@ -114,16 +114,26 @@ export default function UsuariosAdminPage() {
     const filtered = useMemo(() => {
         setPage(0);
         const q = search.toLowerCase().trim();
-        return usuarios.filter(u => {
+        const list = usuarios.filter(u => {
             if (filtroEstado !== "todos" && u.status !== filtroEstado) return false;
             if (!q) return true;
             return (
                 u.apellido.toLowerCase().includes(q) ||
                 u.nombre.toLowerCase().includes(q) ||
-                (u.expediente || "").toLowerCase().includes(q) ||
-                (u.folio || "").toLowerCase().includes(q) ||
-                (u.tomo || "").toLowerCase().includes(q)
+                (u.expediente || "").includes(q) ||
+                (u.folio || "").includes(q) ||
+                (u.tomo || "").includes(q)
             );
+        });
+        if (!q) return list;
+        // Ordenar: exacto primero, luego empieza con, luego contiene
+        return list.sort((a, b) => {
+            const score = (u: typeof a) => {
+                if (u.expediente === q) return 0;
+                if ((u.expediente || "").startsWith(q)) return 1;
+                return 2;
+            };
+            return score(a) - score(b);
         });
     }, [usuarios, search, filtroEstado]);
 

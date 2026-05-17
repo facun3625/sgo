@@ -8,22 +8,20 @@ function extractFields(raw: Record<string, string>): { expediente: string; tipoA
     const row = Object.fromEntries(
         Object.entries(raw).map(([k, v]) => [k.toLowerCase().trim().replace(/\s*\(\d+\)$/, ""), v])
     );
-
     const expediente = (
         row["expediente"] || row["usuario_sistema"] || row["usuario"] ||
         row["exp"] || row["nro"] || row["numero"] || ""
     ).trim();
-
     const tipoRaw = (
         row["tipoadhesion"] || row["tipo_adhesion"] || row["tipo"] || row["adhesion"] || ""
     ).trim().toUpperCase();
-
     let tipoAdhesion = "Adherido sistema anterior";
     if (tipoRaw.includes("TAR")) tipoAdhesion = "Tarjeta";
     else if (tipoRaw.includes("CBU") || tipoRaw.includes("CUE")) tipoAdhesion = "CBU";
-
     return { expediente, tipoAdhesion };
 }
+
+const BATCH = 200;
 
 export async function POST(req: NextRequest) {
     const session = await getSession();
@@ -34,33 +32,44 @@ export async function POST(req: NextRequest) {
     if (!Array.isArray(registros) || registros.length === 0)
         return NextResponse.json({ error: "Sin registros" }, { status: 400 });
 
+    const expedientesArchivo = registros
+        .map(r => extractFields(r).expediente)
+        .filter(Boolean);
+
+    // Una sola query para saber cuáles ya tienen adhesión aprobada
+    const existentes = await prisma.adhesionDebito.findMany({
+        where: { expediente: { in: expedientesArchivo }, estado: "aprobada" },
+        select: { expediente: true },
+    });
+    const setExistentes = new Set(existentes.map(a => a.expediente));
+
     let creados = 0;
     let omitidos = 0;
     const errores: string[] = [];
 
+    const porCrear: { expediente: string; tipoAdhesion: string }[] = [];
+
     for (const raw of registros) {
         const { expediente, tipoAdhesion } = extractFields(raw);
-
         if (!expediente) { errores.push("Fila sin expediente"); continue; }
+        if (setExistentes.has(expediente)) { omitidos++; continue; }
+        porCrear.push({ expediente, tipoAdhesion });
+    }
 
-        // Si ya tiene una adhesión aprobada, omitir
-        const existing = await prisma.adhesionDebito.findFirst({
-            where: { expediente, estado: "aprobada" },
-        });
-        if (existing) { omitidos++; continue; }
-
+    for (let i = 0; i < porCrear.length; i += BATCH) {
         try {
-            await prisma.adhesionDebito.create({
-                data: {
+            const res = await prisma.adhesionDebito.createMany({
+                data: porCrear.slice(i, i + BATCH).map(({ expediente, tipoAdhesion }) => ({
                     expediente,
                     tipoAdhesion,
                     estado: "aprobada",
                     terminosAceptados: true,
-                },
+                })),
+                skipDuplicates: true,
             });
-            creados++;
-        } catch {
-            errores.push(`Expediente ${expediente}: error al crear`);
+            creados += res.count;
+        } catch (e) {
+            errores.push(`Lote ${i / BATCH + 1}: ${e instanceof Error ? e.message : "error"}`);
         }
     }
 
