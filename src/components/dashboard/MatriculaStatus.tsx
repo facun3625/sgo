@@ -107,9 +107,14 @@ export default function MatriculaStatus() {
 
     const isSuspended = data?.userStatus === "suspended" || data?.userStatus === "cancelled";
     const hasDeuda = data?.deudas && data.deudas.length > 0;
+    const noPagaMensual = data?.esConsultor || data?.hasDebitoAutomatico || data?.hasPagoAnualActivo;
+    const cuotasVisibles = noPagaMensual
+        ? (data?.historialCuotas ?? []).filter(c => c.estado === "pagado")
+        : (data?.historialCuotas ?? []);
     const cuotaPendiente = data?.cuotaActual?.estado === "pendiente"
         && !data?.hasDebitoAutomatico
-        && !data?.hasPagoAnualActivo;
+        && !data?.hasPagoAnualActivo
+        && !data?.esConsultor;
     const totalDeuda = data?.totalDeuda || 0;
     const montoAnual = data?.montoAnual ?? 48000;
     const showAnualCard = data?.showPagoAnual ?? false;
@@ -440,20 +445,20 @@ export default function MatriculaStatus() {
                 </div>
 
                 <div className="bg-white dark:bg-slate-900 rounded-[32px] border border-slate-100 dark:border-slate-800 overflow-hidden">
-                    {data?.historialCuotas && data.historialCuotas.length > 0 ? (
-                        data.historialCuotas.map((c, i) => (
+                    {cuotasVisibles.length > 0 ? (
+                        cuotasVisibles.map((c, i) => (
                             <ConceptItem
                                 key={c.id}
                                 label={`Cuota ${formatPeriodo(c.periodo)}`}
                                 amount={c.monto.toLocaleString("es-AR")}
                                 status={c.estado === "pagado" ? "paid" : "pending"}
                                 metodo={c.metodo}
-                                isLast={i === data.historialCuotas.length - 1 && (!data.deudasPagadas || data.deudasPagadas.length === 0)}
+                                isLast={i === cuotasVisibles.length - 1 && (!data?.deudasPagadas || data.deudasPagadas.length === 0)}
                             />
                         ))
-                    ) : (
+                    ) : (!data?.deudasPagadas || data.deudasPagadas.length === 0) ? (
                         <div className="p-6 text-[13px] text-slate-400 text-center">Sin historial de cuotas</div>
-                    )}
+                    ) : null}
                     {data?.deudasPagadas && data.deudasPagadas.map((d, i) => (
                         <ConceptItem
                             key={`deuda-${d.id}`}
