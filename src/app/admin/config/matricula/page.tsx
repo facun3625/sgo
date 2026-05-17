@@ -22,6 +22,14 @@ export default function ConfigMatriculaPage() {
     const [ventanaMsg, setVentanaMsg] = useState<{ tipo: "success" | "error"; texto: string } | null>(null);
     const [generando, setGenerando] = useState(false);
     const [generarMsg, setGenerarMsg] = useState<{ tipo: "success" | "error"; texto: string } | null>(null);
+    const [cuotasMes, setCuotasMes] = useState<{ periodo: string; total: number; pagadas: number } | null>(null);
+
+    const loadCuotasMes = async () => {
+        try {
+            const r = await fetch("/api/admin/cuotas/generar");
+            if (r.ok) setCuotasMes(await r.json());
+        } catch { /* silencioso */ }
+    };
 
     useEffect(() => {
         Promise.all([
@@ -39,6 +47,7 @@ export default function ConfigMatriculaPage() {
             })
             .catch(() => {})
             .finally(() => setLoading(false));
+        loadCuotasMes();
     }, []);
 
     const handleSave = async (
@@ -210,11 +219,26 @@ export default function ConfigMatriculaPage() {
 
                     {/* Generar cuotas */}
                     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6 space-y-4">
-                        <div>
-                            <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Generar Cuotas del Mes Actual</label>
-                            <p className="text-[12px] text-slate-500 dark:text-slate-400 mt-0.5">
-                                Crea las cuotas mensuales para todos los matriculados activos (excluye pago anual y débito automático). El cron lo hace automáticamente el 1ro de cada mes.
-                            </p>
+                        <div className="flex items-start justify-between gap-4">
+                            <div>
+                                <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Generar Cuotas del Mes Actual</label>
+                                <p className="text-[12px] text-slate-500 dark:text-slate-400 mt-0.5">
+                                    Crea las cuotas mensuales para todos los matriculados activos (excluye pago anual y débito automático). El cron lo hace automáticamente el 1ro de cada mes.
+                                </p>
+                            </div>
+                            {cuotasMes && cuotasMes.total > 0 && (
+                                <div className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl">
+                                    <CheckCircle2 size={13} className="text-emerald-500" />
+                                    <div className="text-right">
+                                        <p className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400">
+                                            {cuotasMes.total} cuotas · {cuotasMes.periodo}
+                                        </p>
+                                        <p className="text-[10px] text-emerald-600 dark:text-emerald-500">
+                                            {cuotasMes.pagadas} pagadas
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                         {generarMsg && (
                             <div className={`flex items-center gap-2 text-[12px] font-bold ${generarMsg.tipo === "success" ? "text-emerald-500" : "text-red-500"}`}>
@@ -228,8 +252,12 @@ export default function ConfigMatriculaPage() {
                                 try {
                                     const res = await fetch("/api/admin/cuotas/generar", { method: "POST" });
                                     const data = await res.json();
-                                    if (res.ok) setGenerarMsg({ tipo: "success", texto: `${data.message} (${data.creadas} creadas)` });
-                                    else setGenerarMsg({ tipo: "error", texto: data.error ?? "Error al generar." });
+                                    if (res.ok) {
+                                        setGenerarMsg({ tipo: "success", texto: `${data.message} (${data.creadas} creadas)` });
+                                        loadCuotasMes();
+                                    } else {
+                                        setGenerarMsg({ tipo: "error", texto: data.error ?? "Error al generar." });
+                                    }
                                 } catch {
                                     setGenerarMsg({ tipo: "error", texto: "Error de conexión." });
                                 } finally { setGenerando(false); }

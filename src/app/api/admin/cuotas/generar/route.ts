@@ -8,6 +8,19 @@ function isAdmin(lvl: string) {
     return lvl === "superadmin" || lvl === "admin";
 }
 
+export async function GET() {
+    const session = await getSession();
+    if (!session || !isAdmin(session.accessLevel))
+        return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+
+    const periodo = new Date().toISOString().slice(0, 7);
+    const [total, pagadas] = await Promise.all([
+        prisma.cuotaMensual.count({ where: { periodo } }),
+        prisma.cuotaMensual.count({ where: { periodo, estado: "pagado" } }),
+    ]);
+    return NextResponse.json({ periodo, total, pagadas });
+}
+
 export async function POST() {
     const session = await getSession();
     if (!session || !isAdmin(session.accessLevel))
