@@ -427,7 +427,6 @@ export default function AdminEnviosPage() {
                                     />
                                 </div>
                             </div>
-                        </div>
                         <div className="flex gap-3 px-5 pb-5">
                             <button onClick={() => setShowModal(false)}
                                 className="flex-1 h-10 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-[13px] font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
