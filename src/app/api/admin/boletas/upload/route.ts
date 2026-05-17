@@ -40,11 +40,27 @@ export async function POST(req: NextRequest) {
         rows.map(r => r["id_cliente"] || r["cod_cliente"] || "").filter(Boolean)
     )];
 
+    // Buscar expediente primero en Dato, luego en User como fallback
     const datos = await prisma.dato.findMany({
         where: { cod: { in: cods } },
         select: { cod: true, expediente: true },
     });
-    const codToExp = new Map(datos.map(d => [d.cod, d.expediente]));
+    const codToExp = new Map<string, string>();
+    for (const d of datos) {
+        if (d.expediente) codToExp.set(d.cod, d.expediente);
+    }
+
+    // Para los que no tienen expediente en Dato, buscar en User
+    const codsSinExp = cods.filter(c => !codToExp.has(c));
+    if (codsSinExp.length > 0) {
+        const users = await prisma.user.findMany({
+            where: { cod: { in: codsSinExp }, expediente: { not: null } },
+            select: { cod: true, expediente: true },
+        });
+        for (const u of users) {
+            if (u.cod && u.expediente) codToExp.set(u.cod, u.expediente);
+        }
+    }
 
     // Directorio donde el admin subió los PDFs por FTP
     const uploadDir = join(process.cwd(), "public", "uploads", "boletas", tipo);
