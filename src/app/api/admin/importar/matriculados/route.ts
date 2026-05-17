@@ -139,3 +139,12 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ creados, actualizados: 0, omitidos, errores });
 }
+
+export async function DELETE() {
+    const session = await getSession();
+    if (!session || session.accessLevel !== "superadmin")
+        return NextResponse.json({ error: "Solo superadmin puede realizar esta operación" }, { status: 403 });
+
+    const { count } = await prisma.dato.deleteMany({});
+    return NextResponse.json({ eliminados: count });
+}
