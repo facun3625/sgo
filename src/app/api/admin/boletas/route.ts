@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { rm, mkdir, access } from "node:fs/promises";
-import { join } from "node:path";
 
 export async function GET() {
     const session = await getSession();
@@ -35,7 +34,7 @@ export async function DELETE(req: NextRequest) {
     if (!tipo || !["mensual", "anual", "deuda"].includes(tipo))
         return NextResponse.json({ error: "Tipo inválido" }, { status: 400 });
 
-    const uploadDir = join(process.cwd(), "public", "uploads", "boletas", tipo);
+    const uploadDir = `${process.cwd()}/public/uploads/boletas/${tipo}`;
 
     // Borrar carpeta y recrearla vacía
     try { await access(uploadDir); await rm(uploadDir, { recursive: true, force: true }); } catch { /* no existe */ }

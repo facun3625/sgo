@@ -3,7 +3,6 @@ import { getSession } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import * as XLSX from "xlsx";
 import { readdirSync } from "node:fs";
-import { join } from "node:path";
 
 export const maxDuration = 60;
 
@@ -62,7 +61,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Leer directorio una sola vez y armar Set para lookups O(1)
-    const uploadDir = join(process.cwd(), "public", "uploads", "boletas", tipo);
+    const uploadDir = `${process.cwd()}/public/uploads/boletas/${tipo}`;
     let archivosEnCarpeta: Set<string>;
     try {
         archivosEnCarpeta = new Set(readdirSync(uploadDir));
