@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Upload, UserPlus, DollarSign, FileText, CheckCircle2, AlertCircle, X, Loader2, List, Search, CreditCard, Ban, Clock, Landmark, HandshakeIcon, KeyRound, Banknote, ShieldOff, Trash2 } from "lucide-react";
+import { usePermisos } from "@/lib/permisos-context";
 import * as XLSX from "xlsx";
 
 type TipoFinanciero = "deudas" | "pagoAnual" | "consultor";
@@ -83,6 +84,7 @@ function formatPeriodo(p: string) {
 }
 
 export default function ImportarPage() {
+    const { tiene, isSuperAdmin } = usePermisos();
     const [seccion, setSeccion] = useState<Seccion>("registros");
     const [periodo, setPeriodo] = useState(getCurrentPeriodo());
 
@@ -420,16 +422,18 @@ export default function ImportarPage() {
         finally { setSuspLoading(false); }
     };
 
-    const tabs: { id: Seccion; label: string; icon: React.ReactNode; color: string; activeColor: string }[] = [
-        { id: "registros", label: "Registros", icon: <List size={15} />, color: "text-violet-600 dark:text-violet-400", activeColor: "border-violet-500 bg-violet-50/50 dark:bg-violet-900/10" },
-        { id: "matriculados", label: "Matriculados", icon: <UserPlus size={15} />, color: "text-cyan-600 dark:text-cyan-400", activeColor: "border-cyan-500 bg-cyan-50/50 dark:bg-cyan-900/10" },
-        { id: "financiero", label: "Financiero", icon: <DollarSign size={15} />, color: "text-emerald-600 dark:text-emerald-400", activeColor: "border-emerald-500 bg-emerald-50/50 dark:bg-emerald-900/10" },
-        { id: "banelco", label: "Home Banking", icon: <Landmark size={15} />, color: "text-blue-600 dark:text-blue-400", activeColor: "border-blue-500 bg-blue-50/50 dark:bg-blue-900/10" },
-        { id: "fiadores", label: "Fiadores", icon: <HandshakeIcon size={15} />, color: "text-orange-600 dark:text-orange-400", activeColor: "border-orange-500 bg-orange-50/50 dark:bg-orange-900/10" },
-        { id: "adhesiones", label: "Débito Aut.", icon: <Banknote size={15} />, color: "text-teal-600 dark:text-teal-400", activeColor: "border-teal-500 bg-teal-50/50 dark:bg-teal-900/10" },
-        { id: "usuarios", label: "Usuarios", icon: <KeyRound size={15} />, color: "text-purple-600 dark:text-purple-400", activeColor: "border-purple-500 bg-purple-50/50 dark:bg-purple-900/10" },
-        { id: "suspensiones", label: "Suspensiones", icon: <ShieldOff size={15} />, color: "text-rose-600 dark:text-rose-400", activeColor: "border-rose-500 bg-rose-50/50 dark:bg-rose-900/10" },
+    const allTabs: { id: Seccion; permisoKey: string; label: string; icon: React.ReactNode; color: string; activeColor: string }[] = [
+        { id: "registros",    permisoKey: "",                      label: "Registros",    icon: <List size={15} />,          color: "text-violet-600 dark:text-violet-400", activeColor: "border-violet-500 bg-violet-50/50 dark:bg-violet-900/10" },
+        { id: "matriculados", permisoKey: "importar:matriculados", label: "Matriculados", icon: <UserPlus size={15} />,      color: "text-cyan-600 dark:text-cyan-400",    activeColor: "border-cyan-500 bg-cyan-50/50 dark:bg-cyan-900/10" },
+        { id: "financiero",   permisoKey: "importar:financiero",   label: "Financiero",   icon: <DollarSign size={15} />,    color: "text-emerald-600 dark:text-emerald-400", activeColor: "border-emerald-500 bg-emerald-50/50 dark:bg-emerald-900/10" },
+        { id: "banelco",      permisoKey: "importar:banelco",      label: "Home Banking", icon: <Landmark size={15} />,      color: "text-blue-600 dark:text-blue-400",    activeColor: "border-blue-500 bg-blue-50/50 dark:bg-blue-900/10" },
+        { id: "fiadores",     permisoKey: "importar:fiadores",     label: "Fiadores",     icon: <HandshakeIcon size={15} />, color: "text-orange-600 dark:text-orange-400", activeColor: "border-orange-500 bg-orange-50/50 dark:bg-orange-900/10" },
+        { id: "adhesiones",   permisoKey: "importar:adhesiones",   label: "Débito Aut.",  icon: <Banknote size={15} />,      color: "text-teal-600 dark:text-teal-400",    activeColor: "border-teal-500 bg-teal-50/50 dark:bg-teal-900/10" },
+        { id: "usuarios",     permisoKey: "importar:usuarios",     label: "Usuarios",     icon: <KeyRound size={15} />,      color: "text-purple-600 dark:text-purple-400", activeColor: "border-purple-500 bg-purple-50/50 dark:bg-purple-900/10" },
+        { id: "suspensiones", permisoKey: "importar:suspensiones", label: "Suspensiones", icon: <ShieldOff size={15} />,     color: "text-rose-600 dark:text-rose-400",    activeColor: "border-rose-500 bg-rose-50/50 dark:bg-rose-900/10" },
     ];
+
+    const tabs = allTabs.filter(t => !t.permisoKey || tiene(t.permisoKey));
 
     return (
         <div className="p-6 md:p-8 space-y-6 animate-fade-in">

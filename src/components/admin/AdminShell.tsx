@@ -43,6 +43,8 @@ import {
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { SessionPayload } from "@/lib/auth";
+import { tieneAccesoImportar } from "@/lib/admin-secciones";
+import { PermisosProvider } from "@/lib/permisos-context";
 import NotificacionesBell from "@/components/dashboard/NotificacionesBell";
 import AdminMensajesIcon from "@/components/admin/AdminMensajesIcon";
 import AdminSolicitudesIcon from "@/components/admin/AdminSolicitudesIcon";
@@ -130,17 +132,14 @@ export default function AdminShell({ session, image, permisos, children }: Admin
     // permisos = string[] means admin → show only items in permisos (plus dashboard always)
     const visibleNavItems = navItems.filter(item => {
         if (permisos === null) return true; // superadmin sees all
-        // Dashboard always visible
         if (item.href === "/admin") return true;
-        // Extract section key from href: /admin/{key}
-        const key = item.href.split("/")[2]; // e.g. "solicitudes"
+        const key = item.href.split("/")[2];
         if (!key) return true;
-        // gestionar-admins is superadmin only
         if (key === "gestionar-admins") return false;
-        // Solicitudes: visible si tiene al menos un permiso individual o el legacy
         if (key === "solicitudes") {
             return permisos.includes("solicitudes") || permisos.some(p => p.startsWith("solicitudes:"));
         }
+        if (key === "importar") return tieneAccesoImportar(permisos);
         return permisos.includes(key);
     });
 
@@ -162,6 +161,7 @@ export default function AdminShell({ session, image, permisos, children }: Admin
 
     return (
         <ToastProvider>
+        <PermisosProvider permisos={permisos}>
         <div className="flex min-h-screen bg-[#f8fafc] dark:bg-[#02182b] transition-colors duration-300">
 
             {/* Overlay mobile */}
@@ -376,6 +376,7 @@ export default function AdminShell({ session, image, permisos, children }: Admin
                 </main>
             </div>
         </div>
+        </PermisosProvider>
         </ToastProvider>
     );
 }

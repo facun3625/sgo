@@ -172,9 +172,18 @@ export default function GestionarAdminsPage() {
                     </div>
                 </div>
 
-                {/* Resto de secciones */}
+                {/* Secciones generales */}
                 <div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Secciones</p>
+                    <div className="flex items-center gap-2 mb-2">
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Secciones</p>
+                        <button type="button" onClick={() => {
+                            const keys = ADMIN_SECCIONES.filter(s => s.group === "").map(s => s.key as string);
+                            const all = keys.every(k => currentPermisos.includes(k));
+                            setCurrentPermisos(all ? currentPermisos.filter(k => !keys.includes(k)) : [...new Set([...currentPermisos, ...keys])]);
+                        }} className="text-[10px] text-violet-500 hover:underline">
+                            {ADMIN_SECCIONES.filter(s => s.group === "").every(s => currentPermisos.includes(s.key)) ? "Quitar todos" : "Seleccionar todos"}
+                        </button>
+                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                         {ADMIN_SECCIONES.filter(s => s.group === "").map(sec => {
                             const checked = currentPermisos.includes(sec.key);
@@ -185,6 +194,34 @@ export default function GestionarAdminsPage() {
                                     </div>
                                     <input type="checkbox" className="hidden" checked={checked} onChange={() => togglePermiso(sec.key, currentPermisos, setCurrentPermisos)} />
                                     <span className={`text-[12px] font-medium ${checked ? "text-violet-700 dark:text-violet-300" : "text-slate-600 dark:text-slate-400"}`}>{sec.label}</span>
+                                </label>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                {/* Importar — sub-permisos */}
+                <div>
+                    <div className="flex items-center gap-2 mb-2">
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Importar datos</p>
+                        <button type="button" onClick={() => {
+                            const keys = ADMIN_SECCIONES.filter(s => s.group === "Importar").map(s => s.key as string);
+                            const all = keys.every(k => currentPermisos.includes(k));
+                            setCurrentPermisos(all ? currentPermisos.filter(k => !keys.includes(k)) : [...new Set([...currentPermisos, ...keys])]);
+                        }} className="text-[10px] text-cyan-500 hover:underline">
+                            {ADMIN_SECCIONES.filter(s => s.group === "Importar").every(s => currentPermisos.includes(s.key)) ? "Quitar todos" : "Seleccionar todos"}
+                        </button>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                        {ADMIN_SECCIONES.filter(s => s.group === "Importar").map(sec => {
+                            const checked = currentPermisos.includes(sec.key);
+                            return (
+                                <label key={sec.key} className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${checked ? "bg-cyan-50 dark:bg-cyan-900/20 border-cyan-200 dark:border-cyan-700" : "bg-slate-50 dark:bg-slate-800/50 border-slate-100 dark:border-slate-700 hover:border-cyan-200 dark:hover:border-cyan-700/50"}`}>
+                                    <div className={`w-5 h-5 rounded-md flex items-center justify-center transition-all flex-shrink-0 ${checked ? "bg-cyan-500" : "bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600"}`}>
+                                        {checked && <Check size={12} className="text-white" />}
+                                    </div>
+                                    <input type="checkbox" className="hidden" checked={checked} onChange={() => togglePermiso(sec.key, currentPermisos, setCurrentPermisos)} />
+                                    <span className={`text-[12px] font-medium ${checked ? "text-cyan-700 dark:text-cyan-300" : "text-slate-600 dark:text-slate-400"}`}>{sec.label}</span>
                                 </label>
                             );
                         })}
