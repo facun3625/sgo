@@ -4,21 +4,34 @@ import prisma from "@/lib/prisma";
 
 const BATCH = 200;
 
+function extractFiadorRow(row: Record<string, string>): { expediente: string; fiadorExpediente: string } {
+    // Intento por nombre de columna
+    const expediente = (row["expediente"] || row["exp"] || row["nro"] || row["numero"] || "").trim();
+    const fiadorExpediente = (row["fiador"] || row["fiador_expediente"] || row["fiadorexpediente"] || "").trim();
+    if (expediente && fiadorExpediente) return { expediente, fiadorExpediente };
+
+    // Fallback posicional: primer y segundo valor del objeto (para archivos sin encabezado)
+    const values = Object.values(row);
+    return {
+        expediente: String(values[0] ?? "").trim(),
+        fiadorExpediente: String(values[1] ?? "").trim(),
+    };
+}
+
 export async function POST(req: NextRequest) {
     const session = await getSession();
     if (!session || !["admin", "superadmin"].includes(session.accessLevel))
         return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
     const body = await req.json();
-    const rows: { expediente: string; fiador: string }[] = body.registros ?? [];
+    const rows: Record<string, string>[] = body.registros ?? [];
 
     const errores: string[] = [];
     type RowValida = { expediente: string; fiadorExpediente: string };
     const rowsValidas: RowValida[] = [];
 
     for (const row of rows) {
-        const expediente = String(row.expediente ?? "").trim();
-        const fiadorExpediente = String(row.fiador ?? "").trim();
+        const { expediente, fiadorExpediente } = extractFiadorRow(row);
 
         if (!expediente || !fiadorExpediente) {
             errores.push(`Fila inválida: expediente="${expediente}" fiador="${fiadorExpediente}"`);
