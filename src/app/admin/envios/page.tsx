@@ -402,7 +402,6 @@ export default function AdminEnviosPage() {
                                     </div>
                                 )}
                             </div>
-                        </div>
                             {/* Sección email */}
                             <div className="border-t border-slate-100 dark:border-slate-800 pt-4 space-y-3">
                                 <p className="text-[11px] font-black uppercase tracking-widest text-slate-400">Correo electrónico</p>
@@ -427,6 +426,7 @@ export default function AdminEnviosPage() {
                                     />
                                 </div>
                             </div>
+                        </div>
                         <div className="flex gap-3 px-5 pb-5">
                             <button onClick={() => setShowModal(false)}
                                 className="flex-1 h-10 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-[13px] font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
