@@ -26,14 +26,15 @@ function parseFecha(val: string): Date | null {
 }
 
 function getFecha(r: Record<string, string>): Date | null {
-    // acepta fechaMatriculacion o fechaInscripcion (y variantes sin tilde/espacios)
+    // El frontend lowercasea todas las claves antes de enviar
     const raw =
-        r.fechaMatriculacion ||
-        r.fechainscripcion ||
-        r.fechaInscripcion ||
+        r["fechamatriculacion"] ||
+        r["fechainscripcion"] ||
         r["fecha inscripcion"] ||
         r["fecha matriculacion"] ||
         r["fechamatric"] ||
+        r["fecha_inscripcion"] ||
+        r["fecha_matriculacion"] ||
         "";
     return raw ? parseFecha(String(raw).trim()) : null;
 }

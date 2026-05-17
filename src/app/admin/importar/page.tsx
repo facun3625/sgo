@@ -48,14 +48,24 @@ function parseCSV(text: string): Record<string, string>[] {
     });
 }
 
+function excelValToString(val: unknown): string {
+    if (val instanceof Date) {
+        // Con cellDates:true las celdas de fecha llegan como Date — formatear dd/mm/yyyy
+        const d = val.getUTCDate().toString().padStart(2, "0");
+        const m = (val.getUTCMonth() + 1).toString().padStart(2, "0");
+        return `${d}/${m}/${val.getUTCFullYear()}`;
+    }
+    return String(val ?? "").trim();
+}
+
 function parseExcel(buffer: ArrayBuffer): Record<string, string>[] {
-    const wb = XLSX.read(buffer, { type: "array" });
+    const wb = XLSX.read(buffer, { type: "array", cellDates: true });
     const ws = wb.Sheets[wb.SheetNames[0]];
     const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws, { defval: "" });
     return rows.map(row => {
         const normalized: Record<string, string> = {};
         for (const key of Object.keys(row)) {
-            normalized[key.toLowerCase().trim()] = String(row[key] ?? "").trim();
+            normalized[key.toLowerCase().trim()] = excelValToString(row[key]);
         }
         return normalized;
     });
