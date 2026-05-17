@@ -19,6 +19,7 @@ interface UploadResult {
         sinExpediente: { cod: string; pdf: string }[];
         sinPdf: { cod: string; pdf: string; expediente: string }[];
     };
+    _debug?: { uploadDir: string; archivosEnCarpeta: number; primero: string; codsEnExcel: number; expedientesResueltos: number };
 }
 
 const TIPO_LABELS: Record<string, { label: string; color: string; bg: string; border: string }> = {
@@ -173,6 +174,13 @@ export default function BoletasAdminPage() {
                                             <p className="text-amber-600 dark:text-amber-400 font-medium pl-5">
                                                 PDF no encontrado: {result.pdfFaltantes}
                                             </p>
+                                        )}
+                                        {result._debug && (
+                                            <div className="mt-1 ml-5 text-[10px] font-mono text-slate-400 space-y-0.5">
+                                                <p>📁 {result._debug.uploadDir}</p>
+                                                <p>🗂 Archivos en carpeta: {result._debug.archivosEnCarpeta} · Primero: {result._debug.primero || "—"}</p>
+                                                <p>📊 Cods en Excel: {result._debug.codsEnExcel} · Expedientes resueltos: {result._debug.expedientesResueltos}</p>
+                                            </div>
                                         )}
                                         {(result.noEncontrados > 0 || result.pdfFaltantes > 0) && (
                                             <button

@@ -87,8 +87,13 @@ export async function POST(req: NextRequest) {
     // Leer directorio una sola vez — Map lowercase→nombre real para lookup case-insensitive
     const uploadDir = `${process.cwd()}/public/uploads/boletas/${tipo}`;
     const archivosEnCarpeta = new Map<string, string>();
+    let debugArchivos = 0;
+    let debugPrimero = "";
     try {
-        for (const f of readdirSync(uploadDir)) archivosEnCarpeta.set(f.toLowerCase(), f);
+        const lista = readdirSync(uploadDir);
+        debugArchivos = lista.length;
+        debugPrimero = lista[0] ?? "";
+        for (const f of lista) archivosEnCarpeta.set(f.toLowerCase(), f);
     } catch { /* carpeta vacía o no existe */ }
 
     // Limpiar registros anteriores del mismo tipo
@@ -127,5 +132,6 @@ export async function POST(req: NextRequest) {
         ok: true, procesados: records.length, periodo,
         noEncontrados: sinExpediente.length, pdfFaltantes: sinPdf.length,
         detalle: { sinExpediente, sinPdf },
+        _debug: { uploadDir, archivosEnCarpeta: debugArchivos, primero: debugPrimero, codsEnExcel: cods.length, expedientesResueltos: codToExp.size },
     });
 }
