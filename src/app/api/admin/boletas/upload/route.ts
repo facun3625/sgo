@@ -64,6 +64,14 @@ export async function POST(req: NextRequest) {
 
     // Directorio donde el admin subió los PDFs por FTP
     const uploadDir = join(process.cwd(), "public", "uploads", "boletas", tipo);
+    console.log("[boletas] uploadDir:", uploadDir);
+    try {
+        const { readdirSync } = await import("fs");
+        const archivos = readdirSync(uploadDir);
+        console.log("[boletas] archivos en carpeta:", archivos.length, archivos.slice(0, 3));
+    } catch (e) {
+        console.log("[boletas] error leyendo carpeta:", e);
+    }
 
     // Limpiar registros anteriores del mismo tipo
     await prisma.facturaSantaFe.deleteMany({ where: { tipo } });
@@ -102,5 +110,6 @@ export async function POST(req: NextRequest) {
         ok: true, procesados: records.length, periodo,
         noEncontrados: sinExpediente.length, pdfFaltantes: sinPdf.length,
         detalle: { sinExpediente, sinPdf },
+        _debug: { uploadDir },
     });
 }
