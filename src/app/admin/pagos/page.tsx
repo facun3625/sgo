@@ -41,6 +41,7 @@ interface Stats {
     pagadasPorMP: number;
     pagadasPorTransferencia: number;
     pagadasPorHomeBanking: number;
+    pagadasPorBanelco: number;
     totalRecaudado: number;
     conDeuda: number;
     totalDeudaAcumulada: number;
@@ -416,6 +417,8 @@ export default function PagosAdminPage() {
     const [sortKey, setSortKey] = useState<SortKey>("nombre");
     const [sortDir, setSortDir] = useState<SortDir>("asc");
     const [vista, setVista] = useState<Vista>("matriculados");
+    const [pagina, setPagina] = useState(1);
+    const POR_PAGINA = 50;
 
     useEffect(() => {
         fetch("/api/admin/pagos/resumen")
@@ -479,6 +482,7 @@ export default function PagosAdminPage() {
     function toggleSort(key: SortKey) {
         if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
         else { setSortKey(key); setSortDir("asc"); }
+        setPagina(1);
     }
 
     function SortIcon({ k }: { k: SortKey }) {
@@ -572,7 +576,7 @@ export default function PagosAdminPage() {
                                 />
                             </div>
 
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                            <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
                                 <div>
                                     <p className="text-[11px] text-slate-400 uppercase tracking-wide font-semibold mb-0.5">Total recaudado</p>
                                     <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
@@ -597,6 +601,13 @@ export default function PagosAdminPage() {
                                     <div className="flex items-center gap-2">
                                         <Landmark size={14} className="text-slate-500" />
                                         <p className="text-2xl font-black text-slate-800 dark:text-white">{stats.pagadasPorTransferencia}</p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p className="text-[11px] text-slate-400 uppercase tracking-wide font-semibold mb-0.5">Banelco / HB</p>
+                                    <div className="flex items-center gap-2">
+                                        <Landmark size={14} className="text-violet-500" />
+                                        <p className="text-2xl font-black text-slate-800 dark:text-white">{(stats.pagadasPorBanelco ?? 0) + (stats.pagadasPorHomeBanking ?? 0)}</p>
                                     </div>
                                 </div>
                             </div>
@@ -642,7 +653,7 @@ export default function PagosAdminPage() {
                         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                             <div className="flex gap-0 border-b border-slate-100 dark:border-slate-800 flex-1 overflow-x-auto">
                                 {TABS.map((t) => (
-                                    <button key={t.key} onClick={() => setFiltro(t.key)}
+                                    <button key={t.key} onClick={() => { setFiltro(t.key); setPagina(1); }}
                                         className={`flex items-center gap-1.5 px-4 py-3 text-[12px] font-semibold transition-all whitespace-nowrap border-b-2
                                             ${filtro === t.key
                                                 ? "border-[#063f68] text-[#063f68] dark:border-blue-400 dark:text-blue-400"
@@ -660,7 +671,7 @@ export default function PagosAdminPage() {
                                     type="text"
                                     placeholder="Buscar por nombre o expediente..."
                                     value={busqueda}
-                                    onChange={(e) => setBusqueda(e.target.value)}
+                                    onChange={(e) => { setBusqueda(e.target.value); setPagina(1); }}
                                     className="pl-9 pr-4 h-9 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white text-[13px] focus:outline-none focus:ring-2 focus:ring-[#063f68]/30 w-64"
                                 />
                             </div>
@@ -672,85 +683,122 @@ export default function PagosAdminPage() {
                                 <FileX size={28} className="text-slate-200 dark:text-slate-700" />
                                 <p className="text-[13px] text-slate-400">Sin resultados para este filtro</p>
                             </div>
-                        ) : (
-                            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden">
-                                <div className="overflow-x-auto">
-                                    <table className="w-full border-collapse">
-                                        <thead>
-                                            <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
-                                                <th className="px-5 py-3 text-left w-[35%]">
-                                                    <button onClick={() => toggleSort("nombre")}
-                                                        className="flex items-center gap-1 text-[11px] font-bold text-slate-400 uppercase tracking-wide hover:text-slate-600 transition-colors">
-                                                        Matriculado <SortIcon k="nombre" />
-                                                    </button>
-                                                </th>
-                                                <th className="px-5 py-3 text-left w-[35%]">
-                                                    <button onClick={() => toggleSort("cuota")}
-                                                        className="flex items-center gap-1 text-[11px] font-bold text-slate-400 uppercase tracking-wide hover:text-slate-600 transition-colors">
-                                                        Cuota mensual <SortIcon k="cuota" />
-                                                    </button>
-                                                </th>
-                                                <th className="px-5 py-3 text-left w-[25%]">
-                                                    <button onClick={() => toggleSort("deuda")}
-                                                        className="flex items-center gap-1 text-[11px] font-bold text-slate-400 uppercase tracking-wide hover:text-slate-600 transition-colors">
-                                                        Deuda <SortIcon k="deuda" />
-                                                    </button>
-                                                </th>
-                                                <th className="px-5 py-3 w-[5%]" />
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
-                                            {filtrados.map((u) => (
-                                                <tr key={u.expediente} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
-                                                    <td className="px-5 py-3.5">
-                                                        <p className="text-[13px] font-bold text-slate-800 dark:text-white">
-                                                            {u.apellido}, {u.nombre}
-                                                        </p>
-                                                        <p className="text-[11px] text-slate-400">{u.expediente}</p>
-                                                    </td>
-                                                    <td className="px-5 py-3.5">
-                                                        <CuotaBadge cuota={u.cuota} cobertura={u.cobertura} />
-                                                        {u.cuota && u.cobertura === "mensual" && (
-                                                            <p className="text-[11px] text-slate-400 mt-1">
-                                                                ${u.cuota.monto.toLocaleString("es-AR")}
-                                                                {u.cuota.estado === "pagado" && u.cuota.fechaPago && (
-                                                                    <> · {new Date(u.cuota.fechaPago).toLocaleDateString("es-AR")}</>
-                                                                )}
-                                                            </p>
-                                                        )}
-                                                    </td>
-                                                    <td className="px-5 py-3.5">
-                                                        {u.deudaTotal > 0 ? (
-                                                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400">
-                                                                <AlertTriangle size={11} />
-                                                                ${u.deudaTotal.toLocaleString("es-AR")}
-                                                                <span className="text-rose-400 dark:text-rose-500">({u.deudaCount})</span>
-                                                            </span>
-                                                        ) : (
-                                                            <span className="inline-flex items-center gap-1 text-[12px] font-semibold text-emerald-600 dark:text-emerald-400">
-                                                                <CheckCircle2 size={13} /> Sin deuda
-                                                            </span>
-                                                        )}
-                                                    </td>
-                                                    <td className="px-5 py-3.5 text-right">
-                                                        <Link href={`/admin/usuarios?q=${u.expediente}`}
-                                                            className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 transition-all inline-flex"
-                                                            title="Ver usuario">
-                                                            <ExternalLink size={14} />
-                                                        </Link>
-                                                    </td>
+                        ) : (() => {
+                            const totalPaginas = Math.ceil(filtrados.length / POR_PAGINA);
+                            const paginaActual = Math.min(pagina, totalPaginas);
+                            const paginados = filtrados.slice((paginaActual - 1) * POR_PAGINA, paginaActual * POR_PAGINA);
+                            return (
+                                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden">
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full border-collapse">
+                                            <thead>
+                                                <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
+                                                    <th className="px-5 py-3 text-left w-[35%]">
+                                                        <button onClick={() => toggleSort("nombre")}
+                                                            className="flex items-center gap-1 text-[11px] font-bold text-slate-400 uppercase tracking-wide hover:text-slate-600 transition-colors">
+                                                            Matriculado <SortIcon k="nombre" />
+                                                        </button>
+                                                    </th>
+                                                    <th className="px-5 py-3 text-left w-[35%]">
+                                                        <button onClick={() => toggleSort("cuota")}
+                                                            className="flex items-center gap-1 text-[11px] font-bold text-slate-400 uppercase tracking-wide hover:text-slate-600 transition-colors">
+                                                            Cuota mensual <SortIcon k="cuota" />
+                                                        </button>
+                                                    </th>
+                                                    <th className="px-5 py-3 text-left w-[25%]">
+                                                        <button onClick={() => toggleSort("deuda")}
+                                                            className="flex items-center gap-1 text-[11px] font-bold text-slate-400 uppercase tracking-wide hover:text-slate-600 transition-colors">
+                                                            Deuda <SortIcon k="deuda" />
+                                                        </button>
+                                                    </th>
+                                                    <th className="px-5 py-3 w-[5%]" />
                                                 </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
+                                                {paginados.map((u) => (
+                                                    <tr key={u.expediente} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                                                        <td className="px-5 py-3.5">
+                                                            <p className="text-[13px] font-bold text-slate-800 dark:text-white">
+                                                                {u.apellido}, {u.nombre}
+                                                            </p>
+                                                            <p className="text-[11px] text-slate-400">{u.expediente}</p>
+                                                        </td>
+                                                        <td className="px-5 py-3.5">
+                                                            <CuotaBadge cuota={u.cuota} cobertura={u.cobertura} />
+                                                            {u.cuota && u.cobertura === "mensual" && (
+                                                                <p className="text-[11px] text-slate-400 mt-1">
+                                                                    ${u.cuota.monto.toLocaleString("es-AR")}
+                                                                    {u.cuota.estado === "pagado" && u.cuota.fechaPago && (
+                                                                        <> · {new Date(u.cuota.fechaPago).toLocaleDateString("es-AR")}</>
+                                                                    )}
+                                                                </p>
+                                                            )}
+                                                        </td>
+                                                        <td className="px-5 py-3.5">
+                                                            {u.deudaTotal > 0 ? (
+                                                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400">
+                                                                    <AlertTriangle size={11} />
+                                                                    ${u.deudaTotal.toLocaleString("es-AR")}
+                                                                    <span className="text-rose-400 dark:text-rose-500">({u.deudaCount})</span>
+                                                                </span>
+                                                            ) : (
+                                                                <span className="inline-flex items-center gap-1 text-[12px] font-semibold text-emerald-600 dark:text-emerald-400">
+                                                                    <CheckCircle2 size={13} /> Sin deuda
+                                                                </span>
+                                                            )}
+                                                        </td>
+                                                        <td className="px-5 py-3.5 text-right">
+                                                            <Link href={`/admin/usuarios?q=${u.expediente}`}
+                                                                className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 transition-all inline-flex"
+                                                                title="Ver usuario">
+                                                                <ExternalLink size={14} />
+                                                            </Link>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div className="px-5 py-3 border-t border-slate-50 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 flex items-center justify-between gap-4">
+                                        <p className="text-[11px] text-slate-400">
+                                            Mostrando {(paginaActual - 1) * POR_PAGINA + 1}–{Math.min(paginaActual * POR_PAGINA, filtrados.length)} de {filtrados.length}
+                                        </p>
+                                        {totalPaginas > 1 && (
+                                            <div className="flex items-center gap-1">
+                                                <button
+                                                    onClick={() => setPagina(p => Math.max(1, p - 1))}
+                                                    disabled={paginaActual === 1}
+                                                    className="px-2.5 py-1 rounded-lg text-[12px] font-semibold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all">
+                                                    ‹
+                                                </button>
+                                                {Array.from({ length: totalPaginas }, (_, i) => i + 1)
+                                                    .filter(p => p === 1 || p === totalPaginas || Math.abs(p - paginaActual) <= 2)
+                                                    .reduce<(number | "…")[]>((acc, p, i, arr) => {
+                                                        if (i > 0 && p - (arr[i - 1] as number) > 1) acc.push("…");
+                                                        acc.push(p);
+                                                        return acc;
+                                                    }, [])
+                                                    .map((p, i) => p === "…" ? (
+                                                        <span key={`e${i}`} className="px-1.5 text-[12px] text-slate-300">…</span>
+                                                    ) : (
+                                                        <button key={p} onClick={() => setPagina(p as number)}
+                                                            className={`w-7 h-7 rounded-lg text-[12px] font-semibold transition-all
+                                                                ${paginaActual === p ? "bg-[#063f68] text-white" : "text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"}`}>
+                                                            {p}
+                                                        </button>
+                                                    ))}
+                                                <button
+                                                    onClick={() => setPagina(p => Math.min(totalPaginas, p + 1))}
+                                                    disabled={paginaActual === totalPaginas}
+                                                    className="px-2.5 py-1 rounded-lg text-[12px] font-semibold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all">
+                                                    ›
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
-                                <div className="px-5 py-3 border-t border-slate-50 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
-                                    <p className="text-[11px] text-slate-400">
-                                        Mostrando {filtrados.length} de {usuarios.length} matriculados
-                                    </p>
-                                </div>
-                            </div>
-                        )}
+                            );
+                        })()}
                     </>
                 )
             )}

@@ -102,15 +102,15 @@ export async function GET() {
     // Stats del mes
     const cuotasPagadas = cuotas.filter((c) => c.estado === "pagado");
     const totalRecaudado = cuotasPagadas.reduce((acc, c) => acc + c.monto, 0);
-    const pagadasPorHomeBanking = cuotasPagadas.filter((c) => c.metodoPago === "home_banking" || c.metodoPago === "banelco").length;
+    const pagadasPorBanelco = cuotasPagadas.filter((c) => c.metodoPago === "banelco").length;
+    const pagadasPorHomeBanking = cuotasPagadas.filter((c) => c.metodoPago === "home_banking").length;
     const pagadasPorTransferencia = cuotasPagadas.filter((c) => {
         if (c.metodoPago === "transferencia") return true;
         if (c.metodoPago === "mercadopago" || c.metodoPago === "home_banking" || c.metodoPago === "banelco") return false;
-        // Fallback para cuotas históricas sin metodoPago
         const ppEstado = mapMetodoByCuotaId.get(String(c.id));
         return ppEstado === "aprobado";
     }).length;
-    const pagadasPorMP = cuotasPagadas.length - pagadasPorTransferencia - pagadasPorHomeBanking;
+    const pagadasPorMP = cuotasPagadas.length - pagadasPorTransferencia - pagadasPorHomeBanking - pagadasPorBanelco;
     const totalDeudaAcumulada = [...mapDeudas.values()].reduce((acc, d) => acc + d.total, 0);
 
     const stats = {
@@ -124,6 +124,7 @@ export async function GET() {
         pagadasPorMP,
         pagadasPorTransferencia,
         pagadasPorHomeBanking,
+        pagadasPorBanelco,
         totalRecaudado,
         conDeuda: [...mapDeudas.values()].filter((d) => d.total > 0).length,
         totalDeudaAcumulada,
