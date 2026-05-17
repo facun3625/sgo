@@ -16,13 +16,17 @@ export async function GET(req: NextRequest) {
 
     const datos = await prisma.dato.findMany({
         where: { expediente: { not: null } },
-        select: { expediente: true, fechaMatriculacion: true },
+        select: { expediente: true, fechaMatriculacion: true, tipo: true },
     });
 
     const fechaMap = new Map<string, Date | null>();
     for (const d of datos) if (d.expediente) fechaMap.set(d.expediente, d.fechaMatriculacion);
 
-    const todosExpedientes = datos.map(d => d.expediente as string).filter(Boolean);
+    // Excluir consultores
+    const todosExpedientes = datos
+        .filter(d => d.tipo !== "consultor")
+        .map(d => d.expediente as string)
+        .filter(Boolean);
 
     const pagosAnuales = await prisma.pagoAnual.findMany({ select: { expediente: true } });
     const pagoAnualExp = new Set(pagosAnuales.map(p => p.expediente));

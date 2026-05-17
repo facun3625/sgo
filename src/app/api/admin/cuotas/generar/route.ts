@@ -19,20 +19,25 @@ export async function POST() {
     const montoBase = configMonto ? parseFloat(configMonto.valor) : 4500;
 
     const [datosTodos, usersTodos] = await Promise.all([
-        prisma.dato.findMany({ select: { expediente: true, fechaMatriculacion: true } }),
+        prisma.dato.findMany({ select: { expediente: true, fechaMatriculacion: true, tipo: true } }),
         prisma.user.findMany({
             where: { expediente: { not: null }, accessLevel: { notIn: ["admin", "superadmin"] } },
             select: { expediente: true },
         }),
     ]);
 
+    // Expedientes de consultores (no pagan matrícula)
+    const consultoresExp = new Set(
+        datosTodos.filter(d => d.tipo === "consultor" && d.expediente).map(d => d.expediente!)
+    );
+
     // Mapa expediente → fechaMatriculacion
     const fechaMap = new Map<string, Date | null>();
     for (const d of datosTodos) if (d.expediente) fechaMap.set(d.expediente, d.fechaMatriculacion);
 
     const expSet = new Set<string>();
-    for (const d of datosTodos) if (d.expediente) expSet.add(d.expediente);
-    for (const u of usersTodos) if (u.expediente) expSet.add(u.expediente!);
+    for (const d of datosTodos) if (d.expediente && !consultoresExp.has(d.expediente)) expSet.add(d.expediente);
+    for (const u of usersTodos) if (u.expediente && !consultoresExp.has(u.expediente)) expSet.add(u.expediente!);
 
     const pagosAnuales = await prisma.pagoAnual.findMany({ select: { expediente: true } });
     const pagoAnualExp = new Set(pagosAnuales.map((p) => p.expediente));

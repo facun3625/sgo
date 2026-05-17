@@ -1,15 +1,16 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Upload, UserPlus, DollarSign, FileText, CheckCircle2, AlertCircle, X, Loader2, List, Search, CreditCard, Ban, Clock, Landmark, HandshakeIcon, KeyRound } from "lucide-react";
+import { Upload, UserPlus, DollarSign, FileText, CheckCircle2, AlertCircle, X, Loader2, List, Search, CreditCard, Ban, Clock, Landmark, HandshakeIcon, KeyRound, Banknote, ShieldOff } from "lucide-react";
 import * as XLSX from "xlsx";
 
-type TipoFinanciero = "deudas" | "pagoAnual";
-type Seccion = "matriculados" | "financiero" | "banelco" | "registros" | "fiadores" | "usuarios";
+type TipoFinanciero = "deudas" | "pagoAnual" | "consultor";
+type Seccion = "matriculados" | "financiero" | "banelco" | "registros" | "fiadores" | "usuarios" | "adhesiones" | "suspensiones";
 
 const FINANCIERO_CONFIG: Record<TipoFinanciero, { label: string; columnas: string[]; ejemplo: string }> = {
     deudas: { label: "Deudas", columnas: ["expediente", "monto"], ejemplo: "expediente,monto\n564,15000\n792,8500" },
     pagoAnual: { label: "Pago Anual", columnas: ["expediente"], ejemplo: "expediente\n564\n792" },
+    consultor: { label: "Consultores", columnas: ["expediente"], ejemplo: "expediente\n564\n792" },
 };
 
 const PLANTILLA_CONTENT: Record<string, { filename: string; content: string }> = {
@@ -19,6 +20,7 @@ const PLANTILLA_CONTENT: Record<string, { filename: string; content: string }> =
     },
     deudas: { filename: "plantilla_deudas.csv", content: "expediente,monto\n564,15000\n792,8500" },
     pagoAnual: { filename: "plantilla_pago_anual.csv", content: "expediente\n564\n792" },
+    consultor: { filename: "plantilla_consultores.csv", content: "expediente\n564\n792" },
 };
 
 interface ResultadoImport {
@@ -71,7 +73,7 @@ function formatPeriodo(p: string) {
 }
 
 export default function ImportarPage() {
-    const [seccion, setSeccion] = useState<Seccion>("matriculados");
+    const [seccion, setSeccion] = useState<Seccion>("registros");
     const [periodo, setPeriodo] = useState(getCurrentPeriodo());
 
     function triggerDownload(url: string, filename: string) {
@@ -102,9 +104,14 @@ export default function ImportarPage() {
     const [registros, setRegistros] = useState<RegistrosData | null>(null);
     const [registrosLoading, setRegistrosLoading] = useState(false);
     const [debitoSearch, setDebitoSearch] = useState("");
+    const [deudasPage, setDeudasPage] = useState(0);
+    const [pagosPage, setPagosPage] = useState(0);
+    const PAGE_SIZE = 50;
 
     const cargarRegistros = async () => {
         setRegistrosLoading(true);
+        setDeudasPage(0);
+        setPagosPage(0);
         try {
             const res = await fetch("/api/admin/importar/registros");
             if (res.ok) setRegistros(await res.json());
@@ -116,6 +123,8 @@ export default function ImportarPage() {
     useEffect(() => {
         if (seccion === "registros" && !registros) cargarRegistros();
     }, [seccion]);
+
+    useEffect(() => { cargarRegistros(); }, []);
 
     // Matriculados
     const [matRegistros, setMatRegistros] = useState<Record<string, string>[]>([]);
@@ -131,16 +140,29 @@ export default function ImportarPage() {
     const finFileRef = useRef<HTMLInputElement>(null);
 
     // Banelco
+    const [banTipo, setBanTipo] = useState<"cuota" | "deuda">("cuota");
     const [banRegistros, setBanRegistros] = useState<Record<string, string>[]>([]);
     const [banLoading, setBanLoading] = useState(false);
     const [banResultado, setBanResultado] = useState<ResultadoImport | null>(null);
     const banFileRef = useRef<HTMLInputElement>(null);
+
+    // Adhesiones
+    const [adhRegistros, setAdhRegistros] = useState<Record<string, string>[]>([]);
+    const [adhLoading, setAdhLoading] = useState(false);
+    const [adhResultado, setAdhResultado] = useState<ResultadoImport | null>(null);
+    const adhFileRef = useRef<HTMLInputElement>(null);
 
     // Usuarios
     const [usrRegistros, setUsrRegistros] = useState<Record<string, string>[]>([]);
     const [usrLoading, setUsrLoading] = useState(false);
     const [usrResultado, setUsrResultado] = useState<ResultadoImport | null>(null);
     const usrFileRef = useRef<HTMLInputElement>(null);
+
+    // Suspensiones
+    const [suspRegistros, setSuspRegistros] = useState<Record<string, string>[]>([]);
+    const [suspLoading, setSuspLoading] = useState(false);
+    const [suspResultado, setSuspResultado] = useState<ResultadoImport | null>(null);
+    const suspFileRef = useRef<HTMLInputElement>(null);
 
     // Fiadores
     const [fiadRegistros, setFiadRegistros] = useState<Record<string, string>[]>([]);
@@ -226,6 +248,28 @@ export default function ImportarPage() {
         finally { setFinLoading(false); }
     };
 
+    const handleImportarAdhesiones = async () => {
+        setAdhLoading(true); setAdhResultado(null);
+        try {
+            const res = await fetch("/api/admin/importar/adhesiones", {
+                method: "POST", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ registros: adhRegistros }),
+            });
+            const data = await res.json();
+            if (res.ok) {
+                setAdhResultado({
+                    tipo: data.errores?.length > 0 ? "warning" : "success",
+                    mensaje: `${data.creados} adhesión${data.creados !== 1 ? "es" : ""} importada${data.creados !== 1 ? "s" : ""}. ${data.omitidos} ya existían.`,
+                    detalles: data.errores,
+                });
+                if (data.creados > 0) { setAdhRegistros([]); if (adhFileRef.current) adhFileRef.current.value = ""; }
+            } else {
+                setAdhResultado({ tipo: "error", mensaje: data.error ?? "Error al importar" });
+            }
+        } catch { setAdhResultado({ tipo: "error", mensaje: "Error de conexión" }); }
+        finally { setAdhLoading(false); }
+    };
+
     const handleImportarUsuarios = async () => {
         setUsrLoading(true); setUsrResultado(null);
         try {
@@ -282,23 +326,36 @@ export default function ImportarPage() {
     const handleImportarBanelco = async () => {
         setBanLoading(true); setBanResultado(null); setBanDuplicados([]);
         try {
-            const res = await fetch("/api/admin/importar/banelco", {
+            const url = banTipo === "deuda" ? "/api/admin/importar/banelco-deuda" : "/api/admin/importar/banelco";
+            const res = await fetch(url, {
                 method: "POST", headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ registros: banRegistros }),
             });
             const data = await res.json();
             if (res.ok) {
-                const partes = [`${data.pagados} cuota${data.pagados !== 1 ? "s" : ""} marcada${data.pagados !== 1 ? "s" : ""} como pagadas vía Banelco.`];
-                if (data.duplicados?.length > 0) partes.push(`${data.duplicados.length} posible${data.duplicados.length !== 1 ? "s" : ""} doble pago.`);
-                if (data.sinExpediente > 0) partes.push(`${data.sinExpediente} sin expediente.`);
-                if (data.sinCuota > 0) partes.push(`${data.sinCuota} sin cuota generada.`);
-                setBanResultado({
-                    tipo: data.duplicados?.length > 0 ? "warning" : (data.errores?.length > 0 ? "warning" : "success"),
-                    mensaje: partes.join(" "),
-                    detalles: data.errores,
-                });
-                if (data.duplicados?.length > 0) setBanDuplicados(data.duplicados);
-                if (data.pagados > 0) { setBanRegistros([]); if (banFileRef.current) banFileRef.current.value = ""; }
+                if (banTipo === "deuda") {
+                    const partes = [`${data.procesados} pago${data.procesados !== 1 ? "s" : ""} de deuda registrado${data.procesados !== 1 ? "s" : ""} vía Banelco.`];
+                    if (data.sinExpediente > 0) partes.push(`${data.sinExpediente} sin expediente.`);
+                    if (data.sinDeuda > 0) partes.push(`${data.sinDeuda} sin deuda registrada.`);
+                    setBanResultado({
+                        tipo: data.errores?.length > 0 ? "warning" : "success",
+                        mensaje: partes.join(" "),
+                        detalles: data.errores,
+                    });
+                    if (data.procesados > 0) { setBanRegistros([]); if (banFileRef.current) banFileRef.current.value = ""; }
+                } else {
+                    const partes = [`${data.pagados} cuota${data.pagados !== 1 ? "s" : ""} marcada${data.pagados !== 1 ? "s" : ""} como pagadas vía Banelco.`];
+                    if (data.duplicados?.length > 0) partes.push(`${data.duplicados.length} posible${data.duplicados.length !== 1 ? "s" : ""} doble pago.`);
+                    if (data.sinExpediente > 0) partes.push(`${data.sinExpediente} sin expediente.`);
+                    if (data.sinCuota > 0) partes.push(`${data.sinCuota} sin cuota generada.`);
+                    setBanResultado({
+                        tipo: data.duplicados?.length > 0 ? "warning" : (data.errores?.length > 0 ? "warning" : "success"),
+                        mensaje: partes.join(" "),
+                        detalles: data.errores,
+                    });
+                    if (data.duplicados?.length > 0) setBanDuplicados(data.duplicados);
+                    if (data.pagados > 0) { setBanRegistros([]); if (banFileRef.current) banFileRef.current.value = ""; }
+                }
             } else {
                 setBanResultado({ tipo: "error", mensaje: data.error ?? "Error al importar" });
             }
@@ -306,13 +363,37 @@ export default function ImportarPage() {
         finally { setBanLoading(false); }
     };
 
+    const handleImportarSuspensiones = async () => {
+        setSuspLoading(true); setSuspResultado(null);
+        try {
+            const res = await fetch("/api/admin/importar/suspensiones", {
+                method: "POST", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ registros: suspRegistros }),
+            });
+            const data = await res.json();
+            if (res.ok) {
+                setSuspResultado({
+                    tipo: data.errores?.length > 0 ? "warning" : "success",
+                    mensaje: `${data.procesados} suspensión${data.procesados !== 1 ? "es" : ""} aplicada${data.procesados !== 1 ? "s" : ""}. ${data.omitidos} sin cuenta de usuario.`,
+                    detalles: data.errores,
+                });
+                if (data.procesados > 0) { setSuspRegistros([]); if (suspFileRef.current) suspFileRef.current.value = ""; }
+            } else {
+                setSuspResultado({ tipo: "error", mensaje: data.error ?? "Error al importar" });
+            }
+        } catch { setSuspResultado({ tipo: "error", mensaje: "Error de conexión" }); }
+        finally { setSuspLoading(false); }
+    };
+
     const tabs: { id: Seccion; label: string; icon: React.ReactNode; color: string; activeColor: string }[] = [
-        { id: "matriculados", label: "Nuevos Matriculados", icon: <UserPlus size={15} />, color: "text-cyan-600 dark:text-cyan-400", activeColor: "border-cyan-500 bg-cyan-50/50 dark:bg-cyan-900/10" },
-        { id: "financiero", label: "Deudas y Matrículas", icon: <DollarSign size={15} />, color: "text-emerald-600 dark:text-emerald-400", activeColor: "border-emerald-500 bg-emerald-50/50 dark:bg-emerald-900/10" },
-        { id: "banelco", label: "Pagos Home Banking", icon: <Landmark size={15} />, color: "text-blue-600 dark:text-blue-400", activeColor: "border-blue-500 bg-blue-50/50 dark:bg-blue-900/10" },
+        { id: "registros", label: "Registros", icon: <List size={15} />, color: "text-violet-600 dark:text-violet-400", activeColor: "border-violet-500 bg-violet-50/50 dark:bg-violet-900/10" },
+        { id: "matriculados", label: "Matriculados", icon: <UserPlus size={15} />, color: "text-cyan-600 dark:text-cyan-400", activeColor: "border-cyan-500 bg-cyan-50/50 dark:bg-cyan-900/10" },
+        { id: "financiero", label: "Financiero", icon: <DollarSign size={15} />, color: "text-emerald-600 dark:text-emerald-400", activeColor: "border-emerald-500 bg-emerald-50/50 dark:bg-emerald-900/10" },
+        { id: "banelco", label: "Home Banking", icon: <Landmark size={15} />, color: "text-blue-600 dark:text-blue-400", activeColor: "border-blue-500 bg-blue-50/50 dark:bg-blue-900/10" },
         { id: "fiadores", label: "Fiadores", icon: <HandshakeIcon size={15} />, color: "text-orange-600 dark:text-orange-400", activeColor: "border-orange-500 bg-orange-50/50 dark:bg-orange-900/10" },
-        { id: "usuarios", label: "Cuentas de Usuarios", icon: <KeyRound size={15} />, color: "text-purple-600 dark:text-purple-400", activeColor: "border-purple-500 bg-purple-50/50 dark:bg-purple-900/10" },
-        { id: "registros", label: "Ver Registros", icon: <List size={15} />, color: "text-violet-600 dark:text-violet-400", activeColor: "border-violet-500 bg-violet-50/50 dark:bg-violet-900/10" },
+        { id: "adhesiones", label: "Débito Aut.", icon: <Banknote size={15} />, color: "text-teal-600 dark:text-teal-400", activeColor: "border-teal-500 bg-teal-50/50 dark:bg-teal-900/10" },
+        { id: "usuarios", label: "Usuarios", icon: <KeyRound size={15} />, color: "text-purple-600 dark:text-purple-400", activeColor: "border-purple-500 bg-purple-50/50 dark:bg-purple-900/10" },
+        { id: "suspensiones", label: "Suspensiones", icon: <ShieldOff size={15} />, color: "text-rose-600 dark:text-rose-400", activeColor: "border-rose-500 bg-rose-50/50 dark:bg-rose-900/10" },
     ];
 
     return (
@@ -353,9 +434,15 @@ export default function ImportarPage() {
                     </div>
 
                     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6 space-y-4">
-                        <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Archivo CSV</label>
+                        <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Archivo CSV o Excel</label>
                         <UploadZone fileRef={matFileRef} hasData={matRegistros.length > 0} count={matRegistros.length}
-                            onChange={e => handleCSVChange(e, setMatRegistros, setMatResultado)} accept=".csv,text/csv" color="cyan" />
+                            onChange={e => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                if (file.name.match(/\.xlsx?$/i)) handleExcelChange(e, setMatRegistros, setMatResultado);
+                                else handleCSVChange(e, setMatRegistros, setMatResultado);
+                            }}
+                            accept=".csv,.xlsx,.xls" color="cyan" label="Hacé clic o arrastrá el CSV o Excel" />
                         <PreviewTable rows={matRegistros} />
                         {matResultado && <Resultado resultado={matResultado} onClose={() => setMatResultado(null)} />}
                         <div className="flex items-center justify-between pt-2">
@@ -380,7 +467,7 @@ export default function ImportarPage() {
                     <div className="p-5 rounded-2xl bg-emerald-50/50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900/30">
                         <p className="text-[13px] font-bold text-emerald-800 dark:text-emerald-400 mb-1">¿Cómo funciona?</p>
                         <p className="text-[12px] text-emerald-700/70 dark:text-emerald-400/60 leading-relaxed">
-                            Seleccioná el tipo de dato y subí el CSV. Los registros existentes se reemplazan con los nuevos valores.
+                            Seleccioná el tipo de dato y subí el archivo. La tabla completa se reemplaza con los datos del archivo — los registros anteriores se borran y se cargan los nuevos.
                         </p>
                     </div>
                     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6 space-y-5">
@@ -400,7 +487,13 @@ export default function ImportarPage() {
                             </button>
                         </div>
                         <UploadZone fileRef={finFileRef} hasData={finRegistros.length > 0} count={finRegistros.length}
-                            onChange={e => handleCSVChange(e, setFinRegistros, setFinResultado)} accept=".csv,text/csv" color="emerald" />
+                            onChange={e => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                if (file.name.match(/\.xlsx?$/i)) handleExcelChange(e, setFinRegistros, setFinResultado);
+                                else handleCSVChange(e, setFinRegistros, setFinResultado);
+                            }}
+                            accept=".csv,.xlsx,.xls" color="emerald" label="Hacé clic o arrastrá el CSV o Excel" />
                         <PreviewTable rows={finRegistros} />
                         {finResultado && <Resultado resultado={finResultado} onClose={() => setFinResultado(null)} />}
                         <div className="flex items-center justify-between pt-2">
@@ -422,11 +515,29 @@ export default function ImportarPage() {
             {/* BANELCO */}
             {seccion === "banelco" && (
                 <div className="space-y-5">
+                    {/* Selector tipo */}
+                    <div className="flex gap-3">
+                        {[
+                            { key: "cuota", label: "Cuota Mensual", desc: "Marca la cuota del mes como pagada" },
+                            { key: "deuda", label: "Pago de Deuda", desc: "Reduce o elimina la deuda del matriculado" },
+                        ].map(opt => (
+                            <button key={opt.key} onClick={() => { setBanTipo(opt.key as "cuota" | "deuda"); setBanRegistros([]); setBanResultado(null); setBanDuplicados([]); if (banFileRef.current) banFileRef.current.value = ""; }}
+                                className={`flex-1 p-3 rounded-xl border-2 text-left transition-all ${banTipo === opt.key ? "border-blue-500 bg-blue-50/50 dark:bg-blue-900/10" : "border-slate-100 dark:border-slate-800 hover:border-slate-200"}`}>
+                                <p className={`text-[12px] font-bold ${banTipo === opt.key ? "text-blue-600 dark:text-blue-400" : "text-slate-600 dark:text-slate-400"}`}>{opt.label}</p>
+                                <p className="text-[10px] text-slate-400 mt-0.5">{opt.desc}</p>
+                            </button>
+                        ))}
+                    </div>
+
                     <div className="p-5 rounded-2xl bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30">
-                        <p className="text-[13px] font-bold text-blue-800 dark:text-blue-400 mb-1">Pagos por Banelco / Home Banking</p>
+                        <p className="text-[13px] font-bold text-blue-800 dark:text-blue-400 mb-1">
+                            {banTipo === "cuota" ? "Pagos por Banelco / Home Banking — Cuota Mensual" : "Pagos por Banelco / Home Banking — Deudas"}
+                        </p>
                         <p className="text-[12px] text-blue-700/70 dark:text-blue-400/60 leading-relaxed">
-                            Subí el Excel de cobranzas Banelco. El sistema usa la columna <strong>Cliente</strong> para identificar al matriculado
-                            y marca su cuota del <strong>mes actual</strong> como pagada. La fecha de cobro y el número de comprobante se toman del Excel.
+                            {banTipo === "cuota"
+                                ? <>Subí el Excel de cobranzas Banelco. El sistema usa la columna <strong>Cliente</strong> para identificar al matriculado y marca su cuota del <strong>mes actual</strong> como pagada.</>
+                                : <>Subí el Excel de pagos de deuda. El sistema usa la columna <strong>Cliente</strong> (cod) y <strong>Importe</strong> para reducir o eliminar la deuda. Si el pago es total, la deuda queda en $0; si es parcial, se descuenta del saldo.</>
+                            }
                         </p>
                     </div>
 
@@ -538,7 +649,13 @@ export default function ImportarPage() {
                     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6 space-y-4">
                         <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Archivo CSV</label>
                         <UploadZone fileRef={fiadFileRef} hasData={fiadRegistros.length > 0} count={fiadRegistros.length}
-                            onChange={e => handleCSVChange(e, setFiadRegistros, setFiadResultado)} accept=".csv,text/csv" color="orange" />
+                            onChange={e => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                if (file.name.match(/\.xlsx?$/i)) handleExcelChange(e, setFiadRegistros, setFiadResultado);
+                                else handleCSVChange(e, setFiadRegistros, setFiadResultado);
+                            }}
+                            accept=".csv,.xlsx,.xls" color="orange" label="Hacé clic o arrastrá el CSV o Excel" />
                         <PreviewTable rows={fiadRegistros} />
                         {fiadResultado && <Resultado resultado={fiadResultado} onClose={() => setFiadResultado(null)} />}
                         <div className="flex items-center justify-between pt-2">
@@ -552,6 +669,57 @@ export default function ImportarPage() {
                                 className="ml-auto flex items-center gap-2 px-6 h-10 bg-orange-500 text-white rounded-xl text-[13px] font-bold hover:bg-orange-600 disabled:opacity-40 transition-all active:scale-95">
                                 {fiadLoading ? <Loader2 size={15} className="animate-spin" /> : <HandshakeIcon size={15} />}
                                 {fiadLoading ? "Importando..." : `Importar${fiadRegistros.length > 0 ? ` ${fiadRegistros.length} registros` : ""}`}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ADHESIONES */}
+            {seccion === "adhesiones" && (
+                <div className="space-y-5">
+                    <div className="p-5 rounded-2xl bg-teal-50/50 dark:bg-teal-900/10 border border-teal-100 dark:border-teal-900/30">
+                        <p className="text-[13px] font-bold text-teal-800 dark:text-teal-400 mb-1">¿Cómo funciona?</p>
+                        <p className="text-[12px] text-teal-700/70 dark:text-teal-400/60 leading-relaxed">
+                            Importá los expedientes adheridos al débito automático desde el sistema anterior.
+                            El CSV solo necesita la columna <strong>expediente</strong>. Si no se indica tipo de adhesión, se registra como <strong>"Adherido sistema anterior"</strong>.
+                            Los que ya tienen una adhesión aprobada se omiten. Se importan con estado <strong>aprobada</strong>.
+                        </p>
+                        <button
+                            onClick={() => {
+                                const content = "expediente,tipoAdhesion\n564,CBU\n792,Tarjeta\n831,";
+                                const blob = new Blob(["﻿" + content], { type: "text/csv;charset=utf-8;" });
+                                triggerDownload(URL.createObjectURL(blob), "plantilla_adhesiones.csv");
+                            }}
+                            className="mt-3 inline-flex items-center gap-2 text-[11px] font-bold text-teal-600 dark:text-teal-400 hover:underline"
+                        >
+                            <FileText size={12} /> Descargar plantilla CSV
+                        </button>
+                    </div>
+
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6 space-y-4">
+                        <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Archivo CSV o Excel</label>
+                        <UploadZone fileRef={adhFileRef} hasData={adhRegistros.length > 0} count={adhRegistros.length}
+                            onChange={e => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                if (file.name.match(/\.xlsx?$/i)) handleExcelChange(e, setAdhRegistros, setAdhResultado);
+                                else handleCSVChange(e, setAdhRegistros, setAdhResultado);
+                            }}
+                            accept=".csv,.xlsx,.xls" color="teal" label="Hacé clic o arrastrá el CSV o Excel" />
+                        <PreviewTable rows={adhRegistros} />
+                        {adhResultado && <Resultado resultado={adhResultado} onClose={() => setAdhResultado(null)} />}
+                        <div className="flex items-center justify-between pt-2">
+                            {adhRegistros.length > 0 && (
+                                <button onClick={() => { setAdhRegistros([]); if (adhFileRef.current) adhFileRef.current.value = ""; }}
+                                    className="text-[12px] text-slate-400 hover:text-slate-600 flex items-center gap-1">
+                                    <X size={13} /> Limpiar
+                                </button>
+                            )}
+                            <button onClick={handleImportarAdhesiones} disabled={adhRegistros.length === 0 || adhLoading}
+                                className="ml-auto flex items-center gap-2 px-6 h-10 bg-teal-600 text-white rounded-xl text-[13px] font-bold hover:bg-teal-700 disabled:opacity-40 transition-all active:scale-95">
+                                {adhLoading ? <Loader2 size={15} className="animate-spin" /> : <Banknote size={15} />}
+                                {adhLoading ? "Importando..." : `Importar${adhRegistros.length > 0 ? ` ${adhRegistros.length} registros` : ""}`}
                             </button>
                         </div>
                     </div>
@@ -584,7 +752,13 @@ export default function ImportarPage() {
                     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6 space-y-4">
                         <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Archivo CSV</label>
                         <UploadZone fileRef={usrFileRef} hasData={usrRegistros.length > 0} count={usrRegistros.length}
-                            onChange={e => handleCSVChange(e, setUsrRegistros, setUsrResultado)} accept=".csv,text/csv" color="purple" />
+                            onChange={e => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                if (file.name.match(/\.xlsx?$/i)) handleExcelChange(e, setUsrRegistros, setUsrResultado);
+                                else handleCSVChange(e, setUsrRegistros, setUsrResultado);
+                            }}
+                            accept=".csv,.xlsx,.xls" color="purple" label="Hacé clic o arrastrá el CSV o Excel" />
                         <PreviewTable rows={usrRegistros} />
                         {usrResultado && <Resultado resultado={usrResultado} onClose={() => setUsrResultado(null)} />}
                         <div className="flex items-center justify-between pt-2">
@@ -623,42 +797,52 @@ export default function ImportarPage() {
                         <div className="space-y-6">
                             {/* Deudas */}
                             <RegistroCard title="Deudas" count={registros.deudas.length} icon={<Ban size={13} className="text-red-500" />} color="red">
-                                {registros.deudas.length === 0 ? <EmptyRow text="Sin deudas registradas" /> : (
-                                    <table className="w-full text-[12px]">
-                                        <thead className="bg-slate-50 dark:bg-slate-800/40">
-                                            <tr>
-                                                <th className="px-5 py-2.5 text-left font-bold text-slate-400 uppercase tracking-wider text-[10px]">Expediente</th>
-                                                <th className="px-5 py-2.5 text-right font-bold text-slate-400 uppercase tracking-wider text-[10px]">Monto</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-slate-50 dark:divide-slate-800/60">
-                                            {registros.deudas.map(d => (
-                                                <tr key={d.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20">
-                                                    <td className="px-5 py-2.5 font-medium text-slate-700 dark:text-slate-300">{d.expediente}</td>
-                                                    <td className="px-5 py-2.5 text-right text-red-600 dark:text-red-400 font-bold">${d.monto.toLocaleString("es-AR")}</td>
+                                {registros.deudas.length === 0 ? <EmptyRow text="Sin deudas registradas" /> : (() => {
+                                    const slice = registros.deudas.slice(deudasPage * PAGE_SIZE, (deudasPage + 1) * PAGE_SIZE);
+                                    const totalPages = Math.ceil(registros.deudas.length / PAGE_SIZE);
+                                    return <>
+                                        <table className="w-full text-[12px]">
+                                            <thead className="bg-slate-50 dark:bg-slate-800/40">
+                                                <tr>
+                                                    <th className="px-5 py-2.5 text-left font-bold text-slate-400 uppercase tracking-wider text-[10px]">Expediente</th>
+                                                    <th className="px-5 py-2.5 text-right font-bold text-slate-400 uppercase tracking-wider text-[10px]">Monto</th>
                                                 </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                )}
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-50 dark:divide-slate-800/60">
+                                                {slice.map(d => (
+                                                    <tr key={d.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20">
+                                                        <td className="px-5 py-2.5 font-medium text-slate-700 dark:text-slate-300">{d.expediente}</td>
+                                                        <td className="px-5 py-2.5 text-right text-red-600 dark:text-red-400 font-bold">${d.monto.toLocaleString("es-AR")}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                        {totalPages > 1 && <Paginador page={deudasPage} total={totalPages} onChange={setDeudasPage} />}
+                                    </>;
+                                })()}
                             </RegistroCard>
 
                             {/* Pago Anual */}
                             <RegistroCard title="Pago Anual" count={registros.pagosAnuales.length} icon={<CheckCircle2 size={13} className="text-emerald-500" />} color="emerald">
-                                {registros.pagosAnuales.length === 0 ? <EmptyRow text="Sin pagos anuales registrados" /> : (
-                                    <table className="w-full text-[12px]">
-                                        <thead className="bg-slate-50 dark:bg-slate-800/40">
-                                            <tr><th className="px-5 py-2.5 text-left font-bold text-slate-400 uppercase tracking-wider text-[10px]">Expediente</th></tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-slate-50 dark:divide-slate-800/60">
-                                            {registros.pagosAnuales.map(p => (
-                                                <tr key={p.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20">
-                                                    <td className="px-5 py-2.5 font-medium text-slate-700 dark:text-slate-300">{p.expediente}</td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                )}
+                                {registros.pagosAnuales.length === 0 ? <EmptyRow text="Sin pagos anuales registrados" /> : (() => {
+                                    const slice = registros.pagosAnuales.slice(pagosPage * PAGE_SIZE, (pagosPage + 1) * PAGE_SIZE);
+                                    const totalPages = Math.ceil(registros.pagosAnuales.length / PAGE_SIZE);
+                                    return <>
+                                        <table className="w-full text-[12px]">
+                                            <thead className="bg-slate-50 dark:bg-slate-800/40">
+                                                <tr><th className="px-5 py-2.5 text-left font-bold text-slate-400 uppercase tracking-wider text-[10px]">Expediente</th></tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-50 dark:divide-slate-800/60">
+                                                {slice.map(p => (
+                                                    <tr key={p.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20">
+                                                        <td className="px-5 py-2.5 font-medium text-slate-700 dark:text-slate-300">{p.expediente}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                        {totalPages > 1 && <Paginador page={pagosPage} total={totalPages} onChange={setPagosPage} />}
+                                    </>;
+                                })()}
                             </RegistroCard>
 
                             {/* Débito Automático */}
@@ -702,6 +886,53 @@ export default function ImportarPage() {
                             </RegistroCard>
                         </div>
                     )}
+                </div>
+            )}
+
+            {/* SUSPENSIONES */}
+            {seccion === "suspensiones" && (
+                <div className="space-y-5">
+                    <div className="p-5 rounded-2xl bg-rose-50/50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-900/30">
+                        <p className="text-[13px] font-bold text-rose-800 dark:text-rose-400 mb-1">¿Cómo funciona?</p>
+                        <p className="text-[12px] text-rose-700/70 dark:text-rose-400/60 leading-relaxed">
+                            Importá el estado de suspensiones desde el sistema anterior. El archivo debe tener las columnas <strong>expediente</strong>, <strong>accion</strong> y opcionalmente <strong>comentario</strong>.<br />
+                            Acciones válidas: <strong>suspension</strong> · <strong>cancelacion</strong> · <strong>habilitacion</strong>.<br />
+                            Cada fila aplica el estado al usuario y registra una entrada en el historial de matrícula.
+                        </p>
+                        <button
+                            onClick={() => { window.open("/api/admin/importar/suspensiones", "_blank"); }}
+                            className="mt-3 inline-flex items-center gap-2 text-[11px] font-bold text-rose-600 dark:text-rose-400 hover:underline"
+                        >
+                            <FileText size={12} /> Descargar plantilla CSV
+                        </button>
+                    </div>
+
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6 space-y-4">
+                        <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Archivo CSV o Excel</label>
+                        <UploadZone fileRef={suspFileRef} hasData={suspRegistros.length > 0} count={suspRegistros.length}
+                            onChange={e => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                if (file.name.match(/\.xlsx?$/i)) handleExcelChange(e, setSuspRegistros, setSuspResultado);
+                                else handleCSVChange(e, setSuspRegistros, setSuspResultado);
+                            }}
+                            accept=".csv,.xlsx,.xls" color="rose" label="Hacé clic o arrastrá el CSV o Excel" />
+                        <PreviewTable rows={suspRegistros} />
+                        {suspResultado && <Resultado resultado={suspResultado} onClose={() => setSuspResultado(null)} />}
+                        <div className="flex items-center justify-between pt-2">
+                            {suspRegistros.length > 0 && (
+                                <button onClick={() => { setSuspRegistros([]); if (suspFileRef.current) suspFileRef.current.value = ""; }}
+                                    className="text-[12px] text-slate-400 hover:text-slate-600 flex items-center gap-1">
+                                    <X size={13} /> Limpiar
+                                </button>
+                            )}
+                            <button onClick={handleImportarSuspensiones} disabled={suspRegistros.length === 0 || suspLoading}
+                                className="ml-auto flex items-center gap-2 px-6 h-10 bg-rose-600 text-white rounded-xl text-[13px] font-bold hover:bg-rose-700 disabled:opacity-40 transition-all active:scale-95">
+                                {suspLoading ? <Loader2 size={15} className="animate-spin" /> : <ShieldOff size={15} />}
+                                {suspLoading ? "Aplicando..." : `Aplicar${suspRegistros.length > 0 ? ` ${suspRegistros.length} registros` : ""}`}
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>
@@ -764,6 +995,24 @@ function RegistroCard({ title, count, icon, color, children }: { title: string; 
 
 function EmptyRow({ text }: { text: string }) {
     return <p className="text-center text-[12px] text-slate-400 py-8">{text}</p>;
+}
+
+function Paginador({ page, total, onChange }: { page: number; total: number; onChange: (p: number) => void }) {
+    return (
+        <div className="flex items-center justify-between px-5 py-3 border-t border-slate-50 dark:border-slate-800/60">
+            <span className="text-[11px] text-slate-400">Página {page + 1} de {total}</span>
+            <div className="flex gap-2">
+                <button onClick={() => onChange(page - 1)} disabled={page === 0}
+                    className="px-3 py-1 text-[11px] font-bold rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-30 transition-all">
+                    ← Ant.
+                </button>
+                <button onClick={() => onChange(page + 1)} disabled={page >= total - 1}
+                    className="px-3 py-1 text-[11px] font-bold rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-30 transition-all">
+                    Sig. →
+                </button>
+            </div>
+        </div>
+    );
 }
 
 function Resultado({ resultado, onClose }: { resultado: { tipo: string; mensaje: string; detalles?: string[] }; onClose: () => void }) {

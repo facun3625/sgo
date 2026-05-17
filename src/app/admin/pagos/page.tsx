@@ -36,6 +36,7 @@ interface Stats {
     cuotaGenerada: number;
     cuotaPagada: number;
     cuotaPendiente: number;
+    transferenciasPendientes: number;
     sinCuota: number;
     pagadasPorMP: number;
     pagadasPorTransferencia: number;
@@ -534,9 +535,9 @@ export default function PagosAdminPage() {
                     <Link href="/admin/transferencias"
                         className="flex items-center gap-2 px-4 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[12px] font-semibold hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
                         <Landmark size={14} /> Transferencias
-                        {(stats?.cuotaPendiente ?? 0) > 0 && (
+                        {(stats?.transferenciasPendientes ?? 0) > 0 && (
                             <span className="px-1.5 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-bold">
-                                {stats?.cuotaPendiente}
+                                {stats?.transferenciasPendientes}
                             </span>
                         )}
                     </Link>

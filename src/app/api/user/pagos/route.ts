@@ -28,6 +28,7 @@ export async function GET() {
             pagoAnual,
             dbUser,
             datoMatricula,
+            deudasPagadas,
             boletasRaw,
         ] = await Promise.all([
             prisma.deuda.findMany({ where: { expediente } }),
@@ -49,7 +50,13 @@ export async function GET() {
             }),
             prisma.pagoAnual.findFirst({ where: { expediente } }),
             prisma.user.findUnique({ where: { expediente }, select: { status: true } }),
-            prisma.dato.findFirst({ where: { expediente }, select: { fechaMatriculacion: true } }),
+            prisma.dato.findFirst({ where: { expediente }, select: { fechaMatriculacion: true, tipo: true } }),
+            prisma.deudaPagada.findMany({
+                where: { expediente },
+                orderBy: { fechaPago: "desc" },
+                take: 10,
+                select: { id: true, monto: true, metodoPago: true, fechaPago: true },
+            }),
             (prisma as any).facturaSantaFe.findMany({
                 where: { expediente },
                 orderBy: { createdAt: "desc" },
@@ -97,8 +104,9 @@ export async function GET() {
         const debitoPendiente = !!debitoEnTramite;
         const cancelacionEnTramite = !!cancelacionPendiente;
 
+        const esConsultor = datoMatricula?.tipo === "consultor";
         const montoAnualBase = configMontoAnual ? parseFloat(configMontoAnual.valor) : 48000;
-        const joven = esMatriculadoJoven(datoMatricula?.fechaMatriculacion);
+        const joven = esConsultor ? false : esMatriculadoJoven(datoMatricula?.fechaMatriculacion);
         const montoAnual = montoConDescuento(montoAnualBase, joven);
 
         // Ventana de pago anual — si no está configurada, fallback a ene-mar
@@ -134,6 +142,8 @@ export async function GET() {
             hasDebitoEnTramite: debitoPendiente,
             hasCancelacionPendiente: cancelacionEnTramite,
             hasPagoAnualActivo: !!pagoAnual,
+            deudasPagadas,
+            esConsultor,
             esJoven: joven,
             totalDeuda: deudas.reduce((acc, curr) => acc + curr.monto, 0),
             transferenciaHabilitada: {

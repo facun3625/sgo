@@ -14,6 +14,7 @@ import {
     Clock,
     Download,
     GraduationCap,
+    Briefcase,
 } from "lucide-react";
 import MpPayButton from "@/components/MpPayButton";
 import TransferenciaPayButton from "@/components/TransferenciaPayButton";
@@ -31,6 +32,7 @@ interface CuotaMensualData {
     monto: number;
     estado: string;
     metodo?: "mercadopago" | "transferencia" | "home_banking" | "transferencia_pendiente" | null;
+    metodoPago?: string | null;
 }
 
 interface Boleta {
@@ -54,7 +56,16 @@ interface PagosData {
     totalDeuda: number;
     userStatus: string;
     esJoven: boolean;
+    esConsultor: boolean;
+    deudasPagadas: { id: number; monto: number; metodoPago: string; fechaPago: string }[];
     boletas: { mensual: Boleta | null; anual: Boleta | null; deuda: Boleta | null };
+}
+
+function labelMetodoPago(metodo?: string | null): string {
+    if (metodo === "mercadopago") return "Mercado Pago";
+    if (metodo === "banelco" || metodo === "home_banking") return "Banelco / Home Banking";
+    if (metodo === "transferencia") return "Transferencia bancaria";
+    return "";
 }
 
 function formatPeriodo(periodo: string): string {
@@ -110,6 +121,19 @@ export default function MatriculaStatus() {
 
     return (
         <div className="space-y-10 animate-fade-in pb-20">
+
+            {/* BANNER CONSULTOR */}
+            {data?.esConsultor && (
+                <div className="flex items-center gap-4 px-6 py-4 rounded-2xl bg-indigo-50 dark:bg-indigo-900/15 border border-indigo-100 dark:border-indigo-800/40">
+                    <div className="w-10 h-10 rounded-xl bg-indigo-500 flex items-center justify-center shrink-0 shadow-md shadow-indigo-500/20">
+                        <Briefcase size={20} className="text-white" />
+                    </div>
+                    <div>
+                        <p className="text-[13px] font-bold text-indigo-800 dark:text-indigo-300">Matrícula Consultor</p>
+                        <p className="text-[12px] text-indigo-700/70 dark:text-indigo-400/60">Tu matrícula es de tipo consultor — no estás sujeto al pago de cuota mensual ni anual.</p>
+                    </div>
+                </div>
+            )}
 
             {/* BANNER JOVEN MATRICULADO */}
             {data?.esJoven && (
@@ -218,12 +242,22 @@ export default function MatriculaStatus() {
                             </div>
 
                             <div className="flex items-end justify-between pt-4">
-                                {data?.hasPagoAnualActivo || data?.hasDebitoAutomatico ? (
+                                {data?.esConsultor ? (
+                                    <div className="w-full flex items-center justify-between">
+                                        <div>
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Estado</p>
+                                            <p className="text-sm font-bold text-indigo-600 dark:text-indigo-400">Matrícula Consultor — no aplica</p>
+                                        </div>
+                                        <div className="w-10 h-10 rounded-full bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 border border-indigo-100 dark:border-indigo-500/20 flex items-center justify-center">
+                                            <Briefcase size={18} />
+                                        </div>
+                                    </div>
+                                ) : data?.hasPagoAnualActivo || data?.hasDebitoAutomatico ? (
                                     <div className="w-full flex items-center justify-between">
                                         <div>
                                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Estado</p>
                                             <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
-                                                {data?.hasPagoAnualActivo ? "Cubierto — Pago Anual" : "Cubierto — Débito Automático"}
+                                                {data?.hasPagoAnualActivo ? "Pago Anual Realizado" : "Adherido a Débito Automático"}
                                             </p>
                                         </div>
                                         <div className="w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 border border-emerald-100 dark:border-emerald-500/20 flex items-center justify-center">
@@ -295,11 +329,22 @@ export default function MatriculaStatus() {
                         </div>
 
                         <div className="flex items-end justify-between pt-4">
-                            {data?.hasDebitoAutomatico ? (
+                            {data?.esConsultor ? (
                                 <div className="w-full flex items-center justify-between">
                                     <div>
                                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Estado de Pago</p>
-                                        <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">Cubierto — Débito Automático</p>
+                                        <p className="text-sm font-bold text-indigo-600 dark:text-indigo-400">Matrícula Consultor — no aplica</p>
+                                        <p className="text-[11px] text-slate-400 mt-0.5">Los consultores no abonan cuota mensual ni anual.</p>
+                                    </div>
+                                    <div className="w-10 h-10 rounded-full bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 border border-indigo-100 dark:border-indigo-500/20 flex items-center justify-center">
+                                        <Briefcase size={18} />
+                                    </div>
+                                </div>
+                            ) : data?.hasDebitoAutomatico ? (
+                                <div className="w-full flex items-center justify-between">
+                                    <div>
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Estado de Pago</p>
+                                        <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">Adherido a Débito Automático</p>
                                     </div>
                                     <div className="w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 border border-emerald-100 dark:border-emerald-500/20 flex items-center justify-center">
                                         <CheckCircle2 size={20} />
@@ -309,7 +354,7 @@ export default function MatriculaStatus() {
                                 <div className="w-full flex items-center justify-between">
                                     <div>
                                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Estado de Pago</p>
-                                        <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">Cubierto — Pago Anual</p>
+                                        <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">Pago Anual Realizado</p>
                                     </div>
                                     <div className="w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 border border-emerald-100 dark:border-emerald-500/20 flex items-center justify-center">
                                         <CheckCircle2 size={20} />
@@ -323,17 +368,16 @@ export default function MatriculaStatus() {
                                             <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
                                                 Abonado — {formatPeriodo(data.cuotaActual.periodo)}
                                             </p>
+                                            {labelMetodoPago(data.cuotaActual.metodoPago) && (
+                                                <p className="text-[11px] text-slate-400 mt-0.5">
+                                                    vía {labelMetodoPago(data.cuotaActual.metodoPago)}
+                                                </p>
+                                            )}
                                         </div>
                                         <div className="w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 border border-emerald-100 dark:border-emerald-500/20 flex items-center justify-center">
                                             <CheckCircle2 size={20} />
                                         </div>
                                     </div>
-                                    {data?.boletas?.mensual && (
-                                        <a href={data.boletas.mensual.archivo} target="_blank" rel="noopener noreferrer"
-                                            className="w-full h-10 px-4 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/50 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-950/40 rounded-xl font-bold text-[11px] transition-all flex items-center justify-center gap-2">
-                                            <Download size={13} /> Descargar boleta
-                                        </a>
-                                    )}
                                 </div>
                             ) : data?.cuotaActual?.estado === "pendiente" && isSuspended ? (
                                 <div className="w-full flex items-center justify-between">
@@ -404,12 +448,22 @@ export default function MatriculaStatus() {
                                 amount={c.monto.toLocaleString("es-AR")}
                                 status={c.estado === "pagado" ? "paid" : "pending"}
                                 metodo={c.metodo}
-                                isLast={i === data.historialCuotas.length - 1}
+                                isLast={i === data.historialCuotas.length - 1 && (!data.deudasPagadas || data.deudasPagadas.length === 0)}
                             />
                         ))
                     ) : (
                         <div className="p-6 text-[13px] text-slate-400 text-center">Sin historial de cuotas</div>
                     )}
+                    {data?.deudasPagadas && data.deudasPagadas.map((d, i) => (
+                        <ConceptItem
+                            key={`deuda-${d.id}`}
+                            label={`Deuda saldada — ${new Date(d.fechaPago).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric" })}`}
+                            amount={d.monto.toLocaleString("es-AR")}
+                            status="paid"
+                            metodo={d.metodoPago === "banelco" ? "home_banking" : d.metodoPago === "transferencia" ? "transferencia" : "mercadopago"}
+                            isLast={i === data.deudasPagadas.length - 1}
+                        />
+                    ))}
                 </div>
             </div>
 

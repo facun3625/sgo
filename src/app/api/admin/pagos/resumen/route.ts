@@ -84,10 +84,13 @@ export async function GET() {
     }
 
     // PagosPendientes para detectar método de pago (transferencia). Preferir "aprobado".
-    const pagosPendientes = await prisma.pagoPendiente.findMany({
-        where: { expediente: { in: expFiltrados }, tipo: "matricula_mensual" },
-        select: { expediente: true, ref: true, estado: true },
-    });
+    const [pagosPendientes, transferenciasCount] = await Promise.all([
+        prisma.pagoPendiente.findMany({
+            where: { expediente: { in: expFiltrados }, tipo: "matricula_mensual" },
+            select: { expediente: true, ref: true, estado: true },
+        }),
+        prisma.pagoPendiente.count({ where: { estado: "pendiente" } }),
+    ]);
     const mapMetodoByCuotaId = new Map<string, string>();
     for (const pp of pagosPendientes) {
         const current = mapMetodoByCuotaId.get(pp.ref);
@@ -124,6 +127,7 @@ export async function GET() {
         totalRecaudado,
         conDeuda: [...mapDeudas.values()].filter((d) => d.total > 0).length,
         totalDeudaAcumulada,
+        transferenciasPendientes: transferenciasCount,
     };
 
     type Cobertura = "mensual" | "debito" | "anual";
