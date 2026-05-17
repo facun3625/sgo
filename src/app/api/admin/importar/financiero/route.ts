@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
     if (tipo === "deudas") {
         const data = registros
             .map(r => ({ expediente: getExpediente(r), monto: getMonto(r) }))
-            .filter(r => r.expediente && !isNaN(r.monto));
+            .filter(r => r.expediente && !isNaN(r.monto) && r.monto > 0);
         if (data.length === 0) return NextResponse.json({ error: "Sin registros válidos" }, { status: 400 });
         await prisma.deuda.deleteMany({});
         await prisma.deuda.createMany({ data });
