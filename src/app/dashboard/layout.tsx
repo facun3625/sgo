@@ -15,7 +15,7 @@ export default async function DashboardLayout({
         redirect("/login");
     }
 
-    if (session.accessLevel === "superadmin" || session.accessLevel === "admin") {
+    if ((session.accessLevel === "superadmin" || session.accessLevel === "admin") && !session._impersonando) {
         redirect("/admin");
     }
 
@@ -73,6 +73,8 @@ export default async function DashboardLayout({
         status: dbUser.status,
         isSuspended: dbUser.status === "suspended" || dbUser.status === "cancelled",
         needsCuil,
+        impersonando: session._impersonando ?? false,
+        impersonadoPor: session._impersonadoPor ?? "",
     };
 
     return (
@@ -80,7 +82,7 @@ export default async function DashboardLayout({
             <DashboardShell user={user}>
                 {children}
             </DashboardShell>
-            {needsCuil && <CuilGate />}
+            {needsCuil && !session._impersonando && <CuilGate />}
         </>
     );
 }

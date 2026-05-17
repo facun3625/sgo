@@ -4,9 +4,10 @@ import { useState, useEffect } from "react";
 import Sidebar from "./Sidebar";
 import TopNav from "./TopNav";
 import Link from "next/link";
-import { X, Newspaper, ArrowRight } from "lucide-react";
+import { X, Newspaper, ArrowRight, Eye, LogOut } from "lucide-react";
 import { ToastProvider } from "@/components/ui/Toast";
 import ChatBot from "./ChatBot";
+import { useRouter } from "next/navigation";
 
 interface Noticia {
     id: number;
@@ -25,6 +26,8 @@ interface DashboardShellProps {
         status: string;
         isSuspended: boolean;
         needsCuil?: boolean;
+        impersonando?: boolean;
+        impersonadoPor?: string;
     };
     children: React.ReactNode;
 }
@@ -32,6 +35,14 @@ interface DashboardShellProps {
 export default function DashboardShell({ user, children }: DashboardShellProps) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [popup, setPopup] = useState<Noticia | null>(null);
+    const [saliendo, setSaliendo] = useState(false);
+    const router = useRouter();
+
+    async function salirImpersonacion() {
+        setSaliendo(true);
+        await fetch("/api/admin/impersonar/salir", { method: "POST" });
+        router.push("/admin/impersonar");
+    }
 
     useEffect(() => {
         const seen = sessionStorage.getItem("noticia_popup_seen");
@@ -66,6 +77,22 @@ export default function DashboardShell({ user, children }: DashboardShellProps) 
             </div>
 
             <div className="flex-1 flex flex-col min-w-0">
+                {/* Banner impersonación */}
+                {user.impersonando && (
+                    <div className="sticky top-0 z-50 flex items-center justify-between gap-3 px-4 py-2.5 bg-amber-400 text-amber-950">
+                        <div className="flex items-center gap-2 text-[13px] font-bold">
+                            <Eye size={16} />
+                            Estás viendo como <span className="uppercase">{user.apellido}, {user.nombre}</span>
+                            <span className="font-normal opacity-70">(exp. {user.expediente})</span>
+                            {user.impersonadoPor && <span className="font-normal opacity-60 hidden sm:inline">— Admin: {user.impersonadoPor}</span>}
+                        </div>
+                        <button onClick={salirImpersonacion} disabled={saliendo}
+                            className="flex items-center gap-1.5 px-3 py-1 bg-amber-950/15 hover:bg-amber-950/25 rounded-lg text-[12px] font-bold transition-all whitespace-nowrap">
+                            <LogOut size={13} />
+                            {saliendo ? "Saliendo..." : "Volver al admin"}
+                        </button>
+                    </div>
+                )}
                 <TopNav user={user} onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
                 <main className="p-0 animate-fade-in">
                     {children}

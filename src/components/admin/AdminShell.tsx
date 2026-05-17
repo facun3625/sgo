@@ -39,6 +39,7 @@ import {
     PlayCircle,
     HardDrive,
     ShieldCheck,
+    Eye,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { SessionPayload } from "@/lib/auth";
@@ -202,6 +203,20 @@ export default function AdminShell({ session, image, permisos, children }: Admin
                             </Link>
                         );
                     })}
+
+                    {/* Ver como usuario — solo superadmin */}
+                    {isSuperAdmin && (
+                        <Link href="/admin/impersonar" onClick={() => setSidebarOpen(false)}
+                            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-[13px] font-medium group
+                                ${pathname.startsWith("/admin/impersonar")
+                                    ? "bg-green-900 text-white dark:bg-white/15"
+                                    : "text-slate-500 dark:text-white/80 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-700 dark:hover:text-white"
+                                }`}>
+                            <Eye size={17} className={pathname.startsWith("/admin/impersonar") ? "text-white" : "text-amber-500 group-hover:scale-110 transition-transform"} />
+                            Ver como usuario
+                            {pathname.startsWith("/admin/impersonar") && <ChevronRight size={13} className="ml-auto text-white/40" />}
+                        </Link>
+                    )}
 
                     {/* Backup — solo superadmin */}
                     {isSuperAdmin && (

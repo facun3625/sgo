@@ -14,7 +14,11 @@ export interface SessionPayload {
     apellido: string;
     accessLevel: string;
     permisos?: string[];
+    _impersonando?: boolean;
+    _impersonadoPor?: string;
 }
+
+export const ADMIN_COOKIE_NAME = "sgo-admin-session";
 
 export async function createSession(payload: SessionPayload) {
     const token = await new SignJWT({ ...payload })
