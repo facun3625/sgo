@@ -21,17 +21,30 @@ export async function POST(req: NextRequest) {
     const bytes = await file.arrayBuffer();
     const wb = XLSX.read(Buffer.from(bytes), { type: "buffer" });
     const ws = wb.Sheets[wb.SheetNames[0]];
-    const rawRows = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws, { defval: "" });
-    if (!rawRows.length) return NextResponse.json({ error: "Excel vacío" }, { status: 400 });
 
-    // Normalizar columnas
-    const rows = rawRows.map(row => {
-        const out: Record<string, string> = {};
-        for (const key of Object.keys(row)) {
-            out[key.toLowerCase().replace(/\s+/g, "_")] = String(row[key] ?? "").trim();
+    // Leer como arrays crudos para detectar fila de encabezado real
+    // (algunos Excel tienen una fila de título antes de los headers)
+    const allRows = XLSX.utils.sheet_to_json<unknown[]>(ws, { header: 1, defval: "" });
+    if (!allRows.length) return NextResponse.json({ error: "Excel vacío" }, { status: 400 });
+
+    // Buscar la primera fila con más de 1 celda no vacía → es el encabezado real
+    let headerIdx = 0;
+    for (let i = 0; i < Math.min(5, allRows.length); i++) {
+        if ((allRows[i] as unknown[]).filter(v => String(v).trim() !== "").length > 1) {
+            headerIdx = i;
+            break;
         }
-        return out;
-    });
+    }
+    const headers = (allRows[headerIdx] as unknown[]).map(h =>
+        String(h).toLowerCase().replace(/\s+/g, "_").replace(/[^a-z0-9_]/g, "")
+    );
+    const rows = (allRows.slice(headerIdx + 1) as unknown[][])
+        .map(arr => {
+            const out: Record<string, string> = {};
+            headers.forEach((h, i) => { if (h) out[h] = String(arr[i] ?? "").trim(); });
+            return out;
+        })
+        .filter(r => Object.values(r).some(v => v !== ""));
 
     const periodo = rows[0]["periodo"] ?? "";
 
