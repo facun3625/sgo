@@ -1,6 +1,9 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { rm, mkdir } from "fs/promises";
+import { join } from "path";
+import { existsSync } from "fs";
 
 export async function GET() {
     const session = await getSession();
@@ -22,4 +25,25 @@ export async function GET() {
     );
 
     return NextResponse.json(batches);
+}
+
+export async function DELETE(req: NextRequest) {
+    const session = await getSession();
+    if (!session || !["admin", "superadmin"].includes(session.accessLevel))
+        return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+
+    const tipo = req.nextUrl.searchParams.get("tipo");
+    if (!tipo || !["mensual", "anual", "deuda"].includes(tipo))
+        return NextResponse.json({ error: "Tipo inválido" }, { status: 400 });
+
+    const uploadDir = join(process.cwd(), "public", "uploads", "boletas", tipo);
+
+    // Borrar carpeta y recrearla vacía
+    if (existsSync(uploadDir)) await rm(uploadDir, { recursive: true, force: true });
+    await mkdir(uploadDir, { recursive: true });
+
+    // Borrar registros DB
+    const { count } = await prisma.facturaSantaFe.deleteMany({ where: { tipo } });
+
+    return NextResponse.json({ ok: true, eliminados: count });
 }

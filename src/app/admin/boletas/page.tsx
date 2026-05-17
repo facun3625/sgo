@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Upload, CheckCircle2, AlertCircle, Loader2, FileArchive, Trash2 } from "lucide-react";
+import { Upload, CheckCircle2, AlertCircle, Loader2, FileSpreadsheet, Trash2, FolderOpen } from "lucide-react";
 
 interface Batch {
     tipo: "mensual" | "anual" | "deuda";
@@ -27,8 +27,22 @@ export default function BoletasAdminPage() {
     const [batches, setBatches] = useState<Batch[]>([]);
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState<string | null>(null);
+    const [eliminando, setEliminando] = useState<string | null>(null);
+    const [confirmEliminar, setConfirmEliminar] = useState<string | null>(null);
     const [results, setResults] = useState<Record<string, UploadResult | { error: string }>>({});
     const fileRefs = useRef<Record<string, HTMLInputElement | null>>({});
+
+    const handleEliminar = async (tipo: string) => {
+        setEliminando(tipo);
+        setConfirmEliminar(null);
+        try {
+            await fetch(`/api/admin/boletas?tipo=${tipo}`, { method: "DELETE" });
+            await fetchBatches();
+            setResults(prev => { const n = { ...prev }; delete n[tipo]; return n; });
+        } finally {
+            setEliminando(null);
+        }
+    };
 
     const fetchBatches = async () => {
         const res = await fetch("/api/admin/boletas");
@@ -49,7 +63,7 @@ export default function BoletasAdminPage() {
         try {
             const fd = new FormData();
             fd.append("tipo", tipo);
-            fd.append("zip", file);
+            fd.append("excel", file);
 
             const res = await fetch("/api/admin/boletas/upload", { method: "POST", body: fd });
             const data = await res.json();
@@ -81,7 +95,7 @@ export default function BoletasAdminPage() {
             <div>
                 <h1 className="text-2xl font-black text-black dark:text-white tracking-tight">Boletas Santa Fe Servicios</h1>
                 <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
-                    Subí un ZIP con el Excel y los PDFs. El lote anterior del mismo tipo se elimina automáticamente.
+                    Subí el Excel de índice. Los PDFs deben estar cargados previamente en el servidor por FTP.
                 </p>
             </div>
 
@@ -145,15 +159,33 @@ export default function BoletasAdminPage() {
                                 )
                             )}
 
+                            {/* Eliminar PDFs */}
+                            {confirmEliminar === tipo ? (
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    <span className="text-[11px] font-bold text-red-600 dark:text-red-400">¿Eliminar todos los PDFs y registros?</span>
+                                    <button onClick={() => handleEliminar(tipo)} disabled={!!eliminando}
+                                        className="flex items-center gap-1.5 px-3 h-7 bg-red-600 text-white rounded-lg text-[11px] font-bold hover:bg-red-700 disabled:opacity-50 transition-all">
+                                        {eliminando === tipo ? <Loader2 size={11} className="animate-spin" /> : <Trash2 size={11} />}
+                                        {eliminando === tipo ? "Eliminando..." : "Sí, eliminar"}
+                                    </button>
+                                    <button onClick={() => setConfirmEliminar(null)} className="text-[11px] text-slate-400 hover:text-slate-600">Cancelar</button>
+                                </div>
+                            ) : (
+                                <button onClick={() => setConfirmEliminar(tipo)} disabled={!!uploading || !!eliminando}
+                                    className="flex items-center gap-1.5 text-[11px] font-bold text-red-500 hover:text-red-700 disabled:opacity-40 transition-colors">
+                                    <Trash2 size={12} /> Vaciar carpeta y registros
+                                </button>
+                            )}
+
                             {/* Upload */}
                             <div className="space-y-3">
                                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                                    Nuevo lote (ZIP)
+                                    Excel de índice (.xlsx / .xls)
                                 </label>
                                 <input
                                     ref={el => { fileRefs.current[tipo] = el; }}
                                     type="file"
-                                    accept=".zip"
+                                    accept=".xlsx,.xls"
                                     disabled={isUploading}
                                     className="w-full text-[12px] text-slate-600 dark:text-slate-400 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-[11px] file:font-bold file:bg-white dark:file:bg-slate-800 file:text-slate-700 dark:file:text-slate-300 file:cursor-pointer hover:file:bg-slate-50 dark:hover:file:bg-slate-700 transition-all"
                                 />
@@ -165,7 +197,7 @@ export default function BoletasAdminPage() {
                                     {isUploading ? (
                                         <><Loader2 size={14} className="animate-spin" /> Procesando...</>
                                     ) : (
-                                        <><Upload size={14} /> Subir y procesar</>
+                                        <><FileSpreadsheet size={14} /> Procesar Excel</>
                                     )}
                                 </button>
                             </div>
@@ -176,12 +208,19 @@ export default function BoletasAdminPage() {
 
             {/* Format hint */}
             <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/30 border border-slate-100 dark:border-slate-800 flex gap-3 items-start">
-                <FileArchive size={16} className="text-slate-400 mt-0.5 shrink-0" />
-                <div className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed space-y-1">
-                    <p className="font-bold text-slate-600 dark:text-slate-300">Formato del ZIP</p>
-                    <p><strong>Mensual/Anual:</strong> Excel con columnas <code>periodo</code>, <code>id_cliente</code>, <code>pdf</code> (+ <code>factura</code> opcional). PDFs nombrados como indica la columna <code>pdf</code>.</p>
-                    <p><strong>Deuda:</strong> Excel con columnas <code>Periodo</code>, <code>Cod_Cliente</code>, <code>pdf</code>. PDFs nombrados como indica la columna <code>pdf</code>.</p>
-                    <p className="text-amber-600 dark:text-amber-400 flex items-center gap-1"><Trash2 size={10} /> Al procesar un nuevo lote, el anterior se elimina automáticamente.</p>
+                <FolderOpen size={16} className="text-slate-400 mt-0.5 shrink-0" />
+                <div className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed space-y-1.5">
+                    <p className="font-bold text-slate-600 dark:text-slate-300">Flujo de carga</p>
+                    <p><strong>1. FTP:</strong> Subí los PDFs al servidor en la carpeta correspondiente:</p>
+                    <div className="font-mono bg-slate-100 dark:bg-slate-800 rounded-lg px-3 py-2 space-y-0.5 text-[10px]">
+                        <p>public/uploads/boletas/<strong>mensual</strong>/</p>
+                        <p>public/uploads/boletas/<strong>anual</strong>/</p>
+                        <p>public/uploads/boletas/<strong>deuda</strong>/</p>
+                    </div>
+                    <p><strong>2. Excel:</strong> Subí el Excel de índice con las columnas:</p>
+                    <p className="pl-2">· <strong>Mensual/Anual:</strong> <code>periodo</code>, <code>id_cliente</code>, <code>pdf</code> (+ <code>factura</code> opcional)</p>
+                    <p className="pl-2">· <strong>Deuda:</strong> <code>Periodo</code>, <code>Cod_Cliente</code>, <code>pdf</code></p>
+                    <p className="text-amber-600 dark:text-amber-400 flex items-center gap-1"><Trash2 size={10} /> Al procesar un nuevo Excel, los registros anteriores del mismo tipo se reemplazan. Los PDFs en el servidor no se tocan.</p>
                 </div>
             </div>
         </div>
