@@ -93,13 +93,13 @@ export async function POST(req: NextRequest) {
         const expediente = codToExp.get(cod);
         if (!expediente) { sinExpediente.push({ cod, pdf: pdfName }); continue; }
 
-        const savedName = pdfName.toUpperCase();
-        const filePath = join(uploadDir, savedName);
+        // Buscar el archivo respetando el nombre exacto del Excel (Linux es case-sensitive)
+        const filePath = join(uploadDir, pdfName);
         if (!existsSync(filePath)) { sinPdf.push({ cod, pdf: pdfName, expediente }); continue; }
 
         records.push({
             tipo, periodo, expediente, cod, factura,
-            archivo: `/uploads/boletas/${tipo}/${savedName}`,
+            archivo: `/uploads/boletas/${tipo}/${pdfName}`,
         });
     }
 
