@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import * as XLSX from "xlsx";
-import { existsSync } from "fs";
-import { join } from "path";
+import { readdirSync } from "node:fs";
+import { join } from "node:path";
 
 export const maxDuration = 60;
 
@@ -50,7 +50,6 @@ export async function POST(req: NextRequest) {
         if (d.expediente) codToExp.set(d.cod, d.expediente);
     }
 
-    // Para los que no tienen expediente en Dato, buscar en User
     const codsSinExp = cods.filter(c => !codToExp.has(c));
     if (codsSinExp.length > 0) {
         const users = await prisma.user.findMany({
@@ -62,15 +61,13 @@ export async function POST(req: NextRequest) {
         }
     }
 
-    // Directorio donde el admin subió los PDFs por FTP
+    // Leer directorio una sola vez y armar Set para lookups O(1)
     const uploadDir = join(process.cwd(), "public", "uploads", "boletas", tipo);
-    console.log("[boletas] uploadDir:", uploadDir);
+    let archivosEnCarpeta: Set<string>;
     try {
-        const { readdirSync } = await import("fs");
-        const archivos = readdirSync(uploadDir);
-        console.log("[boletas] archivos en carpeta:", archivos.length, archivos.slice(0, 3));
-    } catch (e) {
-        console.log("[boletas] error leyendo carpeta:", e);
+        archivosEnCarpeta = new Set(readdirSync(uploadDir));
+    } catch {
+        archivosEnCarpeta = new Set();
     }
 
     // Limpiar registros anteriores del mismo tipo
@@ -93,9 +90,7 @@ export async function POST(req: NextRequest) {
         const expediente = codToExp.get(cod);
         if (!expediente) { sinExpediente.push({ cod, pdf: pdfName }); continue; }
 
-        // Buscar el archivo respetando el nombre exacto del Excel (Linux es case-sensitive)
-        const filePath = join(uploadDir, pdfName);
-        if (!existsSync(filePath)) { sinPdf.push({ cod, pdf: pdfName, expediente }); continue; }
+        if (!archivosEnCarpeta.has(pdfName)) { sinPdf.push({ cod, pdf: pdfName, expediente }); continue; }
 
         records.push({
             tipo, periodo, expediente, cod, factura,
@@ -110,6 +105,5 @@ export async function POST(req: NextRequest) {
         ok: true, procesados: records.length, periodo,
         noEncontrados: sinExpediente.length, pdfFaltantes: sinPdf.length,
         detalle: { sinExpediente, sinPdf },
-        _debug: { uploadDir },
     });
 }
