@@ -56,8 +56,8 @@ export async function POST(req: NextRequest) {
         tipo: string; periodo: string; expediente: string;
         cod: string; factura: string | null; archivo: string;
     }[] = [];
-    let notFound = 0;
-    let pdfFaltantes = 0;
+    const sinExpediente: { cod: string; pdf: string }[] = [];
+    const sinPdf: { cod: string; pdf: string; expediente: string }[] = [];
 
     for (const row of rows) {
         const cod = row["id_cliente"] || row["cod_cliente"] || "";
@@ -67,12 +67,11 @@ export async function POST(req: NextRequest) {
         if (!cod || !pdfName) continue;
 
         const expediente = codToExp.get(cod);
-        if (!expediente) { notFound++; continue; }
+        if (!expediente) { sinExpediente.push({ cod, pdf: pdfName }); continue; }
 
-        // Verificar que el PDF existe en el servidor (subido por FTP)
         const savedName = pdfName.toUpperCase();
         const filePath = join(uploadDir, savedName);
-        if (!existsSync(filePath)) { pdfFaltantes++; continue; }
+        if (!existsSync(filePath)) { sinPdf.push({ cod, pdf: pdfName, expediente }); continue; }
 
         records.push({
             tipo, periodo, expediente, cod, factura,
@@ -83,5 +82,9 @@ export async function POST(req: NextRequest) {
     if (records.length > 0)
         await prisma.facturaSantaFe.createMany({ data: records });
 
-    return NextResponse.json({ ok: true, procesados: records.length, noEncontrados: notFound, pdfFaltantes, periodo });
+    return NextResponse.json({
+        ok: true, procesados: records.length, periodo,
+        noEncontrados: sinExpediente.length, pdfFaltantes: sinPdf.length,
+        detalle: { sinExpediente, sinPdf },
+    });
 }

@@ -15,6 +15,10 @@ interface UploadResult {
     noEncontrados: number;
     pdfFaltantes: number;
     periodo: string;
+    detalle?: {
+        sinExpediente: { cod: string; pdf: string }[];
+        sinPdf: { cod: string; pdf: string; expediente: string }[];
+    };
 }
 
 const TIPO_LABELS: Record<string, { label: string; color: string; bg: string; border: string }> = {
@@ -31,6 +35,21 @@ export default function BoletasAdminPage() {
     const [confirmEliminar, setConfirmEliminar] = useState<string | null>(null);
     const [results, setResults] = useState<Record<string, UploadResult | { error: string }>>({});
     const fileRefs = useRef<Record<string, HTMLInputElement | null>>({});
+
+    const descargarDetalle = (tipo: string, result: UploadResult) => {
+        const rows: string[] = ["tipo,motivo,cod,expediente,pdf"];
+        result.detalle?.sinExpediente.forEach(r =>
+            rows.push(`${tipo},Sin expediente en datos,${r.cod},,${r.pdf}`)
+        );
+        result.detalle?.sinPdf.forEach(r =>
+            rows.push(`${tipo},PDF no encontrado en servidor,${r.cod},${r.expediente},${r.pdf}`)
+        );
+        const blob = new Blob(["﻿" + rows.join("\n")], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url; a.download = `errores_boletas_${tipo}.csv`;
+        a.click(); URL.revokeObjectURL(url);
+    };
 
     const handleEliminar = async (tipo: string) => {
         setEliminando(tipo);
@@ -141,19 +160,27 @@ export default function BoletasAdminPage() {
                                         <AlertCircle size={14} /> {result.error}
                                     </div>
                                 ) : (
-                                    <div className="bg-emerald-50 dark:bg-emerald-950/20 rounded-xl p-3 space-y-1 text-[12px]">
+                                    <div className="bg-emerald-50 dark:bg-emerald-950/20 rounded-xl p-3 space-y-1.5 text-[12px]">
                                         <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 font-bold">
                                             <CheckCircle2 size={14} /> Procesados: {result.procesados.toLocaleString()}
                                         </div>
                                         {result.noEncontrados > 0 && (
                                             <p className="text-amber-600 dark:text-amber-400 font-medium pl-5">
-                                                Sin expediente: {result.noEncontrados}
+                                                Sin expediente en datos: {result.noEncontrados}
                                             </p>
                                         )}
                                         {result.pdfFaltantes > 0 && (
                                             <p className="text-amber-600 dark:text-amber-400 font-medium pl-5">
                                                 PDF no encontrado: {result.pdfFaltantes}
                                             </p>
+                                        )}
+                                        {(result.noEncontrados > 0 || result.pdfFaltantes > 0) && (
+                                            <button
+                                                onClick={() => descargarDetalle(tipo, result)}
+                                                className="ml-5 flex items-center gap-1.5 text-[11px] font-bold text-[#063f68] dark:text-blue-400 hover:underline"
+                                            >
+                                                <FileSpreadsheet size={12} /> Descargar detalle CSV
+                                            </button>
                                         )}
                                     </div>
                                 )
