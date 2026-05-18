@@ -5,6 +5,20 @@ import prisma from "@/lib/prisma";
 
 function isAdmin(lvl: string) { return lvl === "superadmin" || lvl === "admin"; }
 
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+    const session = await getSession();
+    if (!session || !isAdmin(session.accessLevel)) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+
+    const { id } = await params;
+    const envio = await prisma.envioMasivo.findUnique({ where: { id: Number(id) }, select: { id: true } });
+    if (!envio) return NextResponse.json({ error: "No encontrado" }, { status: 404 });
+
+    await prisma.envioMasivoDestinatario.deleteMany({ where: { envioId: Number(id) } });
+    await prisma.envioMasivo.delete({ where: { id: Number(id) } });
+
+    return NextResponse.json({ success: true });
+}
+
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const session = await getSession();
     if (!session || !isAdmin(session.accessLevel)) return NextResponse.json({ error: "No autorizado" }, { status: 401 });

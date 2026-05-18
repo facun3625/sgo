@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Send, Plus, X, Loader2, ChevronLeft, Users, CheckCircle2, Clock, AlertCircle, BarChart3, Search } from "lucide-react";
+import { Send, Plus, X, Loader2, ChevronLeft, Users, CheckCircle2, Clock, AlertCircle, BarChart3, Search, Trash2 } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 
 interface EnvioItem {
@@ -82,6 +82,8 @@ export default function AdminEnviosPage() {
     const [creando, setCreando] = useState(false);
     const [emailAsunto, setEmailAsunto] = useState("");
     const [emailCuerpo, setEmailCuerpo] = useState("");
+    const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
+    const [deleting, setDeleting] = useState(false);
 
     const parsed = parseExpedientes(newExpRaw);
     const uniqueParsed = [...new Set(parsed)];
@@ -129,6 +131,25 @@ export default function AdminEnviosPage() {
         setCreando(false);
     }
 
+    async function eliminar(id: number) {
+        setDeleting(true);
+        try {
+            const res = await fetch(`/api/admin/envios/${id}`, { method: "DELETE" });
+            if (res.ok) {
+                showToast("Envío eliminado", "success");
+                setConfirmDelete(null);
+                setSelected(null);
+                load();
+            } else {
+                showToast("Error al eliminar", "error");
+            }
+        } catch {
+            showToast("Error de conexión", "error");
+        } finally {
+            setDeleting(false);
+        }
+    }
+
     const maxTimeline = selected ? Math.max(...selected.timeline.map(t => t.count), 1) : 1;
 
     const filteredDest = selected?.destinatarios.filter(d => {
@@ -157,7 +178,12 @@ export default function AdminEnviosPage() {
                             : `${envios.length} campañas enviadas`}
                     </p>
                 </div>
-                {!selected && (
+                {selected ? (
+                    <button onClick={() => setConfirmDelete(selected.id)}
+                        className="flex items-center gap-1.5 px-3 h-9 text-[12px] font-semibold text-rose-500 border border-rose-200 dark:border-rose-800 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all">
+                        <Trash2 size={13} /> Eliminar
+                    </button>
+                ) : (
                     <button onClick={() => setShowModal(true)}
                         className="flex items-center gap-1.5 px-4 h-9 bg-sky-500 text-white rounded-xl text-[12px] font-bold hover:bg-sky-600 transition-all">
                         <Plus size={14} /> Nuevo envío
@@ -310,10 +336,16 @@ export default function AdminEnviosPage() {
                                                 <p className="text-[10px] text-slate-400 mt-0.5">{e.leidos} de {e.totalEnvios} leídos</p>
                                             </td>
                                             <td className="px-5 py-3.5">
-                                                <button onClick={() => loadingDetail ? null : openDetail(e.id)}
-                                                    className="px-3 h-7 text-[11px] font-semibold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/20 border border-sky-100 dark:border-sky-800 rounded-lg hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-all flex items-center gap-1">
-                                                    <BarChart3 size={11} /> Ver stats
-                                                </button>
+                                                <div className="flex items-center gap-2">
+                                                    <button onClick={() => loadingDetail ? null : openDetail(e.id)}
+                                                        className="px-3 h-7 text-[11px] font-semibold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/20 border border-sky-100 dark:border-sky-800 rounded-lg hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-all flex items-center gap-1">
+                                                        <BarChart3 size={11} /> Ver stats
+                                                    </button>
+                                                    <button onClick={ev => { ev.stopPropagation(); setConfirmDelete(e.id); }}
+                                                        className="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-all">
+                                                        <Trash2 size={13} />
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     ))}
@@ -437,6 +469,38 @@ export default function AdminEnviosPage() {
                                 className="flex-1 flex items-center justify-center gap-2 h-10 bg-sky-500 text-white rounded-xl text-[13px] font-bold hover:bg-sky-600 disabled:opacity-50 transition-all">
                                 {creando ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
                                 {enviarATodos ? "Enviar a todos" : `Enviar a ${uniqueParsed.length || "0"} usuarios`}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal confirmación eliminar */}
+            {confirmDelete !== null && (
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setConfirmDelete(null)}>
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 w-full max-w-sm shadow-2xl p-6 space-y-4"
+                        onClick={e => e.stopPropagation()}>
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-900/20 flex items-center justify-center">
+                                <Trash2 size={18} className="text-rose-500" />
+                            </div>
+                            <div>
+                                <p className="text-[14px] font-bold text-slate-800 dark:text-white">Eliminar envío</p>
+                                <p className="text-[12px] text-slate-400">Esta acción no se puede deshacer.</p>
+                            </div>
+                        </div>
+                        <p className="text-[13px] text-slate-600 dark:text-slate-300">
+                            Se eliminará el envío y el registro de todos sus destinatarios. Los comunicados ya leídos por los usuarios seguirán visibles en sus paneles.
+                        </p>
+                        <div className="flex gap-3">
+                            <button onClick={() => setConfirmDelete(null)} disabled={deleting}
+                                className="flex-1 h-10 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-[13px] font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all disabled:opacity-50">
+                                Cancelar
+                            </button>
+                            <button onClick={() => eliminar(confirmDelete)} disabled={deleting}
+                                className="flex-1 flex items-center justify-center gap-2 h-10 bg-rose-500 text-white rounded-xl text-[13px] font-bold hover:bg-rose-600 disabled:opacity-50 transition-all">
+                                {deleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                                Eliminar
                             </button>
                         </div>
                     </div>
