@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Upload, UserPlus, DollarSign, FileText, CheckCircle2, AlertCircle, X, Loader2, List, Search, CreditCard, Ban, Clock, Landmark, HandshakeIcon, KeyRound, Banknote, ShieldOff, Trash2 } from "lucide-react";
+import { Upload, UserPlus, DollarSign, FileText, CheckCircle2, AlertCircle, X, Loader2, List, Search, CreditCard, Ban, Clock, Landmark, HandshakeIcon, KeyRound, Banknote, ShieldOff, Trash2, ChevronDown } from "lucide-react";
 import { usePermisos } from "@/lib/permisos-context";
 import * as XLSX from "xlsx";
 
@@ -51,7 +51,8 @@ function parseCSV(text: string): Record<string, string>[] {
 
 function excelValToString(val: unknown): string {
     if (val instanceof Date) {
-        // Con cellDates:true las celdas de fecha llegan como Date — formatear dd/mm/yyyy
+        // Celdas de fecha vacías en Excel llegan como epoch o pre-epoch — descartar
+        if (isNaN(val.getTime()) || val.getTime() <= 0) return "";
         const d = val.getUTCDate().toString().padStart(2, "0");
         const m = (val.getUTCMonth() + 1).toString().padStart(2, "0");
         return `${d}/${m}/${val.getUTCFullYear()}`;
@@ -1140,16 +1141,18 @@ function PreviewTable({ rows }: { rows: Record<string, string>[] }) {
 }
 
 function RegistroCard({ title, count, icon, color, children }: { title: string; count: number; icon: React.ReactNode; color: string; children: React.ReactNode }) {
+    const [open, setOpen] = useState(false);
     return (
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden">
-            <div className="px-5 py-3.5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+            <button onClick={() => setOpen(o => !o)} className="w-full px-5 py-3.5 flex items-center justify-between hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
                 <div className="flex items-center gap-2">
                     <div className={`w-7 h-7 rounded-lg bg-${color}-100 dark:bg-${color}-900/30 flex items-center justify-center`}>{icon}</div>
                     <span className="text-[13px] font-bold text-slate-700 dark:text-slate-300">{title}</span>
+                    <span className="text-[11px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-full">{count}</span>
                 </div>
-                <span className="text-[11px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-full">{count}</span>
-            </div>
-            <div className="overflow-x-auto">{children}</div>
+                <ChevronDown size={15} className={`text-slate-400 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+            </button>
+            {open && <div className="border-t border-slate-100 dark:border-slate-800 overflow-x-auto">{children}</div>}
         </div>
     );
 }
