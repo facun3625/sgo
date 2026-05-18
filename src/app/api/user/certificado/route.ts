@@ -33,8 +33,9 @@ export async function POST(req: NextRequest) {
     // Snapshot del firmante activo al momento de emisión
     const firmante = await prisma.firmaAutoridad.findFirst({ where: { enCertificado: true } });
 
-    // Verificar sanciones activas del Tribunal de Ética (incluyendo sin fecha de fin, ej: apercibimientos)
-    const sancionesActivas = await prisma.tribunalEtica.findMany({
+    // Verificar sanciones activas (fin null = sin vencimiento, ej: apercibimientos)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const sancionesActivas = await (prisma.tribunalEtica.findMany as any)({
         where: {
             expediente,
             inicio: { lte: today },
@@ -43,7 +44,7 @@ export async function POST(req: NextRequest) {
                 { fin: null },
             ],
         },
-    });
+    }) as Awaited<ReturnType<typeof prisma.tribunalEtica.findMany>>;
 
     // Si está suspendido, obtener la última suspensión para el certificado
     let ultimaSuspension = null;

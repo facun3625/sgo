@@ -458,7 +458,7 @@ model TribunalEtica {
   expediente  String
   texto       String
   inicio      DateTime
-  fin         DateTime
+  fin         DateTime?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
