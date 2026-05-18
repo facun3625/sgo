@@ -457,7 +457,7 @@ model TribunalEtica {
   id          Int      @id @default(autoincrement())
   expediente  String
   texto       String
-  inicio      DateTime
+  inicio      DateTime?
   fin         DateTime?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

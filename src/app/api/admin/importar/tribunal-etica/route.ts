@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
 
     let creados = 0;
     const errores: string[] = [];
-    const porCrear: { expediente: string; texto: string; inicio: Date; fin: Date | null }[] = [];
+    const porCrear: { expediente: string; texto: string; inicio: Date | null; fin: Date | null }[] = [];
 
     for (let i = 0; i < registros.length; i++) {
         const raw = registros[i];
@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
         if (!texto) { errores.push(`Fila ${i + 1} (exp ${expediente}): sin texto/motivo`); continue; }
 
         const inicio = parseDate(inicioRaw);
-        if (!inicio) { errores.push(`Fila ${i + 1} (exp ${expediente}): fecha de inicio inválida "${inicioRaw}"`); continue; }
+        if (inicioRaw && !inicio) errores.push(`Fila ${i + 1} (exp ${expediente}): fecha de inicio inválida "${inicioRaw}" — se importa sin fecha`);
 
         const fin = finRaw ? parseDate(finRaw) : null;
         if (finRaw && !fin) { errores.push(`Fila ${i + 1} (exp ${expediente}): fecha de fin inválida "${finRaw}"`); continue; }
@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
                 data: porCrear.slice(i, i + BATCH).map(r => ({
                     expediente: r.expediente,
                     texto: r.texto,
-                    inicio: r.inicio,
+                    inicio: r.inicio ?? undefined,
                     fin: r.fin ?? undefined,
                 })),
             });
