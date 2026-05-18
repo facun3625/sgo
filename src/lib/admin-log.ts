@@ -23,7 +23,7 @@ export async function logAdmin(params: LogParams) {
                 expediente: params.expediente ?? null,
                 modulo: params.modulo,
                 accion: params.accion,
-                detalle: params.detalle ?? undefined,
+                detalle: params.detalle ? JSON.parse(JSON.stringify(params.detalle)) : undefined,
                 ip,
             },
         });
