@@ -29,10 +29,10 @@ const BATCH = 200;
 export async function GET() {
     const blob = [
         "﻿", // BOM para Excel
-        "expediente,accion,comentario\n",
-        "564,suspension,Importado del sistema anterior\n",
-        "792,cancelacion,Baja definitiva\n",
-        "831,habilitacion,Rehabilitado\n",
+        "expediente,accion,comentario,motivo\n",
+        "564,suspension,Importado del sistema anterior,Falta de Pago\n",
+        "792,cancelacion,Baja definitiva,Fallecimiento\n",
+        "831,habilitacion,Rehabilitado,\n",
     ].join("");
     return new NextResponse(blob, {
         headers: {
@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
     const adminNombre = `${session.apellido}, ${session.nombre}`;
 
     // Validate rows and collect valid expedientes
-    type RowValida = { expediente: string; accionRaw: string; comentario: string };
+    type RowValida = { expediente: string; accionRaw: string; comentario: string; motivoNombreRaw: string };
     const rowsValidas: RowValida[] = [];
     const errores: string[] = [];
 
@@ -68,29 +68,48 @@ export async function POST(req: NextRequest) {
             continue;
         }
 
-        const comentario = getCol(row, "comentario", "motivo", "observacion", "obs") || "Importado masivamente";
-        rowsValidas.push({ expediente, accionRaw, comentario });
+        const comentario = getCol(row, "comentario", "observacion", "obs") || "Importado masivamente";
+        const motivoNombreRaw = getCol(row, "motivo", "motivo_suspension", "motivosuspension");
+        rowsValidas.push({ expediente, accionRaw, comentario, motivoNombreRaw });
     }
 
     if (rowsValidas.length === 0)
         return NextResponse.json({ procesados: 0, omitidos: 0, errores });
 
-    // Fetch all users upfront
+    // Fetch all users and motivos upfront
     const expedientesArchivo = rowsValidas.map(r => r.expediente);
-    const usuarios = await prisma.user.findMany({
-        where: { expediente: { in: expedientesArchivo } },
-        select: { id: true, expediente: true },
-    });
+    const [usuarios, motivosDB] = await Promise.all([
+        prisma.user.findMany({
+            where: { expediente: { in: expedientesArchivo } },
+            select: { id: true, expediente: true },
+        }),
+        prisma.motivoSuspension.findMany({ where: { activo: true } }),
+    ]);
     const mapExpUser = new Map(usuarios.map(u => [u.expediente, u.id]));
+    // Mapa nombre normalizado → motivo
+    const mapMotivos = new Map(motivosDB.map(m => [m.nombre.toLowerCase().trim(), m]));
 
     const omitidos: string[] = [];
-    type AccionItem = { userId: number; expediente: string; nuevoStatus: string; accionRaw: string; comentario: string };
+    type AccionItem = { userId: number; expediente: string; nuevoStatus: string; accionRaw: string; comentario: string; motivoId: number | null; motivoNombre: string | null; motivoCobra: boolean | null };
     const porProcesar: AccionItem[] = [];
 
-    for (const { expediente, accionRaw, comentario } of rowsValidas) {
+    for (const { expediente, accionRaw, comentario, motivoNombreRaw } of rowsValidas) {
         const userId = mapExpUser.get(expediente);
         if (!userId) { omitidos.push(`Expediente ${expediente}: sin cuenta de usuario.`); continue; }
-        porProcesar.push({ userId, expediente, nuevoStatus: STATUS_MAP[accionRaw], accionRaw, comentario });
+
+        const motivo = motivoNombreRaw ? mapMotivos.get(motivoNombreRaw.toLowerCase().trim()) ?? null : null;
+        if (motivoNombreRaw && !motivo) {
+            errores.push(`Expediente ${expediente}: motivo "${motivoNombreRaw}" no encontrado — se importa sin motivo.`);
+        }
+
+        porProcesar.push({
+            userId, expediente,
+            nuevoStatus: STATUS_MAP[accionRaw],
+            accionRaw, comentario,
+            motivoId: motivo?.id ?? null,
+            motivoNombre: motivo?.nombre ?? null,
+            motivoCobra: motivo?.aplicaMulta ?? null,
+        });
     }
 
     // Batch updates
@@ -99,9 +118,9 @@ export async function POST(req: NextRequest) {
         await Promise.all(lote.map(({ userId, nuevoStatus }) =>
             prisma.user.update({ where: { id: userId }, data: { status: nuevoStatus } })
         ));
-        await Promise.all(lote.map(({ expediente, accionRaw, comentario }) =>
+        await Promise.all(lote.map(({ expediente, accionRaw, comentario, motivoId, motivoNombre, motivoCobra }) =>
             (prisma as any).historialMatricula.create({
-                data: { expediente, accion: accionRaw, comentario, adminNombre },
+                data: { expediente, accion: accionRaw, comentario, adminNombre, motivoId, motivoNombre, motivoCobra },
             })
         ));
     }

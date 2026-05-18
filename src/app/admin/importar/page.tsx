@@ -193,6 +193,15 @@ export default function ImportarPage() {
     const [suspLoading, setSuspLoading] = useState(false);
     const [suspResultado, setSuspResultado] = useState<ResultadoImport | null>(null);
     const suspFileRef = useRef<HTMLInputElement>(null);
+    const [suspMotivos, setSuspMotivos] = useState<{ id: number; nombre: string; tipo: string; aplicaMulta: boolean }[]>([]);
+
+    useEffect(() => {
+        if (seccion === "suspensiones" && suspMotivos.length === 0) {
+            fetch("/api/admin/motivos-suspension")
+                .then(r => r.ok ? r.json() : [])
+                .then(data => { if (Array.isArray(data)) setSuspMotivos(data); });
+        }
+    }, [seccion]);
 
     // Fiadores
     const [fiadRegistros, setFiadRegistros] = useState<Record<string, string>[]>([]);
@@ -1011,10 +1020,23 @@ export default function ImportarPage() {
                     <div className="p-5 rounded-2xl bg-rose-50/50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-900/30">
                         <p className="text-[13px] font-bold text-rose-800 dark:text-rose-400 mb-1">¿Cómo funciona?</p>
                         <p className="text-[12px] text-rose-700/70 dark:text-rose-400/60 leading-relaxed">
-                            Importá el estado de suspensiones desde el sistema anterior. El archivo debe tener las columnas <strong>expediente</strong>, <strong>accion</strong> y opcionalmente <strong>comentario</strong>.<br />
+                            Importá el estado de suspensiones desde el sistema anterior. Columnas: <strong>expediente</strong>, <strong>accion</strong>, <strong>comentario</strong> (opcional) y <strong>motivo</strong> (opcional).<br />
                             Acciones válidas: <strong>suspension</strong> · <strong>cancelacion</strong> · <strong>habilitacion</strong>.<br />
-                            Cada fila aplica el estado al usuario y registra una entrada en el historial de matrícula.
+                            Si el motivo tiene <em>aplica multa</em>, queda registrado para el cálculo al rehabilitar.
                         </p>
+                        {suspMotivos.length > 0 && (
+                            <div className="mt-3 space-y-1.5">
+                                <p className="text-[11px] font-bold text-rose-700 dark:text-rose-400 uppercase tracking-widest">Motivos disponibles — copiá el nombre exacto en la columna "motivo"</p>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {suspMotivos.map(m => (
+                                        <span key={m.id} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-rose-100/60 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 text-[11px] font-mono text-rose-700 dark:text-rose-300 select-all">
+                                            {m.nombre}
+                                            <span className="text-[9px] text-rose-400 font-sans normal-case">{m.tipo}{m.aplicaMulta ? " · multa" : ""}</span>
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                         <button
                             onClick={() => { window.open("/api/admin/importar/suspensiones", "_blank"); }}
                             className="mt-3 inline-flex items-center gap-2 text-[11px] font-bold text-rose-600 dark:text-rose-400 hover:underline"
