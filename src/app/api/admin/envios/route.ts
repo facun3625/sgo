@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
     const session = await getSession();
     if (!session || !isAdmin(session.accessLevel)) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
-    const { asunto, contenido, expedientes, enviarATodos, emailAsunto, emailCuerpo } = await req.json();
+    const { asunto, contenido, expedientes, enviarATodos, emailAsunto, emailCuerpo, emailBtnUrl, emailBtnTexto } = await req.json();
     if (!asunto?.trim() || !contenido?.trim()) {
         return NextResponse.json({ error: "Datos incompletos" }, { status: 400 });
     }
@@ -93,7 +93,7 @@ export async function POST(req: NextRequest) {
     });
     const emails = datos.map(d => d.emailLegal!).filter(Boolean);
     if (emails.length > 0) {
-        enviarComunicadoMasivo(emails, emailAsuntoFinal, emailCuerpoFinal ?? undefined)
+        enviarComunicadoMasivo(emails, emailAsuntoFinal, emailCuerpoFinal ?? undefined, emailBtnUrl?.trim() || undefined, emailBtnTexto?.trim() || undefined)
             .catch(err => console.error("[mailer] Error enviando comunicado:", err));
     }
 

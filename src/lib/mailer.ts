@@ -84,7 +84,7 @@ export async function enviarNotificacionMensaje(destinatario: string) {
 const MAIL_CHUNK = 20;
 const MAIL_DELAY_MS = 5000;
 
-export async function enviarComunicadoMasivo(destinatarios: string[], asunto: string, cuerpo?: string) {
+export async function enviarComunicadoMasivo(destinatarios: string[], asunto: string, cuerpo?: string, btnUrl?: string, btnTexto?: string) {
     const { smtp, from } = await getSmtpConfig();
     const transporter = nodemailer.createTransport(smtp);
 
@@ -92,11 +92,14 @@ export async function enviarComunicadoMasivo(destinatarios: string[], asunto: st
         ? cuerpo.replace(/\n/g, "<br>")
         : "Ingresá al portal SGO para leer el comunicado.";
 
+    const url = btnUrl || "https://app.sgo-casf.online/";
+    const texto = btnTexto || "Ir al portal";
+
     const html = baseLayout(`
         <h2 style="font-size:20px;font-weight:800;color:#0f172a;margin:0 0 12px">${asunto}</h2>
         <p style="color:#475569;font-size:15px;line-height:1.6;margin:0 0 28px">${cuerpoHtml}</p>
         <div style="text-align:center;">
-            <a href="https://sgo-casf.online" style="display:inline-block;background:#063f68;color:#fff;font-weight:700;font-size:14px;padding:14px 32px;border-radius:8px;text-decoration:none;">Ir al portal</a>
+            <a href="${url}" style="display:inline-block;background:#063f68;color:#fff;font-weight:700;font-size:14px;padding:14px 32px;border-radius:8px;text-decoration:none;">${texto}</a>
         </div>
     `);
 

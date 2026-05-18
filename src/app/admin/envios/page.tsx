@@ -82,6 +82,8 @@ export default function AdminEnviosPage() {
     const [creando, setCreando] = useState(false);
     const [emailAsunto, setEmailAsunto] = useState("");
     const [emailCuerpo, setEmailCuerpo] = useState("");
+    const [emailBtnUrl, setEmailBtnUrl] = useState("https://app.sgo-casf.online/");
+    const [emailBtnTexto, setEmailBtnTexto] = useState("Ir al portal");
     const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
     const [deleting, setDeleting] = useState(false);
 
@@ -114,7 +116,7 @@ export default function AdminEnviosPage() {
         const res = await fetch("/api/admin/envios", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ asunto: newAsunto, contenido: newContenido, expedientes: uniqueParsed, enviarATodos, emailAsunto, emailCuerpo }),
+            body: JSON.stringify({ asunto: newAsunto, contenido: newContenido, expedientes: uniqueParsed, enviarATodos, emailAsunto, emailCuerpo, emailBtnUrl, emailBtnTexto }),
         });
         const data = await res.json();
         if (res.ok) {
@@ -123,6 +125,7 @@ export default function AdminEnviosPage() {
             setShowModal(false);
             setNewAsunto(""); setNewContenido(""); setNewExpRaw(""); setEnviarATodos(false);
             setEmailAsunto(""); setEmailCuerpo("");
+            setEmailBtnUrl("https://app.sgo-casf.online/"); setEmailBtnTexto("Ir al portal");
             try { new BroadcastChannel("sgo-updates").postMessage({ type: "new-comunicado" }); } catch {}
             load();
         } else {
@@ -452,10 +455,30 @@ export default function AdminEnviosPage() {
                                     <textarea
                                         value={emailCuerpo}
                                         onChange={e => setEmailCuerpo(e.target.value)}
-                                        placeholder={"Escribí el texto del email...\n\nAl final siempre se incluye el botón con el link a sgo-casf.online"}
+                                        placeholder={"Escribí el texto del email..."}
                                         rows={4}
                                         className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-[13px] focus:outline-none focus:ring-2 focus:ring-sky-300/50 resize-none"
                                     />
+                                </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className="space-y-1.5">
+                                        <label className="text-[12px] font-semibold text-slate-500">Texto del botón</label>
+                                        <input
+                                            value={emailBtnTexto}
+                                            onChange={e => setEmailBtnTexto(e.target.value)}
+                                            placeholder="Ir al portal"
+                                            className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-[13px] focus:outline-none focus:ring-2 focus:ring-sky-300/50"
+                                        />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[12px] font-semibold text-slate-500">URL del botón</label>
+                                        <input
+                                            value={emailBtnUrl}
+                                            onChange={e => setEmailBtnUrl(e.target.value)}
+                                            placeholder="https://app.sgo-casf.online/"
+                                            className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-[13px] focus:outline-none focus:ring-2 focus:ring-sky-300/50"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>
