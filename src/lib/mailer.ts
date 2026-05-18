@@ -85,12 +85,15 @@ export async function enviarComunicadoMasivo(destinatarios: string[], asunto: st
     (async () => {
         for (let i = 0; i < destinatarios.length; i += MAIL_CHUNK) {
             const lote = destinatarios.slice(i, i + MAIL_CHUNK);
-            await Promise.allSettled(
+            const results = await Promise.allSettled(
                 lote.map(email => transporter.sendMail({ from: FROM, to: email, subject: asunto, html }))
             );
+            results.forEach((r, idx) => {
+                if (r.status === "rejected") console.error(`[mailer] Error enviando a ${lote[idx]}:`, r.reason);
+            });
             if (i + MAIL_CHUNK < destinatarios.length) {
                 await new Promise(r => setTimeout(r, MAIL_DELAY_MS));
             }
         }
-    })().catch(() => {});
+    })().catch(err => console.error("[mailer] Error general:", err));
 }

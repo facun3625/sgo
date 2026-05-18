@@ -8,9 +8,11 @@ function extractFields(raw: Record<string, string>): { expediente: string; tipoA
     const row = Object.fromEntries(
         Object.entries(raw).map(([k, v]) => [k.toLowerCase().trim().replace(/\s*\(\d+\)$/, ""), v])
     );
+    // Buscar la columna de expediente por nombre exacto o por cualquier columna que contenga "expediente"
+    const expKey = Object.keys(row).find(k => k.includes("expediente") || k.includes("exp") || k.includes("nro") || k.includes("numero") || k.includes("usuario"));
     const expediente = (
         row["expediente"] || row["usuario_sistema"] || row["usuario"] ||
-        row["exp"] || row["nro"] || row["numero"] || ""
+        row["exp"] || row["nro"] || row["numero"] || (expKey ? row[expKey] : "") || ""
     ).trim();
     const tipoRaw = (
         row["tipoadhesion"] || row["tipo_adhesion"] || row["tipo"] || row["adhesion"] || ""

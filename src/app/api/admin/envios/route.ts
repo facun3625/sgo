@@ -84,16 +84,18 @@ export async function POST(req: NextRequest) {
         }),
     ]);
 
-    // Fire-and-forget: enviar correos a los destinatarios que tengan emailLegal
+    // Enviar correos a los destinatarios que tengan emailLegal
     const emailAsuntoFinal = (emailAsunto?.trim()) || asunto.trim();
     const emailCuerpoFinal = emailCuerpo?.trim() || null;
-    prisma.dato.findMany({
+    const datos = await prisma.dato.findMany({
         where: { expediente: { in: validExp }, emailLegal: { not: null } },
         select: { emailLegal: true },
-    }).then(datos => {
-        const emails = datos.map(d => d.emailLegal!).filter(Boolean);
-        if (emails.length > 0) enviarComunicadoMasivo(emails, emailAsuntoFinal, emailCuerpoFinal ?? undefined);
-    }).catch(() => {});
+    });
+    const emails = datos.map(d => d.emailLegal!).filter(Boolean);
+    if (emails.length > 0) {
+        enviarComunicadoMasivo(emails, emailAsuntoFinal, emailCuerpoFinal ?? undefined)
+            .catch(err => console.error("[mailer] Error enviando comunicado:", err));
+    }
 
-    return NextResponse.json({ id: envio.id, totalEnvios: validExp.length, invalid });
+    return NextResponse.json({ id: envio.id, totalEnvios: validExp.length, emailsEnviados: emails.length, invalid });
 }
