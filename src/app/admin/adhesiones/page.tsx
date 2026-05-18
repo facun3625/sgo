@@ -53,8 +53,9 @@ export default function AdminAdhesionesPage() {
         try {
             const res = await fetch("/api/admin/adhesiones");
             if (res.ok) setAdhesiones(await res.json());
+            else showToast(`Error al cargar adhesiones (${res.status})`, "error");
         } catch {
-            showToast("Error al cargar adhesiones", "error");
+            showToast("Error de conexión al cargar adhesiones", "error");
         } finally {
             setLoading(false);
         }
@@ -99,19 +100,25 @@ export default function AdminAdhesionesPage() {
     return (
         <div className="p-6 md:p-10 min-h-[calc(100vh-64px)]">
             {/* Header */}
-            <div className="mb-6">
-                <h1 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                    <Banknote size={20} className="text-emerald-500" />
-                    Adhesiones a Débito Automático
-                </h1>
-                <p className="text-slate-400 text-sm mt-0.5">
-                    {total} solicitudes registradas
-                    {pendientes > 0 && (
-                        <span className="ml-2 px-1.5 py-0.5 bg-amber-500 text-white text-[10px] font-bold rounded-full">
-                            {pendientes} pendientes
-                        </span>
-                    )}
-                </p>
+            <div className="mb-6 flex items-start justify-between">
+                <div>
+                    <h1 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                        <Banknote size={20} className="text-emerald-500" />
+                        Adhesiones a Débito Automático
+                    </h1>
+                    <p className="text-slate-400 text-sm mt-0.5">
+                        {total} solicitudes registradas
+                        {pendientes > 0 && (
+                            <span className="ml-2 px-1.5 py-0.5 bg-amber-500 text-white text-[10px] font-bold rounded-full">
+                                {pendientes} pendientes
+                            </span>
+                        )}
+                    </p>
+                </div>
+                <button onClick={load} disabled={loading}
+                    className="flex items-center gap-1.5 px-3 h-8 text-[12px] font-semibold text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 transition-all">
+                    {loading ? <Loader2 size={13} className="animate-spin" /> : <span>↺</span>} Recargar
+                </button>
             </div>
 
             {/* Summary cards */}

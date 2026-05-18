@@ -27,7 +27,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ ex
 
     const body = await req.json();
     const allowed = [
-        "nombre", "apellido", "expediente", "folio", "tomo", "tipo", "documento",
+        "nombre", "apellido", "expediente", "folio", "tomo", "tipo", "documento", "cuil",
         "domicilioLegal", "postalLegal", "localidadLegal", "telefonosLegal", "emailLegal",
         "codMovilLegal", "movilLegal",
         "domicilioReal", "postalReal", "localidadReal", "provinciaReal",

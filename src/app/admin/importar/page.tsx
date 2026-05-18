@@ -299,7 +299,10 @@ export default function ImportarPage() {
                     mensaje: `${data.creados} adhesión${data.creados !== 1 ? "es" : ""} importada${data.creados !== 1 ? "s" : ""}. ${data.omitidos} ya existían.`,
                     detalles: data.errores,
                 });
-                if (data.creados > 0) { setAdhRegistros([]); if (adhFileRef.current) adhFileRef.current.value = ""; }
+                if (data.creados > 0) {
+                    setAdhRegistros([]); if (adhFileRef.current) adhFileRef.current.value = "";
+                    setRegistros(null); // fuerza recarga de la sección Registros
+                }
             } else {
                 setAdhResultado({ tipo: "error", mensaje: data.error ?? "Error al importar" });
             }

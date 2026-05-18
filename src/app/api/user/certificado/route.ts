@@ -33,12 +33,15 @@ export async function POST(req: NextRequest) {
     // Snapshot del firmante activo al momento de emisión
     const firmante = await prisma.firmaAutoridad.findFirst({ where: { enCertificado: true } });
 
-    // Verificar sanciones activas del Tribunal de Ética
+    // Verificar sanciones activas del Tribunal de Ética (incluyendo sin fecha de fin, ej: apercibimientos)
     const sancionesActivas = await prisma.tribunalEtica.findMany({
         where: {
             expediente,
             inicio: { lte: today },
-            fin: { gte: today },
+            OR: [
+                { fin: { gte: today } },
+                { fin: null },
+            ],
         },
     });
 
@@ -69,7 +72,7 @@ export async function POST(req: NextRequest) {
                 sanciones: sancionesActivas.map(s => ({
                     texto: s.texto,
                     inicio: s.inicio.toISOString(),
-                    fin: s.fin.toISOString(),
+                    fin: s.fin ? s.fin.toISOString() : null,
                 })),
                 userStatus: dbUser?.status ?? "active",
                 suspension: ultimaSuspension ? {

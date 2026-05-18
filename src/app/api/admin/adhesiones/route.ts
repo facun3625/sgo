@@ -19,17 +19,26 @@ export async function GET() {
     if (adhesiones.length === 0) return NextResponse.json([]);
 
     const expedientes = [...new Set(adhesiones.map((a) => a.expediente))];
-    const users = await prisma.user.findMany({
-        where: { expediente: { in: expedientes } },
-        select: { expediente: true, nombre: true, apellido: true },
-    });
 
-    const userMap = new Map(users.map((u) => [u.expediente, u]));
+    const [users, datos] = await Promise.all([
+        prisma.user.findMany({
+            where: { expediente: { in: expedientes } },
+            select: { expediente: true, nombre: true, apellido: true },
+        }),
+        prisma.dato.findMany({
+            where: { expediente: { in: expedientes } },
+            select: { expediente: true, nombre: true, apellido: true },
+        }),
+    ]);
+
+    const nameMap = new Map<string, { nombre: string; apellido: string }>();
+    for (const d of datos) if (d.expediente) nameMap.set(d.expediente, d);
+    for (const u of users) if (u.expediente) nameMap.set(u.expediente, u);
 
     const result = adhesiones.map((a) => ({
         ...a,
-        nombre: userMap.get(a.expediente)?.nombre ?? null,
-        apellido: userMap.get(a.expediente)?.apellido ?? null,
+        nombre: nameMap.get(a.expediente)?.nombre ?? null,
+        apellido: nameMap.get(a.expediente)?.apellido ?? null,
     }));
 
     return NextResponse.json(result);

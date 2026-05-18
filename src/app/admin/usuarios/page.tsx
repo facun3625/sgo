@@ -23,7 +23,7 @@ interface Usuario {
 interface DatoCompleto {
     id: number; cod: string; nombre: string; apellido: string;
     expediente: string | null; folio: string | null; tomo: string | null;
-    tipo: string | null; documento: string | null;
+    tipo: string | null; documento: string | null; cuil: string | null;
     domicilioLegal: string | null; postalLegal: string | null; localidadLegal: string | null;
     telefonosLegal: string | null; emailLegal: string | null;
     codMovilLegal: string | null; movilLegal: string | null;
@@ -377,8 +377,9 @@ export default function UsuariosAdminPage() {
                                     <Field label="Folio" value={editForm.folio || ""} onChange={v => setF("folio", v)} />
                                     <Field label="Tipo" value={editForm.tipo || ""} onChange={v => setF("tipo", v)} />
                                 </div>
-                                <div className="grid grid-cols-2 gap-3">
+                                <div className="grid grid-cols-3 gap-3">
                                     <Field label="Documento" value={editForm.documento || ""} onChange={v => setF("documento", v)} />
+                                    <Field label="CUIL/CUIT" value={editForm.cuil || ""} onChange={v => setF("cuil", v)} />
                                     <Field label="Fecha de matriculación" type="date"
                                         value={editForm.fechaMatriculacion ? editForm.fechaMatriculacion.slice(0, 10) : ""}
                                         onChange={v => setF("fechaMatriculacion", v)} />
