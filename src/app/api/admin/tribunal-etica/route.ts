@@ -29,8 +29,8 @@ export async function POST(req: NextRequest) {
     if (!session || !isAdmin(session.accessLevel)) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
     const { expediente, texto, inicio, fin } = await req.json();
-    if (!expediente?.trim() || !texto?.trim() || !inicio || !fin) {
-        return NextResponse.json({ error: "Todos los campos son requeridos" }, { status: 400 });
+    if (!expediente?.trim() || !texto?.trim() || !inicio) {
+        return NextResponse.json({ error: "Expediente, descripción e inicio son requeridos" }, { status: 400 });
     }
 
     const registro = await prisma.tribunalEtica.create({
@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
             expediente: expediente.trim(),
             texto: texto.trim(),
             inicio: new Date(inicio),
-            fin: new Date(fin),
+            fin: fin ? new Date(fin) : null,
         },
     });
     return NextResponse.json(registro);
@@ -57,7 +57,7 @@ export async function PATCH(req: NextRequest) {
             ...(expediente !== undefined && { expediente: expediente.trim() }),
             ...(texto !== undefined && { texto: texto.trim() }),
             ...(inicio !== undefined && { inicio: new Date(inicio) }),
-            ...(fin !== undefined && { fin: new Date(fin) }),
+            ...(fin !== undefined && { fin: fin ? new Date(fin) : null }),
         },
     });
     return NextResponse.json(updated);

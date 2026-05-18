@@ -8,21 +8,26 @@ interface Registro {
     id: number;
     expediente: string;
     texto: string;
-    inicio: string;
-    fin: string;
+    inicio: string | null;
+    fin: string | null;
     createdAt: string;
 }
 
 function isActive(registro: Registro) {
     const today = new Date();
-    return new Date(registro.inicio) <= today && today <= new Date(registro.fin);
+    const inicio = registro.inicio ? new Date(registro.inicio) : null;
+    if (!inicio || inicio > today) return false;
+    if (!registro.fin) return true; // sin vencimiento = siempre activo
+    return today <= new Date(registro.fin);
 }
 
-function formatDate(iso: string) {
+function formatDate(iso: string | null) {
+    if (!iso) return "Sin vencimiento";
     return new Date(iso).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric" });
 }
 
-function toInputDate(iso: string) {
+function toInputDate(iso: string | null) {
+    if (!iso) return "";
     return new Date(iso).toISOString().split("T")[0];
 }
 
@@ -70,11 +75,11 @@ export default function TribunalEticaPage() {
     }
 
     async function handleSave() {
-        if (!form.expediente.trim() || !form.texto.trim() || !form.inicio || !form.fin) {
-            showToast("Completá todos los campos", "error");
+        if (!form.expediente.trim() || !form.texto.trim() || !form.inicio) {
+            showToast("Completá expediente, descripción y fecha de inicio", "error");
             return;
         }
-        if (new Date(form.fin) < new Date(form.inicio)) {
+        if (form.fin && new Date(form.fin) < new Date(form.inicio)) {
             showToast("La fecha de fin debe ser posterior al inicio", "error");
             return;
         }
