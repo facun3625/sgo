@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Loader2, Mail, KeyRound, Eye, EyeOff, CheckCircle2, ChevronLeft, Clock } from "lucide-react";
+import { Loader2, Mail, KeyRound, Eye, EyeOff, CheckCircle2, ChevronLeft, Clock, PhoneCall } from "lucide-react";
 
 type Paso = 1 | 2 | 3 | 4;
 
@@ -23,10 +23,12 @@ export default function RecuperarContrasenaPage() {
     const [showConfirm, setShowConfirm] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [sinCorreo, setSinCorreo] = useState(false);
 
     async function handleBuscar(e: React.FormEvent) {
         e.preventDefault();
         setError("");
+        setSinCorreo(false);
         setLoading(true);
         const res = await fetch("/api/auth/recuperar/buscar", {
             method: "POST",
@@ -35,7 +37,14 @@ export default function RecuperarContrasenaPage() {
         });
         const data = await res.json();
         setLoading(false);
-        if (!res.ok) { setError(data.error); return; }
+        if (!res.ok) {
+            if (res.status === 400 && data.error?.includes("correos registrados")) {
+                setSinCorreo(true);
+            } else {
+                setError(data.error);
+            }
+            return;
+        }
         setCorreos(data.correos);
         setCorreoElegido(data.correos[0].id);
         setPaso(2);
@@ -125,6 +134,19 @@ export default function RecuperarContrasenaPage() {
                                     transition-all duration-200"
                             />
                         </div>
+                        {sinCorreo && (
+                            <div className="p-5 rounded-2xl bg-amber-50 border border-amber-200 flex gap-3">
+                                <div className="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
+                                    <PhoneCall size={16} className="text-amber-600" />
+                                </div>
+                                <div>
+                                    <p className="text-[13px] font-bold text-amber-800 mb-0.5">Sin correo registrado</p>
+                                    <p className="text-[12px] text-amber-700/80 leading-relaxed">
+                                        Tu cuenta no tiene correo electrónico registrado. Comunicate con el CPASF para que puedan restablecer tu contraseña o cargar tu correo.
+                                    </p>
+                                </div>
+                            </div>
+                        )}
                         {error && (
                             <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm">
                                 {error}
