@@ -163,3 +163,16 @@ export async function PATCH(
 
     return NextResponse.json({ error: "Acción no válida" }, { status: 400 });
 }
+
+export async function DELETE(
+    _: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    const session = await getSession();
+    if (!session || !isAdmin(session.accessLevel))
+        return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+
+    const { id } = await params;
+    await prisma.solicitud.delete({ where: { id: parseInt(id) } });
+    return NextResponse.json({ ok: true });
+}

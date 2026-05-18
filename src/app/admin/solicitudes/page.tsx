@@ -17,6 +17,7 @@ import {
     Download,
     Upload,
     Eye,
+    Trash2,
 } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 
@@ -97,6 +98,8 @@ export default function AdminSolicitudesPage() {
     const [motivoInput, setMotivoInput] = useState("");
     const [submitting, setSubmitting] = useState(false);
     const [uploadingFile, setUploadingFile] = useState(false);
+    const [confirmDelete, setConfirmDelete] = useState(false);
+    const [deleting, setDeleting] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const load = useCallback(async () => {
@@ -238,13 +241,32 @@ export default function AdminSolicitudesPage() {
 
     // ── open panel ───────────────────────────────────────────────────────────
 
+    async function handleDelete() {
+        if (!selected) return;
+        setDeleting(true);
+        try {
+            const res = await fetch(`/api/admin/solicitudes/${selected.id}`, { method: "DELETE" });
+            if (!res.ok) throw new Error();
+            setSolicitudes(prev => prev.filter(s => s.id !== selected.id));
+            showToast("Trámite eliminado", "success");
+            closePanel();
+        } catch {
+            showToast("Error al eliminar", "error");
+        } finally {
+            setDeleting(false);
+            setConfirmDelete(false);
+        }
+    }
+
     function openPanel(s: SolicitudItem) {
         setSelected(s);
         setPanelOpen(true);
+        setConfirmDelete(false);
     }
 
     function closePanel() {
         setPanelOpen(false);
+        setConfirmDelete(false);
         setTimeout(() => setSelected(null), 300);
     }
 
@@ -723,6 +745,33 @@ export default function AdminSolicitudesPage() {
                                     </div>
                                 </div>
                             )}
+
+                            {/* Eliminar */}
+                            <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+                                {!confirmDelete ? (
+                                    <button
+                                        onClick={() => setConfirmDelete(true)}
+                                        className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-400 hover:text-red-500 transition-colors"
+                                    >
+                                        <Trash2 size={12} /> Eliminar trámite
+                                    </button>
+                                ) : (
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-[11px] font-bold text-red-600 dark:text-red-400">¿Confirmar eliminación?</span>
+                                        <button
+                                            onClick={handleDelete}
+                                            disabled={deleting}
+                                            className="flex items-center gap-1 px-3 h-7 bg-red-600 text-white rounded-lg text-[11px] font-bold hover:bg-red-700 disabled:opacity-50 transition-all"
+                                        >
+                                            {deleting ? <Loader2 size={11} className="animate-spin" /> : <Trash2 size={11} />}
+                                            Eliminar
+                                        </button>
+                                        <button onClick={() => setConfirmDelete(false)} className="text-[11px] text-slate-400 hover:text-slate-600">
+                                            Cancelar
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </>
