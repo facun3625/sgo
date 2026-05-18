@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { esMatriculadoJoven, montoConDescuento } from "@/lib/matricula";
+import { esMatriculadoJoven, esMatriculadoVeterano, esMatriculadoExento, montoConDescuento } from "@/lib/matricula";
 
 function isAdmin(lvl: string) {
     return lvl === "superadmin" || lvl === "admin";
@@ -28,8 +28,14 @@ export async function POST() {
 
     const periodo = new Date().toISOString().slice(0, 7);
 
-    const configMonto = await prisma.config.findUnique({ where: { clave: "montoMensual" } });
+    const [configMonto, cfgVeterano, cfgExento] = await Promise.all([
+        prisma.config.findUnique({ where: { clave: "montoMensual" } }),
+        prisma.config.findUnique({ where: { clave: "beneficioVeterano" } }),
+        prisma.config.findUnique({ where: { clave: "beneficioExento" } }),
+    ]);
     const montoBase = configMonto ? parseFloat(configMonto.valor) : 4500;
+    const beneficioVeterano = cfgVeterano?.valor === "1";
+    const beneficioExento = cfgExento?.valor === "1";
 
     const [datosTodos, usersTodos] = await Promise.all([
         prisma.dato.findMany({ select: { expediente: true, fechaMatriculacion: true, tipo: true } }),
@@ -72,19 +78,35 @@ export async function POST() {
         (exp) => !pagoAnualExp.has(exp) && !debitoActivoExp.has(exp)
     );
 
-    // Separar jovenes y normales
-    const jovenes = expedientesACobrar.filter(exp => esMatriculadoJoven(fechaMap.get(exp)));
-    const normales = expedientesACobrar.filter(exp => !esMatriculadoJoven(fechaMap.get(exp)));
+    // Filtrar exentos (50+ años) si el beneficio está activo
+    const exentos = new Set(
+        beneficioExento ? expedientesACobrar.filter(exp => esMatriculadoExento(fechaMap.get(exp))) : []
+    );
+    const expedientesSinExentos = expedientesACobrar.filter(exp => !exentos.has(exp));
+
+    // Separar jovenes, veteranos (40-49 años) y normales
+    const jovenes = expedientesSinExentos.filter(exp => esMatriculadoJoven(fechaMap.get(exp)));
+    const veteranos = beneficioVeterano
+        ? expedientesSinExentos.filter(exp => !esMatriculadoJoven(fechaMap.get(exp)) && esMatriculadoVeterano(fechaMap.get(exp)))
+        : [];
+    const normales = expedientesSinExentos.filter(exp =>
+        !esMatriculadoJoven(fechaMap.get(exp)) && !veteranos.includes(exp)
+    );
 
     const montoJoven = montoConDescuento(montoBase, true);
+    const montoVeterano = montoConDescuento(montoBase, true);
 
-    const [creaNormales, creaJovenes] = await Promise.all([
+    const [creaNormales, creaJovenes, creaVeteranos] = await Promise.all([
         prisma.cuotaMensual.createMany({
             data: normales.map(expediente => ({ expediente, periodo, monto: montoBase, estado: "pendiente" })),
             skipDuplicates: true,
         }),
         prisma.cuotaMensual.createMany({
             data: jovenes.map(expediente => ({ expediente, periodo, monto: montoJoven, estado: "pendiente" })),
+            skipDuplicates: true,
+        }),
+        prisma.cuotaMensual.createMany({
+            data: veteranos.map(expediente => ({ expediente, periodo, monto: montoVeterano, estado: "pendiente" })),
             skipDuplicates: true,
         }),
     ]);
@@ -99,13 +121,19 @@ export async function POST() {
             where: { periodo, estado: "pendiente", expediente: { in: jovenes } },
             data: { monto: montoJoven },
         }),
+        prisma.cuotaMensual.updateMany({
+            where: { periodo, estado: "pendiente", expediente: { in: veteranos } },
+            data: { monto: montoVeterano },
+        }),
     ]);
 
     return NextResponse.json({
         message: `Cuotas generadas para ${periodo}`,
         periodo,
-        creadas: creaNormales.count + creaJovenes.count,
+        creadas: creaNormales.count + creaJovenes.count + creaVeteranos.count,
         jovenes: jovenes.length,
+        veteranos: veteranos.length,
+        exentos: exentos.size,
         normales: normales.length,
     });
 }

@@ -21,7 +21,8 @@ export async function GET() {
         pagoAnualDesde: map.pagoAnualDesde ?? "",
         pagoAnualHasta: map.pagoAnualHasta ?? "",
         jus: map.jus ?? "",
-        // No devolvemos los valores reales — solo si están configurados
+        beneficioVeterano: map.beneficioVeterano === "1",
+        beneficioExento: map.beneficioExento === "1",
         mpTokenConfigurado: !!map.mpAccessToken,
         mpPublicKeyConfigurado: !!map.mpPublicKey,
     });

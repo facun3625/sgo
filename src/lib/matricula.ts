@@ -1,15 +1,29 @@
-// Retorna true si el matriculado lleva menos de 60 meses desde su fecha de matriculación
-export function esMatriculadoJoven(fechaMatriculacion: Date | string | null | undefined): boolean {
-    if (!fechaMatriculacion) return false;
-    const fecha = new Date(fechaMatriculacion);
-    if (isNaN(fecha.getTime())) return false;
+function mesesDesde(fecha: Date | string | null | undefined): number | null {
+    if (!fecha) return null;
+    const f = new Date(fecha);
+    if (isNaN(f.getTime())) return null;
     const ahora = new Date();
-    const meses =
-        (ahora.getFullYear() - fecha.getFullYear()) * 12 +
-        (ahora.getMonth() - fecha.getMonth());
-    return meses < 60;
+    return (ahora.getFullYear() - f.getFullYear()) * 12 + (ahora.getMonth() - f.getMonth());
 }
 
-export function montoConDescuento(monto: number, esJoven: boolean): number {
-    return esJoven ? Math.round(monto / 2) : monto;
+// < 60 meses (5 años)
+export function esMatriculadoJoven(fechaMatriculacion: Date | string | null | undefined): boolean {
+    const m = mesesDesde(fechaMatriculacion);
+    return m !== null && m < 60;
+}
+
+// 40 a 49 años (480–599 meses)
+export function esMatriculadoVeterano(fechaMatriculacion: Date | string | null | undefined): boolean {
+    const m = mesesDesde(fechaMatriculacion);
+    return m !== null && m >= 480 && m < 600;
+}
+
+// 50+ años (600+ meses)
+export function esMatriculadoExento(fechaMatriculacion: Date | string | null | undefined): boolean {
+    const m = mesesDesde(fechaMatriculacion);
+    return m !== null && m >= 600;
+}
+
+export function montoConDescuento(monto: number, aplicaDescuento: boolean): number {
+    return aplicaDescuento ? Math.round(monto / 2) : monto;
 }

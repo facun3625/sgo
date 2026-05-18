@@ -15,6 +15,8 @@ import {
     Download,
     GraduationCap,
     Briefcase,
+    Award,
+    Star,
 } from "lucide-react";
 import MpPayButton from "@/components/MpPayButton";
 import TransferenciaPayButton from "@/components/TransferenciaPayButton";
@@ -56,6 +58,8 @@ interface PagosData {
     totalDeuda: number;
     userStatus: string;
     esJoven: boolean;
+    esVeterano: boolean;
+    esExento: boolean;
     esConsultor: boolean;
     deudasPagadas: { id: number; monto: number; metodoPago: string; fechaPago: string }[];
     boletas: { mensual: Boleta | null; anual: Boleta | null; deuda: Boleta | null };
@@ -107,14 +111,15 @@ export default function MatriculaStatus() {
 
     const isSuspended = data?.userStatus === "suspended" || data?.userStatus === "cancelled";
     const hasDeuda = data?.deudas && data.deudas.length > 0;
-    const noPagaMensual = data?.esConsultor || data?.hasDebitoAutomatico || data?.hasPagoAnualActivo;
+    const noPagaMensual = data?.esConsultor || data?.esExento || data?.hasDebitoAutomatico || data?.hasPagoAnualActivo;
     const cuotasVisibles = noPagaMensual
         ? (data?.historialCuotas ?? []).filter(c => c.estado === "pagado")
         : (data?.historialCuotas ?? []);
     const cuotaPendiente = data?.cuotaActual?.estado === "pendiente"
         && !data?.hasDebitoAutomatico
         && !data?.hasPagoAnualActivo
-        && !data?.esConsultor;
+        && !data?.esConsultor
+        && !data?.esExento;
     const totalDeuda = data?.totalDeuda || 0;
     const montoAnual = data?.montoAnual ?? 48000;
     const showAnualCard = data?.showPagoAnual ?? false;
@@ -149,6 +154,32 @@ export default function MatriculaStatus() {
                     <div>
                         <p className="text-[13px] font-bold text-teal-800 dark:text-teal-300">Beneficio Joven Matriculado activo</p>
                         <p className="text-[12px] text-teal-700/70 dark:text-teal-400/60">Tu matrícula tiene menos de 60 meses — aplicás el 50% de descuento en cuotas mensuales y anuales.</p>
+                    </div>
+                </div>
+            )}
+
+            {/* BANNER VETERANO (40-49 años) */}
+            {data?.esVeterano && (
+                <div className="flex items-center gap-4 px-6 py-4 rounded-2xl bg-amber-50 dark:bg-amber-900/15 border border-amber-100 dark:border-amber-800/40">
+                    <div className="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center shrink-0 shadow-md shadow-amber-500/20">
+                        <Award size={20} className="text-white" />
+                    </div>
+                    <div>
+                        <p className="text-[13px] font-bold text-amber-800 dark:text-amber-300">Beneficio Trayectoria activo</p>
+                        <p className="text-[12px] text-amber-700/70 dark:text-amber-400/60">Tu matrícula tiene entre 40 y 49 años — aplicás el 50% de descuento en cuotas mensuales y anuales.</p>
+                    </div>
+                </div>
+            )}
+
+            {/* BANNER EXENTO (50+ años) */}
+            {data?.esExento && (
+                <div className="flex items-center gap-4 px-6 py-4 rounded-2xl bg-violet-50 dark:bg-violet-900/15 border border-violet-100 dark:border-violet-800/40">
+                    <div className="w-10 h-10 rounded-xl bg-violet-500 flex items-center justify-center shrink-0 shadow-md shadow-violet-500/20">
+                        <Star size={20} className="text-white" />
+                    </div>
+                    <div>
+                        <p className="text-[13px] font-bold text-violet-800 dark:text-violet-300">Exento de pago — 50 años de matrícula</p>
+                        <p className="text-[12px] text-violet-700/70 dark:text-violet-400/60">Con más de 50 años de matrícula, estás exento del pago de cuota mensual y anual.</p>
                     </div>
                 </div>
             )}
@@ -257,6 +288,16 @@ export default function MatriculaStatus() {
                                             <Briefcase size={18} />
                                         </div>
                                     </div>
+                                ) : data?.esExento ? (
+                                    <div className="w-full flex items-center justify-between">
+                                        <div>
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Estado</p>
+                                            <p className="text-sm font-bold text-violet-600 dark:text-violet-400">Exento — 50 años de matrícula</p>
+                                        </div>
+                                        <div className="w-10 h-10 rounded-full bg-violet-50 dark:bg-violet-500/10 text-violet-600 border border-violet-100 dark:border-violet-500/20 flex items-center justify-center">
+                                            <Star size={18} />
+                                        </div>
+                                    </div>
                                 ) : data?.hasPagoAnualActivo || data?.hasDebitoAutomatico ? (
                                     <div className="w-full flex items-center justify-between">
                                         <div>
@@ -343,6 +384,17 @@ export default function MatriculaStatus() {
                                     </div>
                                     <div className="w-10 h-10 rounded-full bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 border border-indigo-100 dark:border-indigo-500/20 flex items-center justify-center">
                                         <Briefcase size={18} />
+                                    </div>
+                                </div>
+                            ) : data?.esExento ? (
+                                <div className="w-full flex items-center justify-between">
+                                    <div>
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Estado de Pago</p>
+                                        <p className="text-sm font-bold text-violet-600 dark:text-violet-400">Exento — 50 años de matrícula</p>
+                                        <p className="text-[11px] text-slate-400 mt-0.5">No abonás cuota mensual ni anual.</p>
+                                    </div>
+                                    <div className="w-10 h-10 rounded-full bg-violet-50 dark:bg-violet-500/10 text-violet-600 border border-violet-100 dark:border-violet-500/20 flex items-center justify-center">
+                                        <Star size={18} />
                                     </div>
                                 </div>
                             ) : data?.hasDebitoAutomatico ? (

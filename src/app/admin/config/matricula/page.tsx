@@ -1,17 +1,19 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Settings2, CheckCircle2, AlertCircle, Loader2, Zap, Calendar } from "lucide-react";
+import { Settings2, CheckCircle2, AlertCircle, Loader2, Zap, Calendar, Award, Star } from "lucide-react";
 
 interface ConfigValues {
     montoMensual: string;
     montoAnual: string;
     pagoAnualDesde: string;
     pagoAnualHasta: string;
+    beneficioVeterano: boolean;
+    beneficioExento: boolean;
 }
 
 export default function ConfigMatriculaPage() {
-    const [values, setValues] = useState<ConfigValues>({ montoMensual: "", montoAnual: "", pagoAnualDesde: "", pagoAnualHasta: "" });
+    const [values, setValues] = useState<ConfigValues>({ montoMensual: "", montoAnual: "", pagoAnualDesde: "", pagoAnualHasta: "", beneficioVeterano: false, beneficioExento: false });
     const [loading, setLoading] = useState(true);
     const [isSuperAdmin, setIsSuperAdmin] = useState(false);
     const [savingMensual, setSavingMensual] = useState(false);
@@ -42,6 +44,8 @@ export default function ConfigMatriculaPage() {
                     montoAnual: config.montoAnual ?? "",
                     pagoAnualDesde: config.pagoAnualDesde ?? "",
                     pagoAnualHasta: config.pagoAnualHasta ?? "",
+                    beneficioVeterano: config.beneficioVeterano ?? false,
+                    beneficioExento: config.beneficioExento ?? false,
                 });
                 setIsSuperAdmin(me.accessLevel === "superadmin");
             })
@@ -216,6 +220,58 @@ export default function ConfigMatriculaPage() {
                             </button>
                         </div>
                     )}
+
+                    {/* Beneficios por antigüedad */}
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6 space-y-4">
+                        <div>
+                            <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Beneficios por Antigüedad</label>
+                            <p className="text-[12px] text-slate-500 dark:text-slate-400 mt-0.5">Descuentos automáticos según años de matrícula. Se aplican al generar cuotas y en la vista del usuario.</p>
+                        </div>
+
+                        {/* Veterano: 40-49 años → 50% */}
+                        <div className="flex items-center justify-between gap-4 py-3 border-b border-slate-100 dark:border-slate-800">
+                            <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center">
+                                    <Award size={15} className="text-amber-500" />
+                                </div>
+                                <div>
+                                    <p className="text-[13px] font-bold text-slate-700 dark:text-slate-200">Trayectoria (40 a 49 años)</p>
+                                    <p className="text-[11px] text-slate-400">50% de descuento en cuota mensual y anual</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={async () => {
+                                    const nuevo = !values.beneficioVeterano;
+                                    setValues(v => ({ ...v, beneficioVeterano: nuevo }));
+                                    await fetch("/api/admin/config", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ clave: "beneficioVeterano", valor: nuevo ? "1" : "0" }) });
+                                }}
+                                className={`relative w-11 h-6 rounded-full transition-colors ${values.beneficioVeterano ? "bg-amber-500" : "bg-slate-200 dark:bg-slate-700"}`}>
+                                <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${values.beneficioVeterano ? "translate-x-5" : "translate-x-0"}`} />
+                            </button>
+                        </div>
+
+                        {/* Exento: 50+ años → gratis */}
+                        <div className="flex items-center justify-between gap-4 py-3">
+                            <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-xl bg-violet-50 dark:bg-violet-900/20 flex items-center justify-center">
+                                    <Star size={15} className="text-violet-500" />
+                                </div>
+                                <div>
+                                    <p className="text-[13px] font-bold text-slate-700 dark:text-slate-200">Emérito (50 años o más)</p>
+                                    <p className="text-[11px] text-slate-400">Exento total — no genera cuota mensual ni anual</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={async () => {
+                                    const nuevo = !values.beneficioExento;
+                                    setValues(v => ({ ...v, beneficioExento: nuevo }));
+                                    await fetch("/api/admin/config", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ clave: "beneficioExento", valor: nuevo ? "1" : "0" }) });
+                                }}
+                                className={`relative w-11 h-6 rounded-full transition-colors ${values.beneficioExento ? "bg-violet-500" : "bg-slate-200 dark:bg-slate-700"}`}>
+                                <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${values.beneficioExento ? "translate-x-5" : "translate-x-0"}`} />
+                            </button>
+                        </div>
+                    </div>
 
                     {/* Generar cuotas */}
                     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6 space-y-4">
