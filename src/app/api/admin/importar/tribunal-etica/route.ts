@@ -19,14 +19,20 @@ function getCol(raw: Record<string, string>, ...keys: string[]): string {
 
 function parseDate(raw: string): Date | null {
     if (!raw?.trim()) return null;
-    // Soporta dd/mm/yyyy, dd-mm-yyyy, yyyy-mm-dd
     const s = raw.trim();
     const dmy = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
-    if (dmy) return new Date(Date.UTC(+dmy[3], +dmy[2] - 1, +dmy[1]));
+    if (dmy) {
+        if (+dmy[3] < 1970) return null; // artefacto epoch de Excel
+        return new Date(Date.UTC(+dmy[3], +dmy[2] - 1, +dmy[1]));
+    }
     const iso = s.match(/^(\d{4})[\/\-](\d{2})[\/\-](\d{2})/);
-    if (iso) return new Date(Date.UTC(+iso[1], +iso[2] - 1, +iso[3]));
+    if (iso) {
+        if (+iso[1] < 1970) return null;
+        return new Date(Date.UTC(+iso[1], +iso[2] - 1, +iso[3]));
+    }
     const d = new Date(s);
-    return isNaN(d.getTime()) ? null : d;
+    if (isNaN(d.getTime()) || d.getUTCFullYear() < 1970) return null;
+    return d;
 }
 
 const BATCH = 200;
