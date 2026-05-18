@@ -18,6 +18,17 @@ export async function POST(req: NextRequest) {
     const { presentarAnte, emailLegal, detalles } = body;
 
     const today = new Date();
+    const expediente = session.expediente || "";
+
+    // Verificar estado del usuario
+    const dbUser = await prisma.user.findFirst({
+        where: { expediente },
+        select: { status: true },
+    });
+
+    if (dbUser?.status === "cancelled") {
+        return NextResponse.json({ error: "La matrícula está cancelada. No es posible emitir el certificado." }, { status: 403 });
+    }
 
     // Snapshot del firmante activo al momento de emisión
     const firmante = await prisma.firmaAutoridad.findFirst({ where: { enCertificado: true } });
@@ -25,15 +36,25 @@ export async function POST(req: NextRequest) {
     // Verificar sanciones activas del Tribunal de Ética
     const sancionesActivas = await prisma.tribunalEtica.findMany({
         where: {
-            expediente: session.expediente || "",
+            expediente,
             inicio: { lte: today },
             fin: { gte: today },
         },
     });
 
+    // Si está suspendido, obtener la última suspensión para el certificado
+    let ultimaSuspension = null;
+    if (dbUser?.status === "suspended") {
+        ultimaSuspension = await (prisma as any).historialMatricula.findFirst({
+            where: { expediente, accion: { in: ["suspension", "cancelacion"] } },
+            orderBy: { createdAt: "desc" },
+            select: { motivoNombre: true, comentario: true, createdAt: true },
+        });
+    }
+
     const solicitud = await prisma.solicitud.create({
         data: {
-            expediente: session.expediente || "",
+            expediente,
             tipo: "Certificado de Matriculación",
             presentarAnte: presentarAnte || null,
             emailLegal: emailLegal || null,
@@ -50,6 +71,12 @@ export async function POST(req: NextRequest) {
                     inicio: s.inicio.toISOString(),
                     fin: s.fin.toISOString(),
                 })),
+                userStatus: dbUser?.status ?? "active",
+                suspension: ultimaSuspension ? {
+                    motivoNombre: ultimaSuspension.motivoNombre,
+                    comentario: ultimaSuspension.comentario,
+                    fecha: ultimaSuspension.createdAt.toISOString(),
+                } : null,
             },
         }
     });

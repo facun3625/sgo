@@ -44,6 +44,12 @@ interface SancionSnapshot {
     fin: string;
 }
 
+interface SuspensionSnapshot {
+    motivoNombre: string | null;
+    comentario: string | null;
+    fecha: string;
+}
+
 interface CertificateProps {
     datos: UserDatos;
     presentarAnte: string;
@@ -51,11 +57,17 @@ interface CertificateProps {
     baseUrl: string;
     firmante: FirmanteSnapshot | null;
     sanciones: SancionSnapshot[];
+    userStatus: string;
+    suspension: SuspensionSnapshot | null;
 }
 
-function CertificateDocument({ datos, presentarAnte, solicitudId, baseUrl, firmante, sanciones }: CertificateProps) {
+function CertificateDocument({ datos, presentarAnte, solicitudId, baseUrl, firmante, sanciones, userStatus, suspension }: CertificateProps) {
     const { dia, mes, anio } = fechaEnLetras();
     const qrUrl = solicitudId ? `${baseUrl}/verificar/certificado/${solicitudId}` : `${baseUrl}/verificar/${datos.expediente}`;
+    const suspendido = userStatus === "suspended";
+    const fechaSuspension = suspension?.fecha
+        ? new Date(suspension.fecha).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric" })
+        : null;
 
     return (
         <div
@@ -97,9 +109,19 @@ function CertificateDocument({ datos, presentarAnte, solicitudId, baseUrl, firma
                     Que, <strong>{datos.apellido} {datos.nombre}</strong>, DNI {datos.documento || "---"}, se inscribió en la matrícula de este Colegio de Profesionales de la Abogacía de la Primera Circunscripción Judicial de la Provincia de Santa Fe al Folio {datos.folio || "--"}, del Libro {datos.tomo || "--"}, Expediente Nº {datos.expediente} en fecha {formatFechaMatriculacion(datos.fechaMatriculacion)}.
                 </p>
 
-                <p style={{ marginBottom: "20px" }}>
-                    Se deja constancia que el mencionado profesional se encuentra con matrícula vigente y no registra sanciones disciplinarias del Tribunal de Conducta en su legajo personal.
-                </p>
+                {suspendido ? (
+                    <p style={{ marginBottom: "20px" }}>
+                        Se deja constancia que el mencionado profesional se encuentra con <strong>matrícula SUSPENDIDA</strong>
+                        {fechaSuspension ? ` desde el ${fechaSuspension}` : ""}
+                        {suspension?.motivoNombre ? `, por motivo: ${suspension.motivoNombre}` : ""}
+                        {suspension?.comentario && !suspension?.motivoNombre ? ` (${suspension.comentario})` : ""}.
+                        {sanciones.length === 0 && " No registra sanciones disciplinarias del Tribunal de Conducta en su legajo personal."}
+                    </p>
+                ) : (
+                    <p style={{ marginBottom: "20px" }}>
+                        Se deja constancia que el mencionado profesional se encuentra con matrícula vigente{sanciones.length === 0 ? " y no registra sanciones disciplinarias del Tribunal de Conducta en su legajo personal" : ""}.
+                    </p>
+                )}
 
                 <p style={{ marginBottom: "40px" }}>
                     A los fines de ser presentado ante <strong>{presentarAnte || "_______________"}</strong>, expido el presente a pedido del interesado a los {dia} días del mes de {mes} de {anio}.
@@ -163,6 +185,9 @@ export default function SolicitudCertificadoPage() {
     const [solicitudId, setSolicitudId] = useState<number | null>(null);
     const [firmante, setFirmante] = useState<FirmanteSnapshot | null>(null);
     const [sanciones, setSanciones] = useState<SancionSnapshot[]>([]);
+    const [userStatus, setUserStatus] = useState<string>("active");
+    const [suspension, setSuspension] = useState<SuspensionSnapshot | null>(null);
+    const [blocked, setBlocked] = useState<string | null>(null);
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
     useEffect(() => {
@@ -224,9 +249,12 @@ export default function SolicitudCertificadoPage() {
                 })
             });
             const data = await res.json();
+            if (!res.ok) { setBlocked(data.error); setStatus("idle"); return; }
             setSolicitudId(data.id);
             if (data.detalles?.firmante) setFirmante(data.detalles.firmante);
             if (data.detalles?.sanciones?.length) setSanciones(data.detalles.sanciones);
+            if (data.detalles?.userStatus) setUserStatus(data.detalles.userStatus);
+            if (data.detalles?.suspension) setSuspension(data.detalles.suspension);
             setStatus("generating");
         } catch {
             setStatus("idle");
@@ -264,6 +292,8 @@ export default function SolicitudCertificadoPage() {
                             baseUrl={baseUrl}
                             firmante={firmante}
                             sanciones={sanciones}
+                            userStatus={userStatus}
+                            suspension={suspension}
                         />
                     )}
                 </div>
@@ -281,6 +311,15 @@ export default function SolicitudCertificadoPage() {
             </div>
 
             <div className="p-4 md:p-10 space-y-6 animate-fade-in">
+
+                {blocked && (
+                    <div className="p-5 rounded-2xl bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30 flex gap-3 items-start">
+                        <div className="p-2 rounded-lg bg-white dark:bg-slate-800 text-red-500 shadow-sm shrink-0">
+                            <Info size={15} />
+                        </div>
+                        <p className="text-[13px] text-red-700 dark:text-red-400 font-medium leading-relaxed">{blocked}</p>
+                    </div>
+                )}
 
                 {/* Aviso */}
                 <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 flex gap-3 items-start">
