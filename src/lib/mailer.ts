@@ -1,24 +1,36 @@
 import nodemailer from "nodemailer";
+import prisma from "@/lib/prisma";
 
-const SMTP = {
+const FALLBACK_SMTP = {
     host: "vps-1445550-x.dattaweb.com",
     port: 465 as const,
     secure: true,
     auth: { user: "cpasf@sgo-casf.online", pass: "rN00r/H0aL" },
 };
 
-const transporter = nodemailer.createTransport(SMTP);
+const FALLBACK_FROM = '"CPASF · SGO" <cpasf@sgo-casf.online>';
 
-// Pool transport para envíos masivos — 10 correos/seg, 3 conexiones simultáneas
-const poolTransporter = nodemailer.createTransport({
-    ...SMTP,
-    pool: true,
-    maxConnections: 3,
-    rateLimit: 10,
-    rateDelta: 1000,
-});
+async function getSmtpConfig() {
+    try {
+        const configs = await prisma.config.findMany({
+            where: { clave: { in: ["smtpHost", "smtpPort", "smtpUser", "smtpPass", "smtpFrom"] } },
+        });
+        const map = Object.fromEntries(configs.map(c => [c.clave, c.valor]));
+        if (map.smtpHost && map.smtpUser && map.smtpPass) {
+            return {
+                smtp: {
+                    host: map.smtpHost,
+                    port: parseInt(map.smtpPort ?? "465") as 465,
+                    secure: parseInt(map.smtpPort ?? "465") === 465,
+                    auth: { user: map.smtpUser, pass: map.smtpPass },
+                },
+                from: map.smtpFrom || FALLBACK_FROM,
+            };
+        }
+    } catch {}
+    return { smtp: FALLBACK_SMTP, from: FALLBACK_FROM };
+}
 
-const FROM = '"CPASF · SGO" <cpasf@sgo-casf.online>';
 const YEAR = new Date().getFullYear();
 
 function baseLayout(content: string) {
@@ -35,8 +47,10 @@ function baseLayout(content: string) {
 }
 
 export async function enviarTokenRecuperacion(destinatario: string, token: string) {
+    const { smtp, from } = await getSmtpConfig();
+    const transporter = nodemailer.createTransport(smtp);
     await transporter.sendMail({
-        from: FROM,
+        from,
         to: destinatario,
         subject: "Código de recuperación de contraseña",
         html: baseLayout(`
@@ -51,8 +65,10 @@ export async function enviarTokenRecuperacion(destinatario: string, token: strin
 }
 
 export async function enviarNotificacionMensaje(destinatario: string) {
+    const { smtp, from } = await getSmtpConfig();
+    const transporter = nodemailer.createTransport(smtp);
     await transporter.sendMail({
-        from: FROM,
+        from,
         to: destinatario,
         subject: "Nuevo mensaje en el portal SGO",
         html: baseLayout(`
@@ -65,10 +81,13 @@ export async function enviarNotificacionMensaje(destinatario: string) {
     });
 }
 
-const MAIL_CHUNK = 20;       // emails por lote
-const MAIL_DELAY_MS = 5000;  // pausa entre lotes (5 seg)
+const MAIL_CHUNK = 20;
+const MAIL_DELAY_MS = 5000;
 
 export async function enviarComunicadoMasivo(destinatarios: string[], asunto: string, cuerpo?: string) {
+    const { smtp, from } = await getSmtpConfig();
+    const transporter = nodemailer.createTransport(smtp);
+
     const cuerpoHtml = cuerpo
         ? cuerpo.replace(/\n/g, "<br>")
         : "Ingresá al portal SGO para leer el comunicado.";
@@ -81,12 +100,11 @@ export async function enviarComunicadoMasivo(destinatarios: string[], asunto: st
         </div>
     `);
 
-    // Enviar en lotes para no saturar el servidor SMTP ni la memoria
     (async () => {
         for (let i = 0; i < destinatarios.length; i += MAIL_CHUNK) {
             const lote = destinatarios.slice(i, i + MAIL_CHUNK);
             const results = await Promise.allSettled(
-                lote.map(email => transporter.sendMail({ from: FROM, to: email, subject: asunto, html }))
+                lote.map(email => transporter.sendMail({ from, to: email, subject: asunto, html }))
             );
             results.forEach((r, idx) => {
                 if (r.status === "rejected") console.error(`[mailer] Error enviando a ${lote[idx]}:`, r.reason);
