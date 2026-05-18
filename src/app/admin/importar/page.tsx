@@ -6,7 +6,7 @@ import { usePermisos } from "@/lib/permisos-context";
 import * as XLSX from "xlsx";
 
 type TipoFinanciero = "deudas" | "pagoAnual" | "consultor";
-type Seccion = "matriculados" | "financiero" | "banelco" | "registros" | "fiadores" | "usuarios" | "adhesiones" | "suspensiones";
+type Seccion = "matriculados" | "financiero" | "banelco" | "registros" | "fiadores" | "usuarios" | "adhesiones" | "suspensiones" | "tribunal";
 
 const FINANCIERO_CONFIG: Record<TipoFinanciero, { label: string; columnas: string[]; ejemplo: string }> = {
     deudas: { label: "Deudas", columnas: ["expediente", "monto"], ejemplo: "expediente,monto\n564,15000\n792,8500" },
@@ -198,6 +198,12 @@ export default function ImportarPage() {
     const [fiadLoading, setFiadLoading] = useState(false);
     const [fiadResultado, setFiadResultado] = useState<ResultadoImport | null>(null);
     const fiadFileRef = useRef<HTMLInputElement>(null);
+
+    // Tribunal de Ética
+    const [tribRegistros, setTribRegistros] = useState<Record<string, string>[]>([]);
+    const [tribLoading, setTribLoading] = useState(false);
+    const [tribResultado, setTribResultado] = useState<ResultadoImport | null>(null);
+    const tribFileRef = useRef<HTMLInputElement>(null);
 
     const handleCSVChange = (
         e: React.ChangeEvent<HTMLInputElement>,
@@ -425,6 +431,28 @@ export default function ImportarPage() {
         finally { setSuspLoading(false); }
     };
 
+    const handleImportarTribunal = async () => {
+        setTribLoading(true); setTribResultado(null);
+        try {
+            const res = await fetch("/api/admin/importar/tribunal-etica", {
+                method: "POST", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ registros: tribRegistros }),
+            });
+            const data = await res.json();
+            if (res.ok) {
+                setTribResultado({
+                    tipo: data.errores?.length > 0 ? "warning" : "success",
+                    mensaje: `${data.creados} registro${data.creados !== 1 ? "s" : ""} importado${data.creados !== 1 ? "s" : ""}.`,
+                    detalles: data.errores,
+                });
+                if (data.creados > 0) { setTribRegistros([]); if (tribFileRef.current) tribFileRef.current.value = ""; }
+            } else {
+                setTribResultado({ tipo: "error", mensaje: data.error ?? "Error al importar" });
+            }
+        } catch { setTribResultado({ tipo: "error", mensaje: "Error de conexión" }); }
+        finally { setTribLoading(false); }
+    };
+
     const allTabs: { id: Seccion; permisoKey: string; label: string; icon: React.ReactNode; color: string; activeColor: string }[] = [
         { id: "registros",    permisoKey: "",                      label: "Registros",    icon: <List size={15} />,          color: "text-violet-600 dark:text-violet-400", activeColor: "border-violet-500 bg-violet-50/50 dark:bg-violet-900/10" },
         { id: "matriculados", permisoKey: "importar:matriculados", label: "Matriculados", icon: <UserPlus size={15} />,      color: "text-cyan-600 dark:text-cyan-400",    activeColor: "border-cyan-500 bg-cyan-50/50 dark:bg-cyan-900/10" },
@@ -434,6 +462,7 @@ export default function ImportarPage() {
         { id: "adhesiones",   permisoKey: "importar:adhesiones",   label: "Débito Aut.",  icon: <Banknote size={15} />,      color: "text-teal-600 dark:text-teal-400",    activeColor: "border-teal-500 bg-teal-50/50 dark:bg-teal-900/10" },
         { id: "usuarios",     permisoKey: "importar:usuarios",     label: "Usuarios",     icon: <KeyRound size={15} />,      color: "text-purple-600 dark:text-purple-400", activeColor: "border-purple-500 bg-purple-50/50 dark:bg-purple-900/10" },
         { id: "suspensiones", permisoKey: "importar:suspensiones", label: "Suspensiones", icon: <ShieldOff size={15} />,     color: "text-rose-600 dark:text-rose-400",    activeColor: "border-rose-500 bg-rose-50/50 dark:bg-rose-900/10" },
+        { id: "tribunal",     permisoKey: "importar:suspensiones", label: "Trib. Ética",  icon: <FileText size={15} />,      color: "text-amber-600 dark:text-amber-400",  activeColor: "border-amber-500 bg-amber-50/50 dark:bg-amber-900/10" },
     ];
 
     const tabs = allTabs.filter(t => !t.permisoKey || tiene(t.permisoKey));
@@ -1016,6 +1045,52 @@ export default function ImportarPage() {
                                 className="ml-auto flex items-center gap-2 px-6 h-10 bg-rose-600 text-white rounded-xl text-[13px] font-bold hover:bg-rose-700 disabled:opacity-40 transition-all active:scale-95">
                                 {suspLoading ? <Loader2 size={15} className="animate-spin" /> : <ShieldOff size={15} />}
                                 {suspLoading ? "Aplicando..." : `Aplicar${suspRegistros.length > 0 ? ` ${suspRegistros.length} registros` : ""}`}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* TRIBUNAL DE ÉTICA */}
+            {seccion === "tribunal" && (
+                <div className="space-y-5">
+                    <div className="p-5 rounded-2xl bg-amber-50/50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30">
+                        <p className="text-[13px] font-bold text-amber-800 dark:text-amber-400 mb-1">¿Cómo funciona?</p>
+                        <p className="text-[12px] text-amber-700/70 dark:text-amber-400/60 leading-relaxed">
+                            Importá sanciones del Tribunal de Ética desde el sistema anterior. Columnas: <strong>expediente</strong>, <strong>texto</strong> (motivo/descripción), <strong>inicio</strong> (fecha obligatoria) y <strong>fin</strong> (fecha opcional — dejá vacío para sanciones sin vencimiento como apercibimientos).<br />
+                            Fechas aceptadas: <strong>dd/mm/yyyy</strong>, <strong>dd-mm-yyyy</strong> o <strong>yyyy-mm-dd</strong>.
+                        </p>
+                        <button
+                            onClick={() => { window.open("/api/admin/importar/tribunal-etica", "_blank"); }}
+                            className="mt-3 inline-flex items-center gap-2 text-[11px] font-bold text-amber-600 dark:text-amber-400 hover:underline"
+                        >
+                            <FileText size={12} /> Descargar plantilla CSV
+                        </button>
+                    </div>
+
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6 space-y-4">
+                        <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Archivo CSV o Excel</label>
+                        <UploadZone fileRef={tribFileRef} hasData={tribRegistros.length > 0} count={tribRegistros.length}
+                            onChange={e => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                if (file.name.match(/\.xlsx?$/i)) handleExcelChange(e, setTribRegistros, setTribResultado);
+                                else handleCSVChange(e, setTribRegistros, setTribResultado);
+                            }}
+                            accept=".csv,.xlsx,.xls" color="amber" label="Hacé clic o arrastrá el CSV o Excel" />
+                        <PreviewTable rows={tribRegistros} />
+                        {tribResultado && <Resultado resultado={tribResultado} onClose={() => setTribResultado(null)} />}
+                        <div className="flex items-center justify-between pt-2">
+                            {tribRegistros.length > 0 && (
+                                <button onClick={() => { setTribRegistros([]); if (tribFileRef.current) tribFileRef.current.value = ""; }}
+                                    className="text-[12px] text-slate-400 hover:text-slate-600 flex items-center gap-1">
+                                    <X size={13} /> Limpiar
+                                </button>
+                            )}
+                            <button onClick={handleImportarTribunal} disabled={tribRegistros.length === 0 || tribLoading}
+                                className="ml-auto flex items-center gap-2 px-6 h-10 bg-amber-600 text-white rounded-xl text-[13px] font-bold hover:bg-amber-700 disabled:opacity-40 transition-all active:scale-95">
+                                {tribLoading ? <Loader2 size={15} className="animate-spin" /> : <FileText size={15} />}
+                                {tribLoading ? "Importando..." : `Importar${tribRegistros.length > 0 ? ` ${tribRegistros.length} registros` : ""}`}
                             </button>
                         </div>
                     </div>
