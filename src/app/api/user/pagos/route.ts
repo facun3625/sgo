@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { esMatriculadoJoven, esMatriculadoVeterano, esMatriculadoExento, montoConDescuento } from "@/lib/matricula";
+import { esMatriculadoJoven, esMatriculadoVeterano, esMatriculadoExento, calcularMesesSuspendidos, montoConDescuento } from "@/lib/matricula";
 
 export async function GET() {
     try {
@@ -65,16 +65,22 @@ export async function GET() {
             }).catch(() => []),
         ]);
 
-        const [configTransferenciaArr, cfgVeterano, cfgExento] = await Promise.all([
+        const [configTransferenciaArr, cfgVeterano, cfgExento, historialSusp] = await Promise.all([
             prisma.config.findMany({
                 where: { clave: { in: ["transferencia_matricula_mensual", "transferencia_matricula_anual", "transferencia_deuda"] } },
             }),
             prisma.config.findUnique({ where: { clave: "beneficioVeterano" } }),
             prisma.config.findUnique({ where: { clave: "beneficioExento" } }),
+            (prisma as any).historialMatricula.findMany({
+                where: { expediente },
+                orderBy: { createdAt: "asc" },
+                select: { accion: true, createdAt: true },
+            }),
         ]);
         const configTransferencia = configTransferenciaArr;
         const beneficioVeterano = cfgVeterano?.valor === "1";
         const beneficioExento = cfgExento?.valor === "1";
+        const mesesSuspendidos = calcularMesesSuspendidos(historialSusp ?? []);
         const tMap = Object.fromEntries(configTransferencia.map((c) => [c.clave, c.valor === "1"]));
 
         const historialCuotasRaw = await prisma.cuotaMensual.findMany({
@@ -115,8 +121,8 @@ export async function GET() {
         const fecha = datoMatricula?.fechaMatriculacion;
         const montoAnualBase = configMontoAnual ? parseFloat(configMontoAnual.valor) : 48000;
         const joven = esConsultor ? false : esMatriculadoJoven(fecha);
-        const veterano = (!esConsultor && !joven && beneficioVeterano) ? esMatriculadoVeterano(fecha) : false;
-        const exento = (!esConsultor && !joven && beneficioExento) ? esMatriculadoExento(fecha) : false;
+        const veterano = (!esConsultor && !joven && beneficioVeterano) ? esMatriculadoVeterano(fecha, mesesSuspendidos) : false;
+        const exento = (!esConsultor && !joven && beneficioExento) ? esMatriculadoExento(fecha, mesesSuspendidos) : false;
         const montoAnual = montoConDescuento(montoAnualBase, joven || veterano);
 
         // Ventana de pago anual — si no está configurada, fallback a ene-mar

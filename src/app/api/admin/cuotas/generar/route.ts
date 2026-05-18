@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { esMatriculadoJoven, esMatriculadoVeterano, esMatriculadoExento, montoConDescuento } from "@/lib/matricula";
+import { esMatriculadoJoven, esMatriculadoVeterano, esMatriculadoExento, calcularMesesSuspendidos, montoConDescuento } from "@/lib/matricula";
 
 function isAdmin(lvl: string) {
     return lvl === "superadmin" || lvl === "admin";
@@ -54,6 +54,17 @@ export async function POST() {
     const fechaMap = new Map<string, Date | null>();
     for (const d of datosTodos) if (d.expediente) fechaMap.set(d.expediente, d.fechaMatriculacion);
 
+    // Historial de suspensiones para calcular meses descontados
+    const historialTodos = await (prisma as any).historialMatricula.findMany({
+        select: { expediente: true, accion: true, createdAt: true },
+        orderBy: { createdAt: "asc" },
+    });
+    const historialMap = new Map<string, { accion: string; createdAt: Date }[]>();
+    for (const h of historialTodos) {
+        if (!historialMap.has(h.expediente)) historialMap.set(h.expediente, []);
+        historialMap.get(h.expediente)!.push(h);
+    }
+
     const expSet = new Set<string>();
     for (const d of datosTodos) if (d.expediente && !consultoresExp.has(d.expediente)) expSet.add(d.expediente);
     for (const u of usersTodos) if (u.expediente && !consultoresExp.has(u.expediente)) expSet.add(u.expediente!);
@@ -80,14 +91,21 @@ export async function POST() {
 
     // Filtrar exentos (50+ años) si el beneficio está activo
     const exentos = new Set(
-        beneficioExento ? expedientesACobrar.filter(exp => esMatriculadoExento(fechaMap.get(exp))) : []
+        beneficioExento ? expedientesACobrar.filter(exp => {
+            const ms = calcularMesesSuspendidos(historialMap.get(exp) ?? []);
+            return esMatriculadoExento(fechaMap.get(exp), ms);
+        }) : []
     );
     const expedientesSinExentos = expedientesACobrar.filter(exp => !exentos.has(exp));
 
     // Separar jovenes, veteranos (40-49 años) y normales
     const jovenes = expedientesSinExentos.filter(exp => esMatriculadoJoven(fechaMap.get(exp)));
     const veteranos = beneficioVeterano
-        ? expedientesSinExentos.filter(exp => !esMatriculadoJoven(fechaMap.get(exp)) && esMatriculadoVeterano(fechaMap.get(exp)))
+        ? expedientesSinExentos.filter(exp => {
+            if (esMatriculadoJoven(fechaMap.get(exp))) return false;
+            const ms = calcularMesesSuspendidos(historialMap.get(exp) ?? []);
+            return esMatriculadoVeterano(fechaMap.get(exp), ms);
+        })
         : [];
     const normales = expedientesSinExentos.filter(exp =>
         !esMatriculadoJoven(fechaMap.get(exp)) && !veteranos.includes(exp)
