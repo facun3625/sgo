@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
                 } : null,
                 sanciones: sancionesActivas.map(s => ({
                     texto: s.texto,
-                    inicio: s.inicio.toISOString(),
+                    inicio: s.inicio ? s.inicio.toISOString() : null,
                     fin: s.fin ? s.fin.toISOString() : null,
                 })),
                 userStatus: dbUser?.status ?? "active",

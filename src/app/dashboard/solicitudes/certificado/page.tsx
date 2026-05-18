@@ -40,7 +40,7 @@ interface FirmanteSnapshot {
 
 interface SancionSnapshot {
     texto: string;
-    inicio: string;
+    inicio: string | null;
     fin: string | null;
 }
 
