@@ -83,6 +83,7 @@ const navItems = [
     { href: "/admin/tribunal-etica", label: "Tribunal de Ética", icon: Scale, color: "text-rose-500" },
     { href: "/admin/tutoriales", label: "Tutoriales", icon: PlayCircle, color: "text-pink-400" },
     { href: "/admin/repositorio", label: "Repositorio de Archivos", icon: FolderOpen, color: "text-indigo-500" },
+    { href: "/admin/logs", label: "Registro de Actividad", icon: ClipboardList, color: "text-slate-400" },
 ];
 
 export default function AdminShell({ session, image, permisos, children }: AdminShellProps) {

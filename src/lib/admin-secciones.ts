@@ -41,7 +41,9 @@ export const ADMIN_SECCIONES = [
     { key: "importar:fiadores",     label: "Fiadores",        group: "Importar" },
     { key: "importar:adhesiones",   label: "Débito Aut.",     group: "Importar" },
     { key: "importar:usuarios",     label: "Usuarios",        group: "Importar" },
-    { key: "importar:suspensiones", label: "Suspensiones",    group: "Importar" },
+    { key: "importar:suspensiones", label: "Suspensiones / Tribunal", group: "Importar" },
+    // Auditoría
+    { key: "logs", label: "Registro de Actividad", group: "Auditoría" },
 ] as const;
 
 export type SeccionKey = typeof ADMIN_SECCIONES[number]["key"];

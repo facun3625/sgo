@@ -453,6 +453,24 @@ model EnvioMasivoDestinatario {
   @@map("envios_masivos_destinatarios")
 }
 
+model AdminLog {
+  id          Int      @id @default(autoincrement())
+  adminId     Int
+  adminNombre String
+  expediente  String?
+  modulo      String
+  accion      String
+  detalle     Json?
+  ip          String?
+  createdAt   DateTime @default(now())
+
+  @@index([adminId])
+  @@index([expediente])
+  @@index([modulo])
+  @@index([createdAt])
+  @@map("admin_log")
+}
+
 model TribunalEtica {
   id          Int      @id @default(autoincrement())
   expediente  String

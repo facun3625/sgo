@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { enviarComunicadoMasivo } from "@/lib/mailer";
+import { logAdmin } from "@/lib/admin-log";
 
 function isAdmin(lvl: string) { return lvl === "superadmin" || lvl === "admin"; }
 
@@ -97,5 +98,6 @@ export async function POST(req: NextRequest) {
             .catch(err => console.error("[mailer] Error enviando comunicado:", err));
     }
 
+    await logAdmin({ adminId: session.id, adminNombre: `${session.apellido}, ${session.nombre}`, modulo: "envios", accion: `Envío masivo: "${asunto.trim()}"`, detalle: { totalEnvios: validExp.length, emailsEnviados: emails.length, enviarATodos: !!enviarATodos }, req });
     return NextResponse.json({ id: envio.id, totalEnvios: validExp.length, emailsEnviados: emails.length, invalid });
 }

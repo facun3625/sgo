@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { logAdmin } from "@/lib/admin-log";
 
 function isAdmin(lvl: string) {
     return lvl === "superadmin" || lvl === "admin";
@@ -158,6 +159,7 @@ export async function PATCH(
                 tipo: "tramite",
             },
         });
+        await logAdmin({ adminId: session.id, adminNombre: `${session.apellido}, ${session.nombre}`, expediente: solicitud.expediente, modulo: "tramites", accion: `Rechazó trámite: ${solicitud.tipo}`, detalle: { motivo: motivo ?? null, tramiteId: parseInt(id) }, req });
         return NextResponse.json(updated);
     }
 
@@ -165,7 +167,7 @@ export async function PATCH(
 }
 
 export async function DELETE(
-    _: NextRequest,
+    req: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
     const session = await getSession();
@@ -173,6 +175,8 @@ export async function DELETE(
         return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
     const { id } = await params;
+    const sol = await prisma.solicitud.findUnique({ where: { id: parseInt(id) } });
     await prisma.solicitud.delete({ where: { id: parseInt(id) } });
+    await logAdmin({ adminId: session.id, adminNombre: `${session.apellido}, ${session.nombre}`, expediente: sol?.expediente ?? null, modulo: "tramites", accion: `Eliminó trámite: ${sol?.tipo ?? id}`, detalle: { tramiteId: parseInt(id), estado: sol?.estado }, req });
     return NextResponse.json({ ok: true });
 }

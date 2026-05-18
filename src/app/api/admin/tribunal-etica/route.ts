@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { logAdmin } from "@/lib/admin-log";
 
 function isAdmin(lvl: string) { return lvl === "superadmin" || lvl === "admin"; }
 
@@ -41,6 +42,7 @@ export async function POST(req: NextRequest) {
             fin: fin ? new Date(fin) : null,
         },
     });
+    await logAdmin({ adminId: session.id, adminNombre: `${session.apellido}, ${session.nombre}`, expediente: expediente.trim(), modulo: "tribunal", accion: "Creó registro de Tribunal de Ética", detalle: { texto: texto.trim() }, req });
     return NextResponse.json(registro);
 }
 
@@ -68,6 +70,8 @@ export async function DELETE(req: NextRequest) {
     if (!session || !isAdmin(session.accessLevel)) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
     const { id } = await req.json();
+    const reg = await prisma.tribunalEtica.findUnique({ where: { id } });
     await prisma.tribunalEtica.delete({ where: { id } });
+    await logAdmin({ adminId: session.id, adminNombre: `${session.apellido}, ${session.nombre}`, expediente: reg?.expediente ?? null, modulo: "tribunal", accion: "Eliminó registro de Tribunal de Ética", detalle: { registroId: id }, req });
     return NextResponse.json({ ok: true });
 }

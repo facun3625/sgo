@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { logAdmin } from "@/lib/admin-log";
 
 function isAdmin(lvl: string) { return lvl === "superadmin" || lvl === "admin"; }
 
@@ -48,5 +49,6 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ ex
     }
 
     const updated = await prisma.dato.update({ where: { id: dato.id }, data });
+    await logAdmin({ adminId: session.id, adminNombre: `${session.apellido}, ${session.nombre}`, expediente, modulo: "usuarios", accion: "Edición de datos", detalle: { campos: Object.keys(data) }, req });
     return NextResponse.json(updated);
 }
