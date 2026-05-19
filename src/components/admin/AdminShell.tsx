@@ -145,11 +145,23 @@ export default function AdminShell({ session, image, permisos, children }: Admin
     });
 
     const [rehabPendientes, setRehabPendientes] = useState(0);
+    const [adhesionesPendientes, setAdhesionesPendientes] = useState(0);
     useEffect(() => {
         const load = () =>
             fetch("/api/admin/suspensiones?tipo=rehabilitaciones")
                 .then(r => r.json())
                 .then(d => setRehabPendientes((d.solicitudes ?? []).filter((s: any) => s.estado === "pendiente").length))
+                .catch(() => {});
+        load();
+        const t = setInterval(load, 60000);
+        return () => clearInterval(t);
+    }, []);
+
+    useEffect(() => {
+        const load = () =>
+            fetch("/api/admin/adhesiones")
+                .then(r => r.json())
+                .then(d => setAdhesionesPendientes(Array.isArray(d) ? d.filter((a: any) => a.estado === "pendiente").length : 0))
                 .catch(() => {});
         load();
         const t = setInterval(load, 60000);
@@ -186,6 +198,9 @@ export default function AdminShell({ session, image, permisos, children }: Admin
                     {visibleNavItems.map((item) => {
                         const active = isActive(item);
                         const showRehabBadge = item.href === "/admin/suspensiones" && rehabPendientes > 0 && (isSuperAdmin || (permisos ?? []).includes("suspensiones"));
+                        const showAdhesionesBadge = item.href === "/admin/adhesiones" && adhesionesPendientes > 0 && (isSuperAdmin || (permisos ?? []).includes("adhesiones"));
+                        const showBadge = showRehabBadge || showAdhesionesBadge;
+                        const badgeCount = showRehabBadge ? rehabPendientes : adhesionesPendientes;
                         return (
                             <Link key={item.href} href={item.href} onClick={() => setSidebarOpen(false)}
                                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-[13px] font-medium group
@@ -195,12 +210,12 @@ export default function AdminShell({ session, image, permisos, children }: Admin
                                     }`}>
                                 <item.icon size={17} className={active ? "text-white" : `${item.color} group-hover:scale-110 transition-transform`} />
                                 {item.label}
-                                {showRehabBadge && (
+                                {showBadge && (
                                     <span className="ml-auto min-w-[18px] h-[18px] px-1 bg-amber-400 text-white text-[9px] font-black rounded-full flex items-center justify-center leading-none">
-                                        {rehabPendientes > 9 ? "9+" : rehabPendientes}
+                                        {badgeCount > 9 ? "9+" : badgeCount}
                                     </span>
                                 )}
-                                {active && !showRehabBadge && <ChevronRight size={13} className="ml-auto text-white/40" />}
+                                {active && !showBadge && <ChevronRight size={13} className="ml-auto text-white/40" />}
                             </Link>
                         );
                     })}

@@ -25,6 +25,7 @@ export async function GET() {
             cancelacionAprobada,
             debitoEnTramite,
             cancelacionPendiente,
+            debitoRechazado,
             pagoAnual,
             dbUser,
             datoMatricula,
@@ -47,6 +48,11 @@ export async function GET() {
             }),
             prisma.adhesionDebito.findFirst({
                 where: { expediente, estado: "pendiente", tipoAdhesion: "CANCELACION" }
+            }),
+            prisma.adhesionDebito.findFirst({
+                where: { expediente, estado: "rechazada", tipoAdhesion: { not: "CANCELACION" } },
+                orderBy: { createdAt: "desc" },
+                select: { motivo: true, createdAt: true },
             }),
             prisma.pagoAnual.findFirst({ where: { expediente } }),
             prisma.user.findUnique({ where: { expediente }, select: { status: true } }),
@@ -162,6 +168,8 @@ export async function GET() {
             hasDebitoAutomatico: debitoActivo,
             hasDebitoEnTramite: debitoPendiente,
             hasCancelacionPendiente: cancelacionEnTramite,
+            hasDebitoRechazado: !debitoActivo && !debitoPendiente && !!debitoRechazado,
+            motivoRechazoDebito: debitoRechazado?.motivo ?? null,
             hasPagoAnualActivo: !!pagoAnual,
             deudasPagadas,
             esConsultor,

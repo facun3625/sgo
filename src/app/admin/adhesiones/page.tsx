@@ -360,10 +360,11 @@ export default function AdminAdhesionesPage() {
                                                             </div>
                                                         </div>
                                                     ) : (
-                                                        <div className="h-20 bg-slate-50 dark:bg-slate-800/60 flex items-center justify-center gap-3">
+                                                        <a href={doc.url} target="_blank" rel="noopener noreferrer"
+                                                            className="h-20 bg-slate-50 dark:bg-slate-800/60 flex items-center justify-center gap-3 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all group">
                                                             <FileText size={28} className="text-blue-400" />
-                                                            <span className="text-[12px] font-semibold text-slate-500 dark:text-slate-400">Archivo PDF</span>
-                                                        </div>
+                                                            <span className="text-[12px] font-semibold text-slate-500 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">Abrir PDF</span>
+                                                        </a>
                                                     )}
                                                     {/* Footer with label + download */}
                                                     <div className="flex items-center justify-between px-3 py-2 bg-white dark:bg-slate-900">

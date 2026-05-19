@@ -26,7 +26,7 @@ export default function AdhesionDebitoPage() {
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
     const [submitted, setSubmitted] = useState(false);
-    const [existingAdhesion, setExistingAdhesion] = useState<{ pending: boolean; approved: boolean; cancelacionPendiente: boolean }>({ pending: false, approved: false, cancelacionPendiente: false });
+    const [existingAdhesion, setExistingAdhesion] = useState<{ pending: boolean; approved: boolean; cancelacionPendiente: boolean; rejected: boolean; motivoRechazo: string | null }>({ pending: false, approved: false, cancelacionPendiente: false, rejected: false, motivoRechazo: null });
     const [loadingInitial, setLoadingInitial] = useState(true);
     const [showChangeForm, setShowChangeForm] = useState(false);
     const [cancelLoading, setCancelLoading] = useState(false);
@@ -41,6 +41,8 @@ export default function AdhesionDebitoPage() {
                     pending: data.hasDebitoEnTramite,
                     approved: data.hasDebitoAutomatico,
                     cancelacionPendiente: data.hasCancelacionPendiente ?? false,
+                    rejected: data.hasDebitoRechazado ?? false,
+                    motivoRechazo: data.motivoRechazoDebito ?? null,
                 });
             } catch (error) {
                 console.error("Error checking status:", error);
@@ -226,6 +228,26 @@ export default function AdhesionDebitoPage() {
                     </div>
                 )}
 
+                {!loadingInitial && existingAdhesion.rejected && (
+                    <div className="mb-10 p-8 rounded-[32px] bg-rose-50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/30 flex flex-col md:flex-row items-start gap-6 animate-slide-up">
+                        <div className="w-16 h-16 rounded-2xl bg-rose-500 text-white flex items-center justify-center shadow-lg shadow-rose-500/20 shrink-0">
+                            <AlertCircle size={32} />
+                        </div>
+                        <div className="space-y-2 flex-1">
+                            <h3 className="text-rose-900 dark:text-rose-400 font-bold text-xl tracking-tight">Solicitud Rechazada</h3>
+                            <p className="text-rose-700/70 dark:text-rose-400/60 text-sm font-medium">
+                                Tu última solicitud de adhesión fue rechazada.
+                                {existingAdhesion.motivoRechazo && (
+                                    <span className="block mt-1 font-semibold text-rose-800 dark:text-rose-300">
+                                        Motivo: {existingAdhesion.motivoRechazo}
+                                    </span>
+                                )}
+                            </p>
+                            <p className="text-rose-600/60 dark:text-rose-400/50 text-sm">Podés enviar una nueva solicitud a continuación.</p>
+                        </div>
+                    </div>
+                )}
+
                 {!loadingInitial && existingAdhesion.approved && !showChangeForm && (
                     <div className="space-y-6 animate-slide-up">
                         {(cancelSubmitted || existingAdhesion.cancelacionPendiente) ? (
@@ -279,7 +301,7 @@ export default function AdhesionDebitoPage() {
                     </div>
                 )}
 
-                {!loadingInitial && !existingAdhesion.pending && (!existingAdhesion.approved || showChangeForm) && (
+                {!loadingInitial && !existingAdhesion.pending && (!existingAdhesion.approved || showChangeForm || existingAdhesion.rejected) && (
                     <>
                         {/* Step 1: Selección de Medio */}
                         {step === 1 && (
