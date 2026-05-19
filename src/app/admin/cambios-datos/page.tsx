@@ -156,9 +156,19 @@ export default function CambiosDatosPage() {
                     ))}
                 </div>
 
+                <div className="flex items-center gap-3">
+                    <span className="text-[12px] text-slate-400">
+                        Mostrando {cambios.length === 0 ? 0 : (page - 1) * 30 + 1}–{Math.min(page * 30, total)} de {total} registros
+                    </span>
+                    {algunoChecked && (
+                        <span className="text-[11px] text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">
+                            {checkedIds.size} seleccionado{checkedIds.size !== 1 ? "s" : ""} de esta página
+                        </span>
+                    )}
+                </div>
+
                 {algunoChecked && (
                     <div className="flex items-center gap-2">
-                        <span className="text-[12px] text-slate-500">{checkedIds.size} seleccionado{checkedIds.size !== 1 ? "s" : ""}</span>
                         <button onClick={() => marcarEstado([...checkedIds], true)}
                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-[12px] font-bold hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all">
                             <CheckCircle2 size={13} /> Marcar leído
@@ -168,8 +178,9 @@ export default function CambiosDatosPage() {
                             <Circle size={13} /> Marcar no leído
                         </button>
                         <button onClick={() => exportarCSV(seleccionados)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#063f68]/10 text-[#063f68] dark:text-sky-400 text-[12px] font-bold hover:bg-[#063f68]/20 transition-all">
-                            <Download size={13} /> Exportar ({checkedIds.size})
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#063f68]/10 text-[#063f68] dark:text-sky-400 text-[12px] font-bold hover:bg-[#063f68]/20 transition-all"
+                            title="La exportación incluye solo los registros seleccionados en esta página">
+                            <Download size={13} /> Exportar seleccionados ({checkedIds.size}) — pág. {page}
                         </button>
                     </div>
                 )}
