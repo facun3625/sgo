@@ -40,10 +40,12 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     const { id: idStr } = await params;
     const id = parseInt(idStr);
 
-    // Don't allow deleting superadmin
     const user = await prisma.user.findUnique({ where: { id } });
-    if (!user || user.accessLevel === "superadmin") {
-        return NextResponse.json({ error: "No se puede eliminar este usuario" }, { status: 400 });
+    if (!user) return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
+    // No puede eliminarse a sí mismo
+    const session = await getSession();
+    if (user.id === session?.id) {
+        return NextResponse.json({ error: "No podés eliminarte a vos mismo" }, { status: 400 });
     }
 
     await prisma.user.delete({ where: { id } });

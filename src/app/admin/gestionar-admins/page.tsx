@@ -29,6 +29,7 @@ export default function GestionarAdminsPage() {
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [permisos, setPermisos] = useState<string[]>([]);
+    const [esSuperadmin, setEsSuperadmin] = useState(false);
     const [creando, setCreando] = useState(false);
 
     // Edit state
@@ -61,13 +62,13 @@ export default function GestionarAdminsPage() {
             const res = await fetch("/api/admin/gestionar-admins", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ nombre, apellido, expediente, password, permisos }),
+                body: JSON.stringify({ nombre, apellido, expediente, password, permisos, esSuperadmin }),
             });
             const data = await res.json();
             if (res.ok) {
                 showToast("Administrador creado", "success");
                 setAdmins(prev => [data, ...prev]);
-                setNombre(""); setApellido(""); setExpediente(""); setPassword(""); setPermisos([]);
+                setNombre(""); setApellido(""); setExpediente(""); setPassword(""); setPermisos([]); setEsSuperadmin(false);
                 setTab("lista");
             } else {
                 showToast(data.error || "Error al crear", "error");
@@ -252,7 +253,7 @@ export default function GestionarAdminsPage() {
                     onClick={() => { setTab("lista"); setEditando(null); }}
                     className={`flex items-center gap-2 px-5 py-2.5 text-[13px] font-bold rounded-t-xl transition-all border-b-2 -mb-px ${tab === "lista" ? "border-violet-500 text-violet-600 dark:text-violet-400 bg-violet-50/50 dark:bg-violet-900/10" : "border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"}`}
                 >
-                    <Shield size={14} /> Administradores ({admins.filter(a => a.accessLevel === "admin").length})
+                    <Shield size={14} /> Administradores ({admins.length})
                 </button>
                 <button
                     onClick={() => { setTab("nuevo"); setEditando(null); }}
@@ -271,10 +272,10 @@ export default function GestionarAdminsPage() {
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                             {/* Lista de admins */}
                             <div className="space-y-3">
-                                {admins.filter(a => a.accessLevel !== "superadmin").length === 0 && (
+                                {admins.length === 0 && (
                                     <p className="text-center text-[13px] text-slate-400 py-12">No hay administradores creados</p>
                                 )}
-                                {admins.filter(a => a.accessLevel !== "superadmin").map(admin => (
+                                {admins.map(admin => (
                                     <div
                                         key={admin.id}
                                         onClick={() => { setEditando(admin); setEditPermisos(admin.permisos); setEditPassword(""); }}
@@ -291,6 +292,11 @@ export default function GestionarAdminsPage() {
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-2">
+                                                {admin.accessLevel === "superadmin" && (
+                                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                                                        <ShieldCheck size={9} /> Super
+                                                    </span>
+                                                )}
                                                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${admin.status === "active" ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400" : "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400"}`}>
                                                     {admin.status === "active" ? "Activo" : "Inactivo"}
                                                 </span>
@@ -430,10 +436,27 @@ export default function GestionarAdminsPage() {
                             </div>
                         </div>
 
-                        <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-                            <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Secciones con acceso</label>
-                            {permisosGrid}
+                        <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+                            <label className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all ${esSuperadmin ? "bg-amber-50 dark:bg-amber-900/20 border-amber-300 dark:border-amber-700" : "bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700"}`}>
+                                <div className={`w-5 h-5 rounded-md flex items-center justify-center transition-all flex-shrink-0 ${esSuperadmin ? "bg-amber-500" : "bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600"}`}>
+                                    {esSuperadmin && <Check size={12} className="text-white" />}
+                                </div>
+                                <input type="checkbox" className="hidden" checked={esSuperadmin} onChange={e => setEsSuperadmin(e.target.checked)} />
+                                <div>
+                                    <p className={`text-[13px] font-bold ${esSuperadmin ? "text-amber-700 dark:text-amber-300" : "text-slate-700 dark:text-slate-300"}`}>
+                                        <ShieldCheck size={13} className="inline mr-1" /> Superadministrador
+                                    </p>
+                                    <p className="text-[11px] text-slate-400 mt-0.5">Acceso total al sistema, sin restricciones de permisos</p>
+                                </div>
+                            </label>
                         </div>
+
+                        {!esSuperadmin && (
+                            <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                                <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Secciones con acceso</label>
+                                {permisosGrid}
+                            </div>
+                        )}
 
                         <button
                             onClick={handleCrear}
