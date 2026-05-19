@@ -141,6 +141,7 @@ model AdhesionDebito {
   expediente      String
   tipoAdhesion    String   // "CBU" o "Tarjeta"
   estado          String   @default("pendiente") // pendiente, aprobada, rechazada
+  motivo          String?  // Motivo de rechazo
   dniFrontal      String?  // Ruta o URL del archivo
   constanciaCbu   String?  // Ruta o URL del archivo (Solo para CBU)
   frontalTarjeta  String?  // Ruta o URL del archivo (Solo para Tarjeta)

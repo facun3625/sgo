@@ -16,7 +16,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const id = parseInt(idStr);
     if (isNaN(id)) return NextResponse.json({ error: "ID inválido" }, { status: 400 });
 
-    const { estado } = await req.json();
+    const { estado, motivo } = await req.json();
     if (!["pendiente", "aprobada", "rechazada"].includes(estado))
         return NextResponse.json({ error: "Estado inválido" }, { status: 400 });
 
@@ -25,7 +25,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
     const updated = await prisma.adhesionDebito.update({
         where: { id },
-        data: { estado },
+        data: { estado, ...(motivo !== undefined ? { motivo: motivo || null } : {}) },
     });
 
     if (estado === "aprobada") {
@@ -58,8 +58,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
             ? "Tu solicitud de cancelación de débito automático fue aprobada. El débito de tus cuotas ya no se procesará automáticamente."
             : "Tu solicitud de adhesión a débito automático fue aprobada. En breve se procesará el débito de tus cuotas.",
         rechazada: esCancelacion
-            ? "Tu solicitud de cancelación de débito automático fue rechazada. Comunicate con el CPASF para más información."
-            : "Tu solicitud de adhesión a débito automático fue rechazada. Comunicate con el CPASF para más información.",
+            ? `Tu solicitud de cancelación de débito automático fue rechazada.${motivo ? ` Motivo: ${motivo}` : " Comunicate con el CPASF para más información."}`
+            : `Tu solicitud de adhesión a débito automático fue rechazada.${motivo ? ` Motivo: ${motivo}` : " Comunicate con el CPASF para más información."}`,
     };
 
     if (mensajes[estado]) {

@@ -72,11 +72,16 @@ export default function AdhesionDebitoPage() {
             if (key === "cbu") setConstanciaCbu(file);
             if (key === "tarjeta") setFrontalTarjeta(file);
 
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setPreviews(prev => ({ ...prev, [key]: reader.result as string }));
-            };
-            reader.readAsDataURL(file);
+            if (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")) {
+                // PDFs can't be previewed as images — store a sentinel
+                setPreviews(prev => ({ ...prev, [key]: "__pdf__" }));
+            } else {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    setPreviews(prev => ({ ...prev, [key]: reader.result as string }));
+                };
+                reader.readAsDataURL(file);
+            }
         }
     };
 
@@ -447,7 +452,12 @@ export default function AdhesionDebitoPage() {
                                             />
                                             <div className={`h-40 rounded-[32px] border-2 border-dashed flex flex-col items-center justify-center gap-3 transition-all ${dniFrontal ? "border-emerald-200 bg-emerald-50/30 dark:border-emerald-900/30" : "border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50"
                                                 }`}>
-                                                {previews.dni ? (
+                                                {previews.dni === "__pdf__" ? (
+                                                    <div className="w-full h-full flex flex-col items-center justify-center gap-2">
+                                                        <FileText size={32} className="text-blue-400" />
+                                                        <span className="text-[11px] font-bold text-emerald-600">{dniFrontal?.name}</span>
+                                                    </div>
+                                                ) : previews.dni ? (
                                                     <div className="w-full h-full p-2 relative">
                                                         <img src={previews.dni} className="w-full h-full object-cover rounded-2xl" alt="DNI Preview" />
                                                         <div className="absolute inset-0 bg-emerald-500/10 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -479,7 +489,12 @@ export default function AdhesionDebitoPage() {
                                             />
                                             <div className={`h-40 rounded-[32px] border-2 border-dashed flex flex-col items-center justify-center gap-3 transition-all ${(constanciaCbu || frontalTarjeta) ? "border-emerald-200 bg-emerald-50/30 dark:border-emerald-900/30" : "border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50"
                                                 }`}>
-                                                {previews[tipoAdhesion === "CBU" ? "cbu" : "tarjeta"] ? (
+                                                {previews[tipoAdhesion === "CBU" ? "cbu" : "tarjeta"] === "__pdf__" ? (
+                                                    <div className="w-full h-full flex flex-col items-center justify-center gap-2">
+                                                        <FileText size={32} className="text-blue-400" />
+                                                        <span className="text-[11px] font-bold text-emerald-600">{(constanciaCbu || frontalTarjeta)?.name}</span>
+                                                    </div>
+                                                ) : previews[tipoAdhesion === "CBU" ? "cbu" : "tarjeta"] ? (
                                                     <div className="w-full h-full p-2 relative">
                                                         <img src={previews[tipoAdhesion === "CBU" ? "cbu" : "tarjeta"]} className="w-full h-full object-cover rounded-2xl" alt="File Preview" />
                                                         <div className="absolute inset-0 bg-emerald-500/10 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
