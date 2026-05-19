@@ -79,6 +79,9 @@ const SUBTAB_MAP: Record<string, string> = {
     "solicitudes:Jurisprudencia": "Jurisprudencia",
 };
 
+// Tipos que se auto-completan y nunca quedan como "pendiente"
+const TIPOS_AUTO_COMPLETADOS = new Set(["Certificado"]);
+
 // ─── main component ──────────────────────────────────────────────────────────
 
 export default function AdminSolicitudesPage() {
@@ -136,9 +139,11 @@ export default function AdminSolicitudesPage() {
     const subtabsActivos = permisos === null ? null : permisos.filter(p => p.startsWith("solicitudes:"));
     const TABS = (() => {
         if (permisos === null || !subtabsActivos || subtabsActivos.length === 0) return ALL_TABS;
-        // Solo mostrar las tabs habilitadas (siempre en modo pendiente)
+        const allowedTipos = subtabsActivos.map(k => SUBTAB_MAP[k]).filter(Boolean);
+        // Mostrar "Pendientes" solo si alguno de los tipos permitidos puede tener estado pendiente
+        const puedeHaberPendientes = allowedTipos.some(t => !TIPOS_AUTO_COMPLETADOS.has(t));
         return ALL_TABS.filter(t => {
-            if (t.key === "pendiente") return true;
+            if (t.key === "pendiente") return puedeHaberPendientes;
             const needed = Object.entries(SUBTAB_MAP).find(([, v]) => v === t.key)?.[0];
             return needed ? subtabsActivos.includes(needed) : false;
         });
