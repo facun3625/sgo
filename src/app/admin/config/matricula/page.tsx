@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Settings2, CheckCircle2, AlertCircle, Loader2, Zap, Calendar, Award, Star } from "lucide-react";
+import { Settings2, CheckCircle2, AlertCircle, Loader2, Zap, Calendar, Award, Star, Download } from "lucide-react";
 
 interface ConfigValues {
     montoMensual: string;
@@ -10,10 +10,13 @@ interface ConfigValues {
     pagoAnualHasta: string;
     beneficioVeterano: boolean;
     beneficioExento: boolean;
+    boletaDescargaMensual: boolean;
+    boletaDescargaAnual: boolean;
+    boletaDescargaDeuda: boolean;
 }
 
 export default function ConfigMatriculaPage() {
-    const [values, setValues] = useState<ConfigValues>({ montoMensual: "", montoAnual: "", pagoAnualDesde: "", pagoAnualHasta: "", beneficioVeterano: false, beneficioExento: false });
+    const [values, setValues] = useState<ConfigValues>({ montoMensual: "", montoAnual: "", pagoAnualDesde: "", pagoAnualHasta: "", beneficioVeterano: false, beneficioExento: false, boletaDescargaMensual: true, boletaDescargaAnual: true, boletaDescargaDeuda: true });
     const [loading, setLoading] = useState(true);
     const [isSuperAdmin, setIsSuperAdmin] = useState(false);
     const [savingMensual, setSavingMensual] = useState(false);
@@ -46,6 +49,9 @@ export default function ConfigMatriculaPage() {
                     pagoAnualHasta: config.pagoAnualHasta ?? "",
                     beneficioVeterano: config.beneficioVeterano ?? false,
                     beneficioExento: config.beneficioExento ?? false,
+                    boletaDescargaMensual: config.boletaDescargaMensual !== false,
+                    boletaDescargaAnual:   config.boletaDescargaAnual   !== false,
+                    boletaDescargaDeuda:   config.boletaDescargaDeuda   !== false,
                 });
                 setIsSuperAdmin(me.accessLevel === "superadmin");
             })
@@ -323,6 +329,39 @@ export default function ConfigMatriculaPage() {
                             {generando ? <Loader2 size={14} className="animate-spin" /> : <Zap size={14} />}
                             {generando ? "Generando..." : "Generar cuotas ahora"}
                         </button>
+                    </div>
+                    {/* Descarga de boletas */}
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6 space-y-4">
+                        <div className="flex items-center gap-2 mb-1">
+                            <Download size={15} className="text-slate-400" />
+                            <p className="text-[13px] font-black text-slate-700 dark:text-slate-200">Descarga de Boletas</p>
+                        </div>
+                        <p className="text-[12px] text-slate-400">Habilitá o deshabilitá el botón "Descargar boleta" para cada tipo de pago en el panel del usuario.</p>
+                        <div className="space-y-3">
+                            {([
+                                { key: "boletaDescargaMensual", label: "Cuota Mensual" },
+                                { key: "boletaDescargaAnual",   label: "Pago Anual" },
+                                { key: "boletaDescargaDeuda",   label: "Deuda" },
+                            ] as { key: keyof ConfigValues; label: string }[]).map(({ key, label }) => (
+                                <div key={key} className="flex items-center justify-between p-4 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40">
+                                    <span className="text-[13px] font-semibold text-slate-700 dark:text-slate-200">{label}</span>
+                                    <button
+                                        onClick={async () => {
+                                            const nuevoValor = !values[key];
+                                            setValues(prev => ({ ...prev, [key]: nuevoValor }));
+                                            await fetch("/api/admin/config", {
+                                                method: "POST",
+                                                headers: { "Content-Type": "application/json" },
+                                                body: JSON.stringify({ clave: key, valor: nuevoValor ? "1" : "0" }),
+                                            });
+                                        }}
+                                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${values[key] ? "bg-emerald-500" : "bg-slate-300 dark:bg-slate-600"}`}
+                                    >
+                                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${values[key] ? "translate-x-6" : "translate-x-1"}`} />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
             )}

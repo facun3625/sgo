@@ -63,6 +63,7 @@ interface PagosData {
     esConsultor: boolean;
     deudasPagadas: { id: number; monto: number; metodoPago: string; fechaPago: string }[];
     boletas: { mensual: Boleta | null; anual: Boleta | null; deuda: Boleta | null };
+    boletaDescarga?: { mensual: boolean; anual: boolean; deuda: boolean };
 }
 
 function labelMetodoPago(metodo?: string | null): string {
@@ -210,7 +211,7 @@ export default function MatriculaStatus() {
                                     <TransferenciaPayButton tipo="deuda" ref={data!.deudas.map((d) => d.id).join(",")} monto={totalDeuda} label="Pagar con transferencia"
                                         className="w-full h-12 px-6 bg-slate-700 hover:bg-slate-600 text-white rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-2" />
                                 )}
-                                {data?.boletas?.deuda && (
+                                {data?.boletas?.deuda && data?.boletaDescarga?.deuda !== false && (
                                     <a href={data.boletas.deuda.archivo} target="_blank" rel="noopener noreferrer"
                                         className="w-full h-10 px-4 bg-white dark:bg-slate-800 border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-2xl font-bold text-[11px] transition-all flex items-center justify-center gap-2">
                                         <Download size={13} /> Descargar boleta
@@ -342,7 +343,7 @@ export default function MatriculaStatus() {
                                                 className="w-full h-12 px-6 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2"
                                             />
                                         )}
-                                        {data?.boletas?.anual && (
+                                        {data?.boletas?.anual && data?.boletaDescarga?.anual !== false && (
                                             <a href={data.boletas.anual.archivo} target="_blank" rel="noopener noreferrer"
                                                 className="w-full h-10 px-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/50 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-950/40 rounded-xl font-bold text-[11px] transition-all flex items-center justify-center gap-2">
                                                 <Download size={13} /> Descargar boleta
@@ -468,7 +469,7 @@ export default function MatriculaStatus() {
                                             className="w-full h-12 px-6 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2"
                                         />
                                     )}
-                                    {data?.boletas?.mensual && (
+                                    {data?.boletas?.mensual && data?.boletaDescarga?.mensual !== false && (
                                         <a href={data.boletas.mensual.archivo} target="_blank" rel="noopener noreferrer"
                                             className="w-full h-10 px-4 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/50 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-950/40 rounded-xl font-bold text-[11px] transition-all flex items-center justify-center gap-2">
                                             <Download size={13} /> Descargar boleta

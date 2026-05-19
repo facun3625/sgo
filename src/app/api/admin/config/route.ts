@@ -25,6 +25,9 @@ export async function GET() {
         beneficioExento: map.beneficioExento === "1",
         mpTokenConfigurado: !!map.mpAccessToken,
         mpPublicKeyConfigurado: !!map.mpPublicKey,
+        boletaDescargaMensual: map.boletaDescargaMensual !== "0",
+        boletaDescargaAnual:   map.boletaDescargaAnual   !== "0",
+        boletaDescargaDeuda:   map.boletaDescargaDeuda   !== "0",
     });
 }
 

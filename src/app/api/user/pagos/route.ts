@@ -67,7 +67,7 @@ export async function GET() {
 
         const [configTransferenciaArr, cfgVeterano, cfgExento, historialSusp] = await Promise.all([
             prisma.config.findMany({
-                where: { clave: { in: ["transferencia_matricula_mensual", "transferencia_matricula_anual", "transferencia_deuda"] } },
+                where: { clave: { in: ["transferencia_matricula_mensual", "transferencia_matricula_anual", "transferencia_deuda", "boletaDescargaMensual", "boletaDescargaAnual", "boletaDescargaDeuda"] } },
             }),
             prisma.config.findUnique({ where: { clave: "beneficioVeterano" } }),
             prisma.config.findUnique({ where: { clave: "beneficioExento" } }),
@@ -81,7 +81,12 @@ export async function GET() {
         const beneficioVeterano = cfgVeterano?.valor === "1";
         const beneficioExento = cfgExento?.valor === "1";
         const mesesSuspendidos = calcularMesesSuspendidos(historialSusp ?? []);
-        const tMap = Object.fromEntries(configTransferencia.map((c) => [c.clave, c.valor === "1"]));
+        const tMap = Object.fromEntries(configTransferencia.map((c) => [c.clave, c.valor]));
+        const boletaDescarga = {
+            mensual: tMap.boletaDescargaMensual !== "0",
+            anual:   tMap.boletaDescargaAnual   !== "0",
+            deuda:   tMap.boletaDescargaDeuda   !== "0",
+        };
 
         const historialCuotasRaw = await prisma.cuotaMensual.findMany({
             where: { expediente },
@@ -165,9 +170,9 @@ export async function GET() {
             esExento: exento,
             totalDeuda: deudas.reduce((acc, curr) => acc + curr.monto, 0),
             transferenciaHabilitada: {
-                matricula_mensual: !!tMap.transferencia_matricula_mensual,
-                matricula_anual:   !!tMap.transferencia_matricula_anual,
-                deuda:             !!tMap.transferencia_deuda,
+                matricula_mensual: tMap.transferencia_matricula_mensual === "1",
+                matricula_anual:   tMap.transferencia_matricula_anual   === "1",
+                deuda:             tMap.transferencia_deuda             === "1",
             },
             userStatus: dbUser?.status ?? "active",
             boletas: {
@@ -175,6 +180,7 @@ export async function GET() {
                 anual: getBoleta("anual"),
                 deuda: getBoleta("deuda"),
             },
+            boletaDescarga,
         });
 
     } catch (error) {
