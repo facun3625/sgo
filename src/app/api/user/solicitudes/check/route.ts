@@ -15,6 +15,7 @@ export async function GET(req: NextRequest) {
             expediente: session.expediente || "",
             tipo: { contains: tipo, mode: "insensitive" },
             estado: { in: ["pendiente", "completada"] },
+            NOT: { tipo: { contains: "Baja" } },
         },
         orderBy: { fecha: "desc" },
     });

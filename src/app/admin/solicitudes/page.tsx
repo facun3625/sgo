@@ -99,6 +99,7 @@ export default function AdminSolicitudesPage() {
     const [claveInput, setClaveInput] = useState("");
     const [usuarioInput, setUsuarioInput] = useState("");
     const [motivoInput, setMotivoInput] = useState("");
+    const [catastroRejecting, setCatastroRejecting] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [uploadingFile, setUploadingFile] = useState(false);
     const [confirmDelete, setConfirmDelete] = useState(false);
@@ -161,6 +162,7 @@ export default function AdminSolicitudesPage() {
         setClaveInput("");
         setUsuarioInput("");
         setMotivoInput("");
+        setCatastroRejecting(false);
     }, [selected]);
 
     // ── filtering ────────────────────────────────────────────────────────────
@@ -674,28 +676,79 @@ export default function AdminSolicitudesPage() {
                                 </div>
                             )}
 
-                            {/* CATASTRO: send usuario */}
-                            {(selected.tipo.includes("CATASTRO") || selected.tipo.includes("SIGIT")) && selected.estado === "pendiente" && (
-                                <div className="space-y-2">
-                                    <label className="text-[12px] font-semibold text-slate-500 dark:text-slate-400">
-                                        Usuario CATASTRO/SIGIT
-                                    </label>
-                                    <div className="flex gap-2">
-                                        <input
-                                            value={usuarioInput}
-                                            onChange={(e) => setUsuarioInput(e.target.value)}
-                                            placeholder="Ingresar usuario..."
-                                            className="flex-1 h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-[13px] focus:outline-none focus:ring-2 focus:ring-orange-300/40"
-                                        />
-                                        <button
-                                            onClick={() => doAction("catastro", { usuario: usuarioInput })}
-                                            disabled={submitting || !usuarioInput.trim()}
-                                            className="flex items-center gap-1.5 px-4 h-10 bg-orange-500 text-white rounded-xl text-[13px] font-bold hover:bg-orange-600 disabled:opacity-40 transition-all"
-                                        >
-                                            {submitting ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
-                                            Enviar
-                                        </button>
+                            {/* CATASTRO sistema: baja automática — solo marcar como procesado */}
+                            {(selected.tipo.includes("CATASTRO") || selected.tipo.includes("SIGIT")) && selected.detalles?.sistema && selected.estado === "pendiente" && (
+                                <div className="p-3 rounded-xl bg-orange-50 dark:bg-orange-900/20 border border-orange-100 dark:border-orange-900/30 space-y-3">
+                                    <div className="space-y-0.5">
+                                        <p className="text-[11px] font-black text-orange-700 dark:text-orange-400 uppercase tracking-wider">Aviso de baja automática</p>
+                                        <p className="text-[12px] text-orange-600 dark:text-orange-400">
+                                            Expediente <strong>{selected.expediente}</strong>
+                                            {selected.detalles?.cuit ? ` · CUIT ${selected.detalles.cuit}` : ""}
+                                            {" "}fue dado de baja por <strong>{selected.detalles?.motivoBaja === "cancelacion" ? "cancelación" : "suspensión"}</strong> de matrícula.
+                                        </p>
+                                        <p className="text-[11px] text-orange-500 dark:text-orange-500/70">Dar de baja el usuario en el sistema CATASTRO/SIGIT externamente, luego marcar como procesado.</p>
                                     </div>
+                                    <button
+                                        onClick={() => doAction("catastro", {})}
+                                        disabled={submitting}
+                                        className="w-full flex items-center justify-center gap-1.5 h-10 bg-orange-600 text-white rounded-xl text-[13px] font-bold hover:bg-orange-700 disabled:opacity-40 transition-all"
+                                    >
+                                        {submitting ? <Loader2 size={13} className="animate-spin" /> : <CheckCircle2 size={13} />}
+                                        Marcar como procesado
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* CATASTRO: approve or reject (reject requires motivo) */}
+                            {(selected.tipo.includes("CATASTRO") || selected.tipo.includes("SIGIT")) && !selected.detalles?.sistema && selected.estado === "pendiente" && (
+                                <div className="space-y-2">
+                                    {catastroRejecting ? (
+                                        <>
+                                            <textarea
+                                                value={motivoInput}
+                                                onChange={(e) => setMotivoInput(e.target.value)}
+                                                placeholder="Motivo de rechazo (obligatorio)..."
+                                                rows={3}
+                                                className="w-full px-3 py-2 rounded-xl border border-rose-200 dark:border-rose-900/50 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-[13px] focus:outline-none focus:ring-2 focus:ring-rose-300/40 resize-none"
+                                            />
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={() => { setCatastroRejecting(false); setMotivoInput(""); }}
+                                                    disabled={submitting}
+                                                    className="flex-1 h-10 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 rounded-xl text-[13px] font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 transition-all"
+                                                >
+                                                    Cancelar
+                                                </button>
+                                                <button
+                                                    onClick={() => doAction("rechazar", { motivo: motivoInput })}
+                                                    disabled={submitting || !motivoInput.trim()}
+                                                    className="flex-1 flex items-center justify-center gap-1.5 h-10 bg-rose-600 text-white rounded-xl text-[13px] font-bold hover:bg-rose-700 disabled:opacity-40 transition-all"
+                                                >
+                                                    {submitting ? <Loader2 size={13} className="animate-spin" /> : <XCircle size={13} />}
+                                                    Confirmar rechazo
+                                                </button>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => setCatastroRejecting(true)}
+                                                disabled={submitting}
+                                                className="flex-1 flex items-center justify-center gap-1.5 h-10 border-2 border-rose-200 dark:border-rose-900/50 text-rose-600 dark:text-rose-400 rounded-xl text-[13px] font-bold hover:bg-rose-50 dark:hover:bg-rose-900/20 disabled:opacity-40 transition-all"
+                                            >
+                                                <XCircle size={13} />
+                                                Rechazar
+                                            </button>
+                                            <button
+                                                onClick={() => doAction("catastro", {})}
+                                                disabled={submitting}
+                                                className="flex-1 flex items-center justify-center gap-1.5 h-10 bg-emerald-600 text-white rounded-xl text-[13px] font-bold hover:bg-emerald-700 disabled:opacity-40 transition-all"
+                                            >
+                                                {submitting ? <Loader2 size={13} className="animate-spin" /> : <CheckCircle2 size={13} />}
+                                                Aprobar
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             )}
 
@@ -738,8 +791,8 @@ export default function AdminSolicitudesPage() {
                                 </button>
                             )}
 
-                            {/* Rechazar (all pendientes) */}
-                            {selected.estado === "pendiente" && (
+                            {/* Rechazar (pendientes que no tienen su propio bloque de rechazo) */}
+                            {selected.estado === "pendiente" && !selected.tipo.includes("CATASTRO") && !selected.tipo.includes("SIGIT") && (
                                 <div className="space-y-2 pt-1">
                                     <div className="flex gap-2">
                                         <input

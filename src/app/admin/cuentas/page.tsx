@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { KeyRound, Search, Loader2, ChevronLeft, ChevronRight, X, Eye, EyeOff, CheckCircle2, XCircle, ShieldCheck } from "lucide-react";
+import { KeyRound, Search, Loader2, ChevronLeft, ChevronRight, X, Eye, EyeOff, CheckCircle2, XCircle, ShieldCheck, MapPin } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 
 interface CuentaUser {
@@ -12,6 +12,7 @@ interface CuentaUser {
     email: string | null;
     status: string;
     createdAt: string;
+    catastroActivo: boolean;
 }
 
 export default function CuentasPage() {
@@ -117,15 +118,15 @@ export default function CuentasPage() {
                 ) : (
                     <>
                         {/* Header cols */}
-                        <div className="min-w-[640px] grid grid-cols-[90px_1fr_160px_110px_120px] gap-4 px-5 py-2.5 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
-                            {["Expediente", "Nombre", "Email", "Estado", "Acciones"].map(h => (
+                        <div className="min-w-[700px] grid grid-cols-[90px_1fr_160px_100px_110px_120px] gap-4 px-5 py-2.5 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
+                            {["Expediente", "Nombre", "Email", "CATASTRO", "Estado", "Acciones"].map(h => (
                                 <p key={h} className="text-[10px] font-black uppercase tracking-widest text-slate-400">{h}</p>
                             ))}
                         </div>
 
-                        <div className="min-w-[640px] divide-y divide-slate-50 dark:divide-slate-800/60">
+                        <div className="min-w-[700px] divide-y divide-slate-50 dark:divide-slate-800/60">
                             {users.map(u => (
-                                <div key={u.id} className="grid grid-cols-[90px_1fr_160px_110px_120px] gap-4 px-5 py-3.5 items-center hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
+                                <div key={u.id} className="grid grid-cols-[90px_1fr_160px_100px_110px_120px] gap-4 px-5 py-3.5 items-center hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
                                     <p className="text-[12px] font-bold font-mono text-slate-700 dark:text-slate-300 truncate">
                                         {u.expediente || "—"}
                                     </p>
@@ -136,6 +137,15 @@ export default function CuentasPage() {
                                         </p>
                                     </div>
                                     <p className="text-[11px] text-slate-400 truncate">{u.email || "—"}</p>
+                                    <div>
+                                        {u.catastroActivo ? (
+                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400">
+                                                <MapPin size={9} /> Activo
+                                            </span>
+                                        ) : (
+                                            <span className="text-[11px] text-slate-300 dark:text-slate-600">—</span>
+                                        )}
+                                    </div>
                                     <div>
                                         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold
                                             ${u.status === "active"

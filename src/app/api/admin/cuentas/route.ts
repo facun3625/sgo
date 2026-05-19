@@ -51,17 +51,32 @@ export async function GET(req: NextRequest) {
         }),
     ]);
 
-    // Enriquecer con email desde datos
+    // Enriquecer con email y estado CATASTRO
     const expedientes = users.map(u => u.expediente).filter(Boolean) as string[];
-    const datos = await prisma.dato.findMany({
-        where: { expediente: { in: expedientes } },
-        select: { expediente: true, emailLegal: true },
-    });
+    const [datos, solicitudesCatastro] = await Promise.all([
+        prisma.dato.findMany({
+            where: { expediente: { in: expedientes } },
+            select: { expediente: true, emailLegal: true },
+        }),
+        prisma.solicitud.findMany({
+            where: {
+                expediente: { in: expedientes },
+                estado: "completada",
+                AND: [
+                    { OR: [{ tipo: { contains: "CATASTRO" } }, { tipo: { contains: "SIGIT" } }] },
+                    { NOT: { tipo: { contains: "Baja" } } },
+                ],
+            },
+            select: { expediente: true },
+        }),
+    ]);
     const emailMap = new Map(datos.map(d => [d.expediente, d.emailLegal]));
+    const catastroSet = new Set(solicitudesCatastro.map(s => s.expediente));
 
     const result = users.map(u => ({
         ...u,
         email: u.expediente ? (emailMap.get(u.expediente) ?? null) : null,
+        catastroActivo: u.expediente ? catastroSet.has(u.expediente) : false,
     }));
 
     return NextResponse.json({ users: result, total, page, pages: Math.ceil(total / limit) });

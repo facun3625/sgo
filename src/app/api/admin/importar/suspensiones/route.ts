@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { revocarAccesoCatastro } from "@/lib/catastro";
 
 function isAdmin(lvl: string) { return lvl === "superadmin" || lvl === "admin"; }
 
@@ -123,6 +124,12 @@ export async function POST(req: NextRequest) {
                 data: { expediente, accion: accionRaw, comentario, adminNombre, motivoId, motivoNombre, motivoCobra },
             })
         ));
+        // Revocar acceso CATASTRO para suspendidos/cancelados
+        for (const { expediente, nuevoStatus } of lote) {
+            if (nuevoStatus === "suspended" || nuevoStatus === "cancelled") {
+                await revocarAccesoCatastro(expediente, nuevoStatus === "cancelled" ? "cancelacion" : "suspension");
+            }
+        }
     }
 
     return NextResponse.json({ procesados: porProcesar.length, omitidos: omitidos.length, errores: [...omitidos, ...errores] });

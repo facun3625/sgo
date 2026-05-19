@@ -261,30 +261,47 @@ function SolicitudCard({ s, isFav, onToggleFav, getStatusStyle }: {
             </div>
 
             {/* Respuesta del admin */}
-            {s.estado === "completada" && !s.isAdhesion && (
-                <div className="mt-3 ml-12">
-                    {s.tipo.includes("SISFE") && s.detalles?.respuesta?.clave && (
-                        <div className="flex items-center gap-2 px-3 py-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-900/30 rounded-xl">
-                            <CheckCircle2 size={13} className="text-emerald-500 shrink-0" />
-                            <span className="text-[12px] text-emerald-700 dark:text-emerald-300 font-medium">
-                                Tu clave SISFE: <strong>{s.detalles.respuesta.clave}</strong>
+            {!s.isAdhesion && (
+                <div className="mt-3 ml-12 space-y-2">
+                    {/* Rechazada: motivo */}
+                    {s.estado === "rechazada" && s.detalles?.rechazo?.motivo && (
+                        <div className="flex items-start gap-2 px-3 py-2 bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-900/30 rounded-xl">
+                            <XCircle size={13} className="text-rose-500 shrink-0 mt-0.5" />
+                            <span className="text-[12px] text-rose-700 dark:text-rose-300 font-medium">
+                                Motivo: {s.detalles.rechazo.motivo}
                             </span>
                         </div>
                     )}
-                    {(s.tipo.includes("CATASTRO") || s.tipo.includes("SIGIT")) && s.detalles?.respuesta?.usuario && (
-                        <div className="flex items-center gap-2 px-3 py-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-900/30 rounded-xl">
-                            <CheckCircle2 size={13} className="text-emerald-500 shrink-0" />
-                            <span className="text-[12px] text-emerald-700 dark:text-emerald-300 font-medium">
-                                Tu usuario CATASTRO: <strong>{s.detalles.respuesta.usuario}</strong>
-                            </span>
-                        </div>
-                    )}
-                    {s.tipo.includes("Jurisprudencia") && s.adjunto && (
-                        <a href={s.adjunto} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}
-                            className="flex items-center gap-2 px-3 py-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-900/30 rounded-xl hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-all">
-                            <Paperclip size={13} className="text-emerald-500 shrink-0" />
-                            <span className="text-[12px] text-emerald-700 dark:text-emerald-300 font-medium">Ver documento adjunto</span>
-                        </a>
+
+                    {/* Completada: respuestas específicas por tipo */}
+                    {s.estado === "completada" && (
+                        <>
+                            {s.tipo.includes("SISFE") && s.detalles?.respuesta?.clave && (
+                                <div className="flex items-center gap-2 px-3 py-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-900/30 rounded-xl">
+                                    <CheckCircle2 size={13} className="text-emerald-500 shrink-0" />
+                                    <span className="text-[12px] text-emerald-700 dark:text-emerald-300 font-medium">
+                                        Tu clave SISFE: <strong>{s.detalles.respuesta.clave}</strong>
+                                    </span>
+                                </div>
+                            )}
+                            {(s.tipo.includes("CATASTRO") || s.tipo.includes("SIGIT")) && (
+                                <div className="flex items-start gap-2 px-3 py-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-900/30 rounded-xl">
+                                    <CheckCircle2 size={13} className="text-emerald-500 shrink-0 mt-0.5" />
+                                    <span className="text-[12px] text-emerald-700 dark:text-emerald-300 font-medium">
+                                        {s.detalles?.nota
+                                            ? s.detalles.nota
+                                            : "Acceso habilitado. El Colegio te informará los datos de acceso."}
+                                    </span>
+                                </div>
+                            )}
+                            {s.tipo.includes("Jurisprudencia") && s.adjunto && (
+                                <a href={s.adjunto} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}
+                                    className="flex items-center gap-2 px-3 py-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-900/30 rounded-xl hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-all">
+                                    <Paperclip size={13} className="text-emerald-500 shrink-0" />
+                                    <span className="text-[12px] text-emerald-700 dark:text-emerald-300 font-medium">Ver documento adjunto</span>
+                                </a>
+                            )}
+                        </>
                     )}
                 </div>
             )}

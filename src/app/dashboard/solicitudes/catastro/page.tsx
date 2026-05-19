@@ -24,6 +24,7 @@ interface UserDatos {
     folio: string | null;
     expediente: string | null;
     emailLegal: string | null;
+    cuil: string | null;
 }
 
 export default function SolicitudCatastroPage() {
@@ -50,6 +51,7 @@ export default function SolicitudCatastroPage() {
             fetch("/api/user/solicitudes/check?tipo=CATASTRO").then(r => r.json()),
         ]).then(([datosData, checkData]) => {
             setDatos(datosData);
+            if (datosData?.cuil) setCuit(datosData.cuil);
             if (checkData.found) setExisting(checkData.solicitud);
         }).catch(() => {}).finally(() => setLoading(false));
     }, []);
@@ -263,11 +265,9 @@ export default function SolicitudCatastroPage() {
                                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Constancia de inscripción tributaria (CUIT)</label>
                                     <input
                                         type="text"
-                                        required
+                                        readOnly
                                         value={cuit}
-                                        onChange={(e) => setCuit(e.target.value)}
-                                        placeholder="Ingrese su CUIT"
-                                        className="w-full h-14 px-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-black dark:text-white font-medium focus:ring-2 focus:ring-[#063f68] dark:focus:ring-blue-500 outline-none transition-all"
+                                        className="w-full h-14 px-5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-2xl text-black dark:text-white font-medium outline-none cursor-default select-none"
                                     />
                                 </div>
 

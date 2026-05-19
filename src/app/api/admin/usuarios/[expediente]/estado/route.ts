@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { logAdmin } from "@/lib/admin-log";
+import { revocarAccesoCatastro } from "@/lib/catastro";
 
 function isAdmin(lvl: string) { return lvl === "superadmin" || lvl === "admin"; }
 
@@ -59,6 +60,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ ex
             },
         }),
     ]);
+
+    if ((status === "suspended" || status === "cancelled") && user.expediente) {
+        await revocarAccesoCatastro(user.expediente, status === "cancelled" ? "cancelacion" : "suspension");
+    }
 
     await logAdmin({ adminId: session.id, adminNombre, expediente: user.expediente ?? expediente, modulo: "usuarios", accion: accion === "suspension" ? "Suspensión de matrícula" : accion === "cancelacion" ? "Cancelación de matrícula" : "Habilitación de matrícula", detalle: { motivo: motivoNombre, comentario: comentario.trim(), estado: status }, req });
     return NextResponse.json({ ok: true, status, motivoNombre, motivoCobra });

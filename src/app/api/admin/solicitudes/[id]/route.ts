@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { logAdmin } from "@/lib/admin-log";
+import { revocarAccesoCatastro } from "@/lib/catastro";
 
 function isAdmin(lvl: string) {
     return lvl === "superadmin" || lvl === "admin";
@@ -73,10 +74,10 @@ export async function PATCH(
     }
 
     if (action === "catastro") {
-        const { usuario } = body;
+        const { nota } = body;
         const newDetalles = {
             ...currentDetalles,
-            respuesta: { ...(currentDetalles.respuesta ?? {}), usuario },
+            ...(nota?.trim() ? { nota } : {}),
         };
         const updated = await prisma.solicitud.update({
             where: { id: parseInt(id) },
@@ -86,7 +87,9 @@ export async function PATCH(
             data: {
                 expediente: solicitud.expediente,
                 titulo: solicitud.tipo,
-                mensaje: `Tu trámite ha sido procesado. Tu usuario CATASTRO/SIGIT es: ${usuario}`,
+                mensaje: nota?.trim()
+                    ? `Tu trámite de acceso CATASTRO/SIGIT fue habilitado. ${nota}`
+                    : `Tu trámite de acceso CATASTRO/SIGIT fue habilitado. El Colegio te informará los datos de acceso.`,
                 tipo: "tramite",
             },
         });
@@ -135,6 +138,8 @@ export async function PATCH(
                 tipo: "tramite",
             },
         });
+
+        await revocarAccesoCatastro(solicitud.expediente, esCancelacion ? "cancelacion" : "suspension");
 
         return NextResponse.json(updated);
     }

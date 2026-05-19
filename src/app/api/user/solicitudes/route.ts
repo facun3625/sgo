@@ -13,7 +13,10 @@ export async function GET() {
 
         const [solicitudes, adhesiones] = await Promise.all([
             prisma.solicitud.findMany({
-                where: { expediente: session.expediente },
+                where: {
+                    expediente: session.expediente,
+                    NOT: { tipo: { contains: "Baja CATASTRO" } },
+                },
                 orderBy: { fecha: 'desc' }
             }),
             prisma.adhesionDebito.findMany({
