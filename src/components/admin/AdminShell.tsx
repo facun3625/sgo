@@ -333,10 +333,14 @@ export default function AdminShell({ session, image, permisos, children }: Admin
                         <NotificacionesBell />
 
                         {/* Trámites */}
-                        <AdminSolicitudesIcon />
+                        {(isSuperAdmin || (permisos ?? []).includes("solicitudes") || (permisos ?? []).some(p => p.startsWith("solicitudes:"))) && (
+                            <AdminSolicitudesIcon />
+                        )}
 
                         {/* Mensajes */}
-                        <AdminMensajesIcon />
+                        {(isSuperAdmin || (permisos ?? []).includes("mensajes")) && (
+                            <AdminMensajesIcon />
+                        )}
 
                         {/* Perfil */}
                         <div className="relative" ref={profileRef}>

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Bell, Megaphone, CalendarDays } from "lucide-react";
 import Link from "next/link";
+import { usePermisos } from "@/lib/permisos-context";
 
 interface Notificacion {
     id: number;
@@ -24,12 +25,19 @@ function timeAgo(dateStr: string): string {
     return `hace ${Math.floor(diff / 86400)} d`;
 }
 
+// Admin-only notification types and the permission key required to see them
+const ADMIN_TIPO_PERMISO: Record<string, string> = {
+    admin_debito: "adhesiones",
+    admin_cambios: "cambios-datos",
+};
+
 export default function NotificacionesBell() {
     const [open, setOpen] = useState(false);
     const [notificaciones, setNotificaciones] = useState<Notificacion[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [marking, setMarking] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
+    const { tiene } = usePermisos();
 
     const fetchNotificaciones = useCallback(async () => {
         try {
@@ -96,7 +104,13 @@ export default function NotificacionesBell() {
         }
     }
 
-    const displayCount = unreadCount > 9 ? "9+" : String(unreadCount);
+    const visibleNotificaciones = notificaciones.filter(n => {
+        const requiredPermiso = ADMIN_TIPO_PERMISO[n.tipo];
+        if (requiredPermiso) return tiene(requiredPermiso);
+        return true;
+    });
+    const visibleUnreadCount = visibleNotificaciones.filter(n => !n.leida).length;
+    const displayCount = visibleUnreadCount > 9 ? "9+" : String(visibleUnreadCount);
 
     return (
         <div className="relative" ref={ref}>
@@ -106,7 +120,7 @@ export default function NotificacionesBell() {
                 aria-label="Notificaciones"
             >
                 <Bell size={20} />
-                {unreadCount > 0 && (
+                {visibleUnreadCount > 0 && (
                     <span className="absolute top-1 right-1 min-w-[16px] h-4 px-0.5 bg-red-500 text-white text-[9px] font-black rounded-full border-2 border-[#063f68] flex items-center justify-center leading-none">
                         {displayCount}
                     </span>
@@ -118,7 +132,7 @@ export default function NotificacionesBell() {
                     {/* Header */}
                     <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-800">
                         <p className="text-[13px] font-bold text-slate-800 dark:text-white">Notificaciones</p>
-                        {unreadCount > 0 && (
+                        {visibleUnreadCount > 0 && (
                             <button
                                 onClick={marcarTodasLeidas}
                                 disabled={marking}
@@ -131,13 +145,13 @@ export default function NotificacionesBell() {
 
                     {/* Lista */}
                     <div className="max-h-80 overflow-y-auto">
-                        {notificaciones.length === 0 ? (
+                        {visibleNotificaciones.length === 0 ? (
                             <div className="flex flex-col items-center justify-center py-10 gap-3">
                                 <Bell size={28} className="text-slate-200 dark:text-slate-700" />
                                 <p className="text-[12px] text-slate-400 font-medium">Sin notificaciones</p>
                             </div>
                         ) : (
-                            notificaciones.map((n) => {
+                            visibleNotificaciones.map((n) => {
                                 const isComunicado = n.tipo === "comunicado";
                                 const isEvento = n.tipo === "evento";
                                 const inner = (
