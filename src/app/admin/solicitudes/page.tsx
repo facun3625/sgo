@@ -144,6 +144,13 @@ export default function AdminSolicitudesPage() {
         });
     })();
 
+    // Si el activeTab actual no está en los tabs visibles, ir al primero disponible
+    useEffect(() => {
+        if (TABS.length > 0 && !TABS.find(t => t.key === activeTab)) {
+            setActiveTab(TABS[0].key);
+        }
+    }, [TABS, activeTab]);
+
     // Reset inputs when selected changes
     useEffect(() => {
         setClaveInput("");
