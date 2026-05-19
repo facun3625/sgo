@@ -35,9 +35,9 @@ export async function POST() {
             },
         });
 
-        // Notificar a todos los admins
+        // Notificar a todos los admins (excluir los que no tienen expediente, ej: webmaster)
         const admins = await prisma.user.findMany({
-            where: { accessLevel: { in: ["admin", "superadmin"] } },
+            where: { accessLevel: { in: ["admin", "superadmin"] }, expediente: { not: null } },
             select: { expediente: true },
         });
 
