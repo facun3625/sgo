@@ -39,7 +39,9 @@ export async function middleware(req: NextRequest) {
                 if (parts.length >= 2) {
                     const seccionKey = parts[1]; // e.g. "solicitudes"
                     // Dashboard (/admin only) is always allowed
-                    if (seccionKey && !permisos.includes(seccionKey)) {
+                    const tieneAcceso = permisos.includes(seccionKey) ||
+                        permisos.some(p => p.startsWith(seccionKey + ":"));
+                    if (seccionKey && !tieneAcceso) {
                         return NextResponse.redirect(new URL("/admin", req.url));
                     }
                 }
