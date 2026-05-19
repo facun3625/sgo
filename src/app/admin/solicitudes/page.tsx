@@ -174,6 +174,8 @@ export default function AdminSolicitudesPage() {
             return (
                 s.expediente.toLowerCase().includes(q) ||
                 s.tipo.toLowerCase().includes(q) ||
+                `${s.apellido ?? ""}, ${s.nombre ?? ""}`.toLowerCase().includes(q) ||
+                `${s.nombre ?? ""} ${s.apellido ?? ""}`.toLowerCase().includes(q) ||
                 (s.nombre ?? "").toLowerCase().includes(q) ||
                 (s.apellido ?? "").toLowerCase().includes(q)
             );

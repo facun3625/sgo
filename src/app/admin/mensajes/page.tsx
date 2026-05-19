@@ -103,9 +103,8 @@ export default function AdminMensajesPage() {
     const suggestions = newExpSearch.trim().length >= 1
         ? usuarios.filter(u => {
             const q = newExpSearch.toLowerCase();
-            return (u.expediente || "").toLowerCase().includes(q) ||
-                u.apellido.toLowerCase().includes(q) ||
-                u.nombre.toLowerCase().includes(q);
+            const nc = `${u.apellido}, ${u.nombre}`.toLowerCase();
+            return nc.includes(q) || `${u.nombre} ${u.apellido}`.toLowerCase().includes(q) || (u.expediente || "").toLowerCase().includes(q) || u.apellido.toLowerCase().includes(q) || u.nombre.toLowerCase().includes(q);
         }).slice(0, 8)
         : [];
 
@@ -138,6 +137,7 @@ export default function AdminMensajesPage() {
         if (!q) return true;
         return (
             c.asunto.toLowerCase().includes(q) ||
+            `${c.usuario?.apellido || ""}, ${c.usuario?.nombre || ""}`.toLowerCase().includes(q) ||
             (c.usuario?.apellido || "").toLowerCase().includes(q) ||
             (c.usuario?.nombre || "").toLowerCase().includes(q) ||
             c.expediente.toLowerCase().includes(q)

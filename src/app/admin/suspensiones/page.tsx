@@ -395,7 +395,8 @@ export default function SuspensionesPage() {
         return usuarios.filter(u => {
             if (filtro !== "todos" && u.status !== filtro) return false;
             if (!q) return true;
-            return u.apellido.toLowerCase().includes(q) || u.nombre.toLowerCase().includes(q) || (u.expediente ?? "").toLowerCase().includes(q);
+            const nombreCompleto = `${u.apellido}, ${u.nombre}`.toLowerCase();
+            return nombreCompleto.includes(q) || `${u.nombre} ${u.apellido}`.toLowerCase().includes(q) || u.apellido.toLowerCase().includes(q) || u.nombre.toLowerCase().includes(q) || (u.expediente ?? "").toLowerCase().includes(q);
         });
     }, [usuarios, search, filtro]);
 

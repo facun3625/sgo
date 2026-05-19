@@ -53,7 +53,10 @@ interface FilaContable {
     metodoPago: string;
     exportado: boolean;
     nroRecibo: string;
+    expediente: string;
     cliente: string;
+    nombre: string;
+    apellido: string;
     fechaCobro: string | null;
     importe: number;
 }
@@ -330,7 +333,7 @@ function ContabilidadView() {
                                                 className="w-4 h-4 rounded accent-[#063f68]"
                                             />
                                         </th>
-                                        {["Nro. Recibo", "Cliente", "Tipo", "Fecha cobro", "Importe en $", "Estado"].map((h) => (
+                                        {["Nro. Recibo", "Expediente", "Apellido y Nombre", "Cliente", "Tipo", "Fecha cobro", "Importe en $", "Estado"].map((h) => (
                                             <th key={h} className="px-4 py-3 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wide whitespace-nowrap">{h}</th>
                                         ))}
                                     </tr>
@@ -354,6 +357,12 @@ function ContabilidadView() {
                                                 </td>
                                                 <td className="px-4 py-3 font-mono text-[12px] text-slate-500 dark:text-slate-400">
                                                     {f.nroRecibo || "—"}
+                                                </td>
+                                                <td className="px-4 py-3 font-mono text-[12px] text-slate-500 dark:text-slate-400">
+                                                    {f.expediente || "—"}
+                                                </td>
+                                                <td className="px-4 py-3 text-[13px] text-slate-700 dark:text-slate-300">
+                                                    {f.apellido && f.nombre ? `${f.apellido}, ${f.nombre}` : "—"}
                                                 </td>
                                                 <td className="px-4 py-3 text-[13px] font-bold text-slate-800 dark:text-white">
                                                     {f.cliente}
@@ -456,6 +465,8 @@ export default function PagosAdminPage() {
         if (busqueda.trim()) {
             const q = busqueda.toLowerCase();
             list = list.filter((u) =>
+                `${u.apellido}, ${u.nombre}`.toLowerCase().includes(q) ||
+                `${u.nombre} ${u.apellido}`.toLowerCase().includes(q) ||
                 u.apellido.toLowerCase().includes(q) ||
                 u.nombre.toLowerCase().includes(q) ||
                 u.expediente.toLowerCase().includes(q)

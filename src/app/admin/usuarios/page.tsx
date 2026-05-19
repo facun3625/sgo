@@ -117,7 +117,11 @@ export default function UsuariosAdminPage() {
         const list = usuarios.filter(u => {
             if (filtroEstado !== "todos" && u.status !== filtroEstado) return false;
             if (!q) return true;
+            const nombreCompleto = `${u.apellido}, ${u.nombre}`.toLowerCase();
+            const nombreInverso = `${u.nombre} ${u.apellido}`.toLowerCase();
             return (
+                nombreCompleto.includes(q) ||
+                nombreInverso.includes(q) ||
                 u.apellido.toLowerCase().includes(q) ||
                 u.nombre.toLowerCase().includes(q) ||
                 (u.expediente || "").includes(q) ||

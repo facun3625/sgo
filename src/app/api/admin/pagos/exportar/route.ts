@@ -9,14 +9,15 @@ function parseMes(mes: string | null): { desde: Date; hasta: Date } | null {
     return { desde: new Date(y, m - 1, 1), hasta: new Date(y, m, 1) };
 }
 
-async function getCodsMap(expedientes: string[]): Promise<Map<string, string>> {
+type DatoInfo = { cod: string; nombre: string; apellido: string };
+async function getDatosMap(expedientes: string[]): Promise<Map<string, DatoInfo>> {
     const datos = await prisma.dato.findMany({
         where: { expediente: { in: expedientes } },
-        select: { expediente: true, cod: true },
+        select: { expediente: true, cod: true, nombre: true, apellido: true },
     });
-    const map = new Map<string, string>();
+    const map = new Map<string, DatoInfo>();
     for (const d of datos) {
-        if (d.expediente) map.set(d.expediente, d.cod);
+        if (d.expediente) map.set(d.expediente, { cod: d.cod, nombre: d.nombre ?? "", apellido: d.apellido ?? "" });
     }
     return map;
 }
@@ -67,29 +68,41 @@ export async function GET(req: NextRequest) {
         ...deudas.map((d) => d.expediente),
         ...cuotas.map((c) => c.expediente),
     ];
-    const codsMap = await getCodsMap([...new Set(allExpedientes)]);
+    const datosMap = await getDatosMap([...new Set(allExpedientes)]);
 
-    const filasDeudas = deudas.map((r) => ({
-        id: r.id,
-        tipo: "deuda" as const,
-        metodoPago: r.metodoPago,
-        exportado: r.exportado,
-        nroRecibo: r.mpPaymentId ?? "",
-        cliente: codsMap.get(r.expediente) ?? r.expediente,
-        fechaCobro: r.fechaPago,
-        importe: r.monto,
-    }));
+    const filasDeudas = deudas.map((r) => {
+        const dato = datosMap.get(r.expediente);
+        return {
+            id: r.id,
+            tipo: "deuda" as const,
+            metodoPago: r.metodoPago,
+            exportado: r.exportado,
+            nroRecibo: r.mpPaymentId ?? "",
+            expediente: r.expediente,
+            cliente: dato?.cod ?? r.expediente,
+            nombre: dato?.nombre ?? "",
+            apellido: dato?.apellido ?? "",
+            fechaCobro: r.fechaPago,
+            importe: r.monto,
+        };
+    });
 
-    const filasCuotas = cuotas.map((r) => ({
-        id: r.id,
-        tipo: "cuota_mp" as const,
-        metodoPago: r.metodoPago ?? "",
-        exportado: r.exportado,
-        nroRecibo: r.mpPaymentId ?? "",
-        cliente: codsMap.get(r.expediente) ?? r.expediente,
-        fechaCobro: r.fechaPago,
-        importe: r.monto,
-    }));
+    const filasCuotas = cuotas.map((r) => {
+        const dato = datosMap.get(r.expediente);
+        return {
+            id: r.id,
+            tipo: "cuota_mp" as const,
+            metodoPago: r.metodoPago ?? "",
+            exportado: r.exportado,
+            nroRecibo: r.mpPaymentId ?? "",
+            expediente: r.expediente,
+            cliente: dato?.cod ?? r.expediente,
+            nombre: dato?.nombre ?? "",
+            apellido: dato?.apellido ?? "",
+            fechaCobro: r.fechaPago,
+            importe: r.monto,
+        };
+    });
 
     // Unificar y ordenar por fecha desc
     const filas = [...filasDeudas, ...filasCuotas].sort((a, b) => {
