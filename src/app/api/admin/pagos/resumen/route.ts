@@ -99,6 +99,16 @@ export async function GET() {
         }
     }
 
+    // Deudas cobradas este mes
+    const now = new Date();
+    const mesDesde = new Date(now.getFullYear(), now.getMonth(), 1);
+    const mesHasta = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    const deudasCobradas = await prisma.deudaPagada.findMany({
+        where: { fechaPago: { gte: mesDesde, lt: mesHasta } },
+        select: { monto: true },
+    });
+    const totalRecaudadoDeudas = deudasCobradas.reduce((acc, d) => acc + d.monto, 0);
+
     // Stats del mes
     const cuotasPagadas = cuotas.filter((c) => c.estado === "pagado");
     const totalRecaudado = cuotasPagadas.reduce((acc, c) => acc + c.monto, 0);
@@ -126,6 +136,8 @@ export async function GET() {
         pagadasPorHomeBanking,
         pagadasPorBanelco,
         totalRecaudado,
+        totalRecaudadoDeudas,
+        totalRecaudadoGeneral: totalRecaudado + totalRecaudadoDeudas,
         conDeuda: [...mapDeudas.values()].filter((d) => d.total > 0).length,
         totalDeudaAcumulada,
         transferenciasPendientes: transferenciasCount,
