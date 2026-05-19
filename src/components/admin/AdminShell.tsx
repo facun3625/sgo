@@ -185,7 +185,7 @@ export default function AdminShell({ session, image, permisos, children }: Admin
                 <nav ref={navRef} className="flex-1 p-3 space-y-1 overflow-y-auto">
                     {visibleNavItems.map((item) => {
                         const active = isActive(item);
-                        const showRehabBadge = item.href === "/admin/suspensiones" && rehabPendientes > 0;
+                        const showRehabBadge = item.href === "/admin/suspensiones" && rehabPendientes > 0 && (isSuperAdmin || (permisos ?? []).includes("suspensiones"));
                         return (
                             <Link key={item.href} href={item.href} onClick={() => setSidebarOpen(false)}
                                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-[13px] font-medium group
