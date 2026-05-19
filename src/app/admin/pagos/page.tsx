@@ -591,12 +591,12 @@ export default function PagosAdminPage() {
 
                             <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
                                 <div>
-                                    <p className="text-[11px] text-slate-400 uppercase tracking-wide font-semibold mb-0.5">Cuotas cobradas</p>
+                                    <p className="text-[11px] text-slate-400 uppercase tracking-wide font-semibold mb-0.5">Total recaudado</p>
                                     <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
-                                        ${stats.totalRecaudado.toLocaleString("es-AR")}
+                                        ${(stats.totalRecaudadoGeneral ?? 0).toLocaleString("es-AR")}
                                     </p>
-                                    <p className="text-[10px] text-slate-400 mt-0.5">Deudas: <span className="font-bold text-amber-500">${(stats.totalRecaudadoDeudas ?? 0).toLocaleString("es-AR")}</span></p>
-                                    <p className="text-[10px] text-slate-400">Total: <span className="font-bold text-emerald-500">${(stats.totalRecaudadoGeneral ?? 0).toLocaleString("es-AR")}</span></p>
+                                    <p className="text-[10px] text-slate-400 mt-1">Cuotas: <span className="font-bold text-emerald-400">${stats.totalRecaudado.toLocaleString("es-AR")}</span></p>
+                                    <p className="text-[10px] text-slate-400">Deudas: <span className="font-bold text-amber-400">${(stats.totalRecaudadoDeudas ?? 0).toLocaleString("es-AR")}</span></p>
                                 </div>
                                 <div>
                                     <p className="text-[11px] text-slate-400 uppercase tracking-wide font-semibold mb-0.5">Pagaron</p>

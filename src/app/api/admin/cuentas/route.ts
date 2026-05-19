@@ -25,6 +25,11 @@ export async function GET(req: NextRequest) {
             { expediente: { contains: q } },
             { nombre: { contains: q, mode: "insensitive" } },
             { apellido: { contains: q, mode: "insensitive" } },
+            // "apellido, nombre" o "nombre apellido"
+            { AND: [
+                { apellido: { contains: q.split(/,\s*/)[0]?.trim(), mode: "insensitive" } },
+                { nombre: { contains: (q.split(/,\s*/)[1] ?? "").trim(), mode: "insensitive" } },
+            ]},
         ];
     }
 
