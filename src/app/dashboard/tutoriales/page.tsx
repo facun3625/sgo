@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { PlayCircle, Loader2, ExternalLink, ChevronLeft, ChevronDown } from "lucide-react";
+import { PlayCircle, Loader2, ChevronLeft, ChevronDown } from "lucide-react";
 import Link from "next/link";
 
 interface Tutorial {
@@ -12,45 +12,62 @@ interface Tutorial {
     tipo: string;
 }
 
-function getEmbedUrl(url: string): string | null {
+function getEmbedUrl(url: string): { src: string; type: "iframe" | "video" } | null {
+    // YouTube
     const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s?]+)/);
-    if (yt) return `https://www.youtube.com/embed/${yt[1]}`;
+    if (yt) return { src: `https://www.youtube.com/embed/${yt[1]}`, type: "iframe" };
+    // Vimeo
     const vimeo = url.match(/vimeo\.com\/(\d+)/);
-    if (vimeo) return `https://player.vimeo.com/video/${vimeo[1]}`;
-    return null;
+    if (vimeo) return { src: `https://player.vimeo.com/video/${vimeo[1]}`, type: "iframe" };
+    // Google Drive
+    const drive = url.match(/drive\.google\.com\/file\/d\/([^/]+)/);
+    if (drive) return { src: `https://drive.google.com/file/d/${drive[1]}/preview`, type: "iframe" };
+    // Loom
+    const loom = url.match(/loom\.com\/share\/([a-zA-Z0-9]+)/);
+    if (loom) return { src: `https://www.loom.com/embed/${loom[1]}`, type: "iframe" };
+    // Archivo de video directo
+    if (/\.(mp4|webm|ogg)(\?.*)?$/i.test(url)) return { src: url, type: "video" };
+    // Fallback: intentar como iframe
+    return { src: url, type: "iframe" };
 }
 
 function VideoPlayer({ tutorial }: { tutorial: Tutorial }) {
+    const wrapperCls = "w-full max-w-2xl mx-auto";
+
     if (tutorial.tipo === "embed") {
         return (
-            <div
-                className="w-full aspect-video bg-black"
-                dangerouslySetInnerHTML={{ __html: tutorial.videoUrl }}
-            />
+            <div className={wrapperCls}>
+                <div
+                    className="w-full aspect-video bg-black"
+                    dangerouslySetInnerHTML={{ __html: tutorial.videoUrl }}
+                />
+            </div>
         );
     }
-    const embedUrl = getEmbedUrl(tutorial.videoUrl);
-    if (embedUrl) {
+
+    const embed = getEmbedUrl(tutorial.videoUrl);
+    if (!embed) return null;
+
+    if (embed.type === "video") {
         return (
+            <div className={wrapperCls}>
+                <video
+                    src={embed.src}
+                    controls
+                    className="w-full aspect-video bg-black"
+                />
+            </div>
+        );
+    }
+
+    return (
+        <div className={wrapperCls}>
             <iframe
-                src={embedUrl}
+                src={embed.src}
                 className="w-full aspect-video bg-black"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
             />
-        );
-    }
-    return (
-        <div className="w-full aspect-video bg-slate-100 dark:bg-slate-900 flex items-center justify-center">
-            <a
-                href={tutorial.videoUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 px-5 h-11 bg-[#063f68] text-white text-[13px] font-bold rounded-xl hover:bg-[#0a4d7a] transition-all active:scale-95"
-            >
-                <ExternalLink size={15} />
-                Ver video
-            </a>
         </div>
     );
 }

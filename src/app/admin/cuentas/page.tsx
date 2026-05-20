@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { KeyRound, Search, Loader2, ChevronLeft, ChevronRight, X, Eye, EyeOff, CheckCircle2, XCircle, ShieldCheck, MapPin } from "lucide-react";
+import { KeyRound, Search, Loader2, ChevronLeft, ChevronRight, X, Eye, EyeOff, CheckCircle2, XCircle, ShieldCheck, MapPin, Trash2 } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 
 interface CuentaUser {
@@ -31,6 +31,9 @@ export default function CuentasPage() {
     const [saving, setSaving] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
 
+    const [confirmDelete, setConfirmDelete] = useState<CuentaUser | null>(null);
+    const [deleting, setDeleting] = useState(false);
+
     useEffect(() => {
         const t = setTimeout(() => { setDebouncedQ(search); setPage(1); }, 350);
         return () => clearTimeout(t);
@@ -56,6 +59,24 @@ export default function CuentasPage() {
     useEffect(() => {
         if (modal) setTimeout(() => inputRef.current?.focus(), 50);
     }, [modal]);
+
+    async function handleEliminar() {
+        if (!confirmDelete) return;
+        setDeleting(true);
+        try {
+            const res = await fetch(`/api/admin/cuentas/${confirmDelete.id}`, { method: "DELETE" });
+            const data = await res.json();
+            if (res.ok) {
+                showToast("Cuenta eliminada", "success");
+                setConfirmDelete(null);
+                cargar();
+            } else {
+                showToast(data.error ?? "Error al eliminar", "error");
+            }
+        } finally {
+            setDeleting(false);
+        }
+    }
 
     async function handleGuardar() {
         if (!modal || !pass.trim()) return;
@@ -158,7 +179,7 @@ export default function CuentasPage() {
                                     <div>
                                         <button onClick={() => { setModal(u); setPass(""); setShowPass(false); }}
                                             className="flex items-center gap-1.5 px-3 h-8 rounded-xl text-[11px] font-bold border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-violet-50 dark:hover:bg-violet-900/20 hover:text-violet-600 hover:border-violet-200 transition-all">
-                                            <KeyRound size={11} /> Contraseña
+                                            <KeyRound size={11} /> Acciones
                                         </button>
                                     </div>
                                 </div>
@@ -228,6 +249,46 @@ export default function CuentasPage() {
                                 className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-violet-600 text-white text-[13px] font-bold hover:bg-violet-700 disabled:opacity-40 transition-all active:scale-95">
                                 {saving ? <Loader2 size={14} className="animate-spin" /> : <KeyRound size={14} />}
                                 {saving ? "Guardando..." : "Guardar"}
+                            </button>
+                        </div>
+
+                        <div className="pt-1 border-t border-slate-100 dark:border-slate-800">
+                            <button
+                                onClick={() => { setConfirmDelete(modal); setModal(null); }}
+                                className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-[12px] font-semibold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all">
+                                <Trash2 size={13} /> Eliminar cuenta
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal confirmar eliminación */}
+            {confirmDelete && (
+                <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 animate-fade-in">
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 w-full max-w-sm shadow-2xl p-6 space-y-4"
+                        onClick={e => e.stopPropagation()}>
+                        <div className="flex items-start justify-between">
+                            <div>
+                                <p className="text-[14px] font-black text-slate-900 dark:text-white">Eliminar cuenta</p>
+                                <p className="text-[12px] text-slate-400 mt-0.5">{confirmDelete.apellido}, {confirmDelete.nombre} · Exp. {confirmDelete.expediente || "—"}</p>
+                            </div>
+                            <button onClick={() => setConfirmDelete(null)} className="w-8 h-8 flex items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
+                                <X size={15} />
+                            </button>
+                        </div>
+                        <p className="text-[13px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                            Se eliminará solo el acceso al sistema. Los datos del matriculado se conservan.
+                        </p>
+                        <div className="flex gap-2 pt-1">
+                            <button onClick={() => setConfirmDelete(null)}
+                                className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-[13px] font-bold text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                                Cancelar
+                            </button>
+                            <button onClick={handleEliminar} disabled={deleting}
+                                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-rose-600 text-white text-[13px] font-bold hover:bg-rose-700 disabled:opacity-40 transition-all">
+                                {deleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                                {deleting ? "Eliminando..." : "Eliminar"}
                             </button>
                         </div>
                     </div>

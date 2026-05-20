@@ -5,6 +5,27 @@ import bcrypt from "bcryptjs";
 
 function isAdmin(lvl: string) { return lvl === "superadmin" || lvl === "admin"; }
 
+export async function DELETE(
+    _: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    const session = await getSession();
+    if (!session || !isAdmin(session.accessLevel))
+        return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+
+    const { id } = await params;
+    const userId = parseInt(id);
+    if (isNaN(userId))
+        return NextResponse.json({ error: "ID inválido" }, { status: 400 });
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user || user.accessLevel === "admin" || user.accessLevel === "superadmin")
+        return NextResponse.json({ error: "Usuario no encontrado o no permitido" }, { status: 404 });
+
+    await prisma.user.delete({ where: { id: userId } });
+    return NextResponse.json({ ok: true });
+}
+
 export async function PATCH(
     req: NextRequest,
     { params }: { params: Promise<{ id: string }> }
