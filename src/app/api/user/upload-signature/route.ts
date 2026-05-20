@@ -4,6 +4,18 @@ import prisma from "@/lib/prisma";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 
+export async function DELETE() {
+    const session = await getSession();
+    if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+
+    await prisma.user.update({
+        where: { expediente: session.expediente },
+        data: { signature: null },
+    });
+
+    return NextResponse.json({ ok: true });
+}
+
 export async function POST(req: NextRequest) {
     try {
         const session = await getSession();

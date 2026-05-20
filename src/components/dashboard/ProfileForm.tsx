@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import { Camera, ShieldCheck, User as UserIcon, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import { Camera, ShieldCheck, User as UserIcon, Loader2, CheckCircle2, AlertCircle, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
@@ -20,6 +20,8 @@ export default function ProfileForm({ initialUser }: ProfileFormProps) {
     const [signature, setSignature] = useState<string | null>(initialUser.signature);
     const [isUploading, setIsUploading] = useState(false);
     const [isUploadingSignature, setIsUploadingSignature] = useState(false);
+    const [isDeletingPhoto, setIsDeletingPhoto] = useState(false);
+    const [isDeletingSignature, setIsDeletingSignature] = useState(false);
     const [isChangingPassword, setIsChangingPassword] = useState(false);
     const router = useRouter();
     const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
@@ -61,6 +63,40 @@ export default function ProfileForm({ initialUser }: ProfileFormProps) {
             setMessage({ type: "error", text: "Error de conexión" });
         } finally {
             setIsUploading(false);
+        }
+    };
+
+    const handleDeletePhoto = async () => {
+        setIsDeletingPhoto(true);
+        setMessage(null);
+        try {
+            const res = await fetch("/api/user/upload-photo", { method: "DELETE" });
+            if (res.ok) {
+                setImage(null);
+                setMessage({ type: "success", text: "Foto eliminada" });
+                router.refresh();
+            }
+        } catch {
+            setMessage({ type: "error", text: "Error de conexión" });
+        } finally {
+            setIsDeletingPhoto(false);
+        }
+    };
+
+    const handleDeleteSignature = async () => {
+        setIsDeletingSignature(true);
+        setMessage(null);
+        try {
+            const res = await fetch("/api/user/upload-signature", { method: "DELETE" });
+            if (res.ok) {
+                setSignature(null);
+                setMessage({ type: "success", text: "Firma eliminada" });
+                router.refresh();
+            }
+        } catch {
+            setMessage({ type: "error", text: "Error de conexión" });
+        } finally {
+            setIsDeletingSignature(false);
         }
     };
 
@@ -170,6 +206,16 @@ export default function ProfileForm({ initialUser }: ProfileFormProps) {
                     <p className="text-[12px] text-slate-400 dark:text-slate-500 max-w-sm leading-relaxed">
                         Actualiza tu foto profesional para que sea visible en tu credencial digital y en la barra de navegación.
                     </p>
+                    {image && (
+                        <button
+                            onClick={handleDeletePhoto}
+                            disabled={isDeletingPhoto || isUploading}
+                            className="mt-3 flex items-center gap-1.5 text-[11px] font-bold text-red-400 hover:text-red-600 disabled:opacity-40 transition-colors"
+                        >
+                            {isDeletingPhoto ? <Loader2 size={11} className="animate-spin" /> : <Trash2 size={11} />}
+                            Eliminar foto de perfil
+                        </button>
+                    )}
                 </div>
             </div>
             {/* Sección de Firma del Matriculado */}
@@ -213,6 +259,16 @@ export default function ProfileForm({ initialUser }: ProfileFormProps) {
                     <p className="text-[11px] text-slate-400 dark:text-slate-500 max-w-sm leading-relaxed">
                         Esta firma aparecerá en tu credencial digital. Se recomienda un archivo PNG o JPG con fondo transparente o blanco.
                     </p>
+                    {signature && (
+                        <button
+                            onClick={handleDeleteSignature}
+                            disabled={isDeletingSignature || isUploadingSignature}
+                            className="mt-3 flex items-center gap-1.5 text-[11px] font-bold text-red-400 hover:text-red-600 disabled:opacity-40 transition-colors"
+                        >
+                            {isDeletingSignature ? <Loader2 size={11} className="animate-spin" /> : <Trash2 size={11} />}
+                            Eliminar firma
+                        </button>
+                    )}
                 </div>
             </div>
 
