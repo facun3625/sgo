@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import * as XLSX from "xlsx";
 
 function isAdmin(lvl: string) { return lvl === "superadmin" || lvl === "admin"; }
 
@@ -38,17 +39,19 @@ function parseDate(raw: string): Date | null {
 const BATCH = 200;
 
 export async function GET() {
-    const blob = [
-        "﻿",
-        "expediente,texto,inicio,fin\n",
-        "564,Apercibimiento por conducta contraria a la ética,15/03/2020,\n",
-        "792,Suspensión por 6 meses,01/06/2019,01/12/2019\n",
-        "831,Advertencia pública,10/01/2022,\n",
-    ].join("");
-    return new NextResponse(blob, {
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet([
+        ["expediente", "texto", "inicio", "fin"],
+        ["564", "Apercibimiento por conducta contraria a la ética", "15/03/2020", ""],
+        ["792", "Suspensión por 6 meses", "01/06/2019", "01/12/2019"],
+        ["831", "Advertencia pública", "10/01/2022", ""],
+    ]);
+    XLSX.utils.book_append_sheet(wb, ws, "Datos");
+    const buf = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
+    return new NextResponse(buf, {
         headers: {
-            "Content-Type": "text/csv;charset=utf-8",
-            "Content-Disposition": 'attachment; filename="plantilla_tribunal_etica.csv"',
+            "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "Content-Disposition": 'attachment; filename="plantilla_tribunal_etica.xlsx"',
         },
     });
 }

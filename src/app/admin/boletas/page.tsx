@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { Upload, CheckCircle2, AlertCircle, Loader2, FileSpreadsheet, Trash2, FolderOpen } from "lucide-react";
+import * as XLSX from "xlsx";
 
 interface Batch {
     tipo: "mensual" | "anual" | "deuda";
@@ -38,18 +39,17 @@ export default function BoletasAdminPage() {
     const fileRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
     const descargarDetalle = (tipo: string, result: UploadResult) => {
-        const rows: string[] = ["tipo,motivo,cod,expediente,pdf"];
+        const filas: Record<string, string>[] = [];
         result.detalle?.sinExpediente.forEach(r =>
-            rows.push(`${tipo},Sin expediente en datos,${r.cod},,${r.pdf}`)
+            filas.push({ Tipo: tipo, Motivo: "Sin expediente en datos", COD: r.cod, Expediente: "", PDF: r.pdf })
         );
         result.detalle?.sinPdf.forEach(r =>
-            rows.push(`${tipo},PDF no encontrado en servidor,${r.cod},${r.expediente},${r.pdf}`)
+            filas.push({ Tipo: tipo, Motivo: "PDF no encontrado en servidor", COD: r.cod, Expediente: r.expediente, PDF: r.pdf })
         );
-        const blob = new Blob(["﻿" + rows.join("\n")], { type: "text/csv;charset=utf-8;" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url; a.download = `errores_boletas_${tipo}.csv`;
-        a.click(); URL.revokeObjectURL(url);
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.json_to_sheet(filas);
+        XLSX.utils.book_append_sheet(wb, ws, "Errores");
+        XLSX.writeFile(wb, `errores_boletas_${tipo}.xlsx`);
     };
 
     const handleEliminar = async (tipo: string) => {
@@ -187,7 +187,7 @@ export default function BoletasAdminPage() {
                                                 onClick={() => descargarDetalle(tipo, result)}
                                                 className="ml-5 flex items-center gap-1.5 text-[11px] font-bold text-[#063f68] dark:text-blue-400 hover:underline"
                                             >
-                                                <FileSpreadsheet size={12} /> Descargar detalle CSV
+                                                <FileSpreadsheet size={12} /> Descargar detalle Excel
                                             </button>
                                         )}
                                     </div>

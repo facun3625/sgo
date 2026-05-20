@@ -14,14 +14,17 @@ const FINANCIERO_CONFIG: Record<TipoFinanciero, { label: string; columnas: strin
     consultor: { label: "Consultores", columnas: ["expediente"], ejemplo: "expediente\n564\n792" },
 };
 
-const PLANTILLA_CONTENT: Record<string, { filename: string; content: string }> = {
+const PLANTILLA_CONTENT: Record<string, { filename: string; rows: string[][] }> = {
     matriculados: {
-        filename: "plantilla_matriculados.csv",
-        content: "expediente,cod,apellido,nombre,documento,tomo,folio,domicilioLegal,postalLegal,localidadLegal,telefonosLegal,emailLegal,domicilioReal,postalReal,localidadReal,provinciaReal,telefonosReal,emailReal,codMovilLegal,movilLegal,codMovilReal,movilReal,fechaMatriculacion\n564,564,GARCIA,JUAN,12345678,1,100,AV SAN MARTIN 123,3000,SANTA FE,0342-123456,juan@email.com,,,,,,,,,,,",
+        filename: "plantilla_matriculados.xlsx",
+        rows: [
+            ["expediente","cod","apellido","nombre","documento","tomo","folio","domicilioLegal","postalLegal","localidadLegal","telefonosLegal","emailLegal","domicilioReal","postalReal","localidadReal","provinciaReal","telefonosReal","emailReal","codMovilLegal","movilLegal","codMovilReal","movilReal","fechaMatriculacion"],
+            ["564","564","GARCIA","JUAN","12345678","1","100","AV SAN MARTIN 123","3000","SANTA FE","0342-123456","juan@email.com","","","","","","","","","","",""],
+        ],
     },
-    deudas: { filename: "plantilla_deudas.csv", content: "expediente,monto\n564,15000\n792,8500" },
-    pagoAnual: { filename: "plantilla_pago_anual.csv", content: "expediente\n564\n792" },
-    consultor: { filename: "plantilla_consultores.csv", content: "expediente\n564\n792" },
+    deudas: { filename: "plantilla_deudas.xlsx", rows: [["expediente","monto"],["564","15000"],["792","8500"]] },
+    pagoAnual: { filename: "plantilla_pago_anual.xlsx", rows: [["expediente"],["564"],["792"]] },
+    consultor: { filename: "plantilla_consultores.xlsx", rows: [["expediente"],["564"],["792"]] },
 };
 
 interface ResultadoImport {
@@ -99,6 +102,13 @@ export default function ImportarPage() {
         setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 2000);
     }
 
+    function downloadXLSX(rows: string[][], filename: string) {
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet(rows);
+        XLSX.utils.book_append_sheet(wb, ws, "Datos");
+        XLSX.writeFile(wb, filename);
+    }
+
     async function downloadTemplate(tipo: string) {
         const p = PLANTILLA_CONTENT[tipo];
         if (!p) return;
@@ -108,8 +118,7 @@ export default function ImportarPage() {
             const blob = await res.blob();
             triggerDownload(URL.createObjectURL(blob), p.filename);
         } catch {
-            const blob = new Blob(["﻿" + p.content], { type: "text/csv;charset=utf-8;" });
-            triggerDownload(URL.createObjectURL(blob), p.filename);
+            downloadXLSX(p.rows, p.filename);
         }
     }
 
@@ -510,7 +519,7 @@ export default function ImportarPage() {
                             Subí un CSV con los nuevos matriculados. Si el expediente ya existe, la fila se omite.
                         </p>
                         <button onClick={() => downloadTemplate("matriculados")} className="mt-3 inline-flex items-center gap-2 text-[11px] font-bold text-cyan-600 dark:text-cyan-400 hover:underline">
-                            <FileText size={12} /> Descargar plantilla CSV
+                            <FileText size={12} /> Descargar plantilla Excel
                         </button>
                     </div>
 
@@ -760,14 +769,10 @@ export default function ImportarPage() {
                             Los expedientes pueden no existir en el sistema (se guardan igualmente).
                         </p>
                         <button
-                            onClick={() => {
-                                const content = "expediente,fiador\n564,792\n831,1045";
-                                const blob = new Blob(["﻿" + content], { type: "text/csv;charset=utf-8;" });
-                                triggerDownload(URL.createObjectURL(blob), "plantilla_fiadores.csv");
-                            }}
+                            onClick={() => downloadXLSX([["expediente","fiador"],["564","792"],["831","1045"]], "plantilla_fiadores.xlsx")}
                             className="mt-3 inline-flex items-center gap-2 text-[11px] font-bold text-orange-600 dark:text-orange-400 hover:underline"
                         >
-                            <FileText size={12} /> Descargar plantilla CSV
+                            <FileText size={12} /> Descargar plantilla Excel
                         </button>
                     </div>
 
@@ -811,14 +816,10 @@ export default function ImportarPage() {
                             Los que ya tienen una adhesión aprobada se omiten. Se importan con estado <strong>aprobada</strong>.
                         </p>
                         <button
-                            onClick={() => {
-                                const content = "expediente,tipoAdhesion\n564,CBU\n792,Tarjeta\n831,";
-                                const blob = new Blob(["﻿" + content], { type: "text/csv;charset=utf-8;" });
-                                triggerDownload(URL.createObjectURL(blob), "plantilla_adhesiones.csv");
-                            }}
+                            onClick={() => downloadXLSX([["expediente","tipoAdhesion"],["564","CBU"],["792","Tarjeta"],["831",""]], "plantilla_adhesiones.xlsx")}
                             className="mt-3 inline-flex items-center gap-2 text-[11px] font-bold text-teal-600 dark:text-teal-400 hover:underline"
                         >
-                            <FileText size={12} /> Descargar plantilla CSV
+                            <FileText size={12} /> Descargar plantilla Excel
                         </button>
                     </div>
 
@@ -863,14 +864,10 @@ export default function ImportarPage() {
                             Si el expediente ya tiene una cuenta, se omite.
                         </p>
                         <button
-                            onClick={() => {
-                                const content = "expediente,password\n564,miClave123\n792,";
-                                const blob = new Blob(["﻿" + content], { type: "text/csv;charset=utf-8;" });
-                                triggerDownload(URL.createObjectURL(blob), "plantilla_usuarios.csv");
-                            }}
+                            onClick={() => downloadXLSX([["expediente","password"],["564","miClave123"],["792",""]], "plantilla_usuarios.xlsx")}
                             className="mt-3 inline-flex items-center gap-2 text-[11px] font-bold text-purple-600 dark:text-purple-400 hover:underline"
                         >
-                            <FileText size={12} /> Descargar plantilla CSV
+                            <FileText size={12} /> Descargar plantilla Excel
                         </button>
                     </div>
 
@@ -1041,7 +1038,7 @@ export default function ImportarPage() {
                             onClick={() => { window.open("/api/admin/importar/suspensiones", "_blank"); }}
                             className="mt-3 inline-flex items-center gap-2 text-[11px] font-bold text-rose-600 dark:text-rose-400 hover:underline"
                         >
-                            <FileText size={12} /> Descargar plantilla CSV
+                            <FileText size={12} /> Descargar plantilla Excel
                         </button>
                     </div>
 
@@ -1087,7 +1084,7 @@ export default function ImportarPage() {
                             onClick={() => { window.open("/api/admin/importar/tribunal-etica", "_blank"); }}
                             className="mt-3 inline-flex items-center gap-2 text-[11px] font-bold text-amber-600 dark:text-amber-400 hover:underline"
                         >
-                            <FileText size={12} /> Descargar plantilla CSV
+                            <FileText size={12} /> Descargar plantilla Excel
                         </button>
                     </div>
 

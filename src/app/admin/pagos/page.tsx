@@ -127,7 +127,7 @@ function CuotaBadge({ cuota, cobertura }: { cuota: CuotaInfo | null; cobertura: 
 }
 
 // ── Vista Contabilidad ───────────────────────────────────────────────────────
-function ContabilidadView() {
+function ContabilidadView({ stats, pctPagado }: { stats: Stats | null; pctPagado: number }) {
     const [tipo, setTipo] = useState<TipoContable>("todos");
     const [metodoPago, setMetodoPago] = useState<MetodoPago>("");
     const [mes, setMes] = useState(mesActual());
@@ -220,6 +220,59 @@ function ContabilidadView() {
 
     return (
         <div className="space-y-5">
+            {/* Recaudación del mes */}
+            {stats && (
+                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6 space-y-4">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <TrendingUp size={16} className="text-emerald-500" />
+                            <h2 className="text-[13px] font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wide">Recaudación del mes</h2>
+                        </div>
+                        <span className="text-[11px] text-slate-400">{pctPagado}% cobrado sobre generadas</span>
+                    </div>
+                    <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                        <div className="h-full bg-emerald-500 rounded-full transition-all duration-500" style={{ width: `${pctPagado}%` }} />
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
+                        <div>
+                            <p className="text-[11px] text-slate-400 uppercase tracking-wide font-semibold mb-0.5">Total recaudado</p>
+                            <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
+                                ${(stats.totalRecaudadoGeneral ?? 0).toLocaleString("es-AR")}
+                            </p>
+                            <p className="text-[10px] text-slate-400 mt-1">Cuotas: <span className="font-bold text-emerald-400">${stats.totalRecaudado.toLocaleString("es-AR")}</span></p>
+                            <p className="text-[10px] text-slate-400">Deudas: <span className="font-bold text-amber-400">${(stats.totalRecaudadoDeudas ?? 0).toLocaleString("es-AR")}</span></p>
+                        </div>
+                        <div>
+                            <p className="text-[11px] text-slate-400 uppercase tracking-wide font-semibold mb-0.5">Pagaron</p>
+                            <p className="text-2xl font-black text-slate-800 dark:text-white">
+                                {stats.cuotaPagada} <span className="text-sm font-medium text-slate-400">/ {stats.cuotaGenerada}</span>
+                            </p>
+                        </div>
+                        <div>
+                            <p className="text-[11px] text-slate-400 uppercase tracking-wide font-semibold mb-0.5">Mercado Pago</p>
+                            <div className="flex items-center gap-2">
+                                <CreditCard size={14} className="text-[#009ee3]" />
+                                <p className="text-2xl font-black text-slate-800 dark:text-white">{stats.pagadasPorMP}</p>
+                            </div>
+                        </div>
+                        <div>
+                            <p className="text-[11px] text-slate-400 uppercase tracking-wide font-semibold mb-0.5">Transferencia</p>
+                            <div className="flex items-center gap-2">
+                                <Landmark size={14} className="text-slate-500" />
+                                <p className="text-2xl font-black text-slate-800 dark:text-white">{stats.pagadasPorTransferencia}</p>
+                            </div>
+                        </div>
+                        <div>
+                            <p className="text-[11px] text-slate-400 uppercase tracking-wide font-semibold mb-0.5">Banelco / HB</p>
+                            <div className="flex items-center gap-2">
+                                <Landmark size={14} className="text-violet-500" />
+                                <p className="text-2xl font-black text-slate-800 dark:text-white">{(stats.pagadasPorBanelco ?? 0) + (stats.pagadasPorHomeBanking ?? 0)}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Filtros */}
             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-5 space-y-4">
                 <div className="flex flex-wrap gap-4 items-end">
@@ -562,7 +615,7 @@ export default function PagosAdminPage() {
             </div>
 
             {/* Vista Contabilidad */}
-            {vista === "contabilidad" && <ContabilidadView />}
+            {vista === "contabilidad" && <ContabilidadView stats={stats} pctPagado={pctPagado} />}
 
             {/* Vista Matriculados */}
             {vista === "matriculados" && (

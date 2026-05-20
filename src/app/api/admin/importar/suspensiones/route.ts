@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { revocarAccesoCatastro } from "@/lib/catastro";
+import * as XLSX from "xlsx";
 
 function isAdmin(lvl: string) { return lvl === "superadmin" || lvl === "admin"; }
 
@@ -28,17 +29,19 @@ const STATUS_MAP: Record<string, string> = {
 const BATCH = 200;
 
 export async function GET() {
-    const blob = [
-        "﻿", // BOM para Excel
-        "expediente,accion,comentario,motivo\n",
-        "564,suspension,Importado del sistema anterior,Falta de Pago\n",
-        "792,cancelacion,Baja definitiva,Fallecimiento\n",
-        "831,habilitacion,Rehabilitado,\n",
-    ].join("");
-    return new NextResponse(blob, {
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet([
+        ["expediente", "accion", "comentario", "motivo"],
+        ["564", "suspension", "Importado del sistema anterior", "Falta de Pago"],
+        ["792", "cancelacion", "Baja definitiva", "Fallecimiento"],
+        ["831", "habilitacion", "Rehabilitado", ""],
+    ]);
+    XLSX.utils.book_append_sheet(wb, ws, "Datos");
+    const buf = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
+    return new NextResponse(buf, {
         headers: {
-            "Content-Type": "text/csv;charset=utf-8",
-            "Content-Disposition": 'attachment; filename="plantilla_suspensiones.csv"',
+            "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "Content-Disposition": 'attachment; filename="plantilla_suspensiones.xlsx"',
         },
     });
 }

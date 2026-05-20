@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { UserCheck, X, Circle, CheckCircle2, ArrowLeftRight, Download, ChevronLeft, ChevronRight, CheckSquare, Square } from "lucide-react";
+import * as XLSX from "xlsx";
 
 interface CamposDiff {
     [key: string]: { anterior: string; nuevo: string; label: string };
@@ -24,24 +25,20 @@ function timeAgo(dateStr: string) {
     return new Date(dateStr).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric" });
 }
 
-function exportarCSV(seleccionados: CambioDatos[]) {
-    const rows: string[] = ["Matrícula,Apellido,Nombre,Campo,Anterior,Nuevo,Fecha"];
+function exportarXLSX(seleccionados: CambioDatos[]) {
+    const filas: Record<string, string>[] = [];
     for (const c of seleccionados) {
         const apellido = c.usuario?.apellido ?? "";
         const nombre = c.usuario?.nombre ?? "";
         const fecha = new Date(c.createdAt).toLocaleDateString("es-AR");
         for (const [, diff] of Object.entries(c.campos as CamposDiff)) {
-            const esc = (v: string) => `"${(v ?? "").replace(/"/g, '""')}"`;
-            rows.push([c.expediente, esc(apellido), esc(nombre), esc(diff.label), esc(diff.anterior), esc(diff.nuevo), fecha].join(","));
+            filas.push({ Matrícula: c.expediente, Apellido: apellido, Nombre: nombre, Campo: diff.label, Anterior: diff.anterior, Nuevo: diff.nuevo, Fecha: fecha });
         }
     }
-    const blob = new Blob(["﻿" + rows.join("\n")], { type: "text/csv;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `cambios-datos-${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(filas);
+    XLSX.utils.book_append_sheet(wb, ws, "Cambios");
+    XLSX.writeFile(wb, `cambios-datos-${new Date().toISOString().slice(0, 10)}.xlsx`);
 }
 
 export default function CambiosDatosPage() {
@@ -177,7 +174,7 @@ export default function CambiosDatosPage() {
                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400 text-[12px] font-bold hover:bg-violet-100 dark:hover:bg-violet-900/40 transition-all">
                             <Circle size={13} /> Marcar no leído
                         </button>
-                        <button onClick={() => exportarCSV(seleccionados)}
+                        <button onClick={() => exportarXLSX(seleccionados)}
                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#063f68]/10 text-[#063f68] dark:text-sky-400 text-[12px] font-bold hover:bg-[#063f68]/20 transition-all"
                             title="La exportación incluye solo los registros seleccionados en esta página">
                             <Download size={13} /> Exportar seleccionados ({checkedIds.size}) — pág. {page}

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import * as XLSX from "xlsx";
 
 function isAdmin(accessLevel: string) {
     return accessLevel === "superadmin" || accessLevel === "admin";
@@ -22,35 +23,32 @@ export async function GET() {
         where: { expediente: { in: expedientes } },
         select: { expediente: true, nombre: true, apellido: true },
     });
-
     const userMap = new Map(users.map((u) => [u.expediente, u]));
 
-    const header = "id,expediente,nombre,apellido,producto,cantidad,metodoPago,estado,createdAt\n";
-    const rows = pedidos
-        .map((p) => {
-            const u = userMap.get(p.expediente);
-            return [
-                p.id,
-                p.expediente,
-                u?.nombre ?? "",
-                u?.apellido ?? "",
-                p.producto.nombre,
-                p.cantidad,
-                p.metodoPago,
-                p.estado,
-                p.createdAt.toISOString(),
-            ]
-                .map((v) => `"${String(v).replace(/"/g, '""')}"`)
-                .join(",");
-        })
-        .join("\n");
+    const rows = pedidos.map((p) => {
+        const u = userMap.get(p.expediente);
+        return {
+            ID: p.id,
+            Expediente: p.expediente,
+            Nombre: u?.nombre ?? "",
+            Apellido: u?.apellido ?? "",
+            Producto: p.producto.nombre,
+            Cantidad: p.cantidad,
+            "Método de Pago": p.metodoPago,
+            Estado: p.estado,
+            Fecha: new Date(p.createdAt).toLocaleDateString("es-AR"),
+        };
+    });
 
-    const csv = header + rows;
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(rows);
+    XLSX.utils.book_append_sheet(wb, ws, "Pedidos");
+    const buf = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
 
-    return new NextResponse(csv, {
+    return new NextResponse(buf, {
         headers: {
-            "Content-Type": "text/csv; charset=utf-8",
-            "Content-Disposition": 'attachment; filename="pedidos-ventas.csv"',
+            "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "Content-Disposition": 'attachment; filename="pedidos-ventas.xlsx"',
         },
     });
 }
