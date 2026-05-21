@@ -67,7 +67,7 @@ export default function SolicitudSuspensionPage() {
         e.preventDefault();
 
         if (hasDebt) {
-            alert("No se puede iniciar el trámite con deuda pendiente.");
+            alert("No se puede iniciar el trámite con deuda vencida.");
             return;
         }
 
@@ -159,7 +159,7 @@ export default function SolicitudSuspensionPage() {
                         <div className="space-y-2">
                             <h3 className="text-2xl font-bold text-rose-900 dark:text-rose-400">Trámite Bloqueado</h3>
                             <p className="text-rose-700/70 dark:text-rose-400/60 font-medium max-w-md mx-auto">
-                                No es posible solicitar la suspensión o cancelación de la matrícula contando con deuda pendiente. El saldo actual es de <span className="font-bold text-rose-600 dark:text-rose-300">${totalDeuda.toLocaleString()}</span>.
+                                No es posible solicitar la suspensión o cancelación de la matrícula contando con deuda vencida. El saldo actual es de <span className="font-bold text-rose-600 dark:text-rose-300">${totalDeuda.toLocaleString()}</span>.
                             </p>
                         </div>
                         <button

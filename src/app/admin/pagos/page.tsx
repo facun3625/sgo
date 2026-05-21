@@ -206,7 +206,7 @@ function ContabilidadView({ stats, pctPagado }: { stats: Stats | null; pctPagado
 
     const TIPOS: { key: TipoContable; label: string }[] = [
         { key: "todos", label: "Todos" },
-        { key: "deudas", label: "Deudas" },
+        { key: "deudas", label: "Deudas Vencidas" },
         { key: "cuotas", label: "Cuotas mensuales" },
     ];
 
@@ -563,7 +563,7 @@ export default function PagosAdminPage() {
     const TABS: { key: Filtro; label: string; count: number }[] = [
         { key: "todos", label: "Todos", count: usuarios.length },
         { key: "cuota_pendiente", label: "Cuota pendiente", count: stats?.cuotaPendiente ?? 0 },
-        { key: "deuda", label: "Con deuda", count: stats?.conDeuda ?? 0 },
+        { key: "deuda", label: "Con deuda vencida", count: stats?.conDeuda ?? 0 },
         { key: "sin_cuota", label: "Sin cuota", count: stats?.sinCuota ?? 0 },
         { key: "al_dia", label: "Al día", count: alDiaCount },
     ];
@@ -649,7 +649,7 @@ export default function PagosAdminPage() {
                                         ${(stats.totalRecaudadoGeneral ?? 0).toLocaleString("es-AR")}
                                     </p>
                                     <p className="text-[10px] text-slate-400 mt-1">Cuotas: <span className="font-bold text-emerald-400">${stats.totalRecaudado.toLocaleString("es-AR")}</span></p>
-                                    <p className="text-[10px] text-slate-400">Deudas: <span className="font-bold text-amber-400">${(stats.totalRecaudadoDeudas ?? 0).toLocaleString("es-AR")}</span></p>
+                                    <p className="text-[10px] text-slate-400">Deudas vencidas: <span className="font-bold text-amber-400">${(stats.totalRecaudadoDeudas ?? 0).toLocaleString("es-AR")}</span></p>
                                 </div>
                                 <div>
                                     <p className="text-[11px] text-slate-400 uppercase tracking-wide font-semibold mb-0.5">Pagaron</p>
@@ -686,8 +686,8 @@ export default function PagosAdminPage() {
                             {[
                                 { label: "Matriculados", value: stats.totalMatriculados, icon: Users, color: "text-slate-700 dark:text-slate-200", bg: "bg-slate-100 dark:bg-slate-800" },
                                 { label: "Cuota pendiente", value: stats.cuotaPendiente, icon: Clock, color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-900/20" },
-                                { label: "Con deuda", value: stats.conDeuda, icon: AlertTriangle, color: "text-rose-600 dark:text-rose-400", bg: "bg-rose-50 dark:bg-rose-900/20" },
-                                { label: "Deuda acumulada", value: `$${stats.totalDeudaAcumulada.toLocaleString("es-AR")}`, icon: CircleDollarSign, color: "text-rose-600 dark:text-rose-400", bg: "bg-rose-50 dark:bg-rose-900/20" },
+                                { label: "Con deuda vencida", value: stats.conDeuda, icon: AlertTriangle, color: "text-rose-600 dark:text-rose-400", bg: "bg-rose-50 dark:bg-rose-900/20" },
+                                { label: "Deuda vencida acumulada", value: `$${stats.totalDeudaAcumulada.toLocaleString("es-AR")}`, icon: CircleDollarSign, color: "text-rose-600 dark:text-rose-400", bg: "bg-rose-50 dark:bg-rose-900/20" },
                             ].map((s) => (
                                 <div key={s.label} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-4 flex items-center gap-3">
                                     <div className={`w-9 h-9 rounded-xl ${s.bg} flex items-center justify-center flex-shrink-0`}>
@@ -776,7 +776,7 @@ export default function PagosAdminPage() {
                                                     <th className="px-5 py-3 text-left w-[25%]">
                                                         <button onClick={() => toggleSort("deuda")}
                                                             className="flex items-center gap-1 text-[11px] font-bold text-slate-400 uppercase tracking-wide hover:text-slate-600 transition-colors">
-                                                            Deuda <SortIcon k="deuda" />
+                                                            Deuda Vencida <SortIcon k="deuda" />
                                                         </button>
                                                     </th>
                                                     <th className="px-5 py-3 w-[5%]" />
@@ -811,7 +811,7 @@ export default function PagosAdminPage() {
                                                                 </span>
                                                             ) : (
                                                                 <span className="inline-flex items-center gap-1 text-[12px] font-semibold text-emerald-600 dark:text-emerald-400">
-                                                                    <CheckCircle2 size={13} /> Sin deuda
+                                                                    <CheckCircle2 size={13} /> Sin deuda vencida
                                                                 </span>
                                                             )}
                                                         </td>

@@ -71,7 +71,7 @@ export default async function BeneficiosPage() {
                                         <AlertCircle size={22} />
                                     </div>
                                     <div className="space-y-0.5 text-left">
-                                        <h3 className="text-rose-900 dark:text-rose-400 font-bold text-sm md:text-lg tracking-tight">Acceso Restringido por Deuda</h3>
+                                        <h3 className="text-rose-900 dark:text-rose-400 font-bold text-sm md:text-lg tracking-tight">Acceso Restringido por Deuda Vencida</h3>
                                         <p className="text-rose-700/70 dark:text-rose-400/60 text-xs md:text-sm font-medium">Regularice su situación para volver a disfrutar de los beneficios exclusivos.</p>
                                     </div>
                                 </div>

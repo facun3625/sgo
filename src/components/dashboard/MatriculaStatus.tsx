@@ -195,7 +195,7 @@ export default function MatriculaStatus() {
                                 <AlertTriangle size={28} />
                             </div>
                             <div>
-                                <h3 className="text-red-900 dark:text-red-400 font-bold text-xl tracking-tight">Deuda Pendiente Detectada</h3>
+                                <h3 className="text-red-900 dark:text-red-400 font-bold text-xl tracking-tight">Deuda Vencida Detectada</h3>
                                 <p className="text-red-700/70 dark:text-red-400/60 text-sm font-medium">Regularizá tu situación para mantener todos los beneficios activos.</p>
                             </div>
                         </div>
@@ -239,7 +239,7 @@ export default function MatriculaStatus() {
                         </div>
                         <div>
                             <h3 className="text-emerald-900 dark:text-emerald-400 font-bold text-lg tracking-tight">Al día con las obligaciones</h3>
-                            <p className="text-emerald-700/70 dark:text-emerald-400/60 text-sm font-medium">No se registran deudas pendientes a la fecha.</p>
+                            <p className="text-emerald-700/70 dark:text-emerald-400/60 text-sm font-medium">No se registran deudas vencidas a la fecha.</p>
                         </div>
                     </div>
                     {data?.hasDebitoAutomatico && (
@@ -515,7 +515,7 @@ export default function MatriculaStatus() {
                     {data?.deudasPagadas && data.deudasPagadas.map((d, i) => (
                         <ConceptItem
                             key={`deuda-${d.id}`}
-                            label={`Deuda saldada — ${new Date(d.fechaPago).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric" })}`}
+                            label={`Deuda vencida saldada — ${new Date(d.fechaPago).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric" })}`}
                             amount={d.monto.toLocaleString("es-AR")}
                             status="paid"
                             metodo={d.metodoPago === "banelco" ? "home_banking" : d.metodoPago === "transferencia" ? "transferencia" : "mercadopago"}

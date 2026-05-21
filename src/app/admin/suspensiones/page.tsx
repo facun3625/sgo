@@ -651,7 +651,7 @@ export default function SuspensionesPage() {
                                     {/* Pasos completados */}
                                     <div className="grid grid-cols-5 gap-1.5">
                                         {[
-                                            { n: 1, label: "Deuda", ok: s.p1Ok },
+                                            { n: 1, label: "Deuda Vencida", ok: s.p1Ok },
                                             { n: 2, label: "Formulario", ok: s.p2Ok },
                                             { n: 3, label: "Reincidencia", ok: s.p3Ok },
                                             { n: 4, label: "Adhesión", ok: s.p4Ok },
@@ -671,7 +671,7 @@ export default function SuspensionesPage() {
                                             {s.p1Ok && s.p1Metodo !== "sin_deuda" && (
                                                 <div className="flex items-center justify-between gap-3">
                                                     <div>
-                                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Deuda original · {s.p1Metodo}</p>
+                                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Deuda vencida original · {s.p1Metodo}</p>
                                                         {s.deudaOriginal != null && <p className="text-[12px] text-slate-600 dark:text-slate-300">${s.deudaOriginal.toLocaleString("es-AR")}</p>}
                                                     </div>
                                                     {s.p1Comprobante && (
@@ -1157,7 +1157,7 @@ export default function SuspensionesPage() {
                             <div className="space-y-1.5">
                                 <label className="text-[12px] font-semibold text-slate-600 dark:text-slate-300">Comentario <span className="text-rose-500">*</span></label>
                                 <textarea ref={suspTextareaRef} value={comentario} onChange={e => setComentario(e.target.value)} rows={4}
-                                    placeholder={modalSusp.targetStatus === "suspended" ? "Ej: Deuda pendiente de pago..." : modalSusp.targetStatus === "cancelled" ? "Ej: Baja voluntaria..." : "Ej: Regularizó situación..."}
+                                    placeholder={modalSusp.targetStatus === "suspended" ? "Ej: Deuda vencida pendiente de pago..." : modalSusp.targetStatus === "cancelled" ? "Ej: Baja voluntaria..." : "Ej: Regularizó situación..."}
                                     className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-[13px] focus:outline-none focus:ring-2 focus:ring-rose-300/50 resize-none" />
                                 <p className="text-[10px] text-slate-400">Quedará registrado con fecha y hora.</p>
                             </div>

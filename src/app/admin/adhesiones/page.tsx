@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import {
     Banknote, Loader2, CheckCircle2, XCircle, Clock, Inbox,
     ChevronRight, X, CreditCard, FileText, User, Search,
-    Download, ZoomIn,
+    Download, ZoomIn, Trash2,
 } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 
@@ -57,6 +57,10 @@ export default function AdminAdhesionesPage() {
     // Reject modal
     const [rejectModal, setRejectModal] = useState(false);
     const [rejectMotivo, setRejectMotivo] = useState("");
+
+    // Delete
+    const [confirmDelete, setConfirmDelete] = useState(false);
+    const [deleting, setDeleting] = useState(false);
 
     // Doc lightbox
     const [lightbox, setLightbox] = useState<{ url: string; label: string } | null>(null);
@@ -119,11 +123,27 @@ export default function AdminAdhesionesPage() {
         }
     }
 
+    async function deleteAdhesion(id: number) {
+        setDeleting(true);
+        try {
+            const res = await fetch(`/api/admin/adhesiones/${id}`, { method: "DELETE" });
+            if (!res.ok) throw new Error();
+            showToast("Trámite eliminado", "success");
+            setAdhesiones(prev => prev.filter(a => a.id !== id));
+            closePanel();
+        } catch {
+            showToast("Error al eliminar", "error");
+        } finally {
+            setDeleting(false);
+        }
+    }
+
     function openPanel(a: AdhesionItem) {
         setSelected(a);
         setPanelOpen(true);
         setRejectModal(false);
         setRejectMotivo("");
+        setConfirmDelete(false);
     }
 
     function closePanel() {
@@ -131,6 +151,7 @@ export default function AdminAdhesionesPage() {
         setSelected(null);
         setRejectModal(false);
         setRejectMotivo("");
+        setConfirmDelete(false);
     }
 
     const docs = selected ? [
@@ -383,9 +404,9 @@ export default function AdminAdhesionesPage() {
                         </div>
 
                         {/* Actions */}
-                        {selected.estado === "pendiente" && (
-                            <div className="p-6 border-t border-slate-100 dark:border-slate-800 space-y-3">
-                                {rejectModal ? (
+                        <div className="p-6 border-t border-slate-100 dark:border-slate-800 space-y-3">
+                            {selected.estado === "pendiente" && (
+                                rejectModal ? (
                                     <div className="space-y-3">
                                         <p className="text-[12px] font-bold text-slate-700 dark:text-slate-200">Motivo de rechazo</p>
                                         <textarea
@@ -419,9 +440,29 @@ export default function AdminAdhesionesPage() {
                                             Aprobar
                                         </button>
                                     </div>
-                                )}
-                            </div>
-                        )}
+                                )
+                            )}
+
+                            {/* Eliminar */}
+                            {!rejectModal && (
+                                confirmDelete ? (
+                                    <div className="flex items-center gap-2 flex-wrap pt-1">
+                                        <span className="text-[11px] font-bold text-red-600 dark:text-red-400">¿Eliminar este trámite?</span>
+                                        <button onClick={() => deleteAdhesion(selected.id)} disabled={deleting}
+                                            className="flex items-center gap-1.5 px-3 h-7 bg-red-600 text-white rounded-lg text-[11px] font-bold hover:bg-red-700 disabled:opacity-50 transition-all">
+                                            {deleting ? <Loader2 size={11} className="animate-spin" /> : <Trash2 size={11} />}
+                                            {deleting ? "Eliminando..." : "Sí, eliminar"}
+                                        </button>
+                                        <button onClick={() => setConfirmDelete(false)} className="text-[11px] text-slate-400 hover:text-slate-600">Cancelar</button>
+                                    </div>
+                                ) : (
+                                    <button onClick={() => setConfirmDelete(true)} disabled={deleting}
+                                        className="flex items-center gap-1.5 text-[11px] font-bold text-red-400 hover:text-red-600 disabled:opacity-40 transition-colors pt-1">
+                                        <Trash2 size={11} /> Eliminar trámite
+                                    </button>
+                                )
+                            )}
+                        </div>
                     </div>
                 </div>
             )}

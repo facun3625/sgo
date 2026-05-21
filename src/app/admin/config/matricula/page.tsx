@@ -341,7 +341,7 @@ export default function ConfigMatriculaPage() {
                             {([
                                 { key: "boletaDescargaMensual", label: "Cuota Mensual" },
                                 { key: "boletaDescargaAnual",   label: "Pago Anual" },
-                                { key: "boletaDescargaDeuda",   label: "Deuda" },
+                                { key: "boletaDescargaDeuda",   label: "Deuda Vencida" },
                             ] as { key: keyof ConfigValues; label: string }[]).map(({ key, label }) => (
                                 <div key={key} className="flex items-center justify-between p-4 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40">
                                     <span className="text-[13px] font-semibold text-slate-700 dark:text-slate-200">{label}</span>

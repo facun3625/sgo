@@ -8,7 +8,7 @@ type Msg = { tipo: "success" | "error"; texto: string } | null;
 const SECCIONES = [
     { key: "transferencia_matricula_mensual", label: "Cuota mensual" },
     { key: "transferencia_matricula_anual",   label: "Matrícula anual" },
-    { key: "transferencia_deuda",             label: "Deudas" },
+    { key: "transferencia_deuda",             label: "Deudas Vencidas" },
     { key: "transferencia_curso",             label: "Cursos" },
     { key: "transferencia_ventas",            label: "Ventas (productos)" },
 ];

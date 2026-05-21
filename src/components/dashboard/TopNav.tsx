@@ -135,13 +135,13 @@ export default function TopNav({ user, onMenuClick }: TopNavProps) {
                             className="h-8 flex items-center gap-2 px-3 bg-red-500/20 border border-red-500/30 rounded-lg backdrop-blur-sm hover:bg-red-500/30 transition-all group animate-pulse"
                         >
                             <div className="w-1.5 h-1.5 bg-red-500 rounded-full shadow-[0_0_8px_rgba(239,68,68,0.8)]"></div>
-                            <span className="text-[10px] font-extrabold text-white uppercase tracking-widest leading-none">Usted posee deuda</span>
+                            <span className="text-[10px] font-extrabold text-white uppercase tracking-widest leading-none">Usted posee deuda vencida</span>
                             <ArrowRight size={12} className="text-white/50 group-hover:text-white transition-colors" />
                         </Link>
                     ) : (
                         <div className="h-8 flex items-center gap-2 px-3 bg-white/10 rounded-lg backdrop-blur-sm">
                             <div className="w-1.5 h-1.5 bg-green-400 rounded-full"></div>
-                            <span className="text-[10px] font-extrabold text-white uppercase tracking-widest leading-none">No posee deudas</span>
+                            <span className="text-[10px] font-extrabold text-white uppercase tracking-widest leading-none">No posee deuda vencida</span>
                         </div>
                     )}
                 </div>

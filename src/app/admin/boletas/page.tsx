@@ -26,7 +26,7 @@ interface UploadResult {
 const TIPO_LABELS: Record<string, { label: string; color: string; bg: string; border: string }> = {
     mensual: { label: "Cuota Mensual", color: "text-emerald-600", bg: "bg-emerald-50 dark:bg-emerald-950/20", border: "border-emerald-100 dark:border-emerald-900/40" },
     anual: { label: "Matrícula Anual", color: "text-blue-600", bg: "bg-blue-50 dark:bg-blue-950/20", border: "border-blue-100 dark:border-blue-900/40" },
-    deuda: { label: "Deudas", color: "text-rose-600", bg: "bg-rose-50 dark:bg-rose-950/20", border: "border-rose-100 dark:border-rose-900/40" },
+    deuda: { label: "Deudas Vencidas", color: "text-rose-600", bg: "bg-rose-50 dark:bg-rose-950/20", border: "border-rose-100 dark:border-rose-900/40" },
 };
 
 export default function BoletasAdminPage() {
@@ -254,7 +254,7 @@ export default function BoletasAdminPage() {
                     </div>
                     <p><strong>2. Excel:</strong> Subí el Excel de índice con las columnas:</p>
                     <p className="pl-2">· <strong>Mensual/Anual:</strong> <code>periodo</code>, <code>id_cliente</code>, <code>pdf</code> (+ <code>factura</code> opcional)</p>
-                    <p className="pl-2">· <strong>Deuda:</strong> <code>Periodo</code>, <code>Cod_Cliente</code>, <code>pdf</code></p>
+                    <p className="pl-2">· <strong>Deuda Vencida:</strong> <code>Periodo</code>, <code>Cod_Cliente</code>, <code>pdf</code></p>
                     <p className="text-amber-600 dark:text-amber-400 flex items-center gap-1"><Trash2 size={10} /> Al procesar un nuevo Excel, los registros anteriores del mismo tipo se reemplazan. Los PDFs en el servidor no se tocan.</p>
                 </div>
             </div>

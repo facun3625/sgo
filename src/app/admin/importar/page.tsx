@@ -9,7 +9,7 @@ type TipoFinanciero = "deudas" | "pagoAnual" | "consultor";
 type Seccion = "matriculados" | "financiero" | "banelco" | "registros" | "fiadores" | "usuarios" | "adhesiones" | "suspensiones" | "tribunal";
 
 const FINANCIERO_CONFIG: Record<TipoFinanciero, { label: string; columnas: string[]; ejemplo: string }> = {
-    deudas: { label: "Deudas", columnas: ["expediente", "monto"], ejemplo: "expediente,monto\n564,15000\n792,8500" },
+    deudas: { label: "Deudas Vencidas", columnas: ["expediente", "monto"], ejemplo: "expediente,monto\n564,15000\n792,8500" },
     pagoAnual: { label: "Pago Anual", columnas: ["expediente"], ejemplo: "expediente\n564\n792" },
     consultor: { label: "Consultores", columnas: ["expediente"], ejemplo: "expediente\n564\n792" },
 };
@@ -653,7 +653,7 @@ export default function ImportarPage() {
                     <div className="flex gap-3">
                         {[
                             { key: "cuota", label: "Cuota Mensual", desc: "Marca la cuota del mes como pagada" },
-                            { key: "deuda", label: "Pago de Deuda", desc: "Reduce o elimina la deuda del matriculado" },
+                            { key: "deuda", label: "Pago de Deuda Vencida", desc: "Reduce o elimina la deuda vencida del matriculado" },
                         ].map(opt => (
                             <button key={opt.key} onClick={() => { setBanTipo(opt.key as "cuota" | "deuda"); setBanRegistros([]); setBanResultado(null); setBanDuplicados([]); if (banFileRef.current) banFileRef.current.value = ""; }}
                                 className={`flex-1 p-3 rounded-xl border-2 text-left transition-all ${banTipo === opt.key ? "border-blue-500 bg-blue-50/50 dark:bg-blue-900/10" : "border-slate-100 dark:border-slate-800 hover:border-slate-200"}`}>
@@ -665,7 +665,7 @@ export default function ImportarPage() {
 
                     <div className="p-5 rounded-2xl bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30">
                         <p className="text-[13px] font-bold text-blue-800 dark:text-blue-400 mb-1">
-                            {banTipo === "cuota" ? "Pagos por Banelco / Home Banking — Cuota Mensual" : "Pagos por Banelco / Home Banking — Deudas"}
+                            {banTipo === "cuota" ? "Pagos por Banelco / Home Banking — Cuota Mensual" : "Pagos por Banelco / Home Banking — Deudas Vencidas"}
                         </p>
                         <p className="text-[12px] text-blue-700/70 dark:text-blue-400/60 leading-relaxed">
                             {banTipo === "cuota"
@@ -918,8 +918,8 @@ export default function ImportarPage() {
                     {registros && (
                         <div className="space-y-6">
                             {/* Deudas */}
-                            <RegistroCard title="Deudas" count={registros.deudas.length} icon={<Ban size={13} className="text-red-500" />} color="red">
-                                {registros.deudas.length === 0 ? <EmptyRow text="Sin deudas registradas" /> : (() => {
+                            <RegistroCard title="Deudas Vencidas" count={registros.deudas.length} icon={<Ban size={13} className="text-red-500" />} color="red">
+                                {registros.deudas.length === 0 ? <EmptyRow text="Sin deudas vencidas registradas" /> : (() => {
                                     const slice = registros.deudas.slice(deudasPage * PAGE_SIZE, (deudasPage + 1) * PAGE_SIZE);
                                     const totalPages = Math.ceil(registros.deudas.length / PAGE_SIZE);
                                     return <>

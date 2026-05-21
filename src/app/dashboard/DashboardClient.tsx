@@ -199,7 +199,7 @@ export default function DashboardClient({ session }: { session: SessionPayload }
                             </p>
                             <div className="flex items-center gap-1.5 mt-0.5">
                                 <div className={`w-1.5 h-1.5 rounded-full ${data.totalDeuda > 0 ? "bg-rose-500 animate-pulse" : "bg-emerald-500"}`} />
-                                <p className="text-[10px] font-bold text-slate-400">{data.totalDeuda > 0 ? "Posee deuda" : "Al día"}</p>
+                                <p className="text-[10px] font-bold text-slate-400">{data.totalDeuda > 0 ? "Posee deuda vencida" : "Al día"}</p>
                             </div>
                         </div>
                         <ArrowRight size={14} className="text-slate-300 group-hover:text-emerald-500 group-hover:translate-x-0.5 transition-all shrink-0" />

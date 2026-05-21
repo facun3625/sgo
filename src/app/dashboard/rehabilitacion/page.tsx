@@ -185,7 +185,7 @@ export default function RehabilitacionPage() {
     const paso = solicitud?.pasoActual ?? 1;
     const totalPasos = 5;
 
-    const PASOS = ["Deuda", "Formulario", "Reincidencia", "Adhesión", "Pago rehab."];
+    const PASOS = ["Deuda Vencida", "Formulario", "Reincidencia", "Adhesión", "Pago rehab."];
 
     if (loading) return (
         <div className="flex items-center justify-center min-h-[60vh]">
@@ -253,7 +253,7 @@ export default function RehabilitacionPage() {
                         <p className="text-[13px] font-semibold text-slate-600 dark:text-slate-300">El proceso consta de <strong>5 pasos</strong>:</p>
                         <ol className="space-y-2">
                             {[
-                                "Regularización de deuda (si corresponde)",
+                                "Regularización de deuda vencida (si corresponde)",
                                 "Aceptación del formulario de solicitud",
                                 "Adjuntar certificado de antecedentes penales",
                                 "Adhesión a débito automático",
@@ -345,22 +345,22 @@ export default function RehabilitacionPage() {
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6 space-y-5">
                     <div>
                         <h2 className="text-[15px] font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                            <Banknote size={16} className="text-amber-500" /> Regularización de deuda
+                            <Banknote size={16} className="text-amber-500" /> Regularización de deuda vencida
                         </h2>
-                        <p className="text-[12px] text-slate-400 mt-0.5">Deuda registrada al iniciar el trámite: <strong>{fmt(solicitud.deudaOriginal ?? 0)}</strong></p>
+                        <p className="text-[12px] text-slate-400 mt-0.5">Deuda vencida registrada al iniciar el trámite: <strong>{fmt(solicitud.deudaOriginal ?? 0)}</strong></p>
                     </div>
 
                     {(solicitud.deudaOriginal ?? 0) === 0 ? (
                         <div className="flex items-center gap-3 p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl">
                             <CheckCircle2 size={18} className="text-emerald-500" />
-                            <p className="text-[13px] text-emerald-700 dark:text-emerald-400 font-medium">Sin deuda pendiente. Este paso se completa automáticamente.</p>
+                            <p className="text-[13px] text-emerald-700 dark:text-emerald-400 font-medium">Sin deuda vencida. Este paso se completa automáticamente.</p>
                         </div>
                     ) : (
                         <div className="space-y-4">
                             <div className="flex items-start gap-2 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-xl border border-blue-100 dark:border-blue-900/30">
                                 <Info size={14} className="text-blue-500 flex-shrink-0 mt-0.5" />
                                 <p className="text-[12px] text-blue-700 dark:text-blue-400">
-                                    Si abonaste la deuda por MercadoPago, seleccioná esa opción y verificaremos automáticamente.
+                                    Si abonaste la deuda vencida por MercadoPago, seleccioná esa opción y verificaremos automáticamente.
                                     Si pagaste por transferencia o efectivo, adjuntá el comprobante.
                                 </p>
                             </div>
