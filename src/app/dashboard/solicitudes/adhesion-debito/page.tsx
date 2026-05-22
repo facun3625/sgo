@@ -13,7 +13,6 @@ import {
     Loader2,
     ArrowLeft,
     Info,
-    X,
     AlertCircle,
     Clock,
     Banknote
@@ -29,8 +28,6 @@ export default function AdhesionDebitoPage() {
     const [existingAdhesion, setExistingAdhesion] = useState<{ pending: boolean; approved: boolean; cancelacionPendiente: boolean; rejected: boolean; motivoRechazo: string | null }>({ pending: false, approved: false, cancelacionPendiente: false, rejected: false, motivoRechazo: null });
     const [loadingInitial, setLoadingInitial] = useState(true);
     const [showChangeForm, setShowChangeForm] = useState(false);
-    const [cancelLoading, setCancelLoading] = useState(false);
-    const [cancelSubmitted, setCancelSubmitted] = useState(false);
 
     useEffect(() => {
         const checkStatus = async () => {
@@ -115,23 +112,6 @@ export default function AdhesionDebitoPage() {
             alert("Error de conexión. Reintente por favor.");
         } finally {
             setLoading(false);
-        }
-    };
-
-    const handleCancelacion = async () => {
-        setCancelLoading(true);
-        try {
-            const res = await fetch("/api/user/adhesion-debito/cancelar", { method: "POST" });
-            if (res.ok) {
-                setCancelSubmitted(true);
-            } else {
-                const err = await res.json();
-                alert(`Error: ${err.error}`);
-            }
-        } catch {
-            alert("Error de conexión. Reintente por favor.");
-        } finally {
-            setCancelLoading(false);
         }
     };
 
@@ -250,54 +230,25 @@ export default function AdhesionDebitoPage() {
 
                 {!loadingInitial && existingAdhesion.approved && !showChangeForm && (
                     <div className="space-y-6 animate-slide-up">
-                        {(cancelSubmitted || existingAdhesion.cancelacionPendiente) ? (
-                            <div className="p-8 rounded-[32px] bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 flex flex-col md:flex-row items-center gap-6">
-                                <div className="w-16 h-16 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-lg shadow-amber-500/20 shrink-0">
-                                    <Clock size={32} />
-                                </div>
-                                <div className="space-y-1 text-center md:text-left">
-                                    <h3 className="text-amber-900 dark:text-amber-400 font-bold text-xl tracking-tight">Cancelación en Trámite</h3>
-                                    <p className="text-amber-700/70 dark:text-amber-400/60 text-sm font-medium">Tu solicitud de cancelación de débito automático está siendo procesada. Te notificaremos cuando sea resuelta.</p>
-                                </div>
+                        <div className="p-8 rounded-[32px] bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 flex flex-col md:flex-row items-center gap-6">
+                            <div className="w-16 h-16 rounded-2xl bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/20 shrink-0">
+                                <CheckCircle2 size={32} />
                             </div>
-                        ) : (
-                            <>
-                                <div className="p-8 rounded-[32px] bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 flex flex-col md:flex-row items-center gap-6">
-                                    <div className="w-16 h-16 rounded-2xl bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/20 shrink-0">
-                                        <CheckCircle2 size={32} />
-                                    </div>
-                                    <div className="space-y-1 text-center md:text-left flex-1">
-                                        <h3 className="text-emerald-900 dark:text-emerald-400 font-bold text-xl tracking-tight">Ya se encuentra Adherido</h3>
-                                        <p className="text-emerald-700/70 dark:text-emerald-400/60 text-sm font-medium">Actualmente se encuentra adherido al débito automático.</p>
-                                    </div>
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <button
-                                        onClick={() => setShowChangeForm(true)}
-                                        className="p-6 rounded-[24px] border-2 border-[#063f68]/20 dark:border-blue-500/20 bg-blue-50/50 dark:bg-blue-500/5 hover:border-[#063f68] dark:hover:border-blue-500 text-left transition-all group"
-                                    >
-                                        <div className="w-10 h-10 rounded-xl bg-[#063f68] text-white flex items-center justify-center mb-4">
-                                            <CreditCard size={20} />
-                                        </div>
-                                        <h4 className="font-bold text-slate-900 dark:text-white">Cambiar método de pago</h4>
-                                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Actualizá tu CBU o tarjeta vinculada.</p>
-                                    </button>
-                                    <button
-                                        onClick={handleCancelacion}
-                                        disabled={cancelLoading}
-                                        className="p-6 rounded-[24px] border-2 border-rose-200 dark:border-rose-900/30 bg-rose-50/50 dark:bg-rose-900/10 hover:border-rose-400 dark:hover:border-rose-700 text-left transition-all group disabled:opacity-50"
-                                    >
-                                        <div className="w-10 h-10 rounded-xl bg-rose-500 text-white flex items-center justify-center mb-4">
-                                            <X size={20} />
-                                        </div>
-                                        <h4 className="font-bold text-rose-700 dark:text-rose-400">Solicitar cancelación</h4>
-                                        <p className="text-sm text-rose-500/70 dark:text-rose-400/60 mt-1">
-                                            {cancelLoading ? "Enviando solicitud..." : "Solicitá la baja del débito automático."}
-                                        </p>
-                                    </button>
-                                </div>
-                            </>
-                        )}
+                            <div className="space-y-1 text-center md:text-left flex-1">
+                                <h3 className="text-emerald-900 dark:text-emerald-400 font-bold text-xl tracking-tight">Ya se encuentra Adherido</h3>
+                                <p className="text-emerald-700/70 dark:text-emerald-400/60 text-sm font-medium">Actualmente se encuentra adherido al débito automático.</p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => setShowChangeForm(true)}
+                            className="w-full md:w-auto p-6 rounded-[24px] border-2 border-[#063f68]/20 dark:border-blue-500/20 bg-blue-50/50 dark:bg-blue-500/5 hover:border-[#063f68] dark:hover:border-blue-500 text-left transition-all group"
+                        >
+                            <div className="w-10 h-10 rounded-xl bg-[#063f68] text-white flex items-center justify-center mb-4">
+                                <CreditCard size={20} />
+                            </div>
+                            <h4 className="font-bold text-slate-900 dark:text-white">Cambiar método de pago</h4>
+                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Actualizá tu CBU o tarjeta vinculada.</p>
+                        </button>
                     </div>
                 )}
 
