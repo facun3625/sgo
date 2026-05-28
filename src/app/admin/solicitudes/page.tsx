@@ -106,6 +106,12 @@ export default function AdminSolicitudesPage() {
     const [deleting, setDeleting] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    // Jurisprudencia: multi-archivo + texto
+    const [jurisTexto, setJurisTexto] = useState("");
+    const [jurisArchivos, setJurisArchivos] = useState<{ url: string; nombre: string }[]>([]);
+    const [uploadingJuris, setUploadingJuris] = useState(false);
+    const jurisFileRef = useRef<HTMLInputElement>(null);
+
     const load = useCallback(async () => {
         setLoading(true);
         try {
@@ -163,6 +169,8 @@ export default function AdminSolicitudesPage() {
         setUsuarioInput("");
         setMotivoInput("");
         setCatastroRejecting(false);
+        setJurisTexto("");
+        setJurisArchivos([]);
     }, [selected]);
 
     // ── filtering ────────────────────────────────────────────────────────────
@@ -253,6 +261,34 @@ export default function AdminSolicitudesPage() {
         } finally {
             setUploadingFile(false);
         }
+    }
+
+    async function handleJurisFileAdd(e: React.ChangeEvent<HTMLInputElement>) {
+        if (!selected) return;
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setUploadingJuris(true);
+        try {
+            const fd = new FormData();
+            fd.append("id", String(selected.id));
+            fd.append("file", file);
+            const res = await fetch("/api/admin/solicitudes/upload", { method: "POST", body: fd });
+            if (!res.ok) throw new Error();
+            const { url } = await res.json();
+            setJurisArchivos(prev => [...prev, { url, nombre: file.name }]);
+        } catch {
+            showToast("Error al subir el archivo", "error");
+        } finally {
+            setUploadingJuris(false);
+            if (jurisFileRef.current) jurisFileRef.current.value = "";
+        }
+    }
+
+    async function handleJurisCompletar() {
+        await doAction("jurisprudencia", {
+            texto: jurisTexto,
+            adjuntos: JSON.stringify(jurisArchivos.map(a => a.url)),
+        });
     }
 
     // ── open panel ───────────────────────────────────────────────────────────
@@ -752,29 +788,54 @@ export default function AdminSolicitudesPage() {
                                 </div>
                             )}
 
-                            {/* Jurisprudencia: upload PDF */}
+                            {/* Jurisprudencia: texto + múltiples archivos */}
                             {selected.tipo.includes("Jurisprudencia") && selected.estado === "pendiente" && (
-                                <div className="space-y-2">
-                                    <label className="text-[12px] font-semibold text-slate-500 dark:text-slate-400">
-                                        Adjuntar respuesta PDF
-                                    </label>
-                                    <input
-                                        ref={fileInputRef}
-                                        type="file"
-                                        accept="application/pdf"
-                                        onChange={handleFileUpload}
-                                        className="hidden"
+                                <div className="space-y-3">
+                                    <label className="text-[12px] font-semibold text-slate-500 dark:text-slate-400">Respuesta de Jurisprudencia</label>
+
+                                    {/* Texto de respuesta */}
+                                    <textarea
+                                        value={jurisTexto}
+                                        onChange={e => setJurisTexto(e.target.value)}
+                                        placeholder="Escribí la respuesta o indicaciones para el matriculado (opcional)..."
+                                        rows={3}
+                                        className="w-full px-3 py-2.5 text-[13px] rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 resize-none focus:outline-none focus:ring-2 focus:ring-teal-300/40 placeholder:text-slate-400"
                                     />
+
+                                    {/* Archivos adjuntos */}
+                                    <input ref={jurisFileRef} type="file" onChange={handleJurisFileAdd} className="hidden" />
                                     <button
-                                        onClick={() => fileInputRef.current?.click()}
-                                        disabled={uploadingFile || submitting}
+                                        onClick={() => jurisFileRef.current?.click()}
+                                        disabled={uploadingJuris || submitting}
                                         className="w-full flex items-center justify-center gap-2 h-10 border-2 border-dashed border-teal-300 dark:border-teal-700 text-teal-600 dark:text-teal-400 rounded-xl text-[13px] font-semibold hover:bg-teal-50 dark:hover:bg-teal-900/10 disabled:opacity-40 transition-all"
                                     >
-                                        {uploadingFile || submitting
-                                            ? <Loader2 size={14} className="animate-spin" />
-                                            : <Upload size={14} />
-                                        }
-                                        {uploadingFile ? "Subiendo..." : "Seleccionar PDF de respuesta"}
+                                        {uploadingJuris ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
+                                        {uploadingJuris ? "Subiendo..." : "Adjuntar archivo"}
+                                    </button>
+
+                                    {/* Lista de archivos cargados */}
+                                    {jurisArchivos.length > 0 && (
+                                        <div className="space-y-1.5">
+                                            {jurisArchivos.map((a, i) => (
+                                                <div key={i} className="flex items-center justify-between gap-2 px-3 py-2 bg-teal-50 dark:bg-teal-900/20 border border-teal-100 dark:border-teal-900/30 rounded-xl">
+                                                    <span className="text-[12px] text-teal-700 dark:text-teal-400 font-medium truncate">{a.nombre}</span>
+                                                    <button onClick={() => setJurisArchivos(prev => prev.filter((_, j) => j !== i))}
+                                                        className="text-slate-400 hover:text-red-500 transition-colors flex-shrink-0">
+                                                        <Trash2 size={13} />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {/* Botón completar */}
+                                    <button
+                                        onClick={handleJurisCompletar}
+                                        disabled={submitting || uploadingJuris || (jurisArchivos.length === 0 && !jurisTexto.trim())}
+                                        className="w-full flex items-center justify-center gap-2 h-10 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-[13px] font-bold disabled:opacity-40 transition-all"
+                                    >
+                                        {submitting ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
+                                        Completar y enviar respuesta
                                     </button>
                                 </div>
                             )}

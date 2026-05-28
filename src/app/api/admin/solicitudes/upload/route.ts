@@ -22,7 +22,8 @@ export async function POST(req: NextRequest) {
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
-    const filename = `juris-resp-${id}-${Date.now()}.pdf`;
+    const ext = path.extname(file.name) || ".pdf";
+    const filename = `juris-resp-${id}-${Date.now()}${ext}`;
     const dir = path.join(process.cwd(), "public", "uploads", "respuestas", "jurisprudencia");
 
     await mkdir(dir, { recursive: true });

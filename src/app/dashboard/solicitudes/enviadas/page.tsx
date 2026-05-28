@@ -294,12 +294,29 @@ function SolicitudCard({ s, isFav, onToggleFav, getStatusStyle }: {
                                     </span>
                                 </div>
                             )}
-                            {s.tipo.includes("Jurisprudencia") && s.adjunto && (
-                                <a href={s.adjunto} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}
-                                    className="flex items-center gap-2 px-3 py-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-900/30 rounded-xl hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-all">
-                                    <Paperclip size={13} className="text-emerald-500 shrink-0" />
-                                    <span className="text-[12px] text-emerald-700 dark:text-emerald-300 font-medium">Ver documento adjunto</span>
-                                </a>
+                            {s.tipo.includes("Jurisprudencia") && (
+                                <>
+                                    {s.detalles?.respuestaTexto && (
+                                        <div className="flex items-start gap-2 px-3 py-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-900/30 rounded-xl">
+                                            <CheckCircle2 size={13} className="text-emerald-500 shrink-0 mt-0.5" />
+                                            <span className="text-[12px] text-emerald-700 dark:text-emerald-300 font-medium whitespace-pre-wrap">{s.detalles.respuestaTexto}</span>
+                                        </div>
+                                    )}
+                                    {s.detalles?.adjuntos && Array.isArray(s.detalles.adjuntos) && s.detalles.adjuntos.map((url: string, i: number) => (
+                                        <a key={i} href={url} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}
+                                            className="flex items-center gap-2 px-3 py-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-900/30 rounded-xl hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-all">
+                                            <Paperclip size={13} className="text-emerald-500 shrink-0" />
+                                            <span className="text-[12px] text-emerald-700 dark:text-emerald-300 font-medium">Documento adjunto {s.detalles.adjuntos.length > 1 ? i + 1 : ""}</span>
+                                        </a>
+                                    ))}
+                                    {!s.detalles?.adjuntos && s.adjunto && (
+                                        <a href={s.adjunto} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}
+                                            className="flex items-center gap-2 px-3 py-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-900/30 rounded-xl hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-all">
+                                            <Paperclip size={13} className="text-emerald-500 shrink-0" />
+                                            <span className="text-[12px] text-emerald-700 dark:text-emerald-300 font-medium">Ver documento adjunto</span>
+                                        </a>
+                                    )}
+                                </>
                             )}
                         </>
                     )}

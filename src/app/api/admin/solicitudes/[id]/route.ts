@@ -113,6 +113,35 @@ export async function PATCH(
         return NextResponse.json(updated);
     }
 
+    if (action === "jurisprudencia") {
+        const { texto, adjuntos: adjuntosStr } = body;
+        const adjuntos: string[] = adjuntosStr ? JSON.parse(adjuntosStr) : [];
+        const newDetalles = {
+            ...currentDetalles,
+            respuestaTexto: texto?.trim() || null,
+            adjuntos,
+        };
+        const updated = await prisma.solicitud.update({
+            where: { id: parseInt(id) },
+            data: {
+                estado: "completada",
+                detalles: newDetalles,
+                adjunto: adjuntos[0] ?? null,
+            },
+        });
+        await prisma.notificacion.create({
+            data: {
+                expediente: solicitud.expediente,
+                titulo: solicitud.tipo,
+                mensaje: texto?.trim()
+                    ? `Tu solicitud de jurisprudencia fue respondida: ${texto.trim()}`
+                    : `Tu solicitud de jurisprudencia fue procesada. Revisá los documentos adjuntos en la sección de trámites.`,
+                tipo: "tramite",
+            },
+        });
+        return NextResponse.json(updated);
+    }
+
     if (action === "suspender") {
         // Aprobar solicitud de suspensión/cancelación → cambiar estado del usuario
         const esCancelacion = solicitud.tipo.toLowerCase().includes("cancelación") || solicitud.tipo.toLowerCase().includes("cancelacion");

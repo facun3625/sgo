@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { BookOpen, FileText, Search, Heart, ExternalLink, Download, Loader2, Library, Star, TrendingUp, Eye, Grid3x3, X } from "lucide-react";
+import { BookOpen, FileText, Search, Heart, ExternalLink, Download, Loader2, Library, Star, TrendingUp, Eye, Grid3x3, X, Globe, Scale } from "lucide-react";
+import Link from "next/link";
 
 interface BibliotecaItem {
     id: number;
@@ -97,7 +98,10 @@ function SectionTitle({ icon, title, subtitle }: { icon: React.ReactNode; title:
     );
 }
 
+type Seccion = "biblioteca" | "sistema" | "jurisprudencia";
+
 export default function BibliotecaPage() {
+    const [seccion, setSeccion] = useState<Seccion>("biblioteca");
     const [items, setItems] = useState<BibliotecaItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
@@ -164,6 +168,59 @@ export default function BibliotecaPage() {
                 </h1>
                 <p className="text-slate-400 text-sm mt-0.5">Libros y jurisprudencia del CPASF</p>
             </div>
+
+            {/* Tabs desplazables */}
+            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                {([
+                    { key: "biblioteca", label: "Biblioteca Digital", icon: <Library size={14} /> },
+                    { key: "sistema", label: "Sistema de Biblioteca", icon: <Globe size={14} /> },
+                    { key: "jurisprudencia", label: "Solicitar Jurisprudencia", icon: <Scale size={14} /> },
+                ] as { key: Seccion; label: string; icon: React.ReactNode }[]).map(tab => (
+                    <button key={tab.key} onClick={() => setSeccion(tab.key)}
+                        className={`flex items-center gap-1.5 px-4 h-9 rounded-xl text-[12px] font-semibold whitespace-nowrap transition-all border flex-shrink-0
+                            ${seccion === tab.key
+                                ? "bg-[#063f68] border-[#063f68] text-white dark:bg-blue-600 dark:border-blue-600"
+                                : "border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"}`}>
+                        {tab.icon} {tab.label}
+                    </button>
+                ))}
+            </div>
+
+            {/* Sección: Sistema de Biblioteca */}
+            {seccion === "sistema" && (
+                <div className="flex flex-col items-center justify-center py-12 space-y-6">
+                    <div className="w-20 h-20 rounded-3xl bg-[#063f68]/10 dark:bg-blue-400/10 flex items-center justify-center">
+                        <Globe size={36} className="text-[#063f68] dark:text-blue-400" />
+                    </div>
+                    <div className="text-center space-y-2 max-w-md">
+                        <h2 className="text-lg font-bold text-slate-800 dark:text-white">Sistema de Biblioteca CASF</h2>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">Accedé al catálogo completo y los servicios de la biblioteca del Colegio de Abogados de Santa Fe.</p>
+                    </div>
+                    <a href="https://www.casf.org.ar/colegio/biblioteca/" target="_blank" rel="noopener noreferrer"
+                        className="flex items-center gap-2 h-12 px-8 bg-[#063f68] hover:bg-[#0a4d7a] dark:bg-blue-600 dark:hover:bg-blue-500 text-white rounded-2xl font-bold text-sm transition-all">
+                        <ExternalLink size={16} /> Ir al Sistema de Biblioteca
+                    </a>
+                </div>
+            )}
+
+            {/* Sección: Solicitar Jurisprudencia */}
+            {seccion === "jurisprudencia" && (
+                <div className="flex flex-col items-center justify-center py-12 space-y-6">
+                    <div className="w-20 h-20 rounded-3xl bg-teal-50 dark:bg-teal-900/20 flex items-center justify-center">
+                        <Scale size={36} className="text-teal-600 dark:text-teal-400" />
+                    </div>
+                    <div className="text-center space-y-2 max-w-md">
+                        <h2 className="text-lg font-bold text-slate-800 dark:text-white">Solicitud de Jurisprudencia</h2>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">Solicitá búsquedas de jurisprudencia específica. El equipo de biblioteca te enviará los resultados a la brevedad.</p>
+                    </div>
+                    <Link href="/dashboard/solicitudes/jurisprudencia"
+                        className="flex items-center gap-2 h-12 px-8 bg-teal-600 hover:bg-teal-700 text-white rounded-2xl font-bold text-sm transition-all">
+                        <Scale size={16} /> Solicitar Jurisprudencia
+                    </Link>
+                </div>
+            )}
+
+            {seccion === "biblioteca" && (<>
 
             {/* Barra de búsqueda y filtros */}
             <div className="flex flex-col md:flex-row gap-3">
@@ -281,6 +338,7 @@ export default function BibliotecaPage() {
                     )}
                 </div>
             )}
+            </>)}
         </div>
     );
 }
