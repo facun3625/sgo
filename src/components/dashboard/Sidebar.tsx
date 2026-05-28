@@ -8,7 +8,7 @@ import {
     CreditCard, IdCard, User, Wallet, FileText, ChevronDown, ChevronRight,
     XOctagon, Banknote, GraduationCap, Calendar, HelpCircle, FolderOpen,
     Home, CheckCircle2, Clock, Newspaper, Library, Cpu, Mail, Megaphone,
-    ShieldCheck, Scale, BookUser, PlayCircle, HandshakeIcon,
+    ShieldCheck, Scale, BookUser, PlayCircle, HandshakeIcon, Globe,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -21,7 +21,7 @@ interface NavItem {
     label: string;
     href?: string;
     color?: string;
-    children?: { label: string; href: string }[];
+    children?: { label: string; href: string; external?: boolean }[];
 }
 
 interface NavGroup {
@@ -46,11 +46,11 @@ const SidebarLink = ({ icon, label, href, active, color, onClose, badge }: {
 
 const SidebarSubmenu = ({ icon, label, color, children, onClose }: {
     icon: React.ReactNode; label: string; color?: string;
-    children: { label: string; href: string }[]; onClose?: () => void;
+    children: { label: string; href: string; external?: boolean }[]; onClose?: () => void;
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const pathname = usePathname();
-    const anyActive = children.some(c => pathname === c.href);
+    const anyActive = children.some(c => !c.external && pathname === c.href);
 
     return (
         <div className="mb-0.5">
@@ -68,13 +68,20 @@ const SidebarSubmenu = ({ icon, label, color, children, onClose }: {
             <div className={`grid transition-all duration-300 ease-in-out ${isOpen ? "grid-rows-[1fr] opacity-100 mt-0.5" : "grid-rows-[0fr] opacity-0"}`}>
                 <div className="overflow-hidden">
                     <div className="ml-5 border-l border-slate-200 dark:border-slate-800 pl-3.5">
-                        {children.map((child, i) => (
-                            <Link key={i} href={child.href} onClick={onClose}
-                                className={`block py-1.5 text-[13px] font-normal transition-all duration-200 hover:translate-x-1
-                                    ${pathname === child.href ? "text-[#063f68] dark:text-blue-400 font-semibold" : "text-gray-400 dark:text-white/60 hover:text-[#063f68] dark:hover:text-white"}`}>
-                                {child.label}
-                            </Link>
-                        ))}
+                        {children.map((child, i) =>
+                            child.external ? (
+                                <a key={i} href={child.href} target="_blank" rel="noopener noreferrer"
+                                    className="flex items-center gap-1 py-1.5 text-[13px] font-normal transition-all duration-200 hover:translate-x-1 text-gray-400 dark:text-white/60 hover:text-[#063f68] dark:hover:text-white">
+                                    {child.label} <Globe size={10} className="opacity-50 flex-shrink-0" />
+                                </a>
+                            ) : (
+                                <Link key={i} href={child.href} onClick={onClose}
+                                    className={`block py-1.5 text-[13px] font-normal transition-all duration-200 hover:translate-x-1
+                                        ${pathname === child.href ? "text-[#063f68] dark:text-blue-400 font-semibold" : "text-gray-400 dark:text-white/60 hover:text-[#063f68] dark:hover:text-white"}`}>
+                                    {child.label}
+                                </Link>
+                            )
+                        )}
                     </div>
                 </div>
             </div>
@@ -139,7 +146,14 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
                 { icon: <GraduationCap />, label: "Cursos", href: "/dashboard/cursos", color: "text-pink-500" },
                 { icon: <Calendar />, label: "Calendario", href: "/dashboard/calendario", color: "text-orange-500" },
                 { icon: <Cpu />, label: "Ventas", href: "/dashboard/ventas", color: "text-violet-500" },
-                { icon: <Library />, label: "Biblioteca", href: "/dashboard/biblioteca", color: "text-[#063f68] dark:text-blue-400" },
+                {
+                    icon: <Library />, label: "Biblioteca", color: "text-[#063f68] dark:text-blue-400",
+                    children: [
+                        { label: "Sistema de Biblioteca", href: "https://www.casf.org.ar/colegio/biblioteca/", external: true },
+                        { label: "Solicitar Jurisprudencia", href: "/dashboard/solicitudes/jurisprudencia" },
+                        { label: "Biblioteca Digital", href: "/dashboard/biblioteca" },
+                    ],
+                },
                 { icon: <FolderOpen />, label: "Repositorio de Archivos", href: "/dashboard/archivos", color: "text-indigo-500" },
                 { icon: <HelpCircle />, label: "Preguntas Frecuentes", href: "/dashboard/faq", color: "text-slate-400" },
                 { icon: <PlayCircle />, label: "Tutoriales", href: "/dashboard/tutoriales", color: "text-pink-400" },
