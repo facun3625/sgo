@@ -5,8 +5,9 @@ import {
     ShieldOff, ShieldCheck, Search, Loader2, X,
     CheckCircle2, XCircle, History, ChevronDown, ChevronUp,
     AlertTriangle, Clock, RefreshCw, FileText, ChevronRight, Inbox,
-    Tag, Plus, Pencil, Trash2, Check, ToggleLeft, ToggleRight,
+    Tag, Plus, Pencil, Trash2, Check, ToggleLeft, ToggleRight, FileSpreadsheet, Upload,
 } from "lucide-react";
+import * as XLSX from "xlsx";
 import { useToast } from "@/components/ui/Toast";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -153,6 +154,14 @@ export default function SuspensionesPage() {
     const [fechaInicio, setFechaInicio] = useState("");
     const [fechaFin, setFechaFin] = useState("");
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+    // ── Importar masivo ──
+    type ImportRow = { expediente: string; status: "habilitado" | "suspendido" | "no_encontrado" | "cargando" };
+    const [importOpen, setImportOpen] = useState(false);
+    const [importRows, setImportRows] = useState<ImportRow[]>([]);
+    const [importProcessing, setImportProcessing] = useState(false);
+    const [importResult, setImportResult] = useState<{ habilitados: number; yaActivos: number; noEncontrados: string[] } | null>(null);
+    const importFileRef = useRef<HTMLInputElement>(null);
 
     // ── Load ──
 
@@ -408,6 +417,70 @@ export default function SuspensionesPage() {
     const pendientesCount = solicitudes.filter(s => s.estado === "pendiente" || s.estado === "borrador").length;
     const totalSuspendidos = usuarios.filter(u => u.status === "suspended").length;
 
+    function exportarXLSX() {
+        const filas = filtrados.map(u => ({
+            Apellido: u.apellido,
+            Nombre: u.nombre,
+            Expediente: u.expediente ?? "",
+            Estado: u.status === "suspended" ? "Suspendido" : u.status === "cancelled" ? "Cancelado" : "Habilitado",
+            "Última acción": u.ultimaAccion?.accion ?? "",
+            Comentario: u.ultimaAccion?.comentario ?? "",
+            "Fecha acción": u.ultimaAccion ? new Date(u.ultimaAccion.createdAt).toLocaleDateString("es-AR") : "",
+            "Admin": u.ultimaAccion?.adminNombre ?? "",
+        }));
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.json_to_sheet(filas);
+        XLSX.utils.book_append_sheet(wb, ws, "Matriculados");
+        const label = filtro === "suspended" ? "suspendidos" : filtro === "active" ? "habilitados" : "todos";
+        XLSX.writeFile(wb, `matriculados_${label}.xlsx`);
+    }
+
+    function handleImportFile(e: React.ChangeEvent<HTMLInputElement>) {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        e.target.value = "";
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const data = new Uint8Array(ev.target!.result as ArrayBuffer);
+            const wb = XLSX.read(data, { type: "array" });
+            const ws = wb.Sheets[wb.SheetNames[0]];
+            const rows: any[] = XLSX.utils.sheet_to_json(ws, { header: 1 });
+            const exps: string[] = [];
+            for (const row of rows) {
+                const cell = String(row[0] ?? "").trim();
+                if (cell && cell.toLowerCase() !== "expediente") exps.push(cell);
+            }
+            const mapped: ImportRow[] = exps.map(exp => {
+                const u = usuarios.find(u => u.expediente === exp || u.cod === exp);
+                if (!u) return { expediente: exp, status: "no_encontrado" as const };
+                return { expediente: exp, status: u.status === "suspended" ? "suspendido" as const : "habilitado" as const };
+            });
+            setImportRows(mapped);
+            setImportResult(null);
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    async function procesarImport() {
+        const aHabilitar = importRows.filter(r => r.status === "suspendido").map(r => r.expediente);
+        if (aHabilitar.length === 0) { showToast("No hay suspendidos en la lista", "error"); return; }
+        setImportProcessing(true);
+        try {
+            const res = await fetch("/api/admin/suspensiones/habilitar-masivo", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ expedientes: importRows.map(r => r.expediente) }),
+            });
+            if (!res.ok) { const e = await res.json(); showToast(e.error ?? "Error", "error"); return; }
+            const result = await res.json();
+            setImportResult(result);
+            showToast(`${result.habilitados} habilitado${result.habilitados !== 1 ? "s" : ""}`, "success");
+            await cargarUsuarios();
+        } finally {
+            setImportProcessing(false);
+        }
+    }
+
     const pedidosFiltrados = useMemo(() =>
         filtroPedidos === "todos" ? pedidos : pedidos.filter(p => p.estado === filtroPedidos),
         [pedidos, filtroPedidos]
@@ -484,8 +557,114 @@ export default function SuspensionesPage() {
                                     {f === "todos" ? "Todos" : f === "active" ? "Habilitados" : "Suspendidos"}
                                 </button>
                             ))}
+                            <button
+                                onClick={exportarXLSX}
+                                disabled={filtrados.length === 0}
+                                className="flex items-center gap-1.5 px-3 h-10 rounded-xl text-[12px] font-semibold border border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 disabled:opacity-40 transition-all">
+                                <FileSpreadsheet size={14} /> Exportar
+                            </button>
+                            <button
+                                onClick={() => { setImportOpen(v => !v); setImportRows([]); setImportResult(null); }}
+                                className={`flex items-center gap-1.5 px-3 h-10 rounded-xl text-[12px] font-semibold border transition-all
+                                    ${importOpen
+                                        ? "bg-[#063f68] border-[#063f68] text-white"
+                                        : "border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"}`}>
+                                <Upload size={14} /> Importar
+                            </button>
                         </div>
                     </div>
+
+                    {/* ── Panel importar masivo ── */}
+                    {importOpen && (
+                        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-5 space-y-4">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-[13px] font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                                        <Upload size={14} className="text-[#063f68]" /> Habilitación masiva por expediente
+                                    </p>
+                                    <p className="text-[11px] text-slate-400 mt-0.5">Subí el listado de matrículas que <span className="font-semibold text-slate-500 dark:text-slate-300">deben estar activas</span>. Si alguna figura suspendida en el sistema, será habilitada automáticamente.</p>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={() => {
+                                            const wb = XLSX.utils.book_new();
+                                            const ws = XLSX.utils.aoa_to_sheet([["Expediente"]]);
+                                            XLSX.utils.book_append_sheet(wb, ws, "Modelo");
+                                            XLSX.writeFile(wb, "modelo_importacion.xlsx");
+                                        }}
+                                        className="flex items-center gap-1.5 px-4 h-9 rounded-xl text-[12px] font-semibold border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                                        <FileSpreadsheet size={13} /> Descargar modelo
+                                    </button>
+                                    <input ref={importFileRef} type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={handleImportFile} />
+                                    <button
+                                        onClick={() => importFileRef.current?.click()}
+                                        className="flex items-center gap-1.5 px-4 h-9 rounded-xl text-[12px] font-semibold bg-[#063f68] text-white hover:bg-[#052d4a] transition-all">
+                                        <FileSpreadsheet size={13} /> Elegir archivo
+                                    </button>
+                                </div>
+                            </div>
+
+                            {importRows.length > 0 && !importResult && (
+                                <>
+                                    <div className="rounded-xl border border-slate-100 dark:border-slate-800 divide-y divide-slate-50 dark:divide-slate-800 max-h-64 overflow-y-auto">
+                                        {importRows.map(r => (
+                                            <div key={r.expediente} className="flex items-center justify-between px-4 py-2.5">
+                                                <span className="text-[12px] font-mono text-slate-700 dark:text-slate-300">{r.expediente}</span>
+                                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full
+                                                    ${r.status === "suspendido" ? "bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400"
+                                                        : r.status === "habilitado" ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400"
+                                                        : "bg-slate-100 dark:bg-slate-800 text-slate-400"}`}>
+                                                    {r.status === "suspendido" ? "Suspendido → habilitará"
+                                                        : r.status === "habilitado" ? "Ya activo"
+                                                        : "No encontrado"}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="flex items-center justify-between pt-1">
+                                        <div className="text-[11px] text-slate-400 space-x-3">
+                                            <span className="text-rose-500 font-semibold">{importRows.filter(r => r.status === "suspendido").length} a habilitar</span>
+                                            <span>{importRows.filter(r => r.status === "habilitado").length} ya activos</span>
+                                            <span>{importRows.filter(r => r.status === "no_encontrado").length} no encontrados</span>
+                                        </div>
+                                        <button
+                                            onClick={procesarImport}
+                                            disabled={importProcessing || importRows.filter(r => r.status === "suspendido").length === 0}
+                                            className="flex items-center gap-1.5 px-4 h-9 rounded-xl text-[12px] font-semibold bg-emerald-500 text-white hover:bg-emerald-600 disabled:opacity-40 transition-all">
+                                            {importProcessing ? <Loader2 size={13} className="animate-spin" /> : <ShieldCheck size={13} />}
+                                            {importProcessing ? "Procesando..." : "Confirmar habilitación"}
+                                        </button>
+                                    </div>
+                                </>
+                            )}
+
+                            {importResult && (
+                                <div className="rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 p-4 space-y-2">
+                                    <p className="text-[13px] font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-2">
+                                        <CheckCircle2 size={14} /> Proceso completado
+                                    </p>
+                                    <div className="text-[12px] text-slate-600 dark:text-slate-300 space-y-1">
+                                        <p><span className="font-semibold text-emerald-600">{importResult.habilitados}</span> matrículas habilitadas</p>
+                                        <p><span className="font-semibold">{importResult.yaActivos}</span> ya estaban activas</p>
+                                        {importResult.noEncontrados.length > 0 && (
+                                            <p><span className="font-semibold text-amber-500">{importResult.noEncontrados.length}</span> no encontrados: {importResult.noEncontrados.join(", ")}</p>
+                                        )}
+                                    </div>
+                                    <button onClick={() => { setImportRows([]); setImportResult(null); }}
+                                        className="text-[11px] text-slate-400 hover:text-slate-600 underline mt-1">
+                                        Importar otro archivo
+                                    </button>
+                                </div>
+                            )}
+
+                            {importRows.length === 0 && !importResult && (
+                                <div className="border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl p-8 text-center">
+                                    <FileSpreadsheet size={28} className="text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+                                    <p className="text-[12px] text-slate-400">Elegí un archivo Excel (.xlsx) con los expedientes en la primera columna.<br/>Los que deban estar activos y figuren suspendidos serán habilitados.</p>
+                                </div>
+                            )}
+                        </div>
+                    )}
 
                     {loadingUsuarios ? (
                         <div className="flex items-center justify-center py-20"><Loader2 size={28} className="animate-spin text-slate-300" /></div>
