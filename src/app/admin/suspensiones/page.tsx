@@ -677,7 +677,10 @@ export default function SuspensionesPage() {
                         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden divide-y divide-slate-50 dark:divide-slate-800/60">
                             {filtrados.map(u => {
                                 const key = u.expediente ?? u.cod;
-                                const isSuspended = u.status === "suspended";
+                                const effectiveStatus = u.tieneUsuario
+                                    ? u.status
+                                    : (u.ultimaAccion?.accion === "suspension" ? "suspended" : u.ultimaAccion?.accion === "cancelacion" ? "cancelled" : "active");
+                                const isSuspended = effectiveStatus === "suspended" || effectiveStatus === "cancelled";
                                 const isExpanded = expandedExp === key;
                                 const historial = historialMap[key];
                                 return (
@@ -709,28 +712,24 @@ export default function SuspensionesPage() {
                                                     className="flex items-center gap-1.5 px-3 h-8 rounded-xl text-[11px] font-bold border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
                                                     <History size={12} /> Historial {isExpanded ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
                                                 </button>
-                                                {u.tieneUsuario && (
+                                                {isSuspended ? (
+                                                    <button
+                                                        onClick={() => { setModalSusp({ expediente: key, nombre: u.nombre, apellido: u.apellido, targetStatus: "active" }); setComentario(""); setSelectedMotivoId(null); }}
+                                                        className="flex items-center gap-1.5 px-3 h-8 rounded-xl text-[11px] font-bold border bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 transition-all">
+                                                        <ShieldCheck size={12} /> Habilitar
+                                                    </button>
+                                                ) : (
                                                     <>
-                                                        {isSuspended ? (
-                                                            <button
-                                                                onClick={() => { setModalSusp({ expediente: key, nombre: u.nombre, apellido: u.apellido, targetStatus: "active" }); setComentario(""); setSelectedMotivoId(null); }}
-                                                                className="flex items-center gap-1.5 px-3 h-8 rounded-xl text-[11px] font-bold border bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 transition-all">
-                                                                <ShieldCheck size={12} /> Habilitar
-                                                            </button>
-                                                        ) : (
-                                                            <>
-                                                                <button
-                                                                    onClick={() => { setModalSusp({ expediente: key, nombre: u.nombre, apellido: u.apellido, targetStatus: "suspended" }); setComentario(""); setSelectedMotivoId(null); }}
-                                                                    className="flex items-center gap-1.5 px-3 h-8 rounded-xl text-[11px] font-bold border bg-rose-50 dark:bg-rose-900/20 border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 hover:bg-rose-100 transition-all">
-                                                                    <ShieldOff size={12} /> Suspender
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => { setModalSusp({ expediente: key, nombre: u.nombre, apellido: u.apellido, targetStatus: "cancelled" }); setComentario(""); setSelectedMotivoId(null); }}
-                                                                    className="flex items-center gap-1.5 px-3 h-8 rounded-xl text-[11px] font-bold border bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800 text-purple-600 dark:text-purple-400 hover:bg-purple-100 transition-all">
-                                                                    <XCircle size={12} /> Cancelar
-                                                                </button>
-                                                            </>
-                                                        )}
+                                                        <button
+                                                            onClick={() => { setModalSusp({ expediente: key, nombre: u.nombre, apellido: u.apellido, targetStatus: "suspended" }); setComentario(""); setSelectedMotivoId(null); }}
+                                                            className="flex items-center gap-1.5 px-3 h-8 rounded-xl text-[11px] font-bold border bg-rose-50 dark:bg-rose-900/20 border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 hover:bg-rose-100 transition-all">
+                                                            <ShieldOff size={12} /> Suspender
+                                                        </button>
+                                                        <button
+                                                            onClick={() => { setModalSusp({ expediente: key, nombre: u.nombre, apellido: u.apellido, targetStatus: "cancelled" }); setComentario(""); setSelectedMotivoId(null); }}
+                                                            className="flex items-center gap-1.5 px-3 h-8 rounded-xl text-[11px] font-bold border bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800 text-purple-600 dark:text-purple-400 hover:bg-purple-100 transition-all">
+                                                            <XCircle size={12} /> Cancelar
+                                                        </button>
                                                     </>
                                                 )}
                                             </div>

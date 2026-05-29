@@ -27,6 +27,13 @@ export async function POST(req: NextRequest) {
             );
         }
 
+        // Chequear si el admin dejó una suspensión en el historial
+        const ultimoHistorial = await prisma.historialMatricula.findFirst({
+            where: { expediente },
+            orderBy: { createdAt: "desc" },
+        });
+        const estaSuspendido = ultimoHistorial?.accion === "suspension" || ultimoHistorial?.accion === "cancelacion";
+
         // Hashear contraseña
         const hashedPassword = await bcrypt.hash(password, 12);
 
@@ -38,7 +45,7 @@ export async function POST(req: NextRequest) {
                 expediente,
                 cod: cod || null,
                 password: hashedPassword,
-                status: "active",
+                status: estaSuspendido ? ultimoHistorial!.accion === "cancelacion" ? "cancelled" : "suspended" : "active",
                 accessLevel: "user",
             },
         });
