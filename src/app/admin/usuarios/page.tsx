@@ -74,7 +74,7 @@ export default function UsuariosAdminPage() {
 
     // Modal nuevo usuario
     const [createModal, setCreateModal] = useState(false);
-    const [createForm, setCreateForm] = useState({ apellido: "", nombre: "", expediente: "", cod: "", email: "", password: "" });
+    const [createForm, setCreateForm] = useState({ apellido: "", nombre: "", expediente: "", cod: "", tomo: "", folio: "", email: "", password: "" });
     const [showPassword, setShowPassword] = useState(false);
     const [creando, setCreando] = useState(false);
 
@@ -217,7 +217,7 @@ export default function UsuariosAdminPage() {
             setUsuarios(prev => [data, ...prev]);
             showToast("Usuario creado", "success");
             setCreateModal(false);
-            setCreateForm({ apellido: "", nombre: "", expediente: "", cod: "", email: "", password: "" });
+            setCreateForm({ apellido: "", nombre: "", expediente: "", cod: "", tomo: "", folio: "", email: "", password: "" });
         } finally { setCreando(false); }
     }
 
@@ -232,10 +232,13 @@ export default function UsuariosAdminPage() {
                 <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
                     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 w-full max-w-md shadow-2xl">
                         <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-800">
-                            <p className="text-[14px] font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                                <UserPlus size={15} className="text-indigo-500" /> Nuevo usuario
-                            </p>
-                            <button onClick={() => setCreateModal(false)} className="text-slate-400 hover:text-slate-600"><X size={16} /></button>
+                            <div>
+                                <p className="text-[14px] font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                                    <UserPlus size={15} className="text-indigo-500" /> Nuevo usuario
+                                </p>
+                                <p className="text-[11px] text-slate-400 mt-0.5">Se creará en <span className="font-semibold text-slate-500 dark:text-slate-300">Datos</span> y en <span className="font-semibold text-slate-500 dark:text-slate-300">Cuentas Registradas</span>. El matriculado deberá completar sus datos al ingresar.</p>
+                            </div>
+                            <button onClick={() => setCreateModal(false)} className="text-slate-400 hover:text-slate-600 ml-4 flex-shrink-0"><X size={16} /></button>
                         </div>
                         <div className="p-5 space-y-4">
                             <div className="grid grid-cols-2 gap-3">
@@ -252,7 +255,7 @@ export default function UsuariosAdminPage() {
                                         className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-[13px] focus:outline-none focus:ring-2 focus:ring-indigo-300/50" />
                                 </div>
                             </div>
-                            <div className="grid grid-cols-2 gap-3">
+                            <div className="grid grid-cols-3 gap-3">
                                 <div className="space-y-1">
                                     <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">Expediente</label>
                                     <input value={createForm.expediente} onChange={e => setCreateForm(p => ({ ...p, expediente: e.target.value }))}
@@ -260,17 +263,31 @@ export default function UsuariosAdminPage() {
                                         className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-[13px] focus:outline-none focus:ring-2 focus:ring-indigo-300/50" />
                                 </div>
                                 <div className="space-y-1">
+                                    <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">Tomo</label>
+                                    <input value={createForm.tomo} onChange={e => setCreateForm(p => ({ ...p, tomo: e.target.value }))}
+                                        placeholder="5"
+                                        className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-[13px] focus:outline-none focus:ring-2 focus:ring-indigo-300/50" />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">Folio</label>
+                                    <input value={createForm.folio} onChange={e => setCreateForm(p => ({ ...p, folio: e.target.value }))}
+                                        placeholder="263"
+                                        className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-[13px] focus:outline-none focus:ring-2 focus:ring-indigo-300/50" />
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="space-y-1">
                                     <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">N° Cliente</label>
                                     <input value={createForm.cod} onChange={e => setCreateForm(p => ({ ...p, cod: e.target.value }))}
                                         placeholder="Auto si vacío"
                                         className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-[13px] focus:outline-none focus:ring-2 focus:ring-indigo-300/50" />
                                 </div>
-                            </div>
-                            <div className="space-y-1">
-                                <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">Email</label>
-                                <input type="email" value={createForm.email} onChange={e => setCreateForm(p => ({ ...p, email: e.target.value }))}
-                                    placeholder="juan@ejemplo.com"
-                                    className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-[13px] focus:outline-none focus:ring-2 focus:ring-indigo-300/50" />
+                                <div className="space-y-1">
+                                    <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">Email</label>
+                                    <input type="email" value={createForm.email} onChange={e => setCreateForm(p => ({ ...p, email: e.target.value }))}
+                                        placeholder="juan@ejemplo.com"
+                                        className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-[13px] focus:outline-none focus:ring-2 focus:ring-indigo-300/50" />
+                                </div>
                             </div>
                             <div className="space-y-1">
                                 <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">Contraseña <span className="text-rose-400">*</span></label>
@@ -321,7 +338,7 @@ export default function UsuariosAdminPage() {
                     </div>
                 </div>
                 <button
-                    onClick={() => { setCreateModal(true); setCreateForm({ apellido: "", nombre: "", expediente: "", cod: "", email: "", password: "" }); setShowPassword(false); }}
+                    onClick={() => { setCreateModal(true); setCreateForm({ apellido: "", nombre: "", expediente: "", cod: "", tomo: "", folio: "", email: "", password: "" }); setShowPassword(false); }}
                     className="flex items-center gap-2 px-4 h-10 rounded-xl text-[13px] font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition-all self-start md:self-auto">
                     <UserPlus size={15} /> Nuevo usuario
                 </button>

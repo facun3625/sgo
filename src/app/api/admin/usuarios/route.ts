@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
     if (!session || !isAdmin(session.accessLevel))
         return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
-    const { apellido, nombre, expediente, cod: codInput, email, password } = await req.json();
+    const { apellido, nombre, expediente, cod: codInput, tomo, folio, email, password } = await req.json();
 
     if (!apellido?.trim() || !nombre?.trim())
         return NextResponse.json({ error: "Apellido y nombre son requeridos" }, { status: 400 });
@@ -66,6 +66,8 @@ export async function POST(req: NextRequest) {
                 apellido: apellido.trim().toUpperCase(),
                 nombre: nombre.trim().toUpperCase(),
                 expediente: expediente?.trim() || null,
+                tomo: tomo?.trim() || null,
+                folio: folio?.trim() || null,
                 emailLegal: email?.trim() || null,
             },
         }),
@@ -93,7 +95,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
         cod: dato.cod,
         expediente: dato.expediente,
-        folio: null, tomo: null, tipo: null,
+        folio: dato.folio, tomo: dato.tomo, tipo: null,
         nombre: dato.nombre,
         apellido: dato.apellido,
         emailLegal: dato.emailLegal,
