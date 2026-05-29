@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import {
     Users, Search, Loader2,
-    Send, X, CheckCircle2, XCircle, Pencil, Trash2, ShieldAlert
+    Send, X, CheckCircle2, XCircle, Pencil, Trash2, ShieldAlert, UserPlus, Eye, EyeOff
 } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 
@@ -71,6 +71,12 @@ export default function UsuariosAdminPage() {
     const [msgMensaje, setMsgMensaje] = useState("");
     const [enviando, setEnviando] = useState(false);
     const tituloRef = useRef<HTMLInputElement>(null);
+
+    // Modal nuevo usuario
+    const [createModal, setCreateModal] = useState(false);
+    const [createForm, setCreateForm] = useState({ apellido: "", nombre: "", expediente: "", cod: "", email: "", password: "" });
+    const [showPassword, setShowPassword] = useState(false);
+    const [creando, setCreando] = useState(false);
 
     // Modal editar datos
     const [editModal, setEditModal] = useState<DatoCompleto | null>(null);
@@ -197,11 +203,105 @@ export default function UsuariosAdminPage() {
         finally { setEnviando(false); }
     }
 
+    async function crearUsuario() {
+        if (!createForm.apellido.trim() || !createForm.nombre.trim() || !createForm.password.trim()) return;
+        setCreando(true);
+        try {
+            const res = await fetch("/api/admin/usuarios", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(createForm),
+            });
+            const data = await res.json();
+            if (!res.ok) { showToast(data.error ?? "Error al crear", "error"); return; }
+            setUsuarios(prev => [data, ...prev]);
+            showToast("Usuario creado", "success");
+            setCreateModal(false);
+            setCreateForm({ apellido: "", nombre: "", expediente: "", cod: "", email: "", password: "" });
+        } finally { setCreando(false); }
+    }
+
     const activos = usuarios.filter(u => u.status === "active").length;
     const suspendidos = usuarios.filter(u => u.status === "suspended").length;
 
     return (
         <div className="p-6 md:p-10 space-y-6">
+
+            {/* Modal nuevo usuario */}
+            {createModal && (
+                <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 w-full max-w-md shadow-2xl">
+                        <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-800">
+                            <p className="text-[14px] font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                                <UserPlus size={15} className="text-indigo-500" /> Nuevo usuario
+                            </p>
+                            <button onClick={() => setCreateModal(false)} className="text-slate-400 hover:text-slate-600"><X size={16} /></button>
+                        </div>
+                        <div className="p-5 space-y-4">
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="space-y-1">
+                                    <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">Apellido <span className="text-rose-400">*</span></label>
+                                    <input value={createForm.apellido} onChange={e => setCreateForm(p => ({ ...p, apellido: e.target.value }))}
+                                        placeholder="GARCÍA"
+                                        className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-[13px] focus:outline-none focus:ring-2 focus:ring-indigo-300/50" />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">Nombre <span className="text-rose-400">*</span></label>
+                                    <input value={createForm.nombre} onChange={e => setCreateForm(p => ({ ...p, nombre: e.target.value }))}
+                                        placeholder="JUAN"
+                                        className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-[13px] focus:outline-none focus:ring-2 focus:ring-indigo-300/50" />
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="space-y-1">
+                                    <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">Expediente</label>
+                                    <input value={createForm.expediente} onChange={e => setCreateForm(p => ({ ...p, expediente: e.target.value }))}
+                                        placeholder="12345"
+                                        className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-[13px] focus:outline-none focus:ring-2 focus:ring-indigo-300/50" />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">N° Cliente</label>
+                                    <input value={createForm.cod} onChange={e => setCreateForm(p => ({ ...p, cod: e.target.value }))}
+                                        placeholder="Auto si vacío"
+                                        className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-[13px] focus:outline-none focus:ring-2 focus:ring-indigo-300/50" />
+                                </div>
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">Email</label>
+                                <input type="email" value={createForm.email} onChange={e => setCreateForm(p => ({ ...p, email: e.target.value }))}
+                                    placeholder="juan@ejemplo.com"
+                                    className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-[13px] focus:outline-none focus:ring-2 focus:ring-indigo-300/50" />
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">Contraseña <span className="text-rose-400">*</span></label>
+                                <div className="relative">
+                                    <input type={showPassword ? "text" : "password"} value={createForm.password} onChange={e => setCreateForm(p => ({ ...p, password: e.target.value }))}
+                                        placeholder="Mínimo 6 caracteres"
+                                        className="w-full h-9 px-3 pr-9 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-[13px] focus:outline-none focus:ring-2 focus:ring-indigo-300/50" />
+                                    <button type="button" onClick={() => setShowPassword(v => !v)}
+                                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                                        {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="flex justify-end gap-2 p-5 pt-0">
+                            <button onClick={() => setCreateModal(false)}
+                                className="px-4 h-9 rounded-xl text-[12px] font-semibold border border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={crearUsuario}
+                                disabled={creando || !createForm.apellido.trim() || !createForm.nombre.trim() || !createForm.password.trim()}
+                                className="flex items-center gap-1.5 px-4 h-9 rounded-xl text-[12px] font-semibold bg-indigo-600 hover:bg-indigo-700 text-white disabled:opacity-40 transition-all">
+                                {creando ? <Loader2 size={13} className="animate-spin" /> : <UserPlus size={13} />}
+                                {creando ? "Creando..." : "Crear usuario"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
@@ -220,6 +320,11 @@ export default function UsuariosAdminPage() {
                         )}
                     </div>
                 </div>
+                <button
+                    onClick={() => { setCreateModal(true); setCreateForm({ apellido: "", nombre: "", expediente: "", cod: "", email: "", password: "" }); setShowPassword(false); }}
+                    className="flex items-center gap-2 px-4 h-10 rounded-xl text-[13px] font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition-all self-start md:self-auto">
+                    <UserPlus size={15} /> Nuevo usuario
+                </button>
             </div>
 
             {/* Filtros */}
