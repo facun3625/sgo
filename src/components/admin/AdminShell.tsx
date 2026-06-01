@@ -271,6 +271,7 @@ export default function AdminShell({ session, image, permisos, children }: Admin
                                         { href: "/admin/config/pagos", label: "Métodos de Pago", icon: KeyRound, color: "text-[#009ee3]" },
                                         { href: "/admin/config/jus", label: "Valor JUS", icon: Landmark, color: "text-amber-500" },
                                         { href: "/admin/config/smtp", label: "Correo SMTP", icon: Mail, color: "text-sky-500" },
+                                        ...(session.accessLevel === "superadmin" ? [{ href: "/admin/config/sistema", label: "Sistema", icon: ShieldOff, color: "text-red-500" }] : []),
                                     ].map((sub) => {
                                         const active = pathname.startsWith(sub.href);
                                         return (

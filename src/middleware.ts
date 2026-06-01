@@ -6,7 +6,7 @@ const secret = new TextEncoder().encode(
 );
 
 // Routes that only superadmin can access
-const SUPERADMIN_ONLY = ["/admin/config", "/admin/gestionar-admins"];
+const SUPERADMIN_ONLY = ["/admin/config", "/admin/gestionar-admins", "/admin/config/sistema"];
 
 export async function middleware(req: NextRequest) {
     const { pathname } = req.nextUrl;

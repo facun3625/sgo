@@ -153,23 +153,7 @@ export default function ImportarPage() {
     const [matLoading, setMatLoading] = useState(false);
     const [matResultado, setMatResultado] = useState<ResultadoImport | null>(null);
     const [matModo, setMatModo] = useState<"crear" | "actualizar_fecha">("crear");
-    const [matBorrarConfirm, setMatBorrarConfirm] = useState(false);
-    const [matBorrandoLoading, setMatBorrandoLoading] = useState(false);
     const matFileRef = useRef<HTMLInputElement>(null);
-
-    const handleBorrarDatos = async () => {
-        setMatBorrandoLoading(true);
-        try {
-            const res = await fetch("/api/admin/importar/matriculados", { method: "DELETE" });
-            const data = await res.json();
-            if (res.ok) {
-                setMatResultado({ tipo: "success", mensaje: `Se eliminaron ${data.eliminados} registros de la tabla Datos.` });
-            } else {
-                setMatResultado({ tipo: "error", mensaje: data.error ?? "Error al eliminar" });
-            }
-        } catch { setMatResultado({ tipo: "error", mensaje: "Error de conexión" }); }
-        finally { setMatBorrandoLoading(false); setMatBorrarConfirm(false); }
-    };
 
     // Financiero
     const [finTipo, setFinTipo] = useState<TipoFinanciero>("deudas");
@@ -562,36 +546,6 @@ export default function ImportarPage() {
                         </div>
                     </div>
 
-                    {/* Zona de peligro */}
-                    <div className="border border-red-100 dark:border-red-900/30 rounded-2xl overflow-hidden">
-                        <div className="px-5 py-3 bg-red-50/50 dark:bg-red-900/10 flex items-center gap-2">
-                            <Trash2 size={14} className="text-red-500" />
-                            <span className="text-[12px] font-bold text-red-700 dark:text-red-400">Zona peligrosa</span>
-                        </div>
-                        <div className="px-5 py-4 space-y-3">
-                            <p className="text-[12px] text-slate-500 dark:text-slate-400">
-                                Elimina <strong>todos</strong> los registros de la tabla Datos (matriculados). Esta acción es irreversible.
-                            </p>
-                            {!matBorrarConfirm ? (
-                                <button onClick={() => setMatBorrarConfirm(true)}
-                                    className="flex items-center gap-2 px-4 h-9 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 rounded-xl text-[12px] font-bold hover:bg-red-100 dark:hover:bg-red-900/30 transition-all">
-                                    <Trash2 size={13} /> Vaciar tabla Datos
-                                </button>
-                            ) : (
-                                <div className="flex items-center gap-3 flex-wrap">
-                                    <span className="text-[12px] font-bold text-red-600 dark:text-red-400">¿Confirmar? Esta acción no se puede deshacer.</span>
-                                    <button onClick={handleBorrarDatos} disabled={matBorrandoLoading}
-                                        className="flex items-center gap-1.5 px-4 h-9 bg-red-600 text-white rounded-xl text-[12px] font-bold hover:bg-red-700 disabled:opacity-50 transition-all">
-                                        {matBorrandoLoading ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />}
-                                        {matBorrandoLoading ? "Eliminando..." : "Sí, eliminar todo"}
-                                    </button>
-                                    <button onClick={() => setMatBorrarConfirm(false)} className="text-[12px] text-slate-400 hover:text-slate-600">
-                                        Cancelar
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-                    </div>
                 </div>
             )}
 
