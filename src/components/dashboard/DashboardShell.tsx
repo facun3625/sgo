@@ -89,7 +89,7 @@ export default function DashboardShell({ user, children }: DashboardShellProps) 
                         <button onClick={salirImpersonacion} disabled={saliendo}
                             className="flex items-center gap-1.5 px-3 py-1 bg-amber-950/15 hover:bg-amber-950/25 rounded-lg text-[12px] font-bold transition-all whitespace-nowrap">
                             <LogOut size={13} />
-                            {saliendo ? "Saliendo..." : "Volver al admin"}
+                            {saliendo ? "Saliendo..." : "Volver al superadmin"}
                         </button>
                     </div>
                 )}

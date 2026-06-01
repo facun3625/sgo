@@ -16,11 +16,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         select: { image: true, permisos: true }
     });
 
-    // Always read permisos from DB (fresh, not from JWT which may be stale)
     let permisos: string[] = [];
     if (session.accessLevel !== "superadmin") {
         try {
-            permisos = JSON.parse(dbUser?.permisos || "[]");
+            // Si está impersonando, usar permisos del JWT (ya son del admin impersonado)
+            // Si es admin real, leer de DB (siempre fresco)
+            const source = session._impersonando ? session.permisos : JSON.parse(dbUser?.permisos || "[]");
+            permisos = Array.isArray(source) ? source : JSON.parse(source || "[]");
         } catch { permisos = []; }
     }
 
