@@ -91,6 +91,14 @@ export default function ImportarPage() {
     const { tiene, isSuperAdmin } = usePermisos();
     const [seccion, setSeccion] = useState<Seccion>("registros");
     const [periodo, setPeriodo] = useState(getCurrentPeriodo());
+    const [tabsActivas, setTabsActivas] = useState<string[] | null>(null);
+
+    useEffect(() => {
+        fetch("/api/admin/config/importar-tabs")
+            .then(r => r.ok ? r.json() : null)
+            .then(data => { if (data?.tabsActivas) setTabsActivas(data.tabsActivas); })
+            .catch(() => {});
+    }, []);
 
     function triggerDownload(url: string, filename: string) {
         const a = document.createElement("a");
@@ -502,7 +510,10 @@ export default function ImportarPage() {
         { id: "tribunal",     permisoKey: "importar:suspensiones", label: "Trib. Ética",  icon: <FileText size={15} />,      color: "text-amber-600 dark:text-amber-400",  activeColor: "border-amber-500 bg-amber-50/50 dark:bg-amber-900/10" },
     ];
 
-    const tabs = allTabs.filter(t => !t.permisoKey || tiene(t.permisoKey));
+    const tabs = allTabs.filter(t =>
+        (!t.permisoKey || tiene(t.permisoKey)) &&
+        (t.id === "registros" || !tabsActivas || tabsActivas.includes(t.id))
+    );
 
     return (
         <div className="p-6 md:p-8 space-y-6 animate-fade-in">
