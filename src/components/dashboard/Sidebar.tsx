@@ -247,6 +247,13 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
                 ))}
             </div>
 
+            <div className="px-4 pt-3 pb-1">
+                <div className="rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-700/50 px-3 py-2.5 text-[10px] text-slate-400 dark:text-slate-500 leading-relaxed">
+                    <p className="font-semibold text-slate-500 dark:text-slate-400 mb-0.5">Aviso — Migración de sistemas</p>
+                    Hemos realizado una migración de sistemas. Si detecta alguna inconsistencia en sus datos, comuníquese con el Colegio para su corrección.
+                </div>
+            </div>
+
             <div className="p-4 border-t border-slate-100 dark:border-slate-800">
                 <Link href="/dashboard/perfil" onClick={onClose}
                     className="flex items-center gap-3 p-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-800/20 hover:bg-slate-50 dark:hover:bg-slate-800/40 hover:border-slate-200 dark:hover:border-slate-700 transition-all duration-300 group">
