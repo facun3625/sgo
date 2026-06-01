@@ -35,7 +35,8 @@ export const ADMIN_SECCIONES = [
     { key: "boletas",        label: "Boletas SF Servicios",         group: "" },
     { key: "tutoriales",     label: "Tutoriales",                   group: "" },
     // Importar — sub-permisos granulares
-    { key: "importar:matriculados", label: "Matriculados",    group: "Importar" },
+    { key: "importar:matriculados",        label: "Matriculados",        group: "Importar" },
+    { key: "importar:nuevos-matriculados", label: "Nuevos Matriculados", group: "Importar" },
     { key: "importar:financiero",   label: "Financiero",      group: "Importar" },
     { key: "importar:banelco",      label: "Home Banking",    group: "Importar" },
     { key: "importar:fiadores",     label: "Fiadores",        group: "Importar" },

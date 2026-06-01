@@ -6,7 +6,7 @@ import { usePermisos } from "@/lib/permisos-context";
 import * as XLSX from "xlsx";
 
 type TipoFinanciero = "deudas" | "pagoAnual" | "consultor";
-type Seccion = "matriculados" | "financiero" | "banelco" | "registros" | "fiadores" | "usuarios" | "adhesiones" | "suspensiones" | "tribunal";
+type Seccion = "matriculados" | "nuevos-matriculados" | "financiero" | "banelco" | "registros" | "fiadores" | "usuarios" | "adhesiones" | "suspensiones" | "tribunal";
 
 const FINANCIERO_CONFIG: Record<TipoFinanciero, { label: string; columnas: string[]; ejemplo: string }> = {
     deudas: { label: "Deudas Vencidas", columnas: ["expediente", "monto"], ejemplo: "expediente,monto\n564,15000\n792,8500" },
@@ -155,6 +155,12 @@ export default function ImportarPage() {
     const [matModo, setMatModo] = useState<"crear" | "actualizar_fecha">("crear");
     const matFileRef = useRef<HTMLInputElement>(null);
 
+    // Nuevos Matriculados (formato del Colegio)
+    const [nmRegistros, setNmRegistros] = useState<Record<string, string>[]>([]);
+    const [nmLoading, setNmLoading] = useState(false);
+    const [nmResultado, setNmResultado] = useState<ResultadoImport | null>(null);
+    const nmFileRef = useRef<HTMLInputElement>(null);
+
     // Financiero
     const [finTipo, setFinTipo] = useState<TipoFinanciero>("deudas");
     const [finRegistros, setFinRegistros] = useState<Record<string, string>[]>([]);
@@ -274,6 +280,33 @@ export default function ImportarPage() {
             }
         } catch { setMatResultado({ tipo: "error", mensaje: "Error de conexión" }); }
         finally { setMatLoading(false); }
+    };
+
+    const handleImportarNuevosMatriculados = async () => {
+        setNmLoading(true); setNmResultado(null);
+        try {
+            const res = await fetch("/api/admin/importar/nuevos-matriculados", {
+                method: "POST", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ registros: nmRegistros }),
+            });
+            const data = await res.json();
+            if (res.ok) {
+                const yaMsg = data.yaExistentes?.length > 0 ? ` ${data.yaExistentes.length} ya existían.` : "";
+                const fiadoresMsg = data.fiadoresCreados > 0 ? ` ${data.fiadoresCreados} fiador${data.fiadoresCreados !== 1 ? "es" : ""} registrado${data.fiadoresCreados !== 1 ? "s" : ""}.` : "";
+                setNmResultado({
+                    tipo: data.errores?.length > 0 ? "warning" : "success",
+                    mensaje: `${data.creados} creado${data.creados !== 1 ? "s" : ""}.${yaMsg}${fiadoresMsg}`,
+                    detalles: [
+                        ...(data.yaExistentes?.length > 0 ? [`Ya existían: ${data.yaExistentes.join(", ")}`] : []),
+                        ...(data.errores ?? []),
+                    ],
+                });
+                if (data.creados > 0) { setNmRegistros([]); if (nmFileRef.current) nmFileRef.current.value = ""; }
+            } else {
+                setNmResultado({ tipo: "error", mensaje: data.error ?? "Error al importar" });
+            }
+        } catch { setNmResultado({ tipo: "error", mensaje: "Error de conexión" }); }
+        finally { setNmLoading(false); }
     };
 
     const handleImportarFinanciero = async () => {
@@ -458,7 +491,8 @@ export default function ImportarPage() {
 
     const allTabs: { id: Seccion; permisoKey: string; label: string; icon: React.ReactNode; color: string; activeColor: string }[] = [
         { id: "registros",    permisoKey: "",                      label: "Registros",    icon: <List size={15} />,          color: "text-violet-600 dark:text-violet-400", activeColor: "border-violet-500 bg-violet-50/50 dark:bg-violet-900/10" },
-        { id: "matriculados", permisoKey: "importar:matriculados", label: "Matriculados", icon: <UserPlus size={15} />,      color: "text-cyan-600 dark:text-cyan-400",    activeColor: "border-cyan-500 bg-cyan-50/50 dark:bg-cyan-900/10" },
+        { id: "matriculados",        permisoKey: "importar:matriculados",        label: "Matriculados",        icon: <UserPlus size={15} />, color: "text-cyan-600 dark:text-cyan-400",    activeColor: "border-cyan-500 bg-cyan-50/50 dark:bg-cyan-900/10" },
+        { id: "nuevos-matriculados", permisoKey: "importar:nuevos-matriculados", label: "Nuevos Matriculados", icon: <UserPlus size={15} />, color: "text-indigo-600 dark:text-indigo-400", activeColor: "border-indigo-500 bg-indigo-50/50 dark:bg-indigo-900/10" },
         { id: "financiero",   permisoKey: "importar:financiero",   label: "Financiero",   icon: <DollarSign size={15} />,    color: "text-emerald-600 dark:text-emerald-400", activeColor: "border-emerald-500 bg-emerald-50/50 dark:bg-emerald-900/10" },
         { id: "banelco",      permisoKey: "importar:banelco",      label: "Home Banking", icon: <Landmark size={15} />,      color: "text-blue-600 dark:text-blue-400",    activeColor: "border-blue-500 bg-blue-50/50 dark:bg-blue-900/10" },
         { id: "fiadores",     permisoKey: "importar:fiadores",     label: "Fiadores",     icon: <HandshakeIcon size={15} />, color: "text-orange-600 dark:text-orange-400", activeColor: "border-orange-500 bg-orange-50/50 dark:bg-orange-900/10" },
@@ -546,6 +580,47 @@ export default function ImportarPage() {
                         </div>
                     </div>
 
+                </div>
+            )}
+
+            {/* NUEVOS MATRICULADOS */}
+            {seccion === "nuevos-matriculados" && (
+                <div className="space-y-5">
+                    <div className="p-5 rounded-2xl bg-indigo-50/50 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-900/30">
+                        <p className="text-[13px] font-bold text-indigo-800 dark:text-indigo-400 mb-1">¿Cómo funciona?</p>
+                        <p className="text-[12px] text-indigo-700/70 dark:text-indigo-400/60 leading-relaxed">
+                            Importá el archivo de nuevos matriculados en el formato del Colegio (Excel o CSV). Si el expediente ya existe no se modifica — se informa cuáles fueron omitidos. Los fiadores se registran automáticamente si el archivo incluye el expediente del fiador.
+                        </p>
+                        <p className="text-[11px] text-indigo-500 dark:text-indigo-400/60 mt-2 font-semibold">
+                            Columnas esperadas: Expediente · Folio · Tomo · Apellido y Nombre · Documento · Domicilio Legal/Real · Email · Cod Cliente · Fecha de Inscripción · Expediente Fi
+                        </p>
+                    </div>
+
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6 space-y-4">
+                        <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Archivo CSV o Excel</label>
+                        <UploadZone fileRef={nmFileRef} hasData={nmRegistros.length > 0} count={nmRegistros.length}
+                            onChange={e => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                if (file.name.match(/\.xlsx?$/i)) handleExcelChange(e, setNmRegistros, setNmResultado);
+                                else handleCSVChange(e, setNmRegistros, setNmResultado);
+                            }}
+                            accept=".csv,.xlsx,.xls" color="indigo" label="Hacé clic o arrastrá el archivo del Colegio" />
+                        <PreviewTable rows={nmRegistros} />
+                        {nmResultado && <Resultado resultado={nmResultado} onClose={() => setNmResultado(null)} />}
+                        <div className="flex items-center justify-between pt-2">
+                            {nmRegistros.length > 0 && (
+                                <button onClick={() => { setNmRegistros([]); if (nmFileRef.current) nmFileRef.current.value = ""; }} className="text-[12px] text-slate-400 hover:text-slate-600 flex items-center gap-1">
+                                    <X size={13} /> Limpiar
+                                </button>
+                            )}
+                            <button onClick={handleImportarNuevosMatriculados} disabled={nmRegistros.length === 0 || nmLoading}
+                                className="ml-auto flex items-center gap-2 px-6 h-10 bg-indigo-500 text-white rounded-xl text-[13px] font-bold hover:bg-indigo-600 disabled:opacity-40 transition-all active:scale-95">
+                                {nmLoading ? <Loader2 size={15} className="animate-spin" /> : <UserPlus size={15} />}
+                                {nmLoading ? "Procesando..." : `Importar${nmRegistros.length > 0 ? ` ${nmRegistros.length} registros` : ""}`}
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
 
