@@ -10,9 +10,12 @@ export async function GET(req: NextRequest) {
     const q = req.nextUrl.searchParams.get("q")?.trim() ?? "";
     if (q.length < 2) return NextResponse.json([]);
 
+    const tipo = req.nextUrl.searchParams.get("tipo") ?? "user";
+    const accessLevel = tipo === "admin" ? "admin" : "user";
+
     const users = await prisma.user.findMany({
         where: {
-            accessLevel: "user",
+            accessLevel,
             OR: [
                 { expediente: { contains: q } },
                 { apellido: { contains: q, mode: "insensitive" } },
@@ -20,7 +23,7 @@ export async function GET(req: NextRequest) {
                 { cod: { contains: q } },
             ],
         },
-        select: { expediente: true, nombre: true, apellido: true, cod: true, status: true },
+        select: { id: true, expediente: true, nombre: true, apellido: true, cod: true, status: true },
         orderBy: [{ apellido: "asc" }, { nombre: "asc" }],
         take: 20,
     });

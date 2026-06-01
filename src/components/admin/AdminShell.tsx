@@ -392,6 +392,20 @@ export default function AdminShell({ session, image, permisos, children }: Admin
                     </div>
                 </nav>
 
+                {session._impersonando && (
+                    <div className="bg-amber-400 text-amber-950 px-4 py-2 flex items-center justify-between gap-3 text-[12px] font-semibold">
+                        <span>Estás viendo el panel como <strong>{session.apellido}, {session.nombre}</strong> · Impersonado por {session._impersonadoPor}</span>
+                        <button
+                            onClick={async () => {
+                                await fetch("/api/admin/impersonar/salir", { method: "POST" });
+                                window.location.href = "/admin";
+                            }}
+                            className="px-3 h-7 rounded-lg bg-amber-950/20 hover:bg-amber-950/30 text-amber-950 font-bold transition-all whitespace-nowrap">
+                            Volver al superadmin
+                        </button>
+                    </div>
+                )}
+
                 <main className="flex-1 p-0">
                     {children}
                 </main>
