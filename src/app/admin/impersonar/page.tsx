@@ -158,7 +158,7 @@ export default function ImpersonarPage() {
         setImpersonando(String(u.id));
         try {
             const res = await fetch(`/api/admin/impersonar/admin/${u.id}`, { method: "POST" });
-            if (res.ok) { router.push("/admin"); }
+            if (res.ok) { window.location.href = "/admin"; }
             else { const d = await res.json(); alert(d.error ?? "Error"); setImpersonando(null); }
         } catch { alert("Error de conexión"); setImpersonando(null); }
     }
