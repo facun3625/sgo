@@ -33,7 +33,7 @@ interface CuotaMensualData {
     periodo: string;
     monto: number;
     estado: string;
-    metodo?: "mercadopago" | "transferencia" | "home_banking" | "transferencia_pendiente" | null;
+    metodo?: "mercadopago" | "transferencia" | "home_banking" | "transferencia_pendiente" | "matriculacion" | null;
     metodoPago?: string | null;
 }
 
@@ -70,6 +70,7 @@ function labelMetodoPago(metodo?: string | null): string {
     if (metodo === "mercadopago") return "Mercado Pago";
     if (metodo === "banelco" || metodo === "home_banking") return "Banelco / Home Banking";
     if (metodo === "transferencia") return "Transferencia bancaria";
+    if (metodo === "matriculacion") return "Incluido en matrícula";
     return "";
 }
 
@@ -543,7 +544,7 @@ function ConceptItem({ label, amount, status, metodo, isLast }: {
     label: string;
     amount: string;
     status: "paid" | "pending";
-    metodo?: "mercadopago" | "transferencia" | "home_banking" | "transferencia_pendiente" | null;
+    metodo?: "mercadopago" | "transferencia" | "home_banking" | "transferencia_pendiente" | "matriculacion" | null;
     isLast?: boolean;
 }) {
     const paid = status === "paid";
@@ -567,6 +568,11 @@ function ConceptItem({ label, amount, status, metodo, isLast }: {
         if (metodo === "transferencia_pendiente") return (
             <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-500">
                 <Clock size={10} /> Transferencia pendiente
+            </span>
+        );
+        if (metodo === "matriculacion") return (
+            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-teal-500">
+                <GraduationCap size={10} /> Incluido en matrícula
             </span>
         );
         return null;
