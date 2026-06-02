@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { esMatriculadoJoven, esMatriculadoVeterano, esMatriculadoExento, calcularMesesSuspendidos, montoConDescuento } from "@/lib/matricula";
+import { esMatriculadoJoven, esMatriculadoVeterano, esMatriculadoExento, esRecienMatriculado, calcularMesesSuspendidos, montoConDescuento } from "@/lib/matricula";
 
 function isAdmin(lvl: string) {
     return lvl === "superadmin" || lvl === "admin";
@@ -98,16 +98,21 @@ export async function POST() {
     );
     const expedientesSinExentos = expedientesACobrar.filter(exp => !exentos.has(exp));
 
+    // Recién matriculados (mes anterior): cuota del periodo ya pagada al matricularse
+    const recientes = expedientesSinExentos.filter(exp => esRecienMatriculado(fechaMap.get(exp), periodo));
+    const recientesSet = new Set(recientes);
+    const sinRecientes = expedientesSinExentos.filter(exp => !recientesSet.has(exp));
+
     // Separar jovenes, veteranos (40-49 años) y normales
-    const jovenes = expedientesSinExentos.filter(exp => esMatriculadoJoven(fechaMap.get(exp)));
+    const jovenes = sinRecientes.filter(exp => esMatriculadoJoven(fechaMap.get(exp)));
     const veteranos = beneficioVeterano
-        ? expedientesSinExentos.filter(exp => {
+        ? sinRecientes.filter(exp => {
             if (esMatriculadoJoven(fechaMap.get(exp))) return false;
             const ms = calcularMesesSuspendidos(historialMap.get(exp) ?? []);
             return esMatriculadoVeterano(fechaMap.get(exp), ms);
         })
         : [];
-    const normales = expedientesSinExentos.filter(exp =>
+    const normales = sinRecientes.filter(exp =>
         !esMatriculadoJoven(fechaMap.get(exp)) && !veteranos.includes(exp)
     );
 
@@ -132,7 +137,8 @@ export async function POST() {
         }
     }
 
-    const [creaNormales, creaJovenes, creaVeteranos] = await Promise.all([
+    const ahora = new Date();
+    const [creaNormales, creaJovenes, creaVeteranos, creaRecientes] = await Promise.all([
         prisma.cuotaMensual.createMany({
             data: normales.map(expediente => ({ expediente, periodo, monto: montoBase, estado: "pendiente" })),
             skipDuplicates: true,
@@ -143,6 +149,10 @@ export async function POST() {
         }),
         prisma.cuotaMensual.createMany({
             data: veteranos.map(expediente => ({ expediente, periodo, monto: montoVeterano, estado: "pendiente" })),
+            skipDuplicates: true,
+        }),
+        prisma.cuotaMensual.createMany({
+            data: recientes.map(expediente => ({ expediente, periodo, monto: montoJoven, estado: "pagado", fechaPago: ahora, metodoPago: "matriculacion" })),
             skipDuplicates: true,
         }),
     ]);
@@ -161,14 +171,20 @@ export async function POST() {
             where: { periodo, estado: "pendiente", expediente: { in: veteranos } },
             data: { monto: montoVeterano },
         }),
+        // Si ya existía como pendiente, convertir a pagado
+        prisma.cuotaMensual.updateMany({
+            where: { periodo, estado: "pendiente", expediente: { in: recientes } },
+            data: { monto: montoJoven, estado: "pagado", fechaPago: ahora, metodoPago: "matriculacion" },
+        }),
     ]);
 
     return NextResponse.json({
         message: `Cuotas generadas para ${periodo}`,
         periodo,
-        creadas: creaNormales.count + creaJovenes.count + creaVeteranos.count,
+        creadas: creaNormales.count + creaJovenes.count + creaVeteranos.count + creaRecientes.count,
         jovenes: jovenes.length,
         veteranos: veteranos.length,
+        recientes: recientes.length,
         exentos: exentos.size,
         normales: normales.length,
     });

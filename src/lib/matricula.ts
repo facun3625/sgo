@@ -30,6 +30,17 @@ export function calcularMesesSuspendidos(historial: AccionHistorial[]): number {
     return mesesADescontar;
 }
 
+// Registrado en el mes anterior a `periodo` → el mes del periodo ya está pago al matricularse
+export function esRecienMatriculado(fechaMatriculacion: Date | string | null | undefined, periodo: string): boolean {
+    if (!fechaMatriculacion) return false;
+    const f = new Date(fechaMatriculacion);
+    if (isNaN(f.getTime())) return false;
+    const [year, month] = periodo.split("-").map(Number);
+    const prevMonth = month === 1 ? 12 : month - 1;
+    const prevYear = month === 1 ? year - 1 : year;
+    return f.getFullYear() === prevYear && f.getMonth() + 1 === prevMonth;
+}
+
 // < 60 meses (5 años) — no aplica descuento por suspensiones
 export function esMatriculadoJoven(fechaMatriculacion: Date | string | null | undefined): boolean {
     const m = mesesDesde(fechaMatriculacion);

@@ -301,11 +301,14 @@ export default function ImportarPage() {
             if (res.ok) {
                 const yaMsg = data.yaExistentes?.length > 0 ? ` ${data.yaExistentes.length} ya existían.` : "";
                 const fiadoresMsg = data.fiadoresCreados > 0 ? ` ${data.fiadoresCreados} fiador${data.fiadoresCreados !== 1 ? "es" : ""} registrado${data.fiadoresCreados !== 1 ? "s" : ""}.` : "";
+                const sinFechaMsg = data.sinFecha?.length > 0 ? ` ${data.sinFecha.length} sin fecha de matrícula.` : "";
+                const tieneProblemas = data.errores?.length > 0 || data.sinFecha?.length > 0;
                 setNmResultado({
-                    tipo: data.errores?.length > 0 ? "warning" : "success",
-                    mensaje: `${data.creados} creado${data.creados !== 1 ? "s" : ""}.${yaMsg}${fiadoresMsg}`,
+                    tipo: tieneProblemas ? "warning" : "success",
+                    mensaje: `${data.creados} creado${data.creados !== 1 ? "s" : ""}.${yaMsg}${fiadoresMsg}${sinFechaMsg}`,
                     detalles: [
                         ...(data.yaExistentes?.length > 0 ? [`Ya existían: ${data.yaExistentes.join(", ")}`] : []),
+                        ...(data.sinFecha?.length > 0 ? [`Sin fecha de matriculación (completar manualmente): ${data.sinFecha.join(", ")}`] : []),
                         ...(data.errores ?? []),
                     ],
                 });
@@ -617,7 +620,7 @@ export default function ImportarPage() {
                                 else handleCSVChange(e, setNmRegistros, setNmResultado);
                             }}
                             accept=".csv,.xlsx,.xls" color="indigo" label="Hacé clic o arrastrá el archivo del Colegio" />
-                        <PreviewTable rows={nmRegistros} />
+                        <NMPreviewTable rows={nmRegistros} />
                         {nmResultado && <Resultado resultado={nmResultado} onClose={() => setNmResultado(null)} />}
                         <div className="flex items-center justify-between pt-2">
                             {nmRegistros.length > 0 && (
@@ -1176,6 +1179,72 @@ function UploadZone({ fileRef, hasData, count, onChange, accept, color, label }:
                     {hasData ? `${count} registro${count !== 1 ? "s" : ""} cargado${count !== 1 ? "s" : ""}` : (label || "Hacé clic o arrastrá el archivo")}
                 </p>
             </div>
+        </div>
+    );
+}
+
+function parseFechaLocal(val: string): string | null {
+    if (!val) return null;
+    const m1 = val.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
+    if (m1) {
+        let [, d, mo, y] = m1;
+        if (y.length === 2) y = `20${y}`;
+        const date = new Date(Date.UTC(parseInt(y), parseInt(mo) - 1, parseInt(d)));
+        if (!isNaN(date.getTime())) return `${d.padStart(2,"0")}/${mo.padStart(2,"0")}/${y}`;
+    }
+    const m2 = val.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (m2) {
+        const date = new Date(Date.UTC(parseInt(m2[1]), parseInt(m2[2]) - 1, parseInt(m2[3])));
+        if (!isNaN(date.getTime())) return `${m2[3]}/${m2[2]}/${m2[1]}`;
+    }
+    return null;
+}
+
+function getFechaMatriculacionPreview(row: Record<string, string>): { fecha: string; esHoy: boolean } {
+    const raw =
+        row["fecha de inscripción"] ||
+        row["fecha de inscripcion"] ||
+        row["inscripción"] ||
+        row["inscripcion"] ||
+        row["fecha inscripcion"] ||
+        "";
+    const parsed = parseFechaLocal(raw);
+    if (parsed) return { fecha: parsed, esHoy: false };
+    return { fecha: "Sin fecha (quedará vacío)", esHoy: true };
+}
+
+function NMPreviewTable({ rows }: { rows: Record<string, string>[] }) {
+    if (rows.length === 0) return null;
+    const headers = Object.keys(rows[0]);
+    return (
+        <div className="space-y-2">
+            <div className="overflow-x-auto rounded-xl border border-slate-100 dark:border-slate-800">
+                <table className="w-full text-[11px]">
+                    <thead className="bg-slate-50 dark:bg-slate-800/50">
+                        <tr>
+                            {headers.map(h => <th key={h} className="px-3 py-2 text-left font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">{h}</th>)}
+                            <th className="px-3 py-2 text-left font-bold text-teal-500 uppercase tracking-wider whitespace-nowrap">Fecha matrícula (a guardar)</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-50 dark:divide-slate-800/60">
+                        {rows.slice(0, 5).map((row, i) => {
+                            const { fecha, esHoy } = getFechaMatriculacionPreview(row);
+                            return (
+                                <tr key={i}>
+                                    {Object.values(row).map((v, j) => <td key={j} className="px-3 py-2 text-slate-600 dark:text-slate-400 whitespace-nowrap max-w-[120px] truncate">{v || "—"}</td>)}
+                                    <td className={`px-3 py-2 font-bold whitespace-nowrap ${esHoy ? "text-amber-500" : "text-teal-600 dark:text-teal-400"}`}>{fecha}</td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+                {rows.length > 5 && <p className="text-center text-[11px] text-slate-400 py-2">... y {rows.length - 5} más</p>}
+            </div>
+            {rows.some(r => getFechaMatriculacionPreview(r).esHoy) && (
+                <p className="text-[11px] text-amber-600 dark:text-amber-400 font-semibold">
+                    ⚠ Filas en amarillo no tienen "Fecha de Inscripción" en el archivo — la fecha de matriculación quedará vacía.
+                </p>
+            )}
         </div>
     );
 }

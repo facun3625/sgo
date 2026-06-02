@@ -53,6 +53,7 @@ export async function POST(req: NextRequest) {
 
     const yaExistentes: string[] = [];
     const nuevos: any[] = [];
+    const sinFecha: string[] = [];
     const fiadores: { expediente: string; fiadorExpediente: string }[] = [];
 
     for (const r of registros) {
@@ -96,6 +97,10 @@ export async function POST(req: NextRequest) {
             fechaMatriculacion: parseFecha(get(r, "fecha de inscripción", "fecha de inscripcion", "inscripción", "inscripcion", "fecha inscripcion")),
         });
 
+        if (!parseFecha(get(r, "fecha de inscripción", "fecha de inscripcion", "inscripción", "inscripcion", "fecha inscripcion"))) {
+            sinFecha.push(expediente);
+        }
+
         // Fiador
         const fiadorExp = get(r, "expediente fi", "expediente fiador", "expediente_fi", "expedientefi");
         if (fiadorExp && expediente) {
@@ -133,5 +138,5 @@ export async function POST(req: NextRequest) {
         } catch { /* ignorar errores individuales de fiador */ }
     }
 
-    return NextResponse.json({ creados, yaExistentes, fiadoresCreados, errores });
+    return NextResponse.json({ creados, yaExistentes, fiadoresCreados, sinFecha, errores });
 }

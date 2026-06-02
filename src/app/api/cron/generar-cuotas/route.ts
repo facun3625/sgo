@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { esMatriculadoJoven, montoConDescuento } from "@/lib/matricula";
+import { esMatriculadoJoven, esRecienMatriculado, montoConDescuento } from "@/lib/matricula";
 
 export async function GET(req: NextRequest) {
     const secret = process.env.CRON_SECRET;
@@ -48,8 +48,11 @@ export async function GET(req: NextRequest) {
         exp => !pagoAnualExp.has(exp) && !debitoActivoExp.has(exp)
     );
 
-    const jovenes = expedientesACobrar.filter(exp => esMatriculadoJoven(fechaMap.get(exp)));
-    const normales = expedientesACobrar.filter(exp => !esMatriculadoJoven(fechaMap.get(exp)));
+    const recientes = expedientesACobrar.filter(exp => esRecienMatriculado(fechaMap.get(exp), periodo));
+    const recientesSet = new Set(recientes);
+    const sinRecientes = expedientesACobrar.filter(exp => !recientesSet.has(exp));
+    const jovenes = sinRecientes.filter(exp => esMatriculadoJoven(fechaMap.get(exp)));
+    const normales = sinRecientes.filter(exp => !esMatriculadoJoven(fechaMap.get(exp)));
     const montoJoven = montoConDescuento(montoBase, true);
 
     // Limpiar cuotas pendientes de meses anteriores sin pago asociado
@@ -70,7 +73,8 @@ export async function GET(req: NextRequest) {
         }
     }
 
-    const [creaNormales, creaJovenes] = await Promise.all([
+    const ahora = new Date();
+    const [creaNormales, creaJovenes, creaRecientes] = await Promise.all([
         prisma.cuotaMensual.createMany({
             data: normales.map(expediente => ({ expediente, periodo, monto: montoBase, estado: "pendiente" })),
             skipDuplicates: true,
@@ -79,12 +83,34 @@ export async function GET(req: NextRequest) {
             data: jovenes.map(expediente => ({ expediente, periodo, monto: montoJoven, estado: "pendiente" })),
             skipDuplicates: true,
         }),
+        prisma.cuotaMensual.createMany({
+            data: recientes.map(expediente => ({ expediente, periodo, monto: montoJoven, estado: "pagado", fechaPago: ahora, metodoPago: "matriculacion" })),
+            skipDuplicates: true,
+        }),
+    ]);
+
+    // Corregir montos de cuotas pendientes ya existentes
+    await Promise.all([
+        prisma.cuotaMensual.updateMany({
+            where: { periodo, estado: "pendiente", expediente: { in: normales } },
+            data: { monto: montoBase },
+        }),
+        prisma.cuotaMensual.updateMany({
+            where: { periodo, estado: "pendiente", expediente: { in: jovenes } },
+            data: { monto: montoJoven },
+        }),
+        // Si ya existía como pendiente, convertir a pagado
+        prisma.cuotaMensual.updateMany({
+            where: { periodo, estado: "pendiente", expediente: { in: recientes } },
+            data: { monto: montoJoven, estado: "pagado", fechaPago: ahora, metodoPago: "matriculacion" },
+        }),
     ]);
 
     return NextResponse.json({
         message: `Cuotas generadas para ${periodo}.`,
         periodo,
-        creadas: creaNormales.count + creaJovenes.count,
+        creadas: creaNormales.count + creaJovenes.count + creaRecientes.count,
         jovenes: jovenes.length,
+        recientes: recientes.length,
     });
 }
