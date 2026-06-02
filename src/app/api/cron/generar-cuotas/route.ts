@@ -52,6 +52,24 @@ export async function GET(req: NextRequest) {
     const normales = expedientesACobrar.filter(exp => !esMatriculadoJoven(fechaMap.get(exp)));
     const montoJoven = montoConDescuento(montoBase, true);
 
+    // Limpiar cuotas pendientes de meses anteriores sin pago asociado
+    const cuotasViejasPendientes = await prisma.cuotaMensual.findMany({
+        where: { estado: "pendiente", periodo: { lt: periodo } },
+        select: { id: true },
+    });
+    if (cuotasViejasPendientes.length > 0) {
+        const ids = cuotasViejasPendientes.map(c => c.id);
+        const conPago = await prisma.pagoPendiente.findMany({
+            where: { tipo: "matricula_mensual", estado: "pendiente", ref: { in: ids.map(String) } },
+            select: { ref: true },
+        });
+        const conPagoSet = new Set(conPago.map(p => parseInt(p.ref)));
+        const idsEliminar = ids.filter(id => !conPagoSet.has(id));
+        if (idsEliminar.length > 0) {
+            await prisma.cuotaMensual.deleteMany({ where: { id: { in: idsEliminar } } });
+        }
+    }
+
     const [creaNormales, creaJovenes] = await Promise.all([
         prisma.cuotaMensual.createMany({
             data: normales.map(expediente => ({ expediente, periodo, monto: montoBase, estado: "pendiente" })),
