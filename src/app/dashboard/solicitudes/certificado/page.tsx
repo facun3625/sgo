@@ -66,7 +66,10 @@ function CertificateDocument({ datos, presentarAnte, solicitudId, baseUrl, firma
     const qrUrl = solicitudId ? `${baseUrl}/verificar/certificado/${solicitudId}` : `${baseUrl}/verificar/${datos.expediente}`;
     const suspendido = userStatus === "suspended";
     const fechaSuspension = suspension?.fecha
-        ? new Date(suspension.fecha).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric" })
+        ? (() => {
+            const [y, m, d] = suspension.fecha.slice(0, 10).split("-");
+            return `${d}/${m}/${y}`;
+        })()
         : null;
 
     return (

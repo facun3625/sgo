@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
                 suspension: ultimaSuspension ? {
                     motivoNombre: ultimaSuspension.motivoNombre,
                     comentario: ultimaSuspension.comentario,
-                    fecha: ultimaSuspension.fechaInicio ? ultimaSuspension.fechaInicio.toISOString() : null,
+                    fecha: ultimaSuspension.fechaInicio ? ultimaSuspension.fechaInicio.toISOString().slice(0, 10) : null,
                 } : null,
             },
         }
