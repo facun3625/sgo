@@ -173,7 +173,7 @@ function ContabilidadView({ stats, pctPagado }: { stats: Stats | null; pctPagado
 
         const filasDatos = filasAExportar.map((f) => ({
             "Número recibo": f.nroRecibo,
-            "cliente": f.cliente,
+            "Cliente": f.cliente,
             "Fecha cobro": fmtFecha(f.fechaCobro),
             "Importe en $": f.importe,
             "Tipo Comprobante": "",
@@ -186,7 +186,10 @@ function ContabilidadView({ stats, pctPagado }: { stats: Stats | null; pctPagado
         ws["!cols"] = [{ wch: 16 }, { wch: 12 }, { wch: 14 }, { wch: 14 }, { wch: 18 }, { wch: 20 }, { wch: 18 }];
         XLSX.utils.book_append_sheet(wb, ws, "Registros");
         const [y, m] = mes.split("-");
-        XLSX.writeFile(wb, `Contabilidad_${y}_${m}.xlsx`);
+        const tipoLabel = tipo === "deudas" ? "Deuda" : tipo === "cuotas" ? "Cuotas" : "Todos";
+        const hoy = new Date();
+        const fechaHoy = `${hoy.getFullYear()}${String(hoy.getMonth() + 1).padStart(2, "0")}${String(hoy.getDate()).padStart(2, "0")}`;
+        XLSX.writeFile(wb, `MPAgoSGO_${tipoLabel}_${y}_${m}_${fechaHoy}.xlsx`);
 
         const items = filasAExportar.map((f) => ({ tipo: f.tipo, id: f.id }));
         await fetch("/api/admin/pagos/exportar", {
