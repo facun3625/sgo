@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
         ultimaSuspension = await (prisma as any).historialMatricula.findFirst({
             where: { expediente, accion: { in: ["suspension", "cancelacion"] } },
             orderBy: { createdAt: "desc" },
-            select: { motivoNombre: true, comentario: true, createdAt: true },
+            select: { motivoNombre: true, comentario: true, createdAt: true, fechaInicio: true },
         });
     }
 
@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
                 suspension: ultimaSuspension ? {
                     motivoNombre: ultimaSuspension.motivoNombre,
                     comentario: ultimaSuspension.comentario,
-                    fecha: ultimaSuspension.createdAt.toISOString(),
+                    fecha: ultimaSuspension.fechaInicio ? ultimaSuspension.fechaInicio.toISOString() : null,
                 } : null,
             },
         }
