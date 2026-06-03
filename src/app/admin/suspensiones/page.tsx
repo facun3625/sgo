@@ -32,6 +32,9 @@ interface RegistroHistorial {
     expediente: string;
     accion: string;
     comentario: string;
+    motivoNombre?: string | null;
+    fechaInicio?: string | null;
+    fechaFin?: string | null;
     adminNombre: string | null;
     createdAt: string;
 }
@@ -154,6 +157,11 @@ export default function SuspensionesPage() {
     const [fechaInicio, setFechaInicio] = useState("");
     const [fechaFin, setFechaFin] = useState("");
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+    // ── Edición de historial ──
+    const [modalEditHistorial, setModalEditHistorial] = useState<RegistroHistorial | null>(null);
+    const [editHistForm, setEditHistForm] = useState({ accion: "", comentario: "", fechaInicio: "", fechaFin: "", createdAt: "" });
+    const [guardandoHistorial, setGuardandoHistorial] = useState(false);
 
     // ── Importar masivo ──
     type ImportRow = { expediente: string; status: "habilitado" | "suspendido" | "no_encontrado" | "cargando" };
@@ -320,6 +328,55 @@ export default function SuspensionesPage() {
         } finally {
             setProcesandoPedido(false);
         }
+    }
+
+    function abrirEditarHistorial(r: RegistroHistorial) {
+        setEditHistForm({
+            accion: r.accion,
+            comentario: r.comentario,
+            fechaInicio: r.fechaInicio ? r.fechaInicio.slice(0, 10) : "",
+            fechaFin: r.fechaFin ? r.fechaFin.slice(0, 10) : "",
+            createdAt: r.createdAt.slice(0, 16),
+        });
+        setModalEditHistorial(r);
+    }
+
+    async function guardarEdicionHistorial() {
+        if (!modalEditHistorial) return;
+        setGuardandoHistorial(true);
+        try {
+            const res = await fetch(`/api/admin/suspensiones/historial/${modalEditHistorial.id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    accion: editHistForm.accion,
+                    comentario: editHistForm.comentario,
+                    fechaInicio: editHistForm.fechaInicio || null,
+                    fechaFin: editHistForm.fechaFin || null,
+                    createdAt: editHistForm.createdAt,
+                }),
+            });
+            if (!res.ok) { const e = await res.json(); showToast(e.error ?? "Error", "error"); return; }
+            const updated = await res.json();
+            const exp = modalEditHistorial.expediente;
+            setHistorialMap(prev => ({
+                ...prev,
+                [exp]: (prev[exp] ?? []).map(r => r.id === modalEditHistorial.id ? { ...r, ...updated } : r),
+            }));
+            showToast("Registro actualizado", "success");
+            setModalEditHistorial(null);
+        } finally { setGuardandoHistorial(false); }
+    }
+
+    async function eliminarRegistroHistorial(r: RegistroHistorial) {
+        if (!confirm("¿Eliminár este registro del historial?")) return;
+        const res = await fetch(`/api/admin/suspensiones/historial/${r.id}`, { method: "DELETE" });
+        if (!res.ok) { showToast("Error al eliminar", "error"); return; }
+        setHistorialMap(prev => ({
+            ...prev,
+            [r.expediente]: (prev[r.expediente] ?? []).filter(h => h.id !== r.id),
+        }));
+        showToast("Registro eliminado", "success");
     }
 
     async function toggleHistorial(expediente: string) {
@@ -744,20 +801,32 @@ export default function SuspensionesPage() {
                                                 ) : (
                                                     <div className="space-y-2 pt-3">
                                                         {historial.map(r => (
-                                                            <div key={r.id} className="flex gap-3 items-start">
+                                                            <div key={r.id} className="flex gap-3 items-start group">
                                                                 <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5
-                                                                    ${r.accion === "suspension" ? "bg-rose-100 dark:bg-rose-900/30 text-rose-600" : "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600"}`}>
-                                                                    {r.accion === "suspension" ? <XCircle size={12} /> : <CheckCircle2 size={12} />}
+                                                                    ${r.accion === "suspension" ? "bg-rose-100 dark:bg-rose-900/30 text-rose-600" : r.accion === "cancelacion" ? "bg-purple-100 dark:bg-purple-900/30 text-purple-600" : "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600"}`}>
+                                                                    {r.accion === "suspension" ? <XCircle size={12} /> : r.accion === "cancelacion" ? <XCircle size={12} /> : <CheckCircle2 size={12} />}
                                                                 </div>
                                                                 <div className="flex-1 min-w-0">
                                                                     <div className="flex items-center gap-2 flex-wrap">
-                                                                        <span className={`text-[11px] font-bold ${r.accion === "suspension" ? "text-rose-600 dark:text-rose-400" : "text-emerald-600 dark:text-emerald-400"}`}>
-                                                                            {r.accion === "suspension" ? "Suspensión" : "Habilitación"}
+                                                                        <span className={`text-[11px] font-bold ${r.accion === "suspension" ? "text-rose-600 dark:text-rose-400" : r.accion === "cancelacion" ? "text-purple-600 dark:text-purple-400" : "text-emerald-600 dark:text-emerald-400"}`}>
+                                                                            {r.accion === "suspension" ? "Suspensión" : r.accion === "cancelacion" ? "Cancelación" : "Habilitación"}
                                                                         </span>
                                                                         <span className="text-[10px] text-slate-400"><Clock size={9} className="inline mb-0.5" /> {fmtFecha(r.createdAt)}</span>
                                                                         {r.adminNombre && <span className="text-[10px] text-slate-400">— {r.adminNombre}</span>}
                                                                     </div>
                                                                     <p className="text-[12px] text-slate-600 dark:text-slate-300 mt-0.5">{r.comentario}</p>
+                                                                </div>
+                                                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                                                                    <button onClick={() => abrirEditarHistorial(r)}
+                                                                        className="w-6 h-6 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-600 transition-all"
+                                                                        title="Editar registro">
+                                                                        <Pencil size={11} />
+                                                                    </button>
+                                                                    <button onClick={() => eliminarRegistroHistorial(r)}
+                                                                        className="w-6 h-6 flex items-center justify-center rounded-lg text-slate-400 hover:bg-rose-100 dark:hover:bg-rose-900/30 hover:text-rose-500 transition-all"
+                                                                        title="Eliminar registro">
+                                                                        <Trash2 size={11} />
+                                                                    </button>
                                                                 </div>
                                                             </div>
                                                         ))}
@@ -1398,6 +1467,70 @@ export default function SuspensionesPage() {
                     </div>
                 </div>
             )}
+            {/* ── MODAL EDITAR HISTORIAL ──────────────────────────────────── */}
+            {modalEditHistorial && (
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setModalEditHistorial(null)}>
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 w-full max-w-md shadow-2xl" onClick={e => e.stopPropagation()}>
+                        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 rounded-t-2xl">
+                            <div>
+                                <p className="text-[14px] font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                                    <Pencil size={14} className="text-slate-400" /> Editar registro de historial
+                                </p>
+                                <p className="text-[11px] text-slate-400 font-mono mt-0.5">#{modalEditHistorial.id} · {modalEditHistorial.expediente}</p>
+                            </div>
+                            <button onClick={() => setModalEditHistorial(null)} className="w-8 h-8 flex items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"><X size={15} /></button>
+                        </div>
+                        <div className="p-5 space-y-4">
+                            <div className="space-y-1.5">
+                                <label className="text-[12px] font-semibold text-slate-600 dark:text-slate-300">Acción</label>
+                                <select
+                                    value={editHistForm.accion}
+                                    onChange={e => setEditHistForm(p => ({ ...p, accion: e.target.value }))}
+                                    className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-300/50">
+                                    <option value="suspension">Suspensión</option>
+                                    <option value="habilitacion">Habilitación</option>
+                                    <option value="cancelacion">Cancelación</option>
+                                </select>
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-[12px] font-semibold text-slate-600 dark:text-slate-300">Comentario</label>
+                                <textarea
+                                    value={editHistForm.comentario}
+                                    onChange={e => setEditHistForm(p => ({ ...p, comentario: e.target.value }))}
+                                    rows={4}
+                                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-300/50 resize-none" />
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="space-y-1.5">
+                                    <label className="text-[12px] font-semibold text-slate-600 dark:text-slate-300">Fecha de inicio <span className="text-slate-400 font-normal">(opc.)</span></label>
+                                    <input type="date" value={editHistForm.fechaInicio} onChange={e => setEditHistForm(p => ({ ...p, fechaInicio: e.target.value }))}
+                                        className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-300/50" />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-[12px] font-semibold text-slate-600 dark:text-slate-300">Fecha de fin <span className="text-slate-400 font-normal">(opc.)</span></label>
+                                    <input type="date" value={editHistForm.fechaFin} onChange={e => setEditHistForm(p => ({ ...p, fechaFin: e.target.value }))}
+                                        className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-300/50" />
+                                </div>
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-[12px] font-semibold text-slate-600 dark:text-slate-300">Fecha y hora del registro</label>
+                                <input type="datetime-local" value={editHistForm.createdAt} onChange={e => setEditHistForm(p => ({ ...p, createdAt: e.target.value }))}
+                                    className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-300/50" />
+                                <p className="text-[10px] text-slate-400">Esto modifica cuándo aparece en el historial.</p>
+                            </div>
+                        </div>
+                        <div className="flex gap-3 px-5 pb-5">
+                            <button onClick={() => setModalEditHistorial(null)} className="flex-1 h-10 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-[13px] font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">Cancelar</button>
+                            <button onClick={guardarEdicionHistorial} disabled={guardandoHistorial || !editHistForm.comentario.trim()}
+                                className="flex-1 flex items-center justify-center gap-2 h-10 bg-[#063f68] hover:bg-[#052d4a] text-white rounded-xl text-[13px] font-bold disabled:opacity-50 transition-all">
+                                {guardandoHistorial ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+                                Guardar cambios
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <style jsx global>{`
                 @keyframes slide-in-right {
                     from { transform: translateX(100%); }
