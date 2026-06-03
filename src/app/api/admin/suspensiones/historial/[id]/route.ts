@@ -3,12 +3,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const session = await getSession();
     if (!session || session.accessLevel !== "superadmin")
         return NextResponse.json({ error: "No autorizado" }, { status: 403 });
 
-    const id = parseInt(params.id);
+    const { id: idStr } = await params;
+    const id = parseInt(idStr);
     if (isNaN(id)) return NextResponse.json({ error: "ID inválido" }, { status: 400 });
 
     const body = await req.json();
@@ -29,12 +30,13 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     return NextResponse.json(updated);
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const session = await getSession();
     if (!session || session.accessLevel !== "superadmin")
         return NextResponse.json({ error: "No autorizado" }, { status: 403 });
 
-    const id = parseInt(params.id);
+    const { id: idStr } = await params;
+    const id = parseInt(idStr);
     if (isNaN(id)) return NextResponse.json({ error: "ID inválido" }, { status: 400 });
 
     await (prisma as any).historialMatricula.delete({ where: { id } });
