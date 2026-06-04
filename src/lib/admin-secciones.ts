@@ -32,7 +32,7 @@ export const ADMIN_SECCIONES = [
     { key: "cuentas",        label: "Cuentas Registradas",          group: "" },
     { key: "tribunal-etica", label: "Tribunal de Ética",            group: "" },
     { key: "repositorio",    label: "Repositorio de Archivos",      group: "" },
-    { key: "boletas",        label: "Boletas SF Servicios",         group: "" },
+    { key: "boletas",        label: "Importar Boletas de Pago",         group: "" },
     { key: "tutoriales",     label: "Tutoriales",                   group: "" },
     // Importar — sub-permisos granulares
     { key: "importar:matriculados",        label: "Matriculados",        group: "Importar" },
