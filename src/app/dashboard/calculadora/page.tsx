@@ -36,10 +36,10 @@ export default function CalculadoraPage() {
     const [habilitada, setHabilitada] = useState<boolean | null>(null);
 
     useEffect(() => {
-        fetch("/api/admin/config")
+        fetch("/api/user/calculadora")
             .then(r => r.ok ? r.json() : null)
-            .then(data => setHabilitada(data?.calculadoraActiva !== false))
-            .catch(() => setHabilitada(true));
+            .then(data => setHabilitada(data?.activa !== false))
+            .catch(() => setHabilitada(false));
     }, []);
 
     async function calcular() {
