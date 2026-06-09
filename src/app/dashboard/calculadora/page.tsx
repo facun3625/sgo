@@ -78,7 +78,7 @@ export default function CalculadoraPage() {
 
     if (!habilitada) {
         return (
-            <div className="p-4 md:p-8 max-w-3xl mx-auto">
+            <div className="p-4 md:p-8 max-w-2xl">
                 <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
                     <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
                         <Calculator size={24} className="text-slate-400" />
@@ -91,7 +91,7 @@ export default function CalculadoraPage() {
     }
 
     return (
-        <div className="p-4 md:p-8 space-y-6 max-w-3xl mx-auto">
+        <div className="p-4 md:p-8 space-y-6 max-w-2xl">
             {/* Header */}
             <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
