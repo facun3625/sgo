@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Trash2, Loader2, ShieldAlert, Settings2, ToggleLeft, ToggleRight } from "lucide-react";
+import { Trash2, Loader2, ShieldAlert, Settings2, ToggleLeft, ToggleRight, Calculator } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 
 const IMPORTAR_TABS = [
@@ -23,10 +23,34 @@ export default function ConfigSistemaPage() {
     const [confirmDatos, setConfirmDatos] = useState(false);
     const [borrandoDatos, setBorrandoDatos] = useState(false);
 
+    // Calculadora
+    const [calculadoraActiva, setCalculadoraActiva] = useState(true);
+    const [guardandoCalc, setGuardandoCalc] = useState(false);
+
     // Tabs importar
     const [tabsActivas, setTabsActivas] = useState<string[]>(IMPORTAR_TABS.map(t => t.id));
     const [loadingTabs, setLoadingTabs] = useState(true);
     const [guardandoTabs, setGuardandoTabs] = useState(false);
+
+    useEffect(() => {
+        fetch("/api/admin/config")
+            .then(r => r.ok ? r.json() : null)
+            .then(data => { if (data) setCalculadoraActiva(data.calculadoraActiva !== false); });
+    }, []);
+
+    async function guardarCalculadora(activa: boolean) {
+        setGuardandoCalc(true);
+        try {
+            const res = await fetch("/api/admin/config", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ clave: "calculadoraActiva", valor: activa ? "1" : "0" }),
+            });
+            if (res.ok) showToast(`Calculadora ${activa ? "activada" : "desactivada"}`, "success");
+            else showToast("Error al guardar", "error");
+        } catch { showToast("Error de conexión", "error"); }
+        finally { setGuardandoCalc(false); }
+    }
 
     useEffect(() => {
         fetch("/api/admin/config/importar-tabs")
@@ -79,6 +103,37 @@ export default function ConfigSistemaPage() {
                     <ShieldAlert size={20} className="text-red-500" /> Configuración del Sistema
                 </h1>
                 <p className="text-[12px] text-slate-400 mt-1">Solo visible para superadministradores.</p>
+            </div>
+
+            {/* Calculadora de Intereses */}
+            <div className="border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden">
+                <div className="px-5 py-3 bg-slate-50 dark:bg-slate-800/50 flex items-center gap-2 border-b border-slate-100 dark:border-slate-800">
+                    <Calculator size={14} className="text-slate-500" />
+                    <span className="text-[12px] font-bold text-slate-700 dark:text-slate-300">Calculadora de Intereses (Ley 27.802)</span>
+                </div>
+                <div className="px-5 py-5">
+                    <p className="text-[12px] text-slate-500 dark:text-slate-400 mb-4">
+                        Activa o desactiva la calculadora de intereses para créditos laborales judicializados visible en el dashboard de usuarios.
+                    </p>
+                    <button
+                        onClick={async () => {
+                            const nuevo = !calculadoraActiva;
+                            setCalculadoraActiva(nuevo);
+                            await guardarCalculadora(nuevo);
+                        }}
+                        disabled={guardandoCalc}
+                        className={`flex items-center justify-between gap-3 px-4 py-3 rounded-xl border text-[13px] font-medium transition-all w-full sm:w-72
+                            ${calculadoraActiva
+                                ? "bg-[#063f68]/5 dark:bg-blue-900/20 border-[#063f68]/20 dark:border-blue-700 text-slate-700 dark:text-slate-200"
+                                : "bg-slate-50 dark:bg-slate-800/30 border-slate-100 dark:border-slate-700 text-slate-400"}`}>
+                        <span>{calculadoraActiva ? "Calculadora activa" : "Calculadora desactivada"}</span>
+                        {guardandoCalc
+                            ? <Loader2 size={18} className="animate-spin text-slate-400 shrink-0" />
+                            : calculadoraActiva
+                                ? <ToggleRight size={22} className="text-[#063f68] dark:text-blue-400 shrink-0" />
+                                : <ToggleLeft size={22} className="text-slate-300 dark:text-slate-600 shrink-0" />}
+                    </button>
+                </div>
             </div>
 
             {/* Pestañas activas en Importar */}

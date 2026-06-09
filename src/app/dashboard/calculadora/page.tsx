@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Calculator, TrendingUp, Info, Loader2, AlertCircle, ExternalLink } from "lucide-react";
 
 interface Resultado {
@@ -33,6 +33,14 @@ export default function CalculadoraPage() {
     const [cargando, setCargando] = useState(false);
     const [resultado, setResultado] = useState<Resultado | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [habilitada, setHabilitada] = useState<boolean | null>(null);
+
+    useEffect(() => {
+        fetch("/api/admin/config")
+            .then(r => r.ok ? r.json() : null)
+            .then(data => setHabilitada(data?.calculadoraActiva !== false))
+            .catch(() => setHabilitada(true));
+    }, []);
 
     async function calcular() {
         setError(null);
@@ -59,6 +67,28 @@ export default function CalculadoraPage() {
     const maxIntereses = resultado
         ? Math.max(resultado.tasaPasiva.intereses, resultado.cer3.intereses, resultado.cer3_67.intereses)
         : 0;
+
+    if (habilitada === null) {
+        return (
+            <div className="flex items-center justify-center py-24">
+                <Loader2 size={22} className="animate-spin text-slate-300" />
+            </div>
+        );
+    }
+
+    if (!habilitada) {
+        return (
+            <div className="p-4 md:p-8 max-w-3xl mx-auto">
+                <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
+                    <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                        <Calculator size={24} className="text-slate-400" />
+                    </div>
+                    <h2 className="text-lg font-bold text-slate-700 dark:text-slate-200">Calculadora no disponible</h2>
+                    <p className="text-[13px] text-slate-400 max-w-xs">Esta herramienta está temporalmente deshabilitada. Contactá al colegio para más información.</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="p-4 md:p-8 space-y-6 max-w-3xl mx-auto">
