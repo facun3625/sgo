@@ -62,8 +62,8 @@ export async function GET(req: NextRequest) {
         (new Date(hasta + "T00:00:00Z").getTime() - new Date(desde + "T00:00:00Z").getTime()) / 86400000
     );
 
-    // Tasa pasiva Ley 27.802: capital × (índice_fin / índice_inicio - 1)
-    const ratioTasa = tasaFin.valor / tasaInicio.valor;
+    // Tasa pasiva Ley 27.802: fórmula oficial BCRA = capital × ((100 + índice_fin) / (100 + índice_inicio) - 1)
+    const ratioTasa = (100 + tasaFin.valor) / (100 + tasaInicio.valor);
     const interesesTasa = capital * (ratioTasa - 1);
 
     // CER puro
