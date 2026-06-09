@@ -8,7 +8,7 @@ import {
     CreditCard, IdCard, User, Wallet, FileText, ChevronDown, ChevronRight,
     XOctagon, Banknote, GraduationCap, Calendar, HelpCircle, FolderOpen,
     Home, CheckCircle2, Clock, Newspaper, Library, Cpu, Mail, Megaphone,
-    ShieldCheck, Scale, BookUser, PlayCircle, HandshakeIcon, Globe,
+    ShieldCheck, Scale, BookUser, PlayCircle, HandshakeIcon, Globe, Calculator,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -155,6 +155,7 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
                     ],
                 },
                 { icon: <FolderOpen />, label: "Repositorio de Archivos", href: "/dashboard/archivos", color: "text-indigo-500" },
+                { icon: <Calculator />, label: "Calculadora de Intereses", href: "/dashboard/calculadora", color: "text-emerald-500" },
                 { icon: <HelpCircle />, label: "Preguntas Frecuentes", href: "/dashboard/faq", color: "text-slate-400" },
                 { icon: <PlayCircle />, label: "Tutoriales", href: "/dashboard/tutoriales", color: "text-pink-400" },
                 { icon: <BookUser />, label: "Guía de Abogados", href: "/dashboard/guia", color: "text-teal-500" },
