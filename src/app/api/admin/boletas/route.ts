@@ -3,22 +3,34 @@ import { getSession } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { rm, mkdir, access } from "node:fs/promises";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
     const session = await getSession();
     if (!session || !["admin", "superadmin"].includes(session.accessLevel)) {
         return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
+    const tipo = req.nextUrl.searchParams.get("tipo");
+
+    // Si se pasa ?tipo=xxx devuelve los registros de ese tipo
+    if (tipo && ["mensual", "anual", "deuda"].includes(tipo)) {
+        const registros = await prisma.facturaSantaFe.findMany({
+            where: { tipo },
+            select: { id: true, cod: true, factura: true, expediente: true },
+            orderBy: { cod: "asc" },
+        });
+        return NextResponse.json(registros);
+    }
+
     const tipos = ["mensual", "anual", "deuda"] as const;
     const batches = await Promise.all(
-        tipos.map(async (tipo) => {
+        tipos.map(async (t) => {
             const latest = await prisma.facturaSantaFe.findFirst({
-                where: { tipo },
+                where: { tipo: t },
                 orderBy: { createdAt: "desc" },
                 select: { periodo: true, createdAt: true },
             });
-            const total = await prisma.facturaSantaFe.count({ where: { tipo } });
-            return { tipo, periodo: latest?.periodo ?? null, total, uploadedAt: latest?.createdAt ?? null };
+            const total = await prisma.facturaSantaFe.count({ where: { tipo: t } });
+            return { tipo: t, periodo: latest?.periodo ?? null, total, uploadedAt: latest?.createdAt ?? null };
         })
     );
 

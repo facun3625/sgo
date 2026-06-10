@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Upload, CheckCircle2, AlertCircle, Loader2, FileSpreadsheet, Trash2, FolderOpen } from "lucide-react";
+import { Upload, CheckCircle2, AlertCircle, Loader2, FileSpreadsheet, Trash2, FolderOpen, ChevronDown, ChevronUp, Table2 } from "lucide-react";
 import * as XLSX from "xlsx";
 
 interface Batch {
@@ -9,6 +9,13 @@ interface Batch {
     periodo: string | null;
     total: number;
     uploadedAt: string | null;
+}
+
+interface RegistroBoleta {
+    id: number;
+    cod: string;
+    factura: string | null;
+    expediente: string;
 }
 
 interface UploadResult {
@@ -37,6 +44,10 @@ export default function BoletasAdminPage() {
     const [confirmEliminar, setConfirmEliminar] = useState<string | null>(null);
     const [results, setResults] = useState<Record<string, UploadResult | { error: string }>>({});
     const fileRefs = useRef<Record<string, HTMLInputElement | null>>({});
+    const [tablaAbierta, setTablaAbierta] = useState<string | null>(null);
+    const [tablaRegistros, setTablaRegistros] = useState<Record<string, RegistroBoleta[]>>({});
+    const [cargandoTabla, setCargandoTabla] = useState<string | null>(null);
+    const [busquedaTabla, setBusquedaTabla] = useState<Record<string, string>>({});
 
     const descargarDetalle = (tipo: string, result: UploadResult) => {
         const filas: Record<string, string>[] = [];
@@ -71,6 +82,17 @@ export default function BoletasAdminPage() {
     };
 
     useEffect(() => { fetchBatches(); }, []);
+
+    const toggleTabla = async (tipo: string) => {
+        if (tablaAbierta === tipo) { setTablaAbierta(null); return; }
+        setTablaAbierta(tipo);
+        if (!tablaRegistros[tipo]) {
+            setCargandoTabla(tipo);
+            const res = await fetch(`/api/admin/boletas?tipo=${tipo}`);
+            if (res.ok) { const data = await res.json(); setTablaRegistros(prev => ({ ...prev, [tipo]: data })); }
+            setCargandoTabla(null);
+        }
+    };
 
     const handleUpload = async (tipo: string) => {
         const fileInput = fileRefs.current[tipo];
@@ -193,6 +215,65 @@ export default function BoletasAdminPage() {
                                     </div>
                                 )
                             )}
+
+                            {/* Ver tabla */}
+                            {batch?.total ? (
+                                <div className="space-y-2">
+                                    <button
+                                        onClick={() => toggleTabla(tipo)}
+                                        className="flex items-center gap-1.5 text-[11px] font-bold text-[#063f68] dark:text-blue-400 hover:underline"
+                                    >
+                                        <Table2 size={12} />
+                                        {tablaAbierta === tipo ? "Ocultar tabla" : "Ver tabla de registros"}
+                                        {tablaAbierta === tipo ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
+                                    </button>
+                                    {tablaAbierta === tipo && (
+                                        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 overflow-hidden">
+                                            <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800">
+                                                <input
+                                                    type="text"
+                                                    placeholder="Buscar por cliente o comprobante..."
+                                                    value={busquedaTabla[tipo] ?? ""}
+                                                    onChange={e => setBusquedaTabla(prev => ({ ...prev, [tipo]: e.target.value }))}
+                                                    className="w-full text-[11px] px-2 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-1 focus:ring-[#063f68]/30"
+                                                />
+                                            </div>
+                                            {cargandoTabla === tipo ? (
+                                                <div className="flex items-center justify-center py-6">
+                                                    <Loader2 size={16} className="animate-spin text-slate-300" />
+                                                </div>
+                                            ) : (
+                                                <div className="overflow-auto max-h-64">
+                                                    <table className="w-full text-[11px]">
+                                                        <thead className="bg-slate-50 dark:bg-slate-800/50 sticky top-0">
+                                                            <tr>
+                                                                <th className="px-3 py-2 text-left font-bold text-slate-400 uppercase tracking-wider">Cliente</th>
+                                                                <th className="px-3 py-2 text-left font-bold text-slate-400 uppercase tracking-wider">N° Comprobante</th>
+                                                                <th className="px-3 py-2 text-left font-bold text-slate-400 uppercase tracking-wider">Expediente</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
+                                                            {(tablaRegistros[tipo] ?? [])
+                                                                .filter(r => {
+                                                                    const q = (busquedaTabla[tipo] ?? "").toLowerCase();
+                                                                    if (!q) return true;
+                                                                    return r.cod.toLowerCase().includes(q) || (r.factura ?? "").toLowerCase().includes(q) || r.expediente.toLowerCase().includes(q);
+                                                                })
+                                                                .map(r => (
+                                                                    <tr key={r.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30">
+                                                                        <td className="px-3 py-1.5 font-mono font-bold text-slate-700 dark:text-slate-200">{r.cod}</td>
+                                                                        <td className="px-3 py-1.5 text-slate-600 dark:text-slate-300">{r.factura ?? <span className="text-slate-300">—</span>}</td>
+                                                                        <td className="px-3 py-1.5 text-slate-400">{r.expediente}</td>
+                                                                    </tr>
+                                                                ))}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            ) : null}
 
                             {/* Eliminar PDFs */}
                             {confirmEliminar === tipo ? (
