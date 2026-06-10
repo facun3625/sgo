@@ -155,7 +155,13 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
                     ],
                 },
                 { icon: <FolderOpen />, label: "Repositorio de Archivos", href: "/dashboard/archivos", color: "text-indigo-500" },
-                { icon: <Calculator />, label: "Calculadora de Intereses", href: "/dashboard/calculadora", color: "text-emerald-500" },
+                {
+                    icon: <Calculator />, label: "Calculadores", color: "text-emerald-500",
+                    children: [
+                        { label: "Calculadora de Intereses", href: "/dashboard/calculadora" },
+                        { label: "Calculadora de Fechas", href: "/dashboard/calculadora-fechas" },
+                    ],
+                },
                 { icon: <HelpCircle />, label: "Preguntas Frecuentes", href: "/dashboard/faq", color: "text-slate-400" },
                 { icon: <PlayCircle />, label: "Tutoriales", href: "/dashboard/tutoriales", color: "text-pink-400" },
                 { icon: <BookUser />, label: "Guía de Abogados", href: "/dashboard/guia", color: "text-teal-500" },
