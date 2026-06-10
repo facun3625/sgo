@@ -8,9 +8,9 @@ async function isActiva(): Promise<boolean> {
 }
 
 interface FeriadoAPI {
-    mes: number;
-    dia: number;
-    motivo: string;
+    fecha: string;
+    nombre: string;
+    tipo: string;
 }
 
 interface Feriado {
@@ -25,10 +25,7 @@ async function getFeriadosAno(year: number): Promise<Feriado[]> {
         });
         if (!res.ok) return [];
         const data: FeriadoAPI[] = await res.json();
-        return data.map((f) => ({
-            fecha: `${year}-${String(f.mes).padStart(2, "0")}-${String(f.dia).padStart(2, "0")}`,
-            motivo: f.motivo ?? "",
-        }));
+        return data.map((f) => ({ fecha: f.fecha, motivo: f.nombre ?? "" }));
     } catch {
         return [];
     }
