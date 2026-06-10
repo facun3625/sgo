@@ -5,7 +5,7 @@ import {
     CreditCard, ArrowRight, ChevronRight, IdCard, Home, Wallet,
     Clock, FileText, LockKeyhole, Search, Gavel,
     CheckCircle2, Loader2, Newspaper, ChevronLeft,
-    Star, CalendarDays, GraduationCap, Zap, BookUser, PlayCircle,
+    Star, CalendarDays, GraduationCap, Zap, BookUser, PlayCircle, Calculator,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -247,6 +247,7 @@ export default function DashboardClient({ session }: { session: SessionPayload }
                             { href: "/dashboard/solicitudes/jurisprudencia", icon: <Gavel size={18} />, label: "Jurisprudencia", color: "text-teal-600 bg-teal-600/10 group-hover:bg-teal-600 group-hover:text-white" },
                             { href: "/dashboard/guia", icon: <BookUser size={18} />, label: "Guía de Abogados", color: "text-teal-600 bg-teal-600/10 group-hover:bg-teal-600 group-hover:text-white" },
                             { href: "/dashboard/tutoriales", icon: <PlayCircle size={18} />, label: "Tutoriales", color: "text-pink-500 bg-pink-500/10 group-hover:bg-pink-500 group-hover:text-white" },
+                            { href: "/dashboard/calculadora", icon: <Calculator size={18} />, label: "Calculadora de Intereses · Créditos laborales judicializados", color: "text-emerald-600 bg-emerald-600/10 group-hover:bg-emerald-600 group-hover:text-white" },
                         ].map(item => (
                             <Link key={item.href} href={item.href}
                                 className="group flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 transition-all">
