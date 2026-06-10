@@ -28,7 +28,7 @@ function fmtFecha(iso: string) {
 
 export default function CalculadoraPage() {
     const [capital, setCapital] = useState("");
-    const [desde, setDesde] = useState("");
+    const [desde, setDesde] = useState("2020-01-01");
     const [hasta, setHasta] = useState("");
     const [cargando, setCargando] = useState(false);
     const [resultado, setResultado] = useState<Resultado | null>(null);
