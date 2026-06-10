@@ -77,9 +77,12 @@ export async function GET(req: NextRequest) {
     const ratioTasa   = (100 + tasaFin.valor) / (100 + tasaInicio.valor);
     const interesesTasa = capital * (ratioTasa - 1);
 
-    // CER + 3% anual
-    const ratioCer    = cerFin.valor / cerInicio.valor;
-    const ratioCer3   = ratioCer * Math.pow(1.03, dias / 365);
+    // CER + 3% anual — días contados entre las fechas reales del índice CER (igual que BCRA)
+    const ratioCer  = cerFin.valor / cerInicio.valor;
+    const diasCer   = Math.round(
+        (new Date(cerFin.fecha + "T00:00:00Z").getTime() - new Date(cerInicio.fecha + "T00:00:00Z").getTime()) / 86400000
+    );
+    const ratioCer3 = ratioCer * Math.pow(1.03, diasCer / 365);
     const interesesCer3 = capital * (ratioCer3 - 1);
 
     // 67% de (CER + 3%)
