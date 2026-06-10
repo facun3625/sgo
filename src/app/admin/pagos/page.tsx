@@ -61,6 +61,7 @@ interface FilaContable {
     apellido: string;
     fechaCobro: string | null;
     importe: number;
+    nroComprobante: string;
 }
 
 type Filtro = "todos" | "deuda" | "cuota_pendiente" | "al_dia" | "sin_cuota";
@@ -171,21 +172,24 @@ function ContabilidadView({ stats, pctPagado }: { stats: Stats | null; pctPagado
         if (filasAExportar.length === 0) return;
         setDescargando(true);
 
+        const [y, m] = mes.split("-");
+        const ultimoDiaMes = new Date(parseInt(y), parseInt(m), 0);
+        const fechaVencimiento = `${String(ultimoDiaMes.getDate()).padStart(2, "0")}/${m.padStart(2, "0")}/${y}`;
+
         const filasDatos = filasAExportar.map((f) => ({
             "Número recibo": f.nroRecibo,
             "Cliente": f.cliente,
             "Fecha cobro": fmtFecha(f.fechaCobro),
             "Importe en $": f.importe,
-            "Tipo Comprobante": "",
-            "Número comprobante": "",
-            "Fecha vencimiento": "",
+            "Tipo Comprobante": "FAC",
+            "Número comprobante": f.nroComprobante,
+            "Fecha vencimiento": fechaVencimiento,
         }));
 
         const wb = XLSX.utils.book_new();
         const ws = XLSX.utils.json_to_sheet(filasDatos);
         ws["!cols"] = [{ wch: 16 }, { wch: 12 }, { wch: 14 }, { wch: 14 }, { wch: 18 }, { wch: 20 }, { wch: 18 }];
         XLSX.utils.book_append_sheet(wb, ws, "Registros");
-        const [y, m] = mes.split("-");
         const tipoLabel = tipo === "deudas" ? "Deuda" : tipo === "cuotas" ? "Cuotas" : "Todos";
         const hoy = new Date();
         const fechaHoy = `${hoy.getFullYear()}${String(hoy.getMonth() + 1).padStart(2, "0")}${String(hoy.getDate()).padStart(2, "0")}`;

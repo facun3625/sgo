@@ -110,7 +110,7 @@ export async function GET() {
     const totalRecaudadoDeudas = deudasCobradas.reduce((acc, d) => acc + d.monto, 0);
 
     // Stats del mes
-    const cuotasPagadas = cuotas.filter((c) => c.estado === "pagado");
+    const cuotasPagadas = cuotas.filter((c) => c.estado === "pagado" && c.metodoPago !== "matriculacion");
     const totalRecaudado = cuotasPagadas.reduce((acc, c) => acc + c.monto, 0);
     const pagadasPorBanelco = cuotasPagadas.filter((c) => c.metodoPago === "banelco").length;
     const pagadasPorHomeBanking = cuotasPagadas.filter((c) => c.metodoPago === "home_banking").length;

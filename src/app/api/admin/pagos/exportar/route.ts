@@ -55,6 +55,7 @@ export async function GET(req: NextRequest) {
             ? prisma.cuotaMensual.findMany({
                 where: {
                     estado: "pagado",
+                    metodoPago: { not: "matriculacion" },
                     ...(soloNoExportados ? { exportado: false } : {}),
                     ...(mes ? { periodo: mes } : {}),
                     ...(metodoPago ? { metodoPago } : {}),
@@ -70,8 +71,26 @@ export async function GET(req: NextRequest) {
     ];
     const datosMap = await getDatosMap([...new Set(allExpedientes)]);
 
+    // Construir map de comprobantes: "cod:tipo" → factura
+    const allCods = [...new Set(
+        [...deudas, ...cuotas].map((r) => datosMap.get(r.expediente)?.cod ?? r.expediente).filter(Boolean)
+    )];
+    const boletas = allCods.length > 0
+        ? await prisma.facturaSantaFe.findMany({
+            where: { cod: { in: allCods } },
+            select: { cod: true, tipo: true, factura: true },
+        })
+        : [];
+    // Si hay múltiples boletas del mismo cod+tipo, tomamos la primera (lote activo)
+    const boletaMap = new Map<string, string>();
+    for (const b of boletas) {
+        const key = `${b.cod}:${b.tipo}`;
+        if (!boletaMap.has(key) && b.factura) boletaMap.set(key, b.factura);
+    }
+
     const filasDeudas = deudas.map((r) => {
         const dato = datosMap.get(r.expediente);
+        const cod = dato?.cod ?? r.expediente;
         return {
             id: r.id,
             tipo: "deuda" as const,
@@ -79,28 +98,31 @@ export async function GET(req: NextRequest) {
             exportado: r.exportado,
             nroRecibo: r.mpPaymentId ?? "",
             expediente: r.expediente,
-            cliente: dato?.cod ?? r.expediente,
+            cliente: cod,
             nombre: dato?.nombre ?? "",
             apellido: dato?.apellido ?? "",
             fechaCobro: r.fechaPago,
             importe: r.monto,
+            nroComprobante: boletaMap.get(`${cod}:deuda`) ?? "",
         };
     });
 
     const filasCuotas = cuotas.map((r) => {
         const dato = datosMap.get(r.expediente);
+        const cod = dato?.cod ?? r.expediente;
         return {
             id: r.id,
             tipo: "cuota_mp" as const,
             metodoPago: r.metodoPago ?? "",
             exportado: r.exportado,
-            nroRecibo: r.mpPaymentId ?? "",
+            nroRecibo: r.metodoPago === "matriculacion" ? "Exento - Joven Abogado" : (r.mpPaymentId ?? ""),
             expediente: r.expediente,
-            cliente: dato?.cod ?? r.expediente,
+            cliente: cod,
             nombre: dato?.nombre ?? "",
             apellido: dato?.apellido ?? "",
             fechaCobro: r.fechaPago,
             importe: r.monto,
+            nroComprobante: boletaMap.get(`${cod}:mensual`) ?? "",
         };
     });
 

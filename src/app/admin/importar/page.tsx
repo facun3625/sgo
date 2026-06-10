@@ -1187,10 +1187,12 @@ function parseFechaLocal(val: string): string | null {
     if (!val) return null;
     const m1 = val.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
     if (m1) {
-        let [, d, mo, y] = m1;
+        let [, a, b, y] = m1;
         if (y.length === 2) y = `20${y}`;
-        const date = new Date(Date.UTC(parseInt(y), parseInt(mo) - 1, parseInt(d)));
-        if (!isNaN(date.getTime())) return `${d.padStart(2,"0")}/${mo.padStart(2,"0")}/${y}`;
+        const na = parseInt(a), nb = parseInt(b), ny = parseInt(y);
+        const [mes, dia] = nb > 12 ? [na, nb] : na > 12 ? [nb, na] : [na, nb];
+        const date = new Date(Date.UTC(ny, mes - 1, dia));
+        if (!isNaN(date.getTime())) return `${String(dia).padStart(2,"0")}/${String(mes).padStart(2,"0")}/${y}`;
     }
     const m2 = val.match(/^(\d{4})-(\d{2})-(\d{2})/);
     if (m2) {
