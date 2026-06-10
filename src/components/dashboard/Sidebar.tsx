@@ -160,6 +160,7 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
                     children: [
                         { label: "Calculadora de Intereses", href: "/dashboard/calculadora" },
                         { label: "Calculadora de Fechas", href: "/dashboard/calculadora-fechas" },
+                        { label: "Cálculo de Incapacidad", href: "/dashboard/calculadora-incapacidad" },
                     ],
                 },
                 { icon: <HelpCircle />, label: "Preguntas Frecuentes", href: "/dashboard/faq", color: "text-slate-400" },
