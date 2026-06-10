@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
+import prisma from "@/lib/prisma";
+
+async function isActiva(): Promise<boolean> {
+    const config = await prisma.config.findUnique({ where: { clave: "calculadoraFechasActiva" } });
+    return config ? config.valor !== "0" : true;
+}
 
 interface FeriadoAPI {
     mes: number;
@@ -38,6 +44,16 @@ export async function GET(req: NextRequest) {
     if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
     const { searchParams } = req.nextUrl;
+
+    // Sin parámetros → solo devuelve si está habilitada
+    if (!searchParams.get("desde")) {
+        return NextResponse.json({ activa: await isActiva() });
+    }
+
+    if (!(await isActiva())) {
+        return NextResponse.json({ error: "La calculadora está deshabilitada" }, { status: 403 });
+    }
+
     const desde = searchParams.get("desde");
     const diasStr = searchParams.get("dias");
     const tipo = searchParams.get("tipo") ?? "habiles";

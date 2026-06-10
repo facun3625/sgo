@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Trash2, Loader2, ShieldAlert, Settings2, ToggleLeft, ToggleRight, Calculator } from "lucide-react";
+import { Trash2, Loader2, ShieldAlert, Settings2, ToggleLeft, ToggleRight, Calculator, CalendarDays } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 
 const IMPORTAR_TABS = [
@@ -23,9 +23,13 @@ export default function ConfigSistemaPage() {
     const [confirmDatos, setConfirmDatos] = useState(false);
     const [borrandoDatos, setBorrandoDatos] = useState(false);
 
-    // Calculadora
+    // Calculadora de intereses
     const [calculadoraActiva, setCalculadoraActiva] = useState(true);
     const [guardandoCalc, setGuardandoCalc] = useState(false);
+
+    // Calculadora de fechas
+    const [calculadoraFechasActiva, setCalculadoraFechasActiva] = useState(true);
+    const [guardandoCalcFechas, setGuardandoCalcFechas] = useState(false);
 
     // Tabs importar
     const [tabsActivas, setTabsActivas] = useState<string[]>(IMPORTAR_TABS.map(t => t.id));
@@ -35,7 +39,12 @@ export default function ConfigSistemaPage() {
     useEffect(() => {
         fetch("/api/admin/config")
             .then(r => r.ok ? r.json() : null)
-            .then(data => { if (data) setCalculadoraActiva(data.calculadoraActiva !== false); });
+            .then(data => {
+                if (data) {
+                    setCalculadoraActiva(data.calculadoraActiva !== false);
+                    setCalculadoraFechasActiva(data.calculadoraFechasActiva !== false);
+                }
+            });
     }, []);
 
     async function guardarCalculadora(activa: boolean) {
@@ -46,10 +55,24 @@ export default function ConfigSistemaPage() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ clave: "calculadoraActiva", valor: activa ? "1" : "0" }),
             });
-            if (res.ok) showToast(`Calculadora ${activa ? "activada" : "desactivada"}`, "success");
+            if (res.ok) showToast(`Calculadora de intereses ${activa ? "activada" : "desactivada"}`, "success");
             else showToast("Error al guardar", "error");
         } catch { showToast("Error de conexión", "error"); }
         finally { setGuardandoCalc(false); }
+    }
+
+    async function guardarCalculadoraFechas(activa: boolean) {
+        setGuardandoCalcFechas(true);
+        try {
+            const res = await fetch("/api/admin/config", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ clave: "calculadoraFechasActiva", valor: activa ? "1" : "0" }),
+            });
+            if (res.ok) showToast(`Calculadora de fechas ${activa ? "activada" : "desactivada"}`, "success");
+            else showToast("Error al guardar", "error");
+        } catch { showToast("Error de conexión", "error"); }
+        finally { setGuardandoCalcFechas(false); }
     }
 
     useEffect(() => {
@@ -130,6 +153,37 @@ export default function ConfigSistemaPage() {
                         {guardandoCalc
                             ? <Loader2 size={18} className="animate-spin text-slate-400 shrink-0" />
                             : calculadoraActiva
+                                ? <ToggleRight size={22} className="text-[#063f68] dark:text-blue-400 shrink-0" />
+                                : <ToggleLeft size={22} className="text-slate-300 dark:text-slate-600 shrink-0" />}
+                    </button>
+                </div>
+            </div>
+
+            {/* Calculadora de Fechas */}
+            <div className="border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden">
+                <div className="px-5 py-3 bg-slate-50 dark:bg-slate-800/50 flex items-center gap-2 border-b border-slate-100 dark:border-slate-800">
+                    <CalendarDays size={14} className="text-slate-500" />
+                    <span className="text-[12px] font-bold text-slate-700 dark:text-slate-300">Calculadora de Fechas</span>
+                </div>
+                <div className="px-5 py-5">
+                    <p className="text-[12px] text-slate-500 dark:text-slate-400 mb-4">
+                        Activa o desactiva la calculadora de días hábiles y corridos visible en el dashboard de usuarios.
+                    </p>
+                    <button
+                        onClick={async () => {
+                            const nuevo = !calculadoraFechasActiva;
+                            setCalculadoraFechasActiva(nuevo);
+                            await guardarCalculadoraFechas(nuevo);
+                        }}
+                        disabled={guardandoCalcFechas}
+                        className={`flex items-center justify-between gap-3 px-4 py-3 rounded-xl border text-[13px] font-medium transition-all w-full sm:w-72
+                            ${calculadoraFechasActiva
+                                ? "bg-[#063f68]/5 dark:bg-blue-900/20 border-[#063f68]/20 dark:border-blue-700 text-slate-700 dark:text-slate-200"
+                                : "bg-slate-50 dark:bg-slate-800/30 border-slate-100 dark:border-slate-700 text-slate-400"}`}>
+                        <span>{calculadoraFechasActiva ? "Calculadora activa" : "Calculadora desactivada"}</span>
+                        {guardandoCalcFechas
+                            ? <Loader2 size={18} className="animate-spin text-slate-400 shrink-0" />
+                            : calculadoraFechasActiva
                                 ? <ToggleRight size={22} className="text-[#063f68] dark:text-blue-400 shrink-0" />
                                 : <ToggleLeft size={22} className="text-slate-300 dark:text-slate-600 shrink-0" />}
                     </button>

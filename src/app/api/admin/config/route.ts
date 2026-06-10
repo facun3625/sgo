@@ -28,7 +28,8 @@ export async function GET() {
         boletaDescargaMensual: map.boletaDescargaMensual !== "0",
         boletaDescargaAnual:   map.boletaDescargaAnual   !== "0",
         boletaDescargaDeuda:   map.boletaDescargaDeuda   !== "0",
-        calculadoraActiva:     map.calculadoraActiva !== "0",
+        calculadoraActiva:      map.calculadoraActiva      !== "0",
+        calculadoraFechasActiva: map.calculadoraFechasActiva !== "0",
     });
 }
 
