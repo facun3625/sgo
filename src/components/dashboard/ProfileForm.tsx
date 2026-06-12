@@ -202,8 +202,8 @@ export default function ProfileForm({ initialUser }: ProfileFormProps) {
                     <h3 className="text-2xl font-bold text-black dark:text-white tracking-tight mb-1">
                         {initialUser.apellido}, {initialUser.nombre}
                     </h3>
-                    <p className="text-[14px] text-slate-500 dark:text-slate-400 font-medium mb-4">Matrícula {initialUser.expediente}</p>
-                    <p className="text-[12px] text-slate-400 dark:text-slate-500 max-w-sm leading-relaxed">
+                    <p className="text-[14px] text-slate-700 dark:text-slate-400 font-medium mb-4">Matrícula {initialUser.expediente}</p>
+                    <p className="text-[12px] text-slate-700 dark:text-slate-500 max-w-sm leading-relaxed">
                         Actualiza tu foto profesional para que sea visible en tu credencial digital y en la barra de navegación.
                     </p>
                     {image && (
@@ -226,7 +226,7 @@ export default function ProfileForm({ initialUser }: ProfileFormProps) {
                             <img src={signature} alt="Firma" className="max-w-full max-h-full object-contain" />
                         ) : (
                             <div className="text-center">
-                                <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest">Sin Firma</p>
+                                <p className="text-[10px] text-slate-700 dark:text-slate-500 font-bold uppercase tracking-widest">Sin Firma</p>
                             </div>
                         )}
                         {isUploadingSignature && (
@@ -255,8 +255,8 @@ export default function ProfileForm({ initialUser }: ProfileFormProps) {
                     <h3 className="text-lg font-bold text-black dark:text-white tracking-tight mb-1">
                         Tu Firma Digital
                     </h3>
-                    <p className="text-[12px] text-slate-500 dark:text-slate-400 font-medium mb-4">Sube tu firma en formato de imagen</p>
-                    <p className="text-[11px] text-slate-400 dark:text-slate-500 max-w-sm leading-relaxed">
+                    <p className="text-[12px] text-slate-700 dark:text-slate-400 font-medium mb-4">Sube tu firma en formato de imagen</p>
+                    <p className="text-[11px] text-slate-700 dark:text-slate-500 max-w-sm leading-relaxed">
                         Esta firma aparecerá en tu credencial digital. Se recomienda un archivo PNG o JPG con fondo transparente o blanco.
                     </p>
                     {signature && (
@@ -283,7 +283,7 @@ export default function ProfileForm({ initialUser }: ProfileFormProps) {
 
                 <form onSubmit={handlePasswordChange} className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
                     <div className="space-y-1.5">
-                        <label className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Contraseña Actual</label>
+                        <label className="text-[11px] font-bold text-slate-700 dark:text-slate-500 uppercase tracking-widest ml-1">Contraseña Actual</label>
                         <input
                             type="password"
                             required
@@ -294,7 +294,7 @@ export default function ProfileForm({ initialUser }: ProfileFormProps) {
                         />
                     </div>
                     <div className="space-y-1.5">
-                        <label className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Nueva Contraseña</label>
+                        <label className="text-[11px] font-bold text-slate-700 dark:text-slate-500 uppercase tracking-widest ml-1">Nueva Contraseña</label>
                         <input
                             type="password"
                             required
@@ -305,7 +305,7 @@ export default function ProfileForm({ initialUser }: ProfileFormProps) {
                         />
                     </div>
                     <div className="space-y-1.5">
-                        <label className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Confirmar Nueva</label>
+                        <label className="text-[11px] font-bold text-slate-700 dark:text-slate-500 uppercase tracking-widest ml-1">Confirmar Nueva</label>
                         <input
                             type="password"
                             required

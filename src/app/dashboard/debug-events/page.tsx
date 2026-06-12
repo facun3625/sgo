@@ -57,7 +57,7 @@ export default function DebugCreateEventPage() {
             <div className="sticky top-16 z-20 bg-white/80 dark:bg-[#02182b]/80 backdrop-blur-md flex items-center justify-between px-8 py-3.5 border-b border-[#f1f5f9] dark:border-slate-800">
                 <div className="flex items-center gap-4">
                     <Link href="/dashboard/calendario" className="p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-all group">
-                        <ChevronLeft size={20} className="text-slate-400 group-hover:text-black dark:group-hover:text-white transition-colors" />
+                        <ChevronLeft size={20} className="text-slate-700 group-hover:text-black dark:group-hover:text-white transition-colors" />
                     </Link>
                     <div className="flex items-center gap-3">
                         <Wrench size={18} className="text-blue-500" />
@@ -70,7 +70,7 @@ export default function DebugCreateEventPage() {
                 <div className="bg-slate-50 dark:bg-slate-900/30 border border-slate-100 dark:border-slate-800 rounded-[40px] p-10 space-y-8">
                     <div className="space-y-2">
                         <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight uppercase">Crear Evento</h1>
-                        <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Herramienta de depuración para inyectar eventos directamente.</p>
+                        <p className="text-sm font-medium text-slate-700 dark:text-slate-400">Herramienta de depuración para inyectar eventos directamente.</p>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-6">

@@ -26,7 +26,7 @@ function PersonaCard({ persona }: { persona: FiadorPersona }) {
                 <p className="text-[14px] font-bold text-slate-800 dark:text-white">
                     {tieneNombre ? `${persona.apellido}, ${persona.nombre}` : "Sin datos en el sistema"}
                 </p>
-                <p className="text-[12px] text-slate-400 mt-0.5">Expediente {persona.expediente}</p>
+                <p className="text-[12px] text-slate-700 mt-0.5">Expediente {persona.expediente}</p>
             </div>
         </div>
     );
@@ -36,7 +36,7 @@ function EmptyState({ texto }: { texto: string }) {
     return (
         <div className="flex flex-col items-center gap-2 py-8 text-center bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 max-w-3xl">
             <HandshakeIcon size={20} className="text-slate-300" />
-            <p className="text-[12px] text-slate-400">{texto}</p>
+            <p className="text-[12px] text-slate-700">{texto}</p>
         </div>
     );
 }
@@ -63,10 +63,10 @@ export default function FiadorPage() {
                         href="/dashboard"
                         className="p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-all group"
                     >
-                        <ChevronLeft size={20} className="text-slate-400 group-hover:text-black dark:group-hover:text-white transition-colors" />
+                        <ChevronLeft size={20} className="text-slate-700 group-hover:text-black dark:group-hover:text-white transition-colors" />
                     </Link>
                     <div className="flex items-center gap-3">
-                        <HandshakeIcon size={18} className="text-slate-500" />
+                        <HandshakeIcon size={18} className="text-slate-700" />
                         <h2 className="text-[15px] font-bold text-black dark:text-white tracking-tight">Fiadores</h2>
                     </div>
                 </div>
@@ -83,7 +83,7 @@ export default function FiadorPage() {
                         {/* Tu fiador */}
                         <section className="space-y-3">
                             <div className="flex items-center gap-2">
-                                <HandshakeIcon size={15} className="text-slate-400" />
+                                <HandshakeIcon size={15} className="text-slate-700" />
                                 <h2 className="text-[13px] font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wide">
                                     Tu fiador
                                 </h2>
@@ -100,7 +100,7 @@ export default function FiadorPage() {
                         {/* Sos fiador de */}
                         <section className="space-y-3">
                             <div className="flex items-center gap-2">
-                                <HandshakeIcon size={15} className="text-slate-400" />
+                                <HandshakeIcon size={15} className="text-slate-700" />
                                 <h2 className="text-[13px] font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wide">
                                     Sos fiador de
                                 </h2>

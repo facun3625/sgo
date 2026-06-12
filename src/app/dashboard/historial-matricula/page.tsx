@@ -65,10 +65,10 @@ export default function HistorialMatriculaPage() {
                 <div className="flex items-center gap-4">
                     <Link href="/dashboard"
                         className="p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-all group">
-                        <ChevronLeft size={20} className="text-slate-400 group-hover:text-black dark:group-hover:text-white transition-colors" />
+                        <ChevronLeft size={20} className="text-slate-700 group-hover:text-black dark:group-hover:text-white transition-colors" />
                     </Link>
                     <div className="flex items-center gap-3">
-                        <Scale size={18} className="text-slate-500" />
+                        <Scale size={18} className="text-slate-700" />
                         <h2 className="text-[15px] font-bold text-black dark:text-white tracking-tight">Historial de Matrícula</h2>
                     </div>
                 </div>
@@ -109,7 +109,7 @@ export default function HistorialMatriculaPage() {
                         {/* Historial de estado */}
                         <section className="space-y-3">
                             <div className="flex items-center gap-2">
-                                <Clock size={15} className="text-slate-400" />
+                                <Clock size={15} className="text-slate-700" />
                                 <h2 className="text-[13px] font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wide">
                                     Historial de Estado de Matrícula
                                 </h2>
@@ -138,11 +138,11 @@ export default function HistorialMatriculaPage() {
                                                                 <span className="text-[12px] font-bold text-emerald-600 dark:text-emerald-400">Habilitación</span>
                                                             </>
                                                         )}
-                                                        <span className="text-[10px] text-slate-400 ml-auto">{fmtFecha(item.createdAt)}</span>
+                                                        <span className="text-[10px] text-slate-700 ml-auto">{fmtFecha(item.createdAt)}</span>
                                                     </div>
                                                     <p className="text-[12px] text-slate-600 dark:text-slate-300 leading-relaxed">{item.comentario}</p>
                                                     {item.adminNombre && (
-                                                        <p className="text-[10px] text-slate-400">Registrado por: {item.adminNombre}</p>
+                                                        <p className="text-[10px] text-slate-700">Registrado por: {item.adminNombre}</p>
                                                     )}
                                                 </div>
                                             </div>
@@ -168,13 +168,13 @@ function ApercibimientoCard({ a, vigente }: { a: Apercibimiento; vigente: boolea
                 <div className="flex items-center gap-2">
                     {vigente
                         ? <AlertTriangle size={13} className="text-rose-500 flex-shrink-0" />
-                        : <Info size={13} className="text-slate-400 flex-shrink-0" />
+                        : <Info size={13} className="text-slate-700 flex-shrink-0" />
                     }
-                    <span className={`text-[11px] font-bold uppercase tracking-wide ${vigente ? "text-rose-600 dark:text-rose-400" : "text-slate-400"}`}>
+                    <span className={`text-[11px] font-bold uppercase tracking-wide ${vigente ? "text-rose-600 dark:text-rose-400" : "text-slate-700"}`}>
                         {vigente ? "Vigente" : "Vencido"}
                     </span>
                 </div>
-                <span className={`text-[10px] ${vigente ? "text-rose-500/70" : "text-slate-400"}`}>
+                <span className={`text-[10px] ${vigente ? "text-rose-500/70" : "text-slate-700"}`}>
                     {fmtSolo(a.inicio)} → {fmtSolo(a.fin)}
                 </span>
             </div>
@@ -189,7 +189,7 @@ function EmptyState({ icon, texto }: { icon: React.ReactNode; texto: string }) {
     return (
         <div className="flex flex-col items-center gap-2 py-8 text-center bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 max-w-3xl">
             {icon}
-            <p className="text-[12px] text-slate-400">{texto}</p>
+            <p className="text-[12px] text-slate-700">{texto}</p>
         </div>
     );
 }

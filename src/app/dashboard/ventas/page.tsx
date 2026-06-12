@@ -177,7 +177,7 @@ export default function VentasPage() {
                 <h1 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
                     <ShoppingCart size={20} className="text-violet-500" /> Ventas
                 </h1>
-                <p className="text-slate-400 text-sm mt-0.5">Productos disponibles para comprar</p>
+                <p className="text-slate-700 text-sm mt-0.5">Productos disponibles para comprar</p>
             </div>
 
             {success && (
@@ -199,8 +199,8 @@ export default function VentasPage() {
                         {productos.length === 0 ? (
                             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-16 text-center">
                                 <ShoppingCart size={36} className="text-slate-200 dark:text-slate-700 mx-auto mb-3" />
-                                <p className="text-slate-500 font-semibold text-[15px]">Sin productos disponibles</p>
-                                <p className="text-slate-400 text-[13px] mt-1">Por el momento no hay productos habilitados. Consultá con la administración.</p>
+                                <p className="text-slate-700 font-semibold text-[15px]">Sin productos disponibles</p>
+                                <p className="text-slate-700 text-[13px] mt-1">Por el momento no hay productos habilitados. Consultá con la administración.</p>
                             </div>
                         ) : (
                             productos.map((p) => {
@@ -221,14 +221,14 @@ export default function VentasPage() {
                                                     ${p.precio.toLocaleString("es-AR")}
                                                 </p>
                                                 <div className="flex flex-wrap gap-3 mt-2 text-[12px]">
-                                                    <span className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
+                                                    <span className="flex items-center gap-1.5 text-slate-700 dark:text-slate-400">
                                                         <span className={`w-2 h-2 rounded-full ${p.stock > 0 ? "bg-emerald-400" : "bg-rose-400"}`} />
                                                         {p.stock > 0 ? `${p.stock} en stock` : "Sin stock"}
                                                     </span>
                                                     {p.limiteMensual !== null && (
                                                         <>
                                                             <span className="text-slate-300 dark:text-slate-700">·</span>
-                                                            <span className="text-slate-500 dark:text-slate-400">
+                                                            <span className="text-slate-700 dark:text-slate-400">
                                                                 Límite: <strong>{p.limiteMensual}</strong>/mes
                                                                 {yaComprado > 0 && ` (llevás ${yaComprado})`}
                                                             </span>
@@ -240,12 +240,12 @@ export default function VentasPage() {
                                                 {puedeComprar ? (
                                                     <button
                                                         onClick={() => isSelected ? setSelectedProducto(null) : openCompra(p)}
-                                                        className={`px-4 h-9 rounded-xl text-[12px] font-bold transition-all ${isSelected ? "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400" : "bg-[#063f68] text-white hover:bg-[#0a4d7a]"}`}
+                                                        className={`px-4 h-9 rounded-xl text-[12px] font-bold transition-all ${isSelected ? "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-400" : "bg-[#063f68] text-white hover:bg-[#0a4d7a]"}`}
                                                     >
                                                         {isSelected ? "Cancelar" : "Comprar"}
                                                     </button>
                                                 ) : (
-                                                    <span className="text-[12px] text-slate-400 font-semibold">
+                                                    <span className="text-[12px] text-slate-700 font-semibold">
                                                         {p.stock === 0 ? "Sin stock" : "Límite alcanzado"}
                                                     </span>
                                                 )}
@@ -260,18 +260,18 @@ export default function VentasPage() {
                                                     {/* Cantidad */}
                                                     {p.limiteMensual !== 1 && (
                                                         <div>
-                                                            <label className="text-[11px] text-slate-400 uppercase tracking-wide font-semibold block mb-1.5">Cantidad</label>
+                                                            <label className="text-[11px] text-slate-700 uppercase tracking-wide font-semibold block mb-1.5">Cantidad</label>
                                                             <div className="flex items-center gap-2">
                                                                 <button type="button"
                                                                     onClick={() => setCantidad((c) => Math.max(1, c - 1))}
-                                                                    className="w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all text-lg font-bold">
+                                                                    className="w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all text-lg font-bold">
                                                                     −
                                                                 </button>
                                                                 <span className="w-10 text-center text-[15px] font-bold text-slate-800 dark:text-white">{cantidad}</span>
                                                                 <button type="button"
                                                                     onClick={() => setCantidad((c) => Math.min(max, c + 1))}
                                                                     disabled={cantidad >= max}
-                                                                    className="w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 transition-all text-lg font-bold">
+                                                                    className="w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 transition-all text-lg font-bold">
                                                                     +
                                                                 </button>
                                                             </div>
@@ -280,7 +280,7 @@ export default function VentasPage() {
 
                                                     {/* Método */}
                                                     <div>
-                                                        <label className="text-[11px] text-slate-400 uppercase tracking-wide font-semibold block mb-1.5">Método de pago</label>
+                                                        <label className="text-[11px] text-slate-700 uppercase tracking-wide font-semibold block mb-1.5">Método de pago</label>
                                                         <div className="grid grid-cols-3 gap-2">
                                                             {(["mercadopago", ...(transferenciaHabilitada ? (["transferencia"] as const) : []), "efectivo"] as const).map((m) => (
                                                                 <button key={m} type="button"
@@ -288,7 +288,7 @@ export default function VentasPage() {
                                                                     className={`px-3 py-2.5 rounded-xl text-[12px] font-semibold transition-all border
                                                                         ${metodoPago === m
                                                                             ? "bg-[#063f68] border-[#063f68] text-white"
-                                                                            : "border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"}`}>
+                                                                            : "border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"}`}>
                                                                     {METODO_LABELS[m]}
                                                                 </button>
                                                             ))}
@@ -298,19 +298,19 @@ export default function VentasPage() {
                                                     {/* Comprobante */}
                                                     {metodoPago === "transferencia" && (
                                                         <div>
-                                                            <label className="text-[11px] text-slate-400 uppercase tracking-wide font-semibold block mb-1.5">Comprobante</label>
+                                                            <label className="text-[11px] text-slate-700 uppercase tracking-wide font-semibold block mb-1.5">Comprobante</label>
                                                             {comprobante ? (
                                                                 <div className="flex items-center gap-3 p-3 rounded-xl border border-emerald-200 dark:border-emerald-700/30 bg-emerald-50 dark:bg-emerald-900/10">
                                                                     <CheckCircle2 size={16} className="text-emerald-500 flex-shrink-0" />
                                                                     <span className="text-[12px] text-emerald-700 dark:text-emerald-400 flex-1 truncate">{comprobanteFileName}</span>
                                                                     <button type="button" onClick={() => { setComprobante(null); setComprobanteFileName(""); }}>
-                                                                        <X size={14} className="text-slate-400" />
+                                                                        <X size={14} className="text-slate-700" />
                                                                     </button>
                                                                 </div>
                                                             ) : (
                                                                 <label className="flex items-center gap-3 p-3 rounded-xl border border-dashed border-slate-300 dark:border-slate-600 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
-                                                                    {uploadingFile ? <Loader2 size={15} className="animate-spin text-slate-400" /> : <Upload size={15} className="text-slate-400" />}
-                                                                    <span className="text-[12px] text-slate-400">{uploadingFile ? "Subiendo..." : "Subir comprobante (imagen o PDF)"}</span>
+                                                                    {uploadingFile ? <Loader2 size={15} className="animate-spin text-slate-700" /> : <Upload size={15} className="text-slate-700" />}
+                                                                    <span className="text-[12px] text-slate-700">{uploadingFile ? "Subiendo..." : "Subir comprobante (imagen o PDF)"}</span>
                                                                     <input type="file" className="hidden" accept="image/*,.pdf"
                                                                         onChange={(e) => { const f = e.target.files?.[0]; if (f) handleUpload(f); }} />
                                                                 </label>
@@ -320,7 +320,7 @@ export default function VentasPage() {
 
                                                     {/* Total */}
                                                     <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
-                                                        <span className="text-[12px] text-slate-500">Total</span>
+                                                        <span className="text-[12px] text-slate-700">Total</span>
                                                         <span className="text-[17px] font-black text-slate-800 dark:text-white">
                                                             ${(p.precio * cantidad).toLocaleString("es-AR")}
                                                         </span>
@@ -352,7 +352,7 @@ export default function VentasPage() {
                         {pedidos.length === 0 ? (
                             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-10 text-center">
                                 <ShoppingCart size={24} className="text-slate-200 dark:text-slate-700 mx-auto mb-2" />
-                                <p className="text-[12px] text-slate-400">Sin pedidos aún</p>
+                                <p className="text-[12px] text-slate-700">Sin pedidos aún</p>
                             </div>
                         ) : (
                             pedidos.map((p) => (
@@ -360,7 +360,7 @@ export default function VentasPage() {
                                     <div className="flex items-start justify-between gap-2">
                                         <div>
                                             <p className="text-[13px] font-bold text-slate-800 dark:text-white">{p.producto.nombre}</p>
-                                            <p className="text-[11px] text-slate-400">
+                                            <p className="text-[11px] text-slate-700">
                                                 {p.cantidad > 1 ? `${p.cantidad} unidades · ` : ""}{METODO_LABELS[p.metodoPago] ?? p.metodoPago}
                                             </p>
                                         </div>
@@ -368,14 +368,14 @@ export default function VentasPage() {
                                             {ESTADO_LABELS[p.estado] ?? p.estado}
                                         </span>
                                     </div>
-                                    <p className="text-[11px] text-slate-400">
+                                    <p className="text-[11px] text-slate-700">
                                         {new Date(p.createdAt).toLocaleDateString("es-AR", {
                                             day: "2-digit", month: "2-digit", year: "numeric",
                                             hour: "2-digit", minute: "2-digit",
                                         })}
                                     </p>
                                     {p.observacion && (
-                                        <p className="text-[11px] text-slate-500 bg-slate-50 dark:bg-slate-800 rounded-lg px-2.5 py-1.5">{p.observacion}</p>
+                                        <p className="text-[11px] text-slate-700 bg-slate-50 dark:bg-slate-800 rounded-lg px-2.5 py-1.5">{p.observacion}</p>
                                     )}
                                     {p.estado === "pendiente" && (
                                         <button

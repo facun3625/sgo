@@ -20,7 +20,7 @@ export default function CuilGate() {
                         <h2 className="text-[17px] font-bold text-black dark:text-white tracking-tight">
                             Completá tu CUIL para continuar
                         </h2>
-                        <p className="text-[12px] text-slate-400 dark:text-slate-500 mt-0.5 font-medium">
+                        <p className="text-[12px] text-slate-700 dark:text-slate-500 mt-0.5 font-medium">
                             Acción requerida antes de usar la plataforma
                         </p>
                     </div>
@@ -31,7 +31,7 @@ export default function CuilGate() {
                     Aprovechá también para verificar que tus datos de contacto estén correctos y actualizados.
                 </p>
 
-                <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 text-[12px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 text-[12px] text-slate-700 dark:text-slate-400 leading-relaxed">
                     <p className="font-semibold text-slate-600 dark:text-slate-300 mb-1">Aviso sobre migración de sistemas</p>
                     Hemos realizado una migración de sistemas. Si detecta alguna inconsistencia, error u omisión en sus datos, por favor comuníquese con el Colegio para que podamos verificar la información y realizar la corrección correspondiente.
                 </div>

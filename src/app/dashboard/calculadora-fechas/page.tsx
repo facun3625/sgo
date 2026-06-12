@@ -78,10 +78,10 @@ export default function CalculadoraFechasPage() {
             <div className="p-4 md:p-8 max-w-2xl">
                 <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
                     <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                        <CalendarDays size={24} className="text-slate-400" />
+                        <CalendarDays size={24} className="text-slate-700" />
                     </div>
                     <h2 className="text-lg font-bold text-slate-700 dark:text-slate-200">Calculadora no disponible</h2>
-                    <p className="text-[13px] text-slate-400 max-w-xs">Esta herramienta está temporalmente deshabilitada. Contactá al colegio para más información.</p>
+                    <p className="text-[13px] text-slate-700 max-w-xs">Esta herramienta está temporalmente deshabilitada. Contactá al colegio para más información.</p>
                 </div>
             </div>
         );
@@ -92,11 +92,11 @@ export default function CalculadoraFechasPage() {
             {/* Header */}
             <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                    <CalendarDays size={20} className="text-slate-500" />
+                    <CalendarDays size={20} className="text-slate-700" />
                 </div>
                 <div>
                     <h1 className="text-xl font-bold text-slate-800 dark:text-white">Calculadora de Fechas</h1>
-                    <p className="text-slate-400 text-sm mt-0.5">Días hábiles y corridos · Feriados nacionales</p>
+                    <p className="text-slate-700 text-sm mt-0.5">Días hábiles y corridos · Feriados nacionales</p>
                 </div>
             </div>
 
@@ -111,7 +111,7 @@ export default function CalculadoraFechasPage() {
             {/* Formulario */}
             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6 space-y-5">
                 <div className="space-y-1.5">
-                    <label className="text-[12px] font-bold text-slate-500 uppercase tracking-wide">Fecha inicial</label>
+                    <label className="text-[12px] font-bold text-slate-700 uppercase tracking-wide">Fecha inicial</label>
                     <input
                         type="date"
                         value={desde}
@@ -122,7 +122,7 @@ export default function CalculadoraFechasPage() {
 
                 <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                        <label className="text-[12px] font-bold text-slate-500 uppercase tracking-wide">Cantidad de días</label>
+                        <label className="text-[12px] font-bold text-slate-700 uppercase tracking-wide">Cantidad de días</label>
                         <input
                             type="number"
                             min="1"
@@ -133,7 +133,7 @@ export default function CalculadoraFechasPage() {
                         />
                     </div>
                     <div className="space-y-1.5">
-                        <label className="text-[12px] font-bold text-slate-500 uppercase tracking-wide">Tipo</label>
+                        <label className="text-[12px] font-bold text-slate-700 uppercase tracking-wide">Tipo</label>
                         <div className="grid grid-cols-2 gap-2 h-[42px]">
                             {(["habiles", "corridos"] as const).map((t) => (
                                 <button
@@ -142,7 +142,7 @@ export default function CalculadoraFechasPage() {
                                     className={`rounded-xl text-[12px] font-bold transition-all border
                                         ${tipo === t
                                             ? "bg-[#063f68] text-white border-[#063f68]"
-                                            : "bg-white dark:bg-slate-900 text-slate-500 border-slate-200 dark:border-slate-700 hover:border-[#063f68]/40"}`}
+                                            : "bg-white dark:bg-slate-900 text-slate-700 border-slate-200 dark:border-slate-700 hover:border-[#063f68]/40"}`}
                                 >
                                     {t === "habiles" ? "Hábiles" : "Corridos"}
                                 </button>
@@ -179,12 +179,12 @@ export default function CalculadoraFechasPage() {
                         </div>
                         <div className="grid grid-cols-3 gap-4 items-center">
                             <div>
-                                <p className="text-[10px] text-slate-400 uppercase tracking-wide font-semibold mb-1">Fecha inicial</p>
+                                <p className="text-[10px] text-slate-700 uppercase tracking-wide font-semibold mb-1">Fecha inicial</p>
                                 <p className="text-[17px] font-black text-slate-800 dark:text-white">{fmtFecha(resultado.desde)}</p>
-                                <p className="text-[11px] text-slate-400 capitalize">{diaSemana(resultado.desde)}</p>
+                                <p className="text-[11px] text-slate-700 capitalize">{diaSemana(resultado.desde)}</p>
                             </div>
                             <div className="text-center">
-                                <p className="text-[10px] text-slate-400 uppercase tracking-wide font-semibold mb-2">
+                                <p className="text-[10px] text-slate-700 uppercase tracking-wide font-semibold mb-2">
                                     + {resultado.dias} {resultado.tipo}
                                 </p>
                                 <div className="flex items-center justify-center gap-1">
@@ -193,24 +193,24 @@ export default function CalculadoraFechasPage() {
                                 </div>
                             </div>
                             <div className="text-right">
-                                <p className="text-[10px] text-slate-400 uppercase tracking-wide font-semibold mb-1">Fecha resultante</p>
+                                <p className="text-[10px] text-slate-700 uppercase tracking-wide font-semibold mb-1">Fecha resultante</p>
                                 <p className="text-[17px] font-black text-emerald-600 dark:text-emerald-400">{fmtFecha(resultado.resultado)}</p>
-                                <p className="text-[11px] text-slate-400 capitalize">{diaSemana(resultado.resultado)}</p>
+                                <p className="text-[11px] text-slate-700 capitalize">{diaSemana(resultado.resultado)}</p>
                             </div>
                         </div>
                     </div>
 
                     {resultado.feriadosEnPeriodo.length > 0 && (
                         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-5">
-                            <h3 className="text-[12px] font-bold text-slate-500 uppercase tracking-wide mb-3">
+                            <h3 className="text-[12px] font-bold text-slate-700 uppercase tracking-wide mb-3">
                                 Feriados en el período ({resultado.feriadosEnPeriodo.length})
                             </h3>
                             <div className="space-y-2">
                                 {resultado.feriadosEnPeriodo.map((f) => (
                                     <div key={f.fecha} className="flex items-center gap-3">
                                         <span className="text-[12px] font-bold text-slate-600 dark:text-slate-300 w-24 flex-shrink-0">{fmtFecha(f.fecha)}</span>
-                                        <span className="text-[11px] text-slate-400 w-20 flex-shrink-0 capitalize">{diaSemana(f.fecha)}</span>
-                                        <span className="text-[12px] text-slate-500 dark:text-slate-400">{f.motivo}</span>
+                                        <span className="text-[11px] text-slate-700 w-20 flex-shrink-0 capitalize">{diaSemana(f.fecha)}</span>
+                                        <span className="text-[12px] text-slate-700 dark:text-slate-400">{f.motivo}</span>
                                     </div>
                                 ))}
                             </div>
@@ -218,7 +218,7 @@ export default function CalculadoraFechasPage() {
                     )}
 
                     {resultado.feriadosEnPeriodo.length === 0 && resultado.tipo === "habiles" && (
-                        <p className="text-[12px] text-slate-400 text-center py-2">
+                        <p className="text-[12px] text-slate-700 text-center py-2">
                             No hay feriados nacionales en el período calculado.
                         </p>
                     )}

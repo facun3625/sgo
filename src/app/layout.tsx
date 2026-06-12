@@ -38,8 +38,9 @@ export default function RootLayout({
       <body className={`${montserrat.variable} font-sans antialiased`}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
-          enableSystem
+          defaultTheme="light"
+          enableSystem={false}
+          storageKey="sgo-theme"
           disableTransitionOnChange
         >
           {children}

@@ -68,7 +68,7 @@ export default function CursosPage() {
         <div className="p-4 md:p-8 space-y-5">
             <div>
                 <h1 className="text-xl font-bold text-slate-800 dark:text-white">Cursos y Capacitaciones</h1>
-                <p className="text-slate-400 text-sm mt-0.5">Actividades formativas del Colegio</p>
+                <p className="text-slate-700 text-sm mt-0.5">Actividades formativas del Colegio</p>
             </div>
 
             {loading ? (
@@ -80,8 +80,8 @@ export default function CursosPage() {
                     <div className="w-14 h-14 bg-slate-50 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
                         <GraduationCap size={26} className="text-slate-300" />
                     </div>
-                    <p className="text-slate-500 font-medium">No hay cursos disponibles</p>
-                    <p className="text-slate-400 text-sm mt-1">Próximamente se publicarán nuevas actividades.</p>
+                    <p className="text-slate-700 font-medium">No hay cursos disponibles</p>
+                    <p className="text-slate-700 text-sm mt-1">Próximamente se publicarán nuevas actividades.</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -121,13 +121,13 @@ export default function CursosPage() {
                                     </h3>
 
                                     <div className="space-y-1.5 flex-1">
-                                        <div className="flex items-center gap-2 text-[11px] text-slate-400">
+                                        <div className="flex items-center gap-2 text-[11px] text-slate-700">
                                             <Calendar size={12} />
                                             {formatFecha(curso.fecha, curso.fechaFin)}
                                             {curso.hora && <><Clock size={11} />{curso.hora}</>}
                                         </div>
                                         {curso.lugar && (
-                                            <div className="flex items-center gap-2 text-[11px] text-slate-400">
+                                            <div className="flex items-center gap-2 text-[11px] text-slate-700">
                                                 <MapPin size={12} />
                                                 {curso.lugar}
                                             </div>

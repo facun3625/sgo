@@ -160,7 +160,7 @@ export default function CursoDetailPage() {
 
     if (!curso) return (
         <div className="p-8 text-center">
-            <p className="text-slate-400">Curso no encontrado.</p>
+            <p className="text-slate-700">Curso no encontrado.</p>
             <Link href="/dashboard/cursos" className="text-[#063f68] text-sm font-semibold mt-2 inline-block">Volver a cursos</Link>
         </div>
     );
@@ -178,7 +178,7 @@ export default function CursoDetailPage() {
         <div className="p-4 md:p-8 space-y-5 pb-10">
             {/* Back */}
             <Link href="/dashboard/cursos"
-                className="inline-flex items-center gap-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors text-[13px] font-medium">
+                className="inline-flex items-center gap-2 text-slate-700 hover:text-slate-600 dark:hover:text-slate-300 transition-colors text-[13px] font-medium">
                 <ArrowLeft size={15} /> Volver a cursos
             </Link>
 
@@ -200,24 +200,24 @@ export default function CursoDetailPage() {
                         </div>
                         <h1 className="text-[17px] font-bold text-slate-800 dark:text-white leading-snug">{curso.titulo}</h1>
                         {curso.organizador && (
-                            <p className="text-[12px] text-slate-400 mt-1 flex items-center gap-1.5">
+                            <p className="text-[12px] text-slate-700 mt-1 flex items-center gap-1.5">
                                 <Building2 size={12} /> {curso.organizador}
                             </p>
                         )}
                     </div>
                 </div>
 
-                <p className="text-[13px] text-slate-500 dark:text-slate-400 leading-relaxed">{curso.descripcion}</p>
+                <p className="text-[13px] text-slate-700 dark:text-slate-400 leading-relaxed">{curso.descripcion}</p>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-                    <div className="flex items-center gap-2.5 text-[12px] text-slate-500 dark:text-slate-400">
+                    <div className="flex items-center gap-2.5 text-[12px] text-slate-700 dark:text-slate-400">
                         <div className="w-7 h-7 rounded-lg bg-slate-50 dark:bg-slate-800 flex items-center justify-center">
                             <Calendar size={13} className="text-[#063f68] dark:text-blue-400" />
                         </div>
                         {formatFecha(curso.fecha, curso.fechaFin)}
                     </div>
                     {curso.hora && (
-                        <div className="flex items-center gap-2.5 text-[12px] text-slate-500 dark:text-slate-400">
+                        <div className="flex items-center gap-2.5 text-[12px] text-slate-700 dark:text-slate-400">
                             <div className="w-7 h-7 rounded-lg bg-slate-50 dark:bg-slate-800 flex items-center justify-center">
                                 <Clock size={13} className="text-[#063f68] dark:text-blue-400" />
                             </div>
@@ -225,7 +225,7 @@ export default function CursoDetailPage() {
                         </div>
                     )}
                     {curso.lugar && (
-                        <div className="flex items-center gap-2.5 text-[12px] text-slate-500 dark:text-slate-400">
+                        <div className="flex items-center gap-2.5 text-[12px] text-slate-700 dark:text-slate-400">
                             <div className="w-7 h-7 rounded-lg bg-slate-50 dark:bg-slate-800 flex items-center justify-center">
                                 <MapPin size={13} className="text-[#063f68] dark:text-blue-400" />
                             </div>
@@ -233,7 +233,7 @@ export default function CursoDetailPage() {
                         </div>
                     )}
                     {curso.fechaLimiteInscripcion && (
-                        <div className="flex items-center gap-2.5 text-[12px] text-slate-500 dark:text-slate-400">
+                        <div className="flex items-center gap-2.5 text-[12px] text-slate-700 dark:text-slate-400">
                             <div className="w-7 h-7 rounded-lg bg-slate-50 dark:bg-slate-800 flex items-center justify-center">
                                 <Users size={13} className="text-[#063f68] dark:text-blue-400" />
                             </div>
@@ -272,7 +272,7 @@ export default function CursoDetailPage() {
                                 <div className="p-4 bg-white rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
                                     <QRCodeSVG value={expediente} size={180} />
                                 </div>
-                                <p className="text-[11px] text-slate-400 text-center max-w-xs">
+                                <p className="text-[11px] text-slate-700 text-center max-w-xs">
                                     Mostrá este QR al momento de registrar tu asistencia. El administrador lo escaneará con el lector.
                                 </p>
                             </div>
@@ -285,7 +285,7 @@ export default function CursoDetailPage() {
                             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-5 space-y-3">
                                 <div className="flex items-center justify-between gap-4">
                                     <div>
-                                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Monto a abonar</p>
+                                        <p className="text-[11px] font-bold text-slate-700 uppercase tracking-widest mb-0.5">Monto a abonar</p>
                                         <p className="text-2xl font-black text-slate-900 dark:text-white">
                                             ${opcion?.precio.toLocaleString("es-AR") ?? "—"}
                                         </p>
@@ -308,7 +308,7 @@ export default function CursoDetailPage() {
                                         )}
                                     </div>
                                 </div>
-                                <p className="text-[11px] text-slate-400">Al confirmar el pago, tu inscripción quedará activa automáticamente.</p>
+                                <p className="text-[11px] text-slate-700">Al confirmar el pago, tu inscripción quedará activa automáticamente.</p>
                             </div>
                         );
                     })()}
@@ -338,7 +338,7 @@ export default function CursoDetailPage() {
                                     <div>
                                         <p className="text-[13px] font-semibold text-slate-700 dark:text-slate-300">{op.nombre}</p>
                                         {op.cupo > 0 && (
-                                            <p className="text-[11px] text-slate-400">
+                                            <p className="text-[11px] text-slate-700">
                                                 {op.disponible ? `${op.cupo - op.inscritos} lugar${op.cupo - op.inscritos !== 1 ? "es" : ""} disponible${op.cupo - op.inscritos !== 1 ? "s" : ""}` : "Sin cupo disponible"}
                                             </p>
                                         )}
@@ -383,7 +383,7 @@ export default function CursoDetailPage() {
 
             {/* Inscripción cerrada */}
             {!yaInscrito && vencida && (
-                <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[13px] text-slate-500 dark:text-slate-400">
+                <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[13px] text-slate-700 dark:text-slate-400">
                     <AlertCircle size={15} />
                     El período de inscripción ha cerrado.
                 </div>

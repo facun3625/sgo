@@ -92,7 +92,7 @@ export default function MensajesPage() {
                 <h1 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
                     <Mail size={20} className="text-sky-500" /> Mensajes
                 </h1>
-                <p className="text-slate-400 text-sm mt-0.5">Comunicaciones con el CPASF</p>
+                <p className="text-slate-700 text-sm mt-0.5">Comunicaciones con el CPASF</p>
             </div>
 
             <div className="flex gap-4 h-[calc(100vh-220px)] min-h-[400px]">
@@ -100,7 +100,7 @@ export default function MensajesPage() {
                 <div className={`flex flex-col bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden
                     ${selected ? "hidden md:flex w-72 flex-shrink-0" : "flex flex-1"}`}>
                     <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800">
-                        <p className="text-[12px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Conversaciones</p>
+                        <p className="text-[12px] font-bold text-slate-700 dark:text-slate-400 uppercase tracking-widest">Conversaciones</p>
                     </div>
                     <div className="flex-1 overflow-y-auto">
                         {loading ? (
@@ -110,7 +110,7 @@ export default function MensajesPage() {
                         ) : convs.length === 0 ? (
                             <div className="flex flex-col items-center justify-center py-16 gap-3 px-4 text-center">
                                 <MessageCircle size={32} className="text-slate-200 dark:text-slate-700" />
-                                <p className="text-[13px] text-slate-400">No tenés mensajes aún</p>
+                                <p className="text-[13px] text-slate-700">No tenés mensajes aún</p>
                             </div>
                         ) : (
                             convs.map(c => (
@@ -128,13 +128,13 @@ export default function MensajesPage() {
                                                 </p>
                                             </div>
                                             {c.ultimoMensaje && (
-                                                <p className="text-[11px] text-slate-400 truncate mt-0.5 ml-4">
+                                                <p className="text-[11px] text-slate-700 truncate mt-0.5 ml-4">
                                                     {c.ultimoMensaje.de === "user" ? "Vos: " : "CPASF: "}
                                                     {c.ultimoMensaje.contenido}
                                                 </p>
                                             )}
                                         </div>
-                                        <span className="text-[10px] text-slate-400 flex-shrink-0 mt-0.5">{timeAgo(c.updatedAt)}</span>
+                                        <span className="text-[10px] text-slate-700 flex-shrink-0 mt-0.5">{timeAgo(c.updatedAt)}</span>
                                     </div>
                                 </button>
                             ))
@@ -152,13 +152,13 @@ export default function MensajesPage() {
                     ) : !selected ? (
                         <div className="flex flex-col items-center justify-center gap-3 text-center px-8">
                             <Mail size={36} className="text-slate-200 dark:text-slate-700" />
-                            <p className="text-[13px] text-slate-400">Seleccioná una conversación</p>
+                            <p className="text-[13px] text-slate-700">Seleccioná una conversación</p>
                         </div>
                     ) : (
                         <>
                             {/* Header */}
                             <div className="flex items-center gap-3 px-5 py-3.5 border-b border-slate-100 dark:border-slate-800 flex-shrink-0">
-                                <button onClick={() => setSelected(null)} className="md:hidden p-1 text-slate-400 hover:text-slate-600 transition-colors">
+                                <button onClick={() => setSelected(null)} className="md:hidden p-1 text-slate-700 hover:text-slate-600 transition-colors">
                                     <ChevronLeft size={18} />
                                 </button>
                                 <div className="w-8 h-8 rounded-xl bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center flex-shrink-0">
@@ -166,7 +166,7 @@ export default function MensajesPage() {
                                 </div>
                                 <div className="min-w-0">
                                     <p className="text-[13px] font-bold text-slate-800 dark:text-white truncate">{selected.asunto}</p>
-                                    <p className="text-[11px] text-slate-400">CPASF</p>
+                                    <p className="text-[11px] text-slate-700">CPASF</p>
                                 </div>
                             </div>
 
@@ -180,7 +180,7 @@ export default function MensajesPage() {
                                                 ? "bg-[#063f68] text-white rounded-br-sm"
                                                 : "bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-white rounded-bl-sm"}`}>
                                                 <p className="text-[13px] leading-relaxed whitespace-pre-wrap">{msg.contenido}</p>
-                                                <p className={`text-[10px] mt-1 ${isUser ? "text-white/50" : "text-slate-400"}`}>
+                                                <p className={`text-[10px] mt-1 ${isUser ? "text-white/50" : "text-slate-700"}`}>
                                                     {timeAgo(msg.createdAt)}
                                                 </p>
                                             </div>

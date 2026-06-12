@@ -276,7 +276,7 @@ export default function SolicitudCertificadoPage() {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
                 <Loader2 size={32} className="text-[#063f68] animate-spin" />
-                <p className="text-slate-500 font-medium">Cargando formulario...</p>
+                <p className="text-slate-700 font-medium">Cargando formulario...</p>
             </div>
         );
     }
@@ -305,7 +305,7 @@ export default function SolicitudCertificadoPage() {
             {/* Header */}
             <div className="sticky top-16 z-10 bg-white dark:bg-[#02182b] flex items-center gap-4 px-4 md:px-8 py-3.5 border-b border-[#f1f5f9] dark:border-slate-800 transition-colors duration-300">
                 <Link href="/dashboard" className="p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-all group">
-                    <ChevronLeft size={20} className="text-slate-400 group-hover:text-black dark:group-hover:text-white transition-colors" />
+                    <ChevronLeft size={20} className="text-slate-700 group-hover:text-black dark:group-hover:text-white transition-colors" />
                 </Link>
                 <div className="flex items-center gap-3">
                     <FileText size={18} className="text-blue-600" />
@@ -349,7 +349,7 @@ export default function SolicitudCertificadoPage() {
 
                     {/* Campo editable */}
                     <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">
+                        <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest ml-1">
                             Certificado para ser presentado ante <span className="text-rose-400">*</span>
                         </label>
                         <textarea
@@ -388,7 +388,7 @@ export default function SolicitudCertificadoPage() {
 function ReadOnly({ label, value, span = 1 }: { label: string; value: string | null | undefined; span?: number }) {
     return (
         <div className={`space-y-1.5 ${span === 2 ? "md:col-span-2" : ""}`}>
-            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{label}</label>
+            <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest ml-1">{label}</label>
             <div className="w-full h-12 px-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/20 flex items-center text-[13px] text-slate-600 dark:text-slate-400 font-medium">
                 {value || "--"}
             </div>

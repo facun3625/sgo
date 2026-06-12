@@ -31,7 +31,7 @@ const tipoIcon: Record<string, React.ReactNode> = {
     ppt: <Presentation size={16} className="text-orange-500" />,
     img: <Image size={16} className="text-purple-500" />,
     zip: <Archive size={16} className="text-amber-500" />,
-    otro: <File size={16} className="text-slate-400" />,
+    otro: <File size={16} className="text-slate-700" />,
 };
 
 const tipoBg: Record<string, string> = {
@@ -109,13 +109,13 @@ export default function RepositorioPage() {
                 <h1 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
                     <FolderOpen size={20} className="text-indigo-500" /> Repositorio de Archivos
                 </h1>
-                <p className="text-slate-400 text-sm mt-0.5">{totalArchivos} documento{totalArchivos !== 1 ? "s" : ""} disponible{totalArchivos !== 1 ? "s" : ""}</p>
+                <p className="text-slate-700 text-sm mt-0.5">{totalArchivos} documento{totalArchivos !== 1 ? "s" : ""} disponible{totalArchivos !== 1 ? "s" : ""}</p>
             </div>
 
             {/* Filtros */}
             <div className="flex flex-col md:flex-row gap-3">
                 <div className="relative flex-1">
-                    <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-700" />
                     <input
                         value={search} onChange={e => setSearch(e.target.value)}
                         placeholder="Buscar documentos..."
@@ -125,19 +125,19 @@ export default function RepositorioPage() {
                 <div className="flex gap-2 flex-wrap">
                     <button onClick={() => setCatFiltro(null)}
                         className={`px-3 h-10 rounded-xl text-[12px] font-semibold border transition-all
-                            ${catFiltro === null ? "bg-indigo-600 border-indigo-600 text-white" : "border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"}`}>
+                            ${catFiltro === null ? "bg-indigo-600 border-indigo-600 text-white" : "border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"}`}>
                         Todas
                     </button>
                     {cats.map(c => (
                         <button key={c.id} onClick={() => setCatFiltro(c.id === catFiltro ? null : c.id)}
                             className={`px-3 h-10 rounded-xl text-[12px] font-semibold border transition-all
-                                ${catFiltro === c.id ? "bg-indigo-600 border-indigo-600 text-white" : "border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"}`}>
+                                ${catFiltro === c.id ? "bg-indigo-600 border-indigo-600 text-white" : "border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"}`}>
                             {c.nombre}
                         </button>
                     ))}
                     {isFiltering && (
                         <button onClick={() => { setSearch(""); setCatFiltro(null); }}
-                            className="flex items-center gap-1.5 px-3 h-10 rounded-xl text-[12px] font-semibold border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                            className="flex items-center gap-1.5 px-3 h-10 rounded-xl text-[12px] font-semibold border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
                             <X size={12} /> Limpiar
                         </button>
                     )}
@@ -151,17 +151,17 @@ export default function RepositorioPage() {
             ) : cats.length === 0 ? (
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-16 text-center">
                     <FolderOpen size={32} className="text-slate-200 dark:text-slate-700 mx-auto mb-3" />
-                    <p className="text-slate-500 font-medium">No hay documentos disponibles aún</p>
+                    <p className="text-slate-700 font-medium">No hay documentos disponibles aún</p>
                 </div>
             ) : filteredCats.length === 0 ? (
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-16 text-center">
                     <Search size={32} className="text-slate-200 dark:text-slate-700 mx-auto mb-3" />
-                    <p className="text-slate-500 font-medium">Sin resultados para tu búsqueda</p>
+                    <p className="text-slate-700 font-medium">Sin resultados para tu búsqueda</p>
                 </div>
             ) : (
                 <>
                     {isFiltering && (
-                        <p className="text-[12px] text-slate-400">{totalResultados} resultado{totalResultados !== 1 ? "s" : ""}</p>
+                        <p className="text-[12px] text-slate-700">{totalResultados} resultado{totalResultados !== 1 ? "s" : ""}</p>
                     )}
                     <div className="space-y-3">
                         {filteredCats.map(cat => {
@@ -177,8 +177,8 @@ export default function RepositorioPage() {
                                         <span className={`text-[14px] font-bold transition-colors ${isOpen ? "text-indigo-600 dark:text-indigo-400" : "text-slate-800 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400"}`}>
                                             {cat.nombre}
                                         </span>
-                                        <span className="text-[11px] text-slate-400">{cat.archivos.length} archivo{cat.archivos.length !== 1 ? "s" : ""}</span>
-                                        <ChevronDown size={15} className={`ml-auto text-slate-400 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`} />
+                                        <span className="text-[11px] text-slate-700">{cat.archivos.length} archivo{cat.archivos.length !== 1 ? "s" : ""}</span>
+                                        <ChevronDown size={15} className={`ml-auto text-slate-700 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`} />
                                     </button>
 
                                     {/* Archivos grid */}
@@ -194,11 +194,11 @@ export default function RepositorioPage() {
                                                             <div className="flex-1 min-w-0">
                                                                 <p className="text-[13px] font-semibold text-slate-800 dark:text-white leading-snug line-clamp-2">{arch.nombre}</p>
                                                                 {arch.descripcion && (
-                                                                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">{arch.descripcion}</p>
+                                                                    <p className="text-[11px] text-slate-700 dark:text-slate-400 mt-0.5 line-clamp-1">{arch.descripcion}</p>
                                                                 )}
                                                                 <div className="flex items-center gap-2 mt-2">
-                                                                    <span className="text-[10px] font-bold text-slate-400 uppercase">{tipoLabel[arch.tipo] || "Archivo"}</span>
-                                                                    {arch.tamano && <span className="text-[10px] text-slate-400">{arch.tamano}</span>}
+                                                                    <span className="text-[10px] font-bold text-slate-700 uppercase">{tipoLabel[arch.tipo] || "Archivo"}</span>
+                                                                    {arch.tamano && <span className="text-[10px] text-slate-700">{arch.tamano}</span>}
                                                                 </div>
                                                                 <div className="flex gap-2 mt-2.5">
                                                                     <a href={arch.archivo} target="_blank" rel="noopener noreferrer"

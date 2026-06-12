@@ -86,7 +86,7 @@ export default function SolicitudSISFEPage() {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
                 <Loader2 size={32} className="text-[#063f68] dark:text-blue-500 animate-spin" />
-                <p className="text-slate-500 dark:text-slate-400 font-medium tracking-tight">Cargando formulario...</p>
+                <p className="text-slate-700 dark:text-slate-400 font-medium tracking-tight">Cargando formulario...</p>
             </div>
         );
     }
@@ -100,7 +100,7 @@ export default function SolicitudSISFEPage() {
                         href="/dashboard"
                         className="p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-all group"
                     >
-                        <ChevronLeft size={20} className="text-slate-400 group-hover:text-black dark:group-hover:text-white transition-colors" />
+                        <ChevronLeft size={20} className="text-slate-700 group-hover:text-black dark:group-hover:text-white transition-colors" />
                     </Link>
                     <div className="flex items-center gap-3">
                         <FileText size={18} className="text-blue-600" />
@@ -171,7 +171,7 @@ export default function SolicitudSISFEPage() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {/* Nombre y Apellido */}
                                 <div className="space-y-2 md:col-span-2">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">El que suscribe, Dr/Dra</label>
+                                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest ml-1">El que suscribe, Dr/Dra</label>
                                     <input
                                         type="text"
                                         readOnly
@@ -182,7 +182,7 @@ export default function SolicitudSISFEPage() {
 
                                 {/* Tomo */}
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Inscripto al Tomo</label>
+                                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest ml-1">Inscripto al Tomo</label>
                                     <input
                                         type="text"
                                         readOnly
@@ -193,7 +193,7 @@ export default function SolicitudSISFEPage() {
 
                                 {/* Folio */}
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Folio Nº</label>
+                                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest ml-1">Folio Nº</label>
                                     <input
                                         type="text"
                                         readOnly
@@ -204,7 +204,7 @@ export default function SolicitudSISFEPage() {
 
                                 {/* Expediente */}
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Expediente</label>
+                                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest ml-1">Expediente</label>
                                     <input
                                         type="text"
                                         readOnly
@@ -215,7 +215,7 @@ export default function SolicitudSISFEPage() {
 
                                 {/* Fecha */}
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">En Fecha</label>
+                                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest ml-1">En Fecha</label>
                                     <input
                                         type="text"
                                         readOnly
@@ -226,7 +226,7 @@ export default function SolicitudSISFEPage() {
 
                                 {/* Email Legal */}
                                 <div className="space-y-2 md:col-span-2">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Email (Legal)</label>
+                                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest ml-1">Email (Legal)</label>
                                     <input
                                         type="text"
                                         readOnly

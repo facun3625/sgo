@@ -109,7 +109,7 @@ export default function SolicitudSuspensionPage() {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
                 <Loader2 size={32} className="text-[#063f68] dark:text-blue-500 animate-spin" />
-                <p className="text-slate-500 dark:text-slate-400 font-medium tracking-tight">Cargando formulario...</p>
+                <p className="text-slate-700 dark:text-slate-400 font-medium tracking-tight">Cargando formulario...</p>
             </div>
         );
     }
@@ -123,7 +123,7 @@ export default function SolicitudSuspensionPage() {
                         href="/dashboard"
                         className="p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-all group"
                     >
-                        <ChevronLeft size={20} className="text-slate-400 group-hover:text-black dark:group-hover:text-white transition-colors" />
+                        <ChevronLeft size={20} className="text-slate-700 group-hover:text-black dark:group-hover:text-white transition-colors" />
                     </Link>
                     <div className="flex items-center gap-3">
                         <XOctagon size={18} className="text-rose-500" />
@@ -184,7 +184,7 @@ export default function SolicitudSuspensionPage() {
                             <div className="grid grid-cols-1 gap-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-2">
+                                        <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest ml-1 flex items-center gap-2">
                                             <User size={10} /> Nombre Completo
                                         </label>
                                         <input
@@ -195,7 +195,7 @@ export default function SolicitudSuspensionPage() {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-2">
+                                        <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest ml-1 flex items-center gap-2">
                                             <IdCard size={10} /> Matrícula
                                         </label>
                                         <input
@@ -208,7 +208,7 @@ export default function SolicitudSuspensionPage() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Solicito tenga a bien proceder a la</label>
+                                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest ml-1">Solicito tenga a bien proceder a la</label>
                                     <select
                                         value={tipoTramite}
                                         onChange={(e) => setTipoTramite(e.target.value)}
@@ -220,7 +220,7 @@ export default function SolicitudSuspensionPage() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-2">
+                                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest ml-1 flex items-center gap-2">
                                         <CalendarIcon size={12} /> de mi matrícula profesional a partir de
                                     </label>
                                     <input
@@ -233,7 +233,7 @@ export default function SolicitudSuspensionPage() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">en razón de</label>
+                                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest ml-1">en razón de</label>
                                     <select
                                         value={motivo}
                                         onChange={(e) => setMotivo(e.target.value)}

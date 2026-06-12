@@ -218,7 +218,7 @@ export default function TopNav({ user, onMenuClick }: TopNavProps) {
                                 className="flex items-center gap-3 px-3 py-2 text-sm text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-xl transition-all duration-200"
                                 onClick={() => setIsProfileOpen(false)}
                             >
-                                <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-slate-800 flex items-center justify-center text-gray-500 dark:text-slate-400">
+                                <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-slate-800 flex items-center justify-center text-gray-700 dark:text-slate-400">
                                     <User size={16} />
                                 </div>
                                 Mi Perfil

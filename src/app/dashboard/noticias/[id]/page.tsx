@@ -51,7 +51,7 @@ export default function NoticiaDetailPage() {
 
     if (!noticia) return (
         <div className="p-8 text-center">
-            <p className="text-slate-400">Noticia no encontrada.</p>
+            <p className="text-slate-700">Noticia no encontrada.</p>
             <Link href="/dashboard/noticias" className="text-[#063f68] text-sm font-semibold mt-2 inline-block">Volver</Link>
         </div>
     );
@@ -69,7 +69,7 @@ export default function NoticiaDetailPage() {
             <div className="p-4 md:p-8 pb-12">
                 {/* Back */}
                 <Link href="/dashboard/noticias"
-                    className="inline-flex items-center gap-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 text-[13px] font-medium transition-colors mb-5">
+                    className="inline-flex items-center gap-1.5 text-slate-700 hover:text-slate-600 dark:hover:text-slate-300 text-[13px] font-medium transition-colors mb-5">
                     <ArrowLeft size={14} /> Volver a noticias
                 </Link>
 
@@ -87,7 +87,7 @@ export default function NoticiaDetailPage() {
 
                     <div className="p-6 md:p-10">
                         {/* Meta */}
-                        <div className="flex items-center gap-2 text-[11px] text-slate-400 font-medium uppercase tracking-wider mb-3">
+                        <div className="flex items-center gap-2 text-[11px] text-slate-700 font-medium uppercase tracking-wider mb-3">
                             <Calendar size={12} />
                             {new Date(noticia.createdAt).toLocaleDateString("es-AR", {
                                 timeZone: "UTC", weekday: "long", day: "numeric", month: "long", year: "numeric"
@@ -123,8 +123,8 @@ export default function NoticiaDetailPage() {
                         {hasGallery && (
                             <div className="mt-10 pt-8 border-t border-slate-100 dark:border-slate-800">
                                 <div className="flex items-center gap-2 mb-4">
-                                    <Images size={15} className="text-slate-400" />
-                                    <h2 className="text-[12px] font-bold text-slate-400 uppercase tracking-widest">
+                                    <Images size={15} className="text-slate-700" />
+                                    <h2 className="text-[12px] font-bold text-slate-700 uppercase tracking-widest">
                                         Galería · {noticia.imagenes.length} {noticia.imagenes.length === 1 ? "foto" : "fotos"}
                                     </h2>
                                 </div>

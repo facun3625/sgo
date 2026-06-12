@@ -88,12 +88,12 @@ function TutorialItem({ tutorial }: { tutorial: Tutorial }) {
                 <div className="flex-1 min-w-0">
                     <p className="font-bold text-slate-800 dark:text-white text-[13px] leading-snug">{tutorial.titulo}</p>
                     {tutorial.descripcion && (
-                        <p className="text-slate-400 text-[11px] mt-0.5 truncate">{tutorial.descripcion}</p>
+                        <p className="text-slate-700 text-[11px] mt-0.5 truncate">{tutorial.descripcion}</p>
                     )}
                 </div>
                 <ChevronDown
                     size={16}
-                    className={`text-slate-400 flex-shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+                    className={`text-slate-700 flex-shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
                 />
             </button>
 
@@ -123,7 +123,7 @@ export default function TutorialesPage() {
             {/* Header sticky */}
             <div className="sticky top-16 z-10 bg-white dark:bg-[#02182b] flex items-center gap-4 px-4 md:px-8 py-3.5 border-b border-[#f1f5f9] dark:border-slate-800 transition-colors duration-300">
                 <Link href="/dashboard" className="p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-all group">
-                    <ChevronLeft size={20} className="text-slate-400 group-hover:text-black dark:group-hover:text-white transition-colors" />
+                    <ChevronLeft size={20} className="text-slate-700 group-hover:text-black dark:group-hover:text-white transition-colors" />
                 </Link>
                 <div className="flex items-center gap-3">
                     <PlayCircle size={18} className="text-pink-500" />
@@ -135,7 +135,7 @@ export default function TutorialesPage() {
                 {loading ? (
                     <div className="flex flex-col items-center justify-center py-20 gap-4">
                         <Loader2 size={28} className="animate-spin text-[#063f68] dark:text-blue-400" />
-                        <p className="text-slate-400 text-[13px] font-medium">Cargando tutoriales...</p>
+                        <p className="text-slate-700 text-[13px] font-medium">Cargando tutoriales...</p>
                     </div>
                 ) : tutoriales.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20 gap-3 text-center">
@@ -144,7 +144,7 @@ export default function TutorialesPage() {
                         </div>
                         <div className="space-y-1">
                             <h3 className="text-[15px] font-bold text-slate-700 dark:text-slate-200">Sin tutoriales</h3>
-                            <p className="text-slate-400 text-[12px]">Próximamente se publicarán guías de ayuda.</p>
+                            <p className="text-slate-700 text-[12px]">Próximamente se publicarán guías de ayuda.</p>
                         </div>
                     </div>
                 ) : (

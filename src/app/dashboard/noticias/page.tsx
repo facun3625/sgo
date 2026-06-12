@@ -28,7 +28,7 @@ export default function NoticiasPage() {
         <div className="p-4 md:p-8 space-y-5">
             <div>
                 <h1 className="text-xl font-bold text-slate-800 dark:text-white">Noticias</h1>
-                <p className="text-slate-400 text-sm mt-0.5">Novedades e información institucional</p>
+                <p className="text-slate-700 text-sm mt-0.5">Novedades e información institucional</p>
             </div>
 
             {loading ? (
@@ -40,7 +40,7 @@ export default function NoticiasPage() {
                     <div className="w-14 h-14 bg-slate-50 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
                         <Newspaper size={26} className="text-slate-300" />
                     </div>
-                    <p className="text-slate-500 font-medium">No hay noticias publicadas</p>
+                    <p className="text-slate-700 font-medium">No hay noticias publicadas</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -62,13 +62,13 @@ export default function NoticiasPage() {
                                 )}
                             </div>
                             <div className="p-4 flex flex-col flex-1 gap-2">
-                                <p className="text-[11px] text-slate-400">
+                                <p className="text-[11px] text-slate-700">
                                     {new Date(n.createdAt).toLocaleDateString("es-AR", { timeZone: "UTC", day: "2-digit", month: "long", year: "numeric" })}
                                 </p>
                                 <h3 className="font-bold text-slate-800 dark:text-white text-[14px] leading-snug line-clamp-2 group-hover:text-[#063f68] dark:group-hover:text-blue-400 transition-colors flex-1">
                                     {n.titulo}
                                 </h3>
-                                <p className="text-[12px] text-slate-400 line-clamp-2">{n.contenido}</p>
+                                <p className="text-[12px] text-slate-700 line-clamp-2">{n.contenido}</p>
                                 <div className="pt-2 border-t border-slate-50 dark:border-slate-800 flex items-center gap-1 text-[12px] font-semibold text-[#063f68] dark:text-blue-400 group-hover:underline underline-offset-2 transition-colors">
                                     Leer más <ChevronRight size={13} />
                                 </div>

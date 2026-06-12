@@ -136,7 +136,7 @@ export default function AdhesionDebitoPage() {
                     </div>
                     <div className="space-y-3">
                         <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">¡Solicitud Registrada!</h1>
-                        <p className="text-slate-500 dark:text-slate-400 font-medium max-w-md mx-auto">
+                        <p className="text-slate-700 dark:text-slate-400 font-medium max-w-md mx-auto">
                             Tu adhesión al débito automático para {tipoAdhesion} ha sido enviada con éxito y está pendiente de revisión.
                         </p>
                     </div>
@@ -160,7 +160,7 @@ export default function AdhesionDebitoPage() {
                         href="/dashboard"
                         className="p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-all group"
                     >
-                        <ChevronLeft size={20} className="text-slate-400 group-hover:text-black dark:group-hover:text-white transition-colors" />
+                        <ChevronLeft size={20} className="text-slate-700 group-hover:text-black dark:group-hover:text-white transition-colors" />
                     </Link>
                     <div className="flex items-center gap-3">
                         <Banknote size={18} className="text-cyan-500" />
@@ -173,11 +173,11 @@ export default function AdhesionDebitoPage() {
                     {[1, 2, 3].map((s) => (
                         <div key={s} className="flex items-center gap-2">
                             <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all ${step === s ? "bg-[#063f68] text-white" :
-                                step > s ? "bg-emerald-500 text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-400"
+                                step > s ? "bg-emerald-500 text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-700"
                                 }`}>
                                 {step > s ? <CheckCircle2 size={12} /> : s}
                             </div>
-                            <span className={`text-[11px] font-bold uppercase tracking-wider ${step === s ? "text-black dark:text-white" : "text-slate-400"
+                            <span className={`text-[11px] font-bold uppercase tracking-wider ${step === s ? "text-black dark:text-white" : "text-slate-700"
                                 }`}>
                                 {s === 1 ? "Adhesión" : s === 2 ? "Términos" : "Datos"}
                             </span>
@@ -192,7 +192,7 @@ export default function AdhesionDebitoPage() {
                 {loadingInitial && (
                     <div className="flex flex-col items-center justify-center py-20 gap-4">
                         <Loader2 size={32} className="text-[#063f68] animate-spin" />
-                        <p className="text-slate-500 font-medium">Verificando estado de adhesión...</p>
+                        <p className="text-slate-700 font-medium">Verificando estado de adhesión...</p>
                     </div>
                 )}
 
@@ -247,7 +247,7 @@ export default function AdhesionDebitoPage() {
                                 <CreditCard size={20} />
                             </div>
                             <h4 className="font-bold text-slate-900 dark:text-white">Cambiar método de pago</h4>
-                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Actualizá tu CBU o tarjeta vinculada.</p>
+                            <p className="text-sm text-slate-700 dark:text-slate-400 mt-1">Actualizá tu CBU o tarjeta vinculada.</p>
                         </button>
                     </div>
                 )}
@@ -259,7 +259,7 @@ export default function AdhesionDebitoPage() {
                             <div className="space-y-8 animate-slide-up">
                                 <div className="space-y-2">
                                     <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">Adhiero mediante</h3>
-                                    <p className="text-sm text-slate-500 dark:text-slate-400">Seleccione el método por el cual desea realizar el débito automático de sus cuotas.</p>
+                                    <p className="text-sm text-slate-700 dark:text-slate-400">Seleccione el método por el cual desea realizar el débito automático de sus cuotas.</p>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -270,12 +270,12 @@ export default function AdhesionDebitoPage() {
                                             : "border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700"
                                             }`}
                                     >
-                                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 transition-all ${tipoAdhesion === "CBU" ? "bg-[#063f68] text-white" : "bg-slate-50 dark:bg-slate-800 text-slate-400"
+                                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 transition-all ${tipoAdhesion === "CBU" ? "bg-[#063f68] text-white" : "bg-slate-50 dark:bg-slate-800 text-slate-700"
                                             }`}>
                                             <Library size={28} />
                                         </div>
                                         <h4 className="font-bold text-slate-900 dark:text-white text-lg">Débito en cuenta bancaria</h4>
-                                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 font-medium">Uso de CBU de cualquier banco de la red.</p>
+                                        <p className="text-sm text-slate-700 dark:text-slate-400 mt-2 font-medium">Uso de CBU de cualquier banco de la red.</p>
                                     </button>
 
                                     <button
@@ -285,12 +285,12 @@ export default function AdhesionDebitoPage() {
                                             : "border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700"
                                             }`}
                                     >
-                                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 transition-all ${tipoAdhesion === "Tarjeta" ? "bg-[#063f68] text-white" : "bg-slate-50 dark:bg-slate-800 text-slate-400"
+                                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 transition-all ${tipoAdhesion === "Tarjeta" ? "bg-[#063f68] text-white" : "bg-slate-50 dark:bg-slate-800 text-slate-700"
                                             }`}>
                                             <CreditCard size={28} />
                                         </div>
                                         <h4 className="font-bold text-slate-900 dark:text-white text-lg">Debito Tarjeta de Credito Visa</h4>
-                                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 font-medium">Débito directo sobre el resumen de cuenta.</p>
+                                        <p className="text-sm text-slate-700 dark:text-slate-400 mt-2 font-medium">Débito directo sobre el resumen de cuenta.</p>
                                     </button>
                                 </div>
 
@@ -341,7 +341,7 @@ export default function AdhesionDebitoPage() {
                                     {/* Indicador de scroll */}
                                     {!hasScrolledTerms && (
                                         <div className="absolute bottom-0 left-0 right-0 h-12 pointer-events-none rounded-b-2xl bg-gradient-to-t from-slate-100 dark:from-slate-900 to-transparent flex items-end justify-center pb-2">
-                                            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 flex items-center gap-1 animate-bounce">
+                                            <span className="text-[10px] font-bold text-slate-700 dark:text-slate-500 flex items-center gap-1 animate-bounce">
                                                 <ChevronRight size={12} className="rotate-90" /> Desplazá para leer todo
                                             </span>
                                         </div>
@@ -383,7 +383,7 @@ export default function AdhesionDebitoPage() {
                                 <div className="flex justify-between pt-4">
                                     <button
                                         onClick={prevStep}
-                                        className="h-12 px-6 border-2 border-slate-100 dark:border-slate-800 text-slate-400 hover:text-black dark:hover:text-white rounded-xl font-bold text-xs flex items-center gap-3 transition-all"
+                                        className="h-12 px-6 border-2 border-slate-100 dark:border-slate-800 text-slate-700 hover:text-black dark:hover:text-white rounded-xl font-bold text-xs flex items-center gap-3 transition-all"
                                     >
                                         <ArrowLeft size={16} />
                                         Atrás
@@ -415,7 +415,7 @@ export default function AdhesionDebitoPage() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     {/* DNI Frontal - Siempre necesario */}
                                     <div className="space-y-3">
-                                        <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Foto DNI frontal</label>
+                                        <label className="text-[11px] font-black text-slate-700 uppercase tracking-widest ml-1">Foto DNI frontal</label>
                                         <div className="relative group">
                                             <input
                                                 type="file"
@@ -440,7 +440,7 @@ export default function AdhesionDebitoPage() {
                                                 ) : (
                                                     <>
                                                         <Upload size={24} className="text-slate-300 group-hover:text-[#063f68] transition-colors" />
-                                                        <span className="text-[11px] font-bold text-slate-400 group-hover:text-slate-600 transition-colors">Seleccionar archivo</span>
+                                                        <span className="text-[11px] font-bold text-slate-700 group-hover:text-slate-600 transition-colors">Seleccionar archivo</span>
                                                     </>
                                                 )}
                                             </div>
@@ -450,7 +450,7 @@ export default function AdhesionDebitoPage() {
 
                                     {/* Condicional según medio */}
                                     <div className="space-y-3">
-                                        <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                                        <label className="text-[11px] font-black text-slate-700 uppercase tracking-widest ml-1">
                                             {tipoAdhesion === "CBU" ? "Constancia de CBU (Home Banking)" : "Foto frontal de la tarjeta"}
                                         </label>
                                         <div className="relative group">
@@ -477,7 +477,7 @@ export default function AdhesionDebitoPage() {
                                                 ) : (
                                                     <>
                                                         <Upload size={24} className="text-slate-300 group-hover:text-[#063f68] transition-colors" />
-                                                        <span className="text-[11px] font-bold text-slate-400 group-hover:text-slate-600 transition-colors">Seleccionar archivo</span>
+                                                        <span className="text-[11px] font-bold text-slate-700 group-hover:text-slate-600 transition-colors">Seleccionar archivo</span>
                                                     </>
                                                 )}
                                             </div>
@@ -493,7 +493,7 @@ export default function AdhesionDebitoPage() {
                                 <div className="flex justify-between pt-8">
                                     <button
                                         onClick={prevStep}
-                                        className="h-14 px-8 border-2 border-slate-100 dark:border-slate-800 text-slate-400 hover:text-black dark:hover:text-white rounded-2xl font-bold text-sm flex items-center gap-3 transition-all"
+                                        className="h-14 px-8 border-2 border-slate-100 dark:border-slate-800 text-slate-700 hover:text-black dark:hover:text-white rounded-2xl font-bold text-sm flex items-center gap-3 transition-all"
                                     >
                                         <ArrowLeft size={18} />
                                         Atrás

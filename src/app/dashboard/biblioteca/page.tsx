@@ -51,22 +51,22 @@ function ItemCard({ item, onToggleFav, togglingId, onView }: {
                     disabled={togglingId === item.id}
                     className="absolute top-2.5 right-2.5 w-8 h-8 flex items-center justify-center rounded-full bg-white/90 dark:bg-slate-900/90 shadow hover:scale-110 transition-all">
                     <Heart size={14}
-                        className={item.esFavorito ? "text-rose-500" : "text-slate-400"}
+                        className={item.esFavorito ? "text-rose-500" : "text-slate-700"}
                         fill={item.esFavorito ? "currentColor" : "none"} />
                 </button>
             </div>
 
             <div className="p-4 flex flex-col flex-1 gap-1.5">
-                <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">{item.categoria}</p>
+                <p className="text-[10px] text-slate-700 font-semibold uppercase tracking-wide">{item.categoria}</p>
                 <h3 className="font-bold text-slate-800 dark:text-white text-[13px] leading-snug line-clamp-2">{item.titulo}</h3>
-                <p className="text-[12px] text-slate-400 italic">{item.autor}</p>
+                <p className="text-[12px] text-slate-700 italic">{item.autor}</p>
 
                 {item.tags.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-1">
                         {item.tags.slice(0, 3).map(tag => (
-                            <span key={tag} className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded text-[10px]">{tag}</span>
+                            <span key={tag} className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-400 rounded text-[10px]">{tag}</span>
                         ))}
-                        {item.tags.length > 3 && <span className="text-[10px] text-slate-400">+{item.tags.length - 3}</span>}
+                        {item.tags.length > 3 && <span className="text-[10px] text-slate-700">+{item.tags.length - 3}</span>}
                     </div>
                 )}
 
@@ -93,7 +93,7 @@ function SectionTitle({ icon, title, subtitle }: { icon: React.ReactNode; title:
                 {icon}
                 <h2 className="text-[15px] font-bold text-slate-800 dark:text-white">{title}</h2>
             </div>
-            {subtitle && <span className="text-[12px] text-slate-400">{subtitle}</span>}
+            {subtitle && <span className="text-[12px] text-slate-700">{subtitle}</span>}
         </div>
     );
 }
@@ -166,7 +166,7 @@ export default function BibliotecaPage() {
                 <h1 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
                     <Library size={20} className="text-[#063f68] dark:text-blue-400" /> Biblioteca
                 </h1>
-                <p className="text-slate-400 text-sm mt-0.5">Libros y jurisprudencia del CPASF</p>
+                <p className="text-slate-700 text-sm mt-0.5">Libros y jurisprudencia del CPASF</p>
             </div>
 
             {/* Tabs desplazables */}
@@ -180,7 +180,7 @@ export default function BibliotecaPage() {
                         className={`flex items-center gap-1.5 px-4 h-9 rounded-xl text-[12px] font-semibold whitespace-nowrap transition-all border flex-shrink-0
                             ${seccion === tab.key
                                 ? "bg-[#063f68] border-[#063f68] text-white dark:bg-blue-600 dark:border-blue-600"
-                                : "border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"}`}>
+                                : "border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"}`}>
                         {tab.icon} {tab.label}
                     </button>
                 ))}
@@ -194,7 +194,7 @@ export default function BibliotecaPage() {
                     </div>
                     <div className="text-center space-y-2 max-w-md">
                         <h2 className="text-lg font-bold text-slate-800 dark:text-white">Sistema de Biblioteca CASF</h2>
-                        <p className="text-sm text-slate-500 dark:text-slate-400">Accedé al catálogo completo y los servicios de la biblioteca del Colegio de Abogados de Santa Fe.</p>
+                        <p className="text-sm text-slate-700 dark:text-slate-400">Accedé al catálogo completo y los servicios de la biblioteca del Colegio de Abogados de Santa Fe.</p>
                     </div>
                     <a href="https://www.casf.org.ar/colegio/biblioteca/" target="_blank" rel="noopener noreferrer"
                         className="flex items-center gap-2 h-12 px-8 bg-[#063f68] hover:bg-[#0a4d7a] dark:bg-blue-600 dark:hover:bg-blue-500 text-white rounded-2xl font-bold text-sm transition-all">
@@ -211,7 +211,7 @@ export default function BibliotecaPage() {
                     </div>
                     <div className="text-center space-y-2 max-w-md">
                         <h2 className="text-lg font-bold text-slate-800 dark:text-white">Solicitud de Jurisprudencia</h2>
-                        <p className="text-sm text-slate-500 dark:text-slate-400">Solicitá búsquedas de jurisprudencia específica. El equipo de biblioteca te enviará los resultados a la brevedad.</p>
+                        <p className="text-sm text-slate-700 dark:text-slate-400">Solicitá búsquedas de jurisprudencia específica. El equipo de biblioteca te enviará los resultados a la brevedad.</p>
                     </div>
                     <Link href="/dashboard/solicitudes/jurisprudencia"
                         className="flex items-center gap-2 h-12 px-8 bg-teal-600 hover:bg-teal-700 text-white rounded-2xl font-bold text-sm transition-all">
@@ -225,7 +225,7 @@ export default function BibliotecaPage() {
             {/* Barra de búsqueda y filtros */}
             <div className="flex flex-col md:flex-row gap-3">
                 <div className="relative flex-1">
-                    <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-700" />
                     <input
                         value={search} onChange={e => setSearch(e.target.value)}
                         placeholder="Buscar por título, autor, categoría o tag..."
@@ -238,7 +238,7 @@ export default function BibliotecaPage() {
                             className={`px-3 h-10 rounded-xl text-[12px] font-semibold transition-all border
                                 ${tipoFiltro === t
                                     ? "bg-[#063f68] border-[#063f68] text-white"
-                                    : "border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"}`}>
+                                    : "border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"}`}>
                             {t === "todos" ? "Todos" : t === "libro" ? "Libros" : "Jurisprudencia"}
                         </button>
                     ))}
@@ -246,12 +246,12 @@ export default function BibliotecaPage() {
                         className={`flex items-center gap-1.5 px-3 h-10 rounded-xl text-[12px] font-semibold transition-all border
                             ${soloFavoritos
                                 ? "bg-rose-500 border-rose-500 text-white"
-                                : "border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"}`}>
+                                : "border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"}`}>
                         <Heart size={13} fill={soloFavoritos ? "white" : "none"} /> Favoritos
                     </button>
                     {(isFiltering || showGrid) && (
                         <button onClick={() => { setSearch(""); setTipoFiltro("todos"); setSoloFavoritos(false); setShowGrid(false); }}
-                            className="flex items-center gap-1.5 px-3 h-10 rounded-xl text-[12px] font-semibold border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                            className="flex items-center gap-1.5 px-3 h-10 rounded-xl text-[12px] font-semibold border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
                             <X size={12} /> Limpiar
                         </button>
                     )}
@@ -265,11 +265,11 @@ export default function BibliotecaPage() {
             ) : isFiltering ? (
                 /* Vista de resultados de búsqueda/filtro */
                 <>
-                    <p className="text-[12px] text-slate-400">{filtered.length} resultado{filtered.length !== 1 ? "s" : ""}</p>
+                    <p className="text-[12px] text-slate-700">{filtered.length} resultado{filtered.length !== 1 ? "s" : ""}</p>
                     {filtered.length === 0 ? (
                         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-16 text-center">
                             <Library size={32} className="text-slate-200 dark:text-slate-700 mx-auto mb-3" />
-                            <p className="text-slate-500 font-medium">Sin resultados</p>
+                            <p className="text-slate-700 font-medium">Sin resultados</p>
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
@@ -281,7 +281,7 @@ export default function BibliotecaPage() {
                 /* Todos los documentos */
                 <>
                     <div className="flex items-center justify-between">
-                        <SectionTitle icon={<Grid3x3 size={16} className="text-slate-400" />} title="Todos los documentos" subtitle={`${items.length} disponibles`} />
+                        <SectionTitle icon={<Grid3x3 size={16} className="text-slate-700" />} title="Todos los documentos" subtitle={`${items.length} disponibles`} />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
                         {items.map(item => <ItemCard key={item.id} item={item} {...cardProps} />)}
@@ -323,7 +323,7 @@ export default function BibliotecaPage() {
                         <section>
                             <button
                                 onClick={() => setShowGrid(true)}
-                                className="w-full flex items-center justify-center gap-2 h-12 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500 hover:border-[#063f68]/40 hover:text-[#063f68] dark:hover:text-blue-400 dark:hover:border-blue-400/40 transition-all text-[13px] font-semibold group">
+                                className="w-full flex items-center justify-center gap-2 h-12 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-500 hover:border-[#063f68]/40 hover:text-[#063f68] dark:hover:text-blue-400 dark:hover:border-blue-400/40 transition-all text-[13px] font-semibold group">
                                 <Grid3x3 size={15} className="group-hover:scale-110 transition-transform" />
                                 Ver todos los documentos ({items.length})
                             </button>
@@ -333,7 +333,7 @@ export default function BibliotecaPage() {
                     {items.length === 0 && (
                         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-16 text-center">
                             <Library size={32} className="text-slate-200 dark:text-slate-700 mx-auto mb-3" />
-                            <p className="text-slate-500 font-medium">No hay documentos disponibles</p>
+                            <p className="text-slate-700 font-medium">No hay documentos disponibles</p>
                         </div>
                     )}
                 </div>

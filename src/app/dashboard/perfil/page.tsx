@@ -36,7 +36,7 @@ export default async function PerfilPage() {
                                 href="/dashboard"
                                 className="p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-all group"
                             >
-                                <ChevronLeft size={20} className="text-slate-400 group-hover:text-black dark:group-hover:text-white transition-colors" />
+                                <ChevronLeft size={20} className="text-slate-700 group-hover:text-black dark:group-hover:text-white transition-colors" />
                             </Link>
                             <h2 className="text-[15px] font-bold text-black dark:text-white tracking-tight">Mi Perfil Profesional</h2>
                         </div>

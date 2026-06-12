@@ -168,10 +168,10 @@ export default function CalculadoraIncapacidadPage() {
             <div className="p-4 md:p-8 max-w-3xl">
                 <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
                     <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                        <Scale size={24} className="text-slate-400" />
+                        <Scale size={24} className="text-slate-700" />
                     </div>
                     <h2 className="text-lg font-bold text-slate-700 dark:text-slate-200">Calculadora no disponible</h2>
-                    <p className="text-[13px] text-slate-400 max-w-xs">Esta herramienta está temporalmente deshabilitada. Contactá al colegio para más información.</p>
+                    <p className="text-[13px] text-slate-700 max-w-xs">Esta herramienta está temporalmente deshabilitada. Contactá al colegio para más información.</p>
                 </div>
             </div>
         );
@@ -182,11 +182,11 @@ export default function CalculadoraIncapacidadPage() {
             {/* Header */}
             <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                    <Scale size={20} className="text-slate-500" />
+                    <Scale size={20} className="text-slate-700" />
                 </div>
                 <div>
                     <h1 className="text-xl font-bold text-slate-800 dark:text-white">Cálculo de Incapacidad</h1>
-                    <p className="text-slate-400 text-sm mt-0.5">Ingreso variable probable · Art. 1746 CCyC · Fórmula Acciarri</p>
+                    <p className="text-slate-700 text-sm mt-0.5">Ingreso variable probable · Art. 1746 CCyC · Fórmula Acciarri</p>
                 </div>
             </div>
 
@@ -201,10 +201,10 @@ export default function CalculadoraIncapacidadPage() {
 
             {/* Datos base */}
             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6 space-y-5">
-                <h2 className="text-[12px] font-black uppercase tracking-widest text-slate-400">Datos base</h2>
+                <h2 className="text-[12px] font-black uppercase tracking-widest text-slate-700">Datos base</h2>
                 <div className="grid grid-cols-3 gap-4">
                     <div className="space-y-1.5">
-                        <label className="text-[12px] font-bold text-slate-500 uppercase tracking-wide">Edad inicial</label>
+                        <label className="text-[12px] font-bold text-slate-700 uppercase tracking-wide">Edad inicial</label>
                         <input
                             type="number" min="1" max="100"
                             value={edadInicial}
@@ -213,7 +213,7 @@ export default function CalculadoraIncapacidadPage() {
                         />
                     </div>
                     <div className="space-y-1.5">
-                        <label className="text-[12px] font-bold text-slate-500 uppercase tracking-wide">Incapacidad %</label>
+                        <label className="text-[12px] font-bold text-slate-700 uppercase tracking-wide">Incapacidad %</label>
                         <input
                             type="text" inputMode="decimal" placeholder="50"
                             value={incapacidad}
@@ -222,7 +222,7 @@ export default function CalculadoraIncapacidadPage() {
                         />
                     </div>
                     <div className="space-y-1.5">
-                        <label className="text-[12px] font-bold text-slate-500 uppercase tracking-wide">Tasa descuento %</label>
+                        <label className="text-[12px] font-bold text-slate-700 uppercase tracking-wide">Tasa descuento %</label>
                         <input
                             type="text" inputMode="decimal" placeholder="4"
                             value={tasa}
@@ -236,7 +236,7 @@ export default function CalculadoraIncapacidadPage() {
             {/* Tramos */}
             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden">
                 <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                    <h2 className="text-[12px] font-black uppercase tracking-widest text-slate-400">Tramos de ingresos</h2>
+                    <h2 className="text-[12px] font-black uppercase tracking-widest text-slate-700">Tramos de ingresos</h2>
                     <button
                         onClick={addTramo}
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#063f68]/5 dark:bg-blue-900/20 text-[#063f68] dark:text-blue-400 text-[11px] font-bold border border-[#063f68]/15 hover:bg-[#063f68]/10 transition-all"
@@ -246,7 +246,7 @@ export default function CalculadoraIncapacidadPage() {
                 </div>
 
                 {/* Encabezado tabla */}
-                <div className="grid grid-cols-[2rem_1fr_1.5fr_1fr_2rem] gap-3 px-6 py-2 bg-slate-50 dark:bg-slate-800/40 text-[10px] font-black uppercase tracking-wider text-slate-400 border-b border-slate-100 dark:border-slate-800">
+                <div className="grid grid-cols-[2rem_1fr_1.5fr_1fr_2rem] gap-3 px-6 py-2 bg-slate-50 dark:bg-slate-800/40 text-[10px] font-black uppercase tracking-wider text-slate-700 border-b border-slate-100 dark:border-slate-800">
                     <span>#</span>
                     <span>Edad fin</span>
                     <span>Ingreso anual proyectado ($)</span>
@@ -257,7 +257,7 @@ export default function CalculadoraIncapacidadPage() {
                 <div className="divide-y divide-slate-50 dark:divide-slate-800">
                     {tramos.map((t, idx) => (
                         <div key={t.id} className="grid grid-cols-[2rem_1fr_1.5fr_1fr_2rem] gap-3 items-center px-6 py-3">
-                            <span className="text-[11px] font-black text-slate-400">{idx + 1}</span>
+                            <span className="text-[11px] font-black text-slate-700">{idx + 1}</span>
                             <input
                                 type="number" min="1"
                                 value={t.edadFin}
@@ -273,7 +273,7 @@ export default function CalculadoraIncapacidadPage() {
                                 className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white text-[13px] font-semibold focus:outline-none focus:ring-2 focus:ring-[#063f68]/30"
                             />
                             {idx === 0 ? (
-                                <div className="px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 text-[12px] text-slate-400 font-semibold">
+                                <div className="px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 text-[12px] text-slate-700 font-semibold">
                                     Ingreso base
                                 </div>
                             ) : (
@@ -297,7 +297,7 @@ export default function CalculadoraIncapacidadPage() {
                 </div>
 
                 <div className="px-6 py-3 bg-slate-50/50 dark:bg-slate-800/20 border-t border-slate-100 dark:border-slate-800">
-                    <p className="text-[10px] text-slate-400 leading-relaxed">
+                    <p className="text-[10px] text-slate-700 leading-relaxed">
                         <strong>Edad fin:</strong> edad hasta la cual aplica el ingreso de ese tramo. · <strong>Prob. incremento:</strong> probabilidad de que el ingreso suba respecto al tramo anterior (0–100). El primer tramo es el ingreso base cierto.
                     </p>
                 </div>
@@ -331,7 +331,7 @@ export default function CalculadoraIncapacidadPage() {
                         ].map(item => (
                             <div key={item.label}
                                 className={`bg-white dark:bg-slate-900 rounded-2xl border-2 p-5 ${item.highlight ? "border-emerald-400 dark:border-emerald-600 shadow-sm shadow-emerald-100 dark:shadow-emerald-900/20" : "border-slate-100 dark:border-slate-800"}`}>
-                                <p className="text-[10px] text-slate-400 uppercase tracking-wide font-semibold mb-1.5">{item.label}</p>
+                                <p className="text-[10px] text-slate-700 uppercase tracking-wide font-semibold mb-1.5">{item.label}</p>
                                 <p className={`text-[18px] font-black ${item.color}`}>${fmt(item.value)}</p>
                             </div>
                         ))}
@@ -346,7 +346,7 @@ export default function CalculadoraIncapacidadPage() {
                         <div className="overflow-x-auto">
                             <table className="w-full text-[11px]">
                                 <thead>
-                                    <tr className="bg-slate-50 dark:bg-slate-800/40 text-[10px] text-slate-400 font-black uppercase tracking-wider">
+                                    <tr className="bg-slate-50 dark:bg-slate-800/40 text-[10px] text-slate-700 font-black uppercase tracking-wider">
                                         <th className="px-4 py-2 text-left">Edades</th>
                                         <th className="px-4 py-2 text-right">Períodos</th>
                                         <th className="px-4 py-2 text-right">IAP</th>
@@ -359,9 +359,9 @@ export default function CalculadoraIncapacidadPage() {
                                     {resultado.tramos.map((t, i) => (
                                         <tr key={i} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
                                             <td className="px-4 py-2.5 font-bold text-slate-700 dark:text-slate-200">{t.edadInicio} – {t.edadFin - 1}</td>
-                                            <td className="px-4 py-2.5 text-right text-slate-500">{t.periodos}</td>
+                                            <td className="px-4 py-2.5 text-right text-slate-700">{t.periodos}</td>
                                             <td className="px-4 py-2.5 text-right text-slate-600 dark:text-slate-300">${fmt(t.iap)}</td>
-                                            <td className="px-4 py-2.5 text-right text-slate-500">
+                                            <td className="px-4 py-2.5 text-right text-slate-700">
                                                 {i === 0 ? "—" : `${(t.prob * 100).toFixed(0)}%`}
                                             </td>
                                             <td className="px-4 py-2.5 text-right text-slate-600 dark:text-slate-300">${fmt(t.ive)}</td>

@@ -116,7 +116,7 @@ export default function SolicitudCatastroPage() {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
                 <Loader2 size={32} className="text-[#063f68] dark:text-blue-500 animate-spin" />
-                <p className="text-slate-500 dark:text-slate-400 font-medium tracking-tight">Cargando formulario...</p>
+                <p className="text-slate-700 dark:text-slate-400 font-medium tracking-tight">Cargando formulario...</p>
             </div>
         );
     }
@@ -130,7 +130,7 @@ export default function SolicitudCatastroPage() {
                         href="/dashboard"
                         className="p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-all group"
                     >
-                        <ChevronLeft size={20} className="text-slate-400 group-hover:text-black dark:group-hover:text-white transition-colors" />
+                        <ChevronLeft size={20} className="text-slate-700 group-hover:text-black dark:group-hover:text-white transition-colors" />
                     </Link>
                     <div className="flex items-center gap-3">
                         <FileText size={18} className="text-blue-600" />
@@ -201,7 +201,7 @@ export default function SolicitudCatastroPage() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {/* Nombre y Apellido */}
                                 <div className="space-y-2 md:col-span-2">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Nombre</label>
+                                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest ml-1">Nombre</label>
                                     <input
                                         type="text"
                                         readOnly
@@ -212,7 +212,7 @@ export default function SolicitudCatastroPage() {
 
                                 {/* Tomo */}
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Inscripto al Tomo</label>
+                                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest ml-1">Inscripto al Tomo</label>
                                     <input
                                         type="text"
                                         readOnly
@@ -223,7 +223,7 @@ export default function SolicitudCatastroPage() {
 
                                 {/* Folio */}
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Folio Nº</label>
+                                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest ml-1">Folio Nº</label>
                                     <input
                                         type="text"
                                         readOnly
@@ -234,7 +234,7 @@ export default function SolicitudCatastroPage() {
 
                                 {/* Expediente */}
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Expediente</label>
+                                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest ml-1">Expediente</label>
                                     <input
                                         type="text"
                                         readOnly
@@ -245,7 +245,7 @@ export default function SolicitudCatastroPage() {
 
                                 {/* Email Legal */}
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Email</label>
+                                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest ml-1">Email</label>
                                     <input
                                         type="text"
                                         readOnly
@@ -262,7 +262,7 @@ export default function SolicitudCatastroPage() {
 
                                 {/* CUIT */}
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Constancia de inscripción tributaria (CUIT)</label>
+                                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest ml-1">Constancia de inscripción tributaria (CUIT)</label>
                                     <input
                                         type="text"
                                         readOnly
@@ -273,7 +273,7 @@ export default function SolicitudCatastroPage() {
 
                                 {/* File Upload */}
                                 <div className="space-y-3">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1 block">Adjuntar Constancia (PDF o Imagen)</label>
+                                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest ml-1 block">Adjuntar Constancia (PDF o Imagen)</label>
 
                                     {!archivo ? (
                                         <div
@@ -281,12 +281,12 @@ export default function SolicitudCatastroPage() {
                                             className="group flex flex-col items-center justify-center w-full min-h-[140px] border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-[32px] hover:border-[#063f68] dark:hover:border-blue-500 hover:bg-slate-50/50 dark:hover:bg-blue-500/5 transition-all cursor-pointer"
                                         >
                                             <div className="p-4 rounded-full bg-slate-50 dark:bg-slate-800 group-hover:bg-white dark:group-hover:bg-slate-700 transition-colors">
-                                                <Upload size={24} className="text-slate-400 group-hover:text-[#063f68] dark:group-hover:text-blue-400" />
+                                                <Upload size={24} className="text-slate-700 group-hover:text-[#063f68] dark:group-hover:text-blue-400" />
                                             </div>
-                                            <p className="mt-3 text-[13px] font-bold text-slate-500 group-hover:text-[#063f68] dark:group-hover:text-blue-400">
+                                            <p className="mt-3 text-[13px] font-bold text-slate-700 group-hover:text-[#063f68] dark:group-hover:text-blue-400">
                                                 Seleccionar archivo
                                             </p>
-                                            <p className="text-[10px] text-slate-400 mt-1">Carga de archivo disponible desde ordenador</p>
+                                            <p className="text-[10px] text-slate-700 mt-1">Carga de archivo disponible desde ordenador</p>
                                         </div>
                                     ) : (
                                         <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 rounded-2xl">
@@ -296,13 +296,13 @@ export default function SolicitudCatastroPage() {
                                                 </div>
                                                 <div className="overflow-hidden">
                                                     <p className="text-[13px] font-bold text-black dark:text-white truncate max-w-[200px] md:max-w-xs">{archivo.name}</p>
-                                                    <p className="text-[10px] text-slate-400 font-medium">{(archivo.size / 1024 / 1024).toFixed(2)} MB</p>
+                                                    <p className="text-[10px] text-slate-700 font-medium">{(archivo.size / 1024 / 1024).toFixed(2)} MB</p>
                                                 </div>
                                             </div>
                                             <button
                                                 type="button"
                                                 onClick={() => setArchivo(null)}
-                                                className="p-2 hover:bg-red-50 dark:hover:bg-red-950/30 text-slate-400 hover:text-red-500 rounded-xl transition-all"
+                                                className="p-2 hover:bg-red-50 dark:hover:bg-red-950/30 text-slate-700 hover:text-red-500 rounded-xl transition-all"
                                             >
                                                 <X size={20} />
                                             </button>

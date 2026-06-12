@@ -68,7 +68,7 @@ export default async function CredencialPage() {
                                 href="/dashboard"
                                 className="p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-all group"
                             >
-                                <ChevronLeft size={20} className="text-slate-400 group-hover:text-black dark:group-hover:text-white transition-colors" />
+                                <ChevronLeft size={20} className="text-slate-700 group-hover:text-black dark:group-hover:text-white transition-colors" />
                             </Link>
                             <div className="flex items-center gap-3">
                                 <IdCard size={18} className="text-amber-500" />
@@ -158,7 +158,7 @@ export default async function CredencialPage() {
                             {/* Columna de Acciones Lateral */}
                             <div className="w-full lg:w-64 space-y-4">
                                 <div className="p-5 rounded-[24px] bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
-                                    <p className="text-slate-500 dark:text-slate-400 text-[11px] font-medium leading-relaxed">
+                                    <p className="text-slate-700 dark:text-slate-400 text-[11px] font-medium leading-relaxed">
                                         Identificación oficial del Colegio de la Abogacía de Santa Fe.
                                     </p>
                                 </div>
@@ -206,7 +206,7 @@ export default async function CredencialPage() {
                                                     </div>
                                                     <div className="border-t border-[#f1f5f9] pt-1">
                                                         <p className="text-[8px] font-bold text-slate-800">{f.cargo}</p>
-                                                        {f.nombre && <p className="text-[7px] text-slate-500 mt-0.5 leading-tight">{f.nombre}</p>}
+                                                        {f.nombre && <p className="text-[7px] text-slate-700 mt-0.5 leading-tight">{f.nombre}</p>}
                                                     </div>
                                                 </div>
                                             )) : (
@@ -226,7 +226,7 @@ export default async function CredencialPage() {
                             {/* Columna info dorso */}
                             <div className="w-full lg:w-64">
                                 <div className="p-5 rounded-[24px] bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
-                                    <p className="text-slate-500 dark:text-slate-400 text-[11px] font-medium leading-relaxed">
+                                    <p className="text-slate-700 dark:text-slate-400 text-[11px] font-medium leading-relaxed">
                                         Leyenda legal y firmas de las autoridades institucionales.
                                     </p>
                                 </div>

@@ -111,7 +111,7 @@ export default function SolicitudesEnviadasPage() {
     if (loading) return (
         <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
             <Loader2 size={32} className="text-[#063f68] dark:text-blue-500 animate-spin" />
-            <p className="text-slate-500 dark:text-slate-400 font-medium tracking-tight">Cargando historial...</p>
+            <p className="text-slate-700 dark:text-slate-400 font-medium tracking-tight">Cargando historial...</p>
         </div>
     );
 
@@ -121,7 +121,7 @@ export default function SolicitudesEnviadasPage() {
             <div className="sticky top-16 z-10 bg-white dark:bg-[#02182b] flex items-center justify-between px-4 md:px-8 py-3.5 border-b border-[#f1f5f9] dark:border-slate-800 transition-colors duration-300">
                 <div className="flex items-center gap-4">
                     <Link href="/dashboard" className="p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-all group">
-                        <ChevronLeft size={20} className="text-slate-400 group-hover:text-black dark:group-hover:text-white transition-colors" />
+                        <ChevronLeft size={20} className="text-slate-700 group-hover:text-black dark:group-hover:text-white transition-colors" />
                     </Link>
                     <div className="flex items-center gap-3">
                         <Clock size={18} className="text-orange-500" />
@@ -129,7 +129,7 @@ export default function SolicitudesEnviadasPage() {
                     </div>
                 </div>
                 <div className="relative hidden md:block">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-700" size={16} />
                     <input
                         type="text"
                         placeholder="Buscar trámites..."
@@ -146,7 +146,7 @@ export default function SolicitudesEnviadasPage() {
                     <button key={t.key} onClick={() => setTipoFilter(t.key)}
                         className={`h-8 px-3 rounded-xl text-[11px] font-bold transition-all border ${tipoFilter === t.key
                             ? "bg-[#063f68] text-white border-[#063f68] dark:bg-blue-600 dark:border-blue-600"
-                            : "bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"}`}>
+                            : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"}`}>
                         {t.label}
                     </button>
                 ))}
@@ -160,7 +160,7 @@ export default function SolicitudesEnviadasPage() {
                         </div>
                         <div className="space-y-1">
                             <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200">Sin Solicitudes</h3>
-                            <p className="text-slate-400 dark:text-slate-500 text-sm max-w-xs">Aún no has enviado ninguna solicitud de trámite a través del sistema.</p>
+                            <p className="text-slate-700 dark:text-slate-500 text-sm max-w-xs">Aún no has enviado ninguna solicitud de trámite a través del sistema.</p>
                         </div>
                     </div>
                 ) : (
@@ -181,7 +181,7 @@ export default function SolicitudesEnviadasPage() {
                         {resto.length > 0 && (
                             <div>
                                 {favoritas.length > 0 && (
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Todos los trámites</p>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-700 mb-3">Todos los trámites</p>
                                 )}
                                 <div className="space-y-2">
                                     {resto.map(s => <SolicitudCard key={s.id} s={s} isFav={false} onToggleFav={toggleFav} getStatusStyle={getStatusStyle} />)}
@@ -228,12 +228,12 @@ function SolicitudCard({ s, isFav, onToggleFav, getStatusStyle }: {
 
             {/* Fila inferior */}
             <div className="mt-3 ml-12 flex flex-wrap items-center gap-2">
-                <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-400">
+                <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-700">
                     <Calendar size={11} />
                     {new Date(s.fecha).toLocaleDateString("es-AR")}
                 </div>
                 {s.presentarAnte && (
-                    <span className="text-[11px] text-slate-400 italic truncate max-w-[180px]">· "{s.presentarAnte}"</span>
+                    <span className="text-[11px] text-slate-700 italic truncate max-w-[180px]">· "{s.presentarAnte}"</span>
                 )}
                 {s.isAdhesion ? (
                     <>

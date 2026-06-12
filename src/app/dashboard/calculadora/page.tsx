@@ -81,10 +81,10 @@ export default function CalculadoraPage() {
             <div className="p-4 md:p-8 max-w-2xl">
                 <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
                     <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                        <Calculator size={24} className="text-slate-400" />
+                        <Calculator size={24} className="text-slate-700" />
                     </div>
                     <h2 className="text-lg font-bold text-slate-700 dark:text-slate-200">Calculadora no disponible</h2>
-                    <p className="text-[13px] text-slate-400 max-w-xs">Esta herramienta está temporalmente deshabilitada. Contactá al colegio para más información.</p>
+                    <p className="text-[13px] text-slate-700 max-w-xs">Esta herramienta está temporalmente deshabilitada. Contactá al colegio para más información.</p>
                 </div>
             </div>
         );
@@ -95,11 +95,11 @@ export default function CalculadoraPage() {
             {/* Header */}
             <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                    <Calculator size={20} className="text-slate-500" />
+                    <Calculator size={20} className="text-slate-700" />
                 </div>
                 <div>
                     <h1 className="text-xl font-bold text-slate-800 dark:text-white">Calculadora de Intereses</h1>
-                    <p className="text-slate-400 text-sm mt-0.5">Créditos laborales judicializados · Ley 27.802</p>
+                    <p className="text-slate-700 text-sm mt-0.5">Créditos laborales judicializados · Ley 27.802</p>
                 </div>
             </div>
 
@@ -114,7 +114,7 @@ export default function CalculadoraPage() {
             {/* Formulario */}
             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6 space-y-5">
                 <div className="space-y-1.5">
-                    <label className="text-[12px] font-bold text-slate-500 uppercase tracking-wide">Capital ($)</label>
+                    <label className="text-[12px] font-bold text-slate-700 uppercase tracking-wide">Capital ($)</label>
                     <input
                         type="text"
                         inputMode="decimal"
@@ -127,7 +127,7 @@ export default function CalculadoraPage() {
 
                 <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                        <label className="text-[12px] font-bold text-slate-500 uppercase tracking-wide">Fecha desde</label>
+                        <label className="text-[12px] font-bold text-slate-700 uppercase tracking-wide">Fecha desde</label>
                         <input
                             type="date"
                             value={desde}
@@ -136,7 +136,7 @@ export default function CalculadoraPage() {
                         />
                     </div>
                     <div className="space-y-1.5">
-                        <label className="text-[12px] font-bold text-slate-500 uppercase tracking-wide">Fecha hasta</label>
+                        <label className="text-[12px] font-bold text-slate-700 uppercase tracking-wide">Fecha hasta</label>
                         <input
                             type="date"
                             value={hasta}
@@ -171,7 +171,7 @@ export default function CalculadoraPage() {
                             <TrendingUp size={15} className="text-emerald-500" />
                             <h2 className="text-[13px] font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wide">Resultados</h2>
                         </div>
-                        <div className="grid grid-cols-3 gap-3 text-center text-[11px] text-slate-400 font-semibold mb-4">
+                        <div className="grid grid-cols-3 gap-3 text-center text-[11px] text-slate-700 font-semibold mb-4">
                             <span>Capital original</span>
                             <span>Período</span>
                             <span>Días hábiles aprox.</span>
@@ -223,7 +223,7 @@ export default function CalculadoraPage() {
                                 <div className="flex items-start justify-between gap-2 mb-3">
                                     <div>
                                         <p className="text-[13px] font-bold text-slate-700 dark:text-slate-200">{item.label}</p>
-                                        <p className="text-[11px] text-slate-400 mt-0.5">{item.detalle}</p>
+                                        <p className="text-[11px] text-slate-700 mt-0.5">{item.detalle}</p>
                                     </div>
                                     {esMayor && (
                                         <span className="flex-shrink-0 px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold">
@@ -233,16 +233,16 @@ export default function CalculadoraPage() {
                                 </div>
                                 <div className="grid grid-cols-3 gap-3">
                                     <div>
-                                        <p className="text-[10px] text-slate-400 uppercase tracking-wide font-semibold mb-0.5">Intereses</p>
+                                        <p className="text-[10px] text-slate-700 uppercase tracking-wide font-semibold mb-0.5">Intereses</p>
                                         <p className="text-[18px] font-black text-slate-800 dark:text-white">${fmt(item.intereses)}</p>
                                     </div>
                                     <div>
-                                        <p className="text-[10px] text-slate-400 uppercase tracking-wide font-semibold mb-0.5">Total c/ intereses</p>
+                                        <p className="text-[10px] text-slate-700 uppercase tracking-wide font-semibold mb-0.5">Total c/ intereses</p>
                                         <p className="text-[18px] font-black text-emerald-600 dark:text-emerald-400">${fmt(item.total)}</p>
                                     </div>
                                     {item.ratio && (
                                         <div>
-                                            <p className="text-[10px] text-slate-400 uppercase tracking-wide font-semibold mb-0.5">Tasa período</p>
+                                            <p className="text-[10px] text-slate-700 uppercase tracking-wide font-semibold mb-0.5">Tasa período</p>
                                             <p className="text-[18px] font-black text-slate-800 dark:text-white">{fmtPct(item.ratio)}</p>
                                         </div>
                                     )}
@@ -256,7 +256,7 @@ export default function CalculadoraPage() {
                         href="https://www.bcra.gob.ar/calculadora-intereses-creditos-laborales-judicializados/"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center justify-center gap-2 p-3 rounded-xl border border-slate-200 dark:border-slate-700 text-[12px] text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
+                        className="flex items-center justify-center gap-2 p-3 rounded-xl border border-slate-200 dark:border-slate-700 text-[12px] text-slate-700 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
                     >
                         <ExternalLink size={13} />
                         Verificar en calculadora oficial BCRA

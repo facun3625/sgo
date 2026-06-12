@@ -84,7 +84,7 @@ export default function CalendarioPage() {
                         href="/dashboard"
                         className="p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-all group"
                     >
-                        <ChevronLeft size={20} className="text-slate-400 group-hover:text-black dark:group-hover:text-white transition-colors" />
+                        <ChevronLeft size={20} className="text-slate-700 group-hover:text-black dark:group-hover:text-white transition-colors" />
                     </Link>
                     <div className="flex items-center gap-3">
                         <CalendarDays size={18} className="text-[#063f68] dark:text-blue-400" />
@@ -93,7 +93,7 @@ export default function CalendarioPage() {
                 </div>
 
                 <div className="hidden md:flex items-center gap-2 px-4 py-1.5 bg-slate-50 dark:bg-slate-900 rounded-full border border-slate-100 dark:border-slate-800">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Total:</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-700">Total:</span>
                     <span className="text-[10px] font-black text-[#063f68] dark:text-blue-400">{eventos.length} Eventos</span>
                 </div>
             </div>
@@ -122,7 +122,7 @@ export default function CalendarioPage() {
                                         <CalendarIcon size={18} />
                                     </div>
                                     <div className="flex flex-col">
-                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Fecha</span>
+                                        <span className="text-[10px] font-black text-slate-700 uppercase tracking-widest">Fecha</span>
                                         <span className="text-sm font-bold text-slate-900 dark:text-white">
                                             {(() => {
                                                 const part = selectedEvent.fecha.split("T")[0];
@@ -139,7 +139,7 @@ export default function CalendarioPage() {
                                         <Info size={18} />
                                     </div>
                                     <div className="flex flex-col">
-                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Descripción</span>
+                                        <span className="text-[10px] font-black text-slate-700 uppercase tracking-widest">Descripción</span>
                                         <p className="text-sm font-medium text-slate-600 dark:text-slate-400 leading-relaxed">
                                             {selectedEvent.descripcion || "Sin descripción disponible."}
                                         </p>
@@ -171,19 +171,19 @@ export default function CalendarioPage() {
             <div className="p-6 md:p-10 animate-fade-in">
                 <div className="mb-12">
                     <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight mb-2 uppercase">Agenda</h1>
-                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Próximos eventos, cursos y feriados institucionales.</p>
+                    <p className="text-sm font-medium text-slate-700 dark:text-slate-400">Próximos eventos, cursos y feriados institucionales.</p>
                 </div>
 
                 {loading ? (
                     <div className="flex flex-col items-center justify-center py-20 gap-4">
                         <Loader2 size={32} className="animate-spin text-[#063f68] dark:text-blue-400" />
-                        <span className="text-xs font-black uppercase tracking-widest text-slate-400">Cargando agenda...</span>
+                        <span className="text-xs font-black uppercase tracking-widest text-slate-700">Cargando agenda...</span>
                     </div>
                 ) : eventos.length === 0 ? (
                     <div className="bg-slate-50 dark:bg-slate-900/50 border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-[40px] p-20 text-center">
                         <CalendarIcon size={48} className="mx-auto text-slate-200 dark:text-slate-800 mb-6" />
                         <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">No hay eventos programados</h3>
-                        <p className="text-sm text-slate-500 dark:text-slate-400">Volvé pronto para conocer las novedades del colegio.</p>
+                        <p className="text-sm text-slate-700 dark:text-slate-400">Volvé pronto para conocer las novedades del colegio.</p>
                     </div>
                 ) : (
                     <div className="space-y-6">
@@ -199,7 +199,7 @@ export default function CalendarioPage() {
                                     {/* Date Badge */}
                                     <div className="flex flex-col items-center justify-center min-w-[70px] h-[70px] rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 group-hover:bg-[#063f68] group-hover:border-[#063f68] transition-all">
                                         <span className="text-xl font-black text-slate-900 dark:text-white group-hover:text-white transition-colors leading-none">{String(day).padStart(2, '0')}</span>
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-white/70 transition-colors mt-1">{month}</span>
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-700 group-hover:text-white/70 transition-colors mt-1">{month}</span>
                                     </div>
 
                                     {/* Content */}
@@ -208,7 +208,7 @@ export default function CalendarioPage() {
                                             <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest border ${getTipoStyles(ev.tipo)}`}>
                                                 {ev.tipo}
                                             </span>
-                                            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                                            <span className="text-[10px] font-bold text-slate-700 dark:text-slate-500 uppercase tracking-wider">
                                                 {weekday}
                                             </span>
                                         </div>
@@ -216,7 +216,7 @@ export default function CalendarioPage() {
                                             {ev.titulo}
                                         </h3>
                                         {ev.descripcion && (
-                                            <p className="text-[12px] font-medium text-slate-500 dark:text-slate-400 line-clamp-1">
+                                            <p className="text-[12px] font-medium text-slate-700 dark:text-slate-400 line-clamp-1">
                                                 {ev.descripcion}
                                             </p>
                                         )}

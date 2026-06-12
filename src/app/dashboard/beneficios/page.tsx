@@ -53,7 +53,7 @@ export default async function BeneficiosPage() {
                                 href="/dashboard"
                                 className="p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-all group"
                             >
-                                <ChevronLeft size={20} className="text-slate-400 group-hover:text-black dark:group-hover:text-white transition-colors" />
+                                <ChevronLeft size={20} className="text-slate-700 group-hover:text-black dark:group-hover:text-white transition-colors" />
                             </Link>
                             <div className="flex items-center gap-3">
                                 <CreditCard size={18} className="text-blue-500" />
@@ -160,7 +160,7 @@ export default async function BeneficiosPage() {
                             {/* Columna de Acciones Lateral Compacta */}
                             <div className="w-full lg:w-64 space-y-4">
                                 <div className="p-5 rounded-[24px] bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
-                                    <p className="text-slate-500 dark:text-slate-400 text-[11px] font-medium leading-relaxed">
+                                    <p className="text-slate-700 dark:text-slate-400 text-[11px] font-medium leading-relaxed">
                                         Presentá esta tarjeta en los comercios adheridos para acceder a los beneficios exclusivos.
                                     </p>
                                 </div>

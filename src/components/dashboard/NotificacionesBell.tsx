@@ -148,7 +148,7 @@ export default function NotificacionesBell() {
                         {visibleNotificaciones.length === 0 ? (
                             <div className="flex flex-col items-center justify-center py-10 gap-3">
                                 <Bell size={28} className="text-slate-200 dark:text-slate-700" />
-                                <p className="text-[12px] text-slate-400 font-medium">Sin notificaciones</p>
+                                <p className="text-[12px] text-slate-700 font-medium">Sin notificaciones</p>
                             </div>
                         ) : (
                             visibleNotificaciones.map((n) => {
@@ -167,11 +167,11 @@ export default function NotificacionesBell() {
                                         <div className="pt-0.5 flex-shrink-0">
                                             {isComunicado ? (
                                                 <div className={`w-6 h-6 rounded-lg flex items-center justify-center ${!n.leida ? "bg-amber-100 dark:bg-amber-900/30" : "bg-slate-100 dark:bg-slate-800"}`}>
-                                                    <Megaphone size={12} className={!n.leida ? "text-amber-500" : "text-slate-400"} />
+                                                    <Megaphone size={12} className={!n.leida ? "text-amber-500" : "text-slate-700"} />
                                                 </div>
                                             ) : isEvento ? (
                                                 <div className={`w-6 h-6 rounded-lg flex items-center justify-center ${!n.leida ? "bg-orange-100 dark:bg-orange-900/30" : "bg-slate-100 dark:bg-slate-800"}`}>
-                                                    <CalendarDays size={12} className={!n.leida ? "text-orange-500" : "text-slate-400"} />
+                                                    <CalendarDays size={12} className={!n.leida ? "text-orange-500" : "text-slate-700"} />
                                                 </div>
                                             ) : (
                                                 <div className="pt-1">
@@ -185,7 +185,7 @@ export default function NotificacionesBell() {
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <p className="text-[13px] font-bold text-slate-800 dark:text-white leading-snug">{n.titulo}</p>
-                                            <p className="text-[12px] text-slate-400 mt-0.5 leading-snug">{n.mensaje}</p>
+                                            <p className="text-[12px] text-slate-700 mt-0.5 leading-snug">{n.mensaje}</p>
                                             <p className="text-[11px] text-slate-300 dark:text-slate-600 mt-1">{timeAgo(n.createdAt)}</p>
                                         </div>
                                     </div>

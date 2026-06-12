@@ -129,7 +129,7 @@ export default function PersonalDocsForm() {
         return (
             <div className="flex flex-col items-center justify-center py-20 gap-4">
                 <Loader2 size={32} className="text-[#063f68] dark:text-blue-500 animate-spin" />
-                <p className="text-slate-500 dark:text-slate-400 font-medium">Cargando legajo personal...</p>
+                <p className="text-slate-700 dark:text-slate-400 font-medium">Cargando legajo personal...</p>
             </div>
         );
     }
@@ -166,7 +166,7 @@ export default function PersonalDocsForm() {
 
             {/* Botón Editar / Guardar / Cancelar */}
             <div className="flex items-center justify-between">
-                <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
+                <p className="text-[11px] text-slate-700 dark:text-slate-500 font-medium">
                     {isEditing ? "Modificá los campos que necesitás actualizar." : "Tus datos personales y de contacto registrados en el Colegio."}
                 </p>
                 {!isEditing ? (
@@ -249,7 +249,7 @@ export default function PersonalDocsForm() {
                         </div>
                     ) : (
                         <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1 flex items-center gap-1">
+                            <label className="text-[10px] font-bold text-slate-700 dark:text-slate-500 uppercase tracking-widest ml-1 flex items-center gap-1">
                                 CUIL <Lock size={9} />
                             </label>
                             <div className="w-full h-11 px-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/20 flex items-center text-[13px] text-slate-600 dark:text-slate-400 font-medium">
@@ -344,7 +344,7 @@ export default function PersonalDocsForm() {
 function DisplayField({ label, value }: { label: string; value: string | null }) {
     return (
         <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">{label}</label>
+            <label className="text-[10px] font-bold text-slate-700 dark:text-slate-500 uppercase tracking-widest ml-1">{label}</label>
             <div className="w-full h-11 px-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/20 flex items-center text-[13px] text-slate-600 dark:text-slate-400 font-medium">
                 {value || <span className="text-slate-300 dark:text-slate-600">--</span>}
             </div>
@@ -368,7 +368,7 @@ function Field({
 
     return (
         <div className="space-y-1.5 group">
-            <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1 group-focus-within:text-[#063f68] dark:group-focus-within:text-blue-500 transition-colors">
+            <label className="text-[10px] font-bold text-slate-700 dark:text-slate-500 uppercase tracking-widest ml-1 group-focus-within:text-[#063f68] dark:group-focus-within:text-blue-500 transition-colors">
                 {label}
             </label>
             <input
