@@ -28,9 +28,13 @@ export async function GET() {
         boletaDescargaMensual: map.boletaDescargaMensual !== "0",
         boletaDescargaAnual:   map.boletaDescargaAnual   !== "0",
         boletaDescargaDeuda:   map.boletaDescargaDeuda   !== "0",
-        calculadoraActiva:           map.calculadoraActiva           !== "0",
-        calculadoraFechasActiva:     map.calculadoraFechasActiva     !== "0",
+        calculadoraActiva:            map.calculadoraActiva            !== "0",
+        calculadoraFechasActiva:      map.calculadoraFechasActiva      !== "0",
         calculadoraIncapacidadActiva: map.calculadoraIncapacidadActiva !== "0",
+        calculadoraPenasActiva:       map.calculadoraPenasActiva       !== "0",
+        calculadoraHonorariosActiva:  map.calculadoraHonorariosActiva  !== "0",
+        valorJus:                     map.valorJus ?? "",
+        valorJusActualizadoEn:        map.valorJusActualizadoEn ?? "",
     });
 }
 

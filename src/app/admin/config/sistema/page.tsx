@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Trash2, Loader2, ShieldAlert, Settings2, ToggleLeft, ToggleRight, Calculator, CalendarDays, Scale } from "lucide-react";
+import { Trash2, Loader2, ShieldAlert, Settings2, ToggleLeft, ToggleRight, Calculator, CalendarDays, Scale, Gavel, Banknote, Save } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 
 const IMPORTAR_TABS = [
@@ -35,6 +35,19 @@ export default function ConfigSistemaPage() {
     const [calculadoraIncapacidadActiva, setCalculadoraIncapacidadActiva] = useState(true);
     const [guardandoCalcIncap, setGuardandoCalcIncap] = useState(false);
 
+    // Cómputo de penas
+    const [calculadoraPenasActiva, setCalculadoraPenasActiva] = useState(true);
+    const [guardandoCalcPenas, setGuardandoCalcPenas] = useState(false);
+
+    // Calculadora de honorarios
+    const [calculadoraHonorariosActiva, setCalculadoraHonorariosActiva] = useState(true);
+    const [guardandoCalcHonorarios, setGuardandoCalcHonorarios] = useState(false);
+
+    // Valor JUS
+    const [valorJus, setValorJus] = useState("");
+    const [valorJusActualizadoEn, setValorJusActualizadoEn] = useState("");
+    const [guardandoJus, setGuardandoJus] = useState(false);
+
     // Tabs importar
     const [tabsActivas, setTabsActivas] = useState<string[]>(IMPORTAR_TABS.map(t => t.id));
     const [loadingTabs, setLoadingTabs] = useState(true);
@@ -48,6 +61,10 @@ export default function ConfigSistemaPage() {
                     setCalculadoraActiva(data.calculadoraActiva !== false);
                     setCalculadoraFechasActiva(data.calculadoraFechasActiva !== false);
                     setCalculadoraIncapacidadActiva(data.calculadoraIncapacidadActiva !== false);
+                    setCalculadoraPenasActiva(data.calculadoraPenasActiva !== false);
+                    setCalculadoraHonorariosActiva(data.calculadoraHonorariosActiva !== false);
+                    if (data.valorJus) setValorJus(data.valorJus);
+                    if (data.valorJusActualizadoEn) setValorJusActualizadoEn(data.valorJusActualizadoEn);
                 }
             });
     }, []);
@@ -92,6 +109,62 @@ export default function ConfigSistemaPage() {
             else showToast("Error al guardar", "error");
         } catch { showToast("Error de conexión", "error"); }
         finally { setGuardandoCalcIncap(false); }
+    }
+
+    async function guardarCalculadoraPenas(activa: boolean) {
+        setGuardandoCalcPenas(true);
+        try {
+            const res = await fetch("/api/admin/config", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ clave: "calculadoraPenasActiva", valor: activa ? "1" : "0" }),
+            });
+            if (res.ok) showToast(`Cómputo de penas ${activa ? "activado" : "desactivado"}`, "success");
+            else showToast("Error al guardar", "error");
+        } catch { showToast("Error de conexión", "error"); }
+        finally { setGuardandoCalcPenas(false); }
+    }
+
+    async function guardarCalculadoraHonorarios(activa: boolean) {
+        setGuardandoCalcHonorarios(true);
+        try {
+            const res = await fetch("/api/admin/config", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ clave: "calculadoraHonorariosActiva", valor: activa ? "1" : "0" }),
+            });
+            if (res.ok) showToast(`Calculadora de honorarios ${activa ? "activada" : "desactivada"}`, "success");
+            else showToast("Error al guardar", "error");
+        } catch { showToast("Error de conexión", "error"); }
+        finally { setGuardandoCalcHonorarios(false); }
+    }
+
+    async function guardarValorJus() {
+        if (!valorJus || isNaN(Number(valorJus.replace(",", ".")))) {
+            showToast("Ingresá un valor JUS válido", "error");
+            return;
+        }
+        setGuardandoJus(true);
+        const hoy = new Date().toISOString().split("T")[0];
+        try {
+            const [r1, r2] = await Promise.all([
+                fetch("/api/admin/config", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ clave: "valorJus", valor: valorJus }),
+                }),
+                fetch("/api/admin/config", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ clave: "valorJusActualizadoEn", valor: hoy }),
+                }),
+            ]);
+            if (r1.ok && r2.ok) {
+                setValorJusActualizadoEn(hoy);
+                showToast("Valor JUS actualizado", "success");
+            } else showToast("Error al guardar", "error");
+        } catch { showToast("Error de conexión", "error"); }
+        finally { setGuardandoJus(false); }
     }
 
     useEffect(() => {
@@ -237,6 +310,94 @@ export default function ConfigSistemaPage() {
                                 ? <ToggleRight size={22} className="text-[#063f68] dark:text-blue-400 shrink-0" />
                                 : <ToggleLeft size={22} className="text-slate-300 dark:text-slate-600 shrink-0" />}
                     </button>
+                </div>
+            </div>
+
+            {/* Cómputo de Penas */}
+            <div className="border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden">
+                <div className="px-5 py-3 bg-slate-50 dark:bg-slate-800/50 flex items-center gap-2 border-b border-slate-100 dark:border-slate-800">
+                    <Gavel size={14} className="text-slate-500" />
+                    <span className="text-[12px] font-bold text-slate-700 dark:text-slate-300">Cómputo de Penas (Ley 24.660 / 27.375)</span>
+                </div>
+                <div className="px-5 py-5">
+                    <p className="text-[12px] text-slate-500 dark:text-slate-400 mb-4">
+                        Activa o desactiva la calculadora de vencimiento de pena, salidas transitorias, libertad condicional y libertad asistida.
+                    </p>
+                    <button
+                        onClick={async () => {
+                            const nuevo = !calculadoraPenasActiva;
+                            setCalculadoraPenasActiva(nuevo);
+                            await guardarCalculadoraPenas(nuevo);
+                        }}
+                        disabled={guardandoCalcPenas}
+                        className={`flex items-center justify-between gap-3 px-4 py-3 rounded-xl border text-[13px] font-medium transition-all w-full sm:w-72
+                            ${calculadoraPenasActiva
+                                ? "bg-[#063f68]/5 dark:bg-blue-900/20 border-[#063f68]/20 dark:border-blue-700 text-slate-700 dark:text-slate-200"
+                                : "bg-slate-50 dark:bg-slate-800/30 border-slate-100 dark:border-slate-700 text-slate-400"}`}>
+                        <span>{calculadoraPenasActiva ? "Calculadora activa" : "Calculadora desactivada"}</span>
+                        {guardandoCalcPenas
+                            ? <Loader2 size={18} className="animate-spin text-slate-400 shrink-0" />
+                            : calculadoraPenasActiva
+                                ? <ToggleRight size={22} className="text-[#063f68] dark:text-blue-400 shrink-0" />
+                                : <ToggleLeft size={22} className="text-slate-300 dark:text-slate-600 shrink-0" />}
+                    </button>
+                </div>
+            </div>
+
+            {/* Calculadora de Honorarios */}
+            <div className="border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden">
+                <div className="px-5 py-3 bg-slate-50 dark:bg-slate-800/50 flex items-center gap-2 border-b border-slate-100 dark:border-slate-800">
+                    <Banknote size={14} className="text-slate-500" />
+                    <span className="text-[12px] font-bold text-slate-700 dark:text-slate-300">Calculadora de Honorarios (Ley 6767 / 12.851)</span>
+                </div>
+                <div className="px-5 py-5 space-y-5">
+                    <p className="text-[12px] text-slate-500 dark:text-slate-400">
+                        Activa o desactiva la calculadora de honorarios profesionales. El valor JUS se actualiza manualmente a continuación.
+                    </p>
+                    <button
+                        onClick={async () => {
+                            const nuevo = !calculadoraHonorariosActiva;
+                            setCalculadoraHonorariosActiva(nuevo);
+                            await guardarCalculadoraHonorarios(nuevo);
+                        }}
+                        disabled={guardandoCalcHonorarios}
+                        className={`flex items-center justify-between gap-3 px-4 py-3 rounded-xl border text-[13px] font-medium transition-all w-full sm:w-72
+                            ${calculadoraHonorariosActiva
+                                ? "bg-[#063f68]/5 dark:bg-blue-900/20 border-[#063f68]/20 dark:border-blue-700 text-slate-700 dark:text-slate-200"
+                                : "bg-slate-50 dark:bg-slate-800/30 border-slate-100 dark:border-slate-700 text-slate-400"}`}>
+                        <span>{calculadoraHonorariosActiva ? "Calculadora activa" : "Calculadora desactivada"}</span>
+                        {guardandoCalcHonorarios
+                            ? <Loader2 size={18} className="animate-spin text-slate-400 shrink-0" />
+                            : calculadoraHonorariosActiva
+                                ? <ToggleRight size={22} className="text-[#063f68] dark:text-blue-400 shrink-0" />
+                                : <ToggleLeft size={22} className="text-slate-300 dark:text-slate-600 shrink-0" />}
+                    </button>
+
+                    <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-3">
+                        <p className="text-[12px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">Valor JUS actual</p>
+                        {valorJusActualizadoEn && (
+                            <p className="text-[11px] text-slate-400">Última actualización: {valorJusActualizadoEn}</p>
+                        )}
+                        <div className="flex items-center gap-3">
+                            <div className="relative flex-1 max-w-[220px]">
+                                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[13px] text-slate-400 font-semibold">$</span>
+                                <input
+                                    type="text"
+                                    value={valorJus}
+                                    onChange={e => setValorJus(e.target.value)}
+                                    placeholder="136317.62"
+                                    className="w-full pl-7 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white text-[14px] font-semibold focus:outline-none focus:ring-2 focus:ring-[#063f68]/30"
+                                />
+                            </div>
+                            <button
+                                onClick={guardarValorJus}
+                                disabled={guardandoJus}
+                                className="flex items-center gap-1.5 px-4 h-10 bg-[#063f68] text-white rounded-xl text-[12px] font-bold hover:bg-[#052d4a] disabled:opacity-40 transition-all">
+                                {guardandoJus ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
+                                {guardandoJus ? "Guardando..." : "Guardar JUS"}
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 

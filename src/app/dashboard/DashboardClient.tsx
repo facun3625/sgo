@@ -5,7 +5,7 @@ import {
     CreditCard, ArrowRight, ChevronRight, IdCard, Home, Wallet,
     Clock, FileText, LockKeyhole, Search, Gavel,
     CheckCircle2, Loader2, Newspaper, ChevronLeft,
-    Star, CalendarDays, GraduationCap, Zap, BookUser, PlayCircle, Calculator, Scale,
+    Star, CalendarDays, GraduationCap, Zap, BookUser, PlayCircle, Calculator, Scale, Banknote,
 } from "lucide-react";
 
 import Link from "next/link";
@@ -250,7 +250,9 @@ export default function DashboardClient({ session }: { session: SessionPayload }
                             { href: "/dashboard/tutoriales", icon: <PlayCircle size={18} />, label: "Tutoriales", color: "text-pink-500 bg-pink-500/10 group-hover:bg-pink-500 group-hover:text-white" },
                             { href: "/dashboard/calculadora", icon: <Calculator size={18} />, label: "Calculadora de Intereses · Créditos laborales judicializados", color: "text-emerald-600 bg-emerald-600/10 group-hover:bg-emerald-600 group-hover:text-white" },
                             { href: "/dashboard/calculadora-fechas", icon: <CalendarDays size={18} />, label: "Calculadora de Fechas · Días hábiles y corridos", color: "text-sky-600 bg-sky-600/10 group-hover:bg-sky-600 group-hover:text-white" },
-                            { href: "/dashboard/calculadora-incapacidad", icon: <Scale size={18} />, label: "Cálculo de Incapacidad · Art. 1746 CCyC · Acciarri", color: "text-violet-600 bg-violet-600/10 group-hover:bg-violet-600 group-hover:text-white" },
+                            { href: "/dashboard/calculadora-incapacidad", icon: <Scale size={18} />, label: "Cálculo de Incapacidad por Daños y Perjuicios · Art. 1746 CCyC", color: "text-violet-600 bg-violet-600/10 group-hover:bg-violet-600 group-hover:text-white" },
+                            { href: "/dashboard/calculadora-penas", icon: <Gavel size={18} />, label: "Cómputo de Penas · Ley 24.660 · Ley 27.375", color: "text-rose-600 bg-rose-600/10 group-hover:bg-rose-600 group-hover:text-white" },
+                            { href: "/dashboard/calculadora-honorarios", icon: <Banknote size={18} />, label: "Honorarios · Ley 6767 / 12.851 · Caja Forense SF", color: "text-amber-600 bg-amber-600/10 group-hover:bg-amber-600 group-hover:text-white" },
                         ].map(item => (
                             <Link key={item.href} href={item.href}
                                 className="group flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 transition-all">
