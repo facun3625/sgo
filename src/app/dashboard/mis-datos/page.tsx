@@ -16,7 +16,7 @@ export default function MisDatosPage() {
                     </Link>
                     <div className="flex items-center gap-3">
                         <User size={18} className="text-indigo-500" />
-                        <h2 className="text-[15px] font-bold text-black dark:text-white tracking-tight">Mis Datos Personales</h2>
+                        <h2 className="text-[16px] font-bold text-black dark:text-white tracking-tight">Mis Datos Personales</h2>
                     </div>
                 </div>
             </div>

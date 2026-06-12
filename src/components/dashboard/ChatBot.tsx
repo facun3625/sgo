@@ -86,8 +86,8 @@ export default function ChatBot() {
                                 <Bot size={16} className="text-white" />
                             </div>
                             <div>
-                                <p className="text-white font-bold text-[13px]">Asistente CPASF</p>
-                                <p className="text-white/60 text-[10px]">Respondiendo al instante</p>
+                                <p className="text-white font-bold text-[14px]">Asistente CPASF</p>
+                                <p className="text-white/60 text-[11px]">Respondiendo al instante</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-1">
@@ -118,7 +118,7 @@ export default function ChatBot() {
                                                 : <Bot size={13} className="text-slate-700 dark:text-slate-400" />
                                             }
                                         </div>
-                                        <div className={`max-w-[80%] px-3 py-2 rounded-2xl text-[13px] leading-relaxed whitespace-pre-wrap ${
+                                        <div className={`max-w-[80%] px-3 py-2 rounded-2xl text-[14px] leading-relaxed whitespace-pre-wrap ${
                                             msg.role === "user"
                                                 ? "bg-[#063f68] dark:bg-blue-600 text-white rounded-tr-sm"
                                                 : "bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-tl-sm"
@@ -151,7 +151,7 @@ export default function ChatBot() {
                                         onKeyDown={e => e.key === "Enter" && sendMessage()}
                                         placeholder="Escribí tu consulta..."
                                         disabled={loading}
-                                        className="flex-1 h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white text-[13px] focus:outline-none focus:ring-2 focus:ring-[#063f68]/20 disabled:opacity-50"
+                                        className="flex-1 h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#063f68]/20 disabled:opacity-50"
                                     />
                                     <button
                                         onClick={sendMessage}

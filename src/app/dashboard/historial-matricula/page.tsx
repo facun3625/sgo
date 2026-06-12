@@ -69,7 +69,7 @@ export default function HistorialMatriculaPage() {
                     </Link>
                     <div className="flex items-center gap-3">
                         <Scale size={18} className="text-slate-700" />
-                        <h2 className="text-[15px] font-bold text-black dark:text-white tracking-tight">Historial de Matrícula</h2>
+                        <h2 className="text-[16px] font-bold text-black dark:text-white tracking-tight">Historial de Matrícula</h2>
                     </div>
                 </div>
             </div>
@@ -86,11 +86,11 @@ export default function HistorialMatriculaPage() {
                         <section className="space-y-3">
                             <div className="flex items-center gap-2">
                                 <Scale size={15} className="text-rose-500" />
-                                <h2 className="text-[13px] font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wide">
+                                <h2 className="text-[14px] font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wide">
                                     Apercibimientos del Tribunal de Ética
                                 </h2>
                                 {vigentes.length > 0 && (
-                                    <span className="ml-2 px-2 py-0.5 bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 text-[10px] font-bold rounded-full">
+                                    <span className="ml-2 px-2 py-0.5 bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 text-[11px] font-bold rounded-full">
                                         {vigentes.length} vigente{vigentes.length > 1 ? "s" : ""}
                                     </span>
                                 )}
@@ -110,7 +110,7 @@ export default function HistorialMatriculaPage() {
                         <section className="space-y-3">
                             <div className="flex items-center gap-2">
                                 <Clock size={15} className="text-slate-700" />
-                                <h2 className="text-[13px] font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wide">
+                                <h2 className="text-[14px] font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wide">
                                     Historial de Estado de Matrícula
                                 </h2>
                             </div>
@@ -130,19 +130,19 @@ export default function HistorialMatriculaPage() {
                                                         {item.accion === "suspension" ? (
                                                             <>
                                                                 <ShieldOff size={13} className="text-rose-500 flex-shrink-0" />
-                                                                <span className="text-[12px] font-bold text-rose-600 dark:text-rose-400">Suspensión</span>
+                                                                <span className="text-[13px] font-bold text-rose-600 dark:text-rose-400">Suspensión</span>
                                                             </>
                                                         ) : (
                                                             <>
                                                                 <ShieldCheck size={13} className="text-emerald-500 flex-shrink-0" />
-                                                                <span className="text-[12px] font-bold text-emerald-600 dark:text-emerald-400">Habilitación</span>
+                                                                <span className="text-[13px] font-bold text-emerald-600 dark:text-emerald-400">Habilitación</span>
                                                             </>
                                                         )}
-                                                        <span className="text-[10px] text-slate-700 ml-auto">{fmtFecha(item.createdAt)}</span>
+                                                        <span className="text-[11px] text-slate-700 ml-auto">{fmtFecha(item.createdAt)}</span>
                                                     </div>
-                                                    <p className="text-[12px] text-slate-600 dark:text-slate-300 leading-relaxed">{item.comentario}</p>
+                                                    <p className="text-[13px] text-slate-600 dark:text-slate-300 leading-relaxed">{item.comentario}</p>
                                                     {item.adminNombre && (
-                                                        <p className="text-[10px] text-slate-700">Registrado por: {item.adminNombre}</p>
+                                                        <p className="text-[11px] text-slate-700">Registrado por: {item.adminNombre}</p>
                                                     )}
                                                 </div>
                                             </div>
@@ -170,15 +170,15 @@ function ApercibimientoCard({ a, vigente }: { a: Apercibimiento; vigente: boolea
                         ? <AlertTriangle size={13} className="text-rose-500 flex-shrink-0" />
                         : <Info size={13} className="text-slate-700 flex-shrink-0" />
                     }
-                    <span className={`text-[11px] font-bold uppercase tracking-wide ${vigente ? "text-rose-600 dark:text-rose-400" : "text-slate-700"}`}>
+                    <span className={`text-[12px] font-bold uppercase tracking-wide ${vigente ? "text-rose-600 dark:text-rose-400" : "text-slate-700"}`}>
                         {vigente ? "Vigente" : "Vencido"}
                     </span>
                 </div>
-                <span className={`text-[10px] ${vigente ? "text-rose-500/70" : "text-slate-700"}`}>
+                <span className={`text-[11px] ${vigente ? "text-rose-500/70" : "text-slate-700"}`}>
                     {fmtSolo(a.inicio)} → {fmtSolo(a.fin)}
                 </span>
             </div>
-            <p className={`text-[13px] leading-relaxed ${vigente ? "text-rose-800 dark:text-rose-300" : "text-slate-600 dark:text-slate-400"}`}>
+            <p className={`text-[14px] leading-relaxed ${vigente ? "text-rose-800 dark:text-rose-300" : "text-slate-600 dark:text-slate-400"}`}>
                 {a.texto}
             </p>
         </div>
@@ -189,7 +189,7 @@ function EmptyState({ icon, texto }: { icon: React.ReactNode; texto: string }) {
     return (
         <div className="flex flex-col items-center gap-2 py-8 text-center bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 max-w-3xl">
             {icon}
-            <p className="text-[12px] text-slate-700">{texto}</p>
+            <p className="text-[13px] text-slate-700">{texto}</p>
         </div>
     );
 }

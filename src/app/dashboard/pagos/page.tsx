@@ -16,7 +16,7 @@ export default function PagosPage() {
                     </Link>
                     <div className="flex items-center gap-3">
                         <Wallet size={18} className="text-emerald-500" />
-                        <h2 className="text-[15px] font-bold text-black dark:text-white tracking-tight">Estado de Matrícula y Pagos</h2>
+                        <h2 className="text-[16px] font-bold text-black dark:text-white tracking-tight">Estado de Matrícula y Pagos</h2>
                     </div>
                 </div>
             </div>

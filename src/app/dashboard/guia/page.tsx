@@ -54,7 +54,7 @@ export default function GuiaPage() {
                 </Link>
                 <div className="flex items-center gap-3">
                     <BookUser size={18} className="text-teal-500" />
-                    <h2 className="text-[15px] font-bold text-black dark:text-white tracking-tight">Guía de Abogados</h2>
+                    <h2 className="text-[16px] font-bold text-black dark:text-white tracking-tight">Guía de Abogados</h2>
                 </div>
             </div>
 
@@ -67,7 +67,7 @@ export default function GuiaPage() {
                         onChange={handleChange}
                         placeholder="Buscá por apellido o número de expediente..."
                         autoFocus
-                        className="w-full h-12 pl-11 pr-12 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-slate-800 dark:text-white text-[13px] focus:outline-none focus:ring-2 focus:ring-[#063f68]/20 focus:border-[#063f68] dark:focus:border-blue-500 transition-all shadow-sm"
+                        className="w-full h-12 pl-11 pr-12 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-slate-800 dark:text-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#063f68]/20 focus:border-[#063f68] dark:focus:border-blue-500 transition-all shadow-sm"
                     />
                     {loading && (
                         <Loader2 size={15} className="absolute right-4 top-1/2 -translate-y-1/2 animate-spin text-slate-700" />
@@ -78,7 +78,7 @@ export default function GuiaPage() {
                 {loading && (
                     <div className="flex flex-col items-center justify-center py-20 gap-3">
                         <Loader2 size={28} className="animate-spin text-[#063f68] dark:text-blue-400" />
-                        <p className="text-slate-700 text-[13px] font-medium">Buscando...</p>
+                        <p className="text-slate-700 text-[14px] font-medium">Buscando...</p>
                     </div>
                 )}
 
@@ -89,8 +89,8 @@ export default function GuiaPage() {
                             <BookUser size={28} />
                         </div>
                         <div className="space-y-1">
-                            <h3 className="text-[15px] font-bold text-slate-700 dark:text-slate-200">Sin resultados</h3>
-                            <p className="text-slate-700 text-[12px]">Probá con otro apellido o número de expediente</p>
+                            <h3 className="text-[16px] font-bold text-slate-700 dark:text-slate-200">Sin resultados</h3>
+                            <p className="text-slate-700 text-[13px]">Probá con otro apellido o número de expediente</p>
                         </div>
                     </div>
                 )}
@@ -98,7 +98,7 @@ export default function GuiaPage() {
                 {/* Resultados */}
                 {!loading && resultados.length > 0 && (
                     <div className="space-y-3">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-700">
+                        <p className="text-[11px] font-black uppercase tracking-widest text-slate-700">
                             {resultados.length} resultado{resultados.length !== 1 ? "s" : ""}
                         </p>
                         {resultados.map((r, i) => (
@@ -114,34 +114,34 @@ export default function GuiaPage() {
                                 </div>
                                 <div className="flex-1 min-w-0 space-y-2">
                                     <div>
-                                        <p className="font-bold text-slate-800 dark:text-white text-[14px]">
+                                        <p className="font-bold text-slate-800 dark:text-white text-[15px]">
                                             {r.apellido}, {r.nombre}
                                         </p>
                                         {r.expediente && (
-                                            <p className="text-[11px] text-slate-700 font-medium mt-0.5">Exp. {r.expediente}</p>
+                                            <p className="text-[12px] text-slate-700 font-medium mt-0.5">Exp. {r.expediente}</p>
                                         )}
                                     </div>
                                     <div className="space-y-1.5">
                                         {(r.telefonosLegal || r.movilLegal) ? (
-                                            <div className="flex items-center gap-2 text-[12px] text-slate-600 dark:text-slate-300">
+                                            <div className="flex items-center gap-2 text-[13px] text-slate-600 dark:text-slate-300">
                                                 <Phone size={12} className="text-slate-700 flex-shrink-0" />
                                                 <span>{[r.telefonosLegal, r.movilLegal].filter(Boolean).join(" / ")}</span>
                                             </div>
                                         ) : (
-                                            <div className="flex items-center gap-2 text-[11px] text-slate-300 dark:text-slate-600">
+                                            <div className="flex items-center gap-2 text-[12px] text-slate-300 dark:text-slate-600">
                                                 <Phone size={12} className="flex-shrink-0" />
                                                 <span>Sin teléfono registrado</span>
                                             </div>
                                         )}
                                         {r.emailLegal ? (
-                                            <div className="flex items-center gap-2 text-[12px] text-slate-600 dark:text-slate-300">
+                                            <div className="flex items-center gap-2 text-[13px] text-slate-600 dark:text-slate-300">
                                                 <Mail size={12} className="text-slate-700 flex-shrink-0" />
                                                 <a href={`mailto:${r.emailLegal}`} className="hover:text-[#063f68] dark:hover:text-blue-400 transition-colors break-all">
                                                     {r.emailLegal}
                                                 </a>
                                             </div>
                                         ) : (
-                                            <div className="flex items-center gap-2 text-[11px] text-slate-300 dark:text-slate-600">
+                                            <div className="flex items-center gap-2 text-[12px] text-slate-300 dark:text-slate-600">
                                                 <Mail size={12} className="flex-shrink-0" />
                                                 <span>Sin email registrado</span>
                                             </div>
@@ -159,7 +159,7 @@ export default function GuiaPage() {
                         <div className="w-16 h-16 bg-slate-50 dark:bg-slate-900 rounded-3xl flex items-center justify-center border border-slate-100 dark:border-slate-800 text-slate-300">
                             <Search size={28} />
                         </div>
-                        <p className="text-slate-700 dark:text-slate-500 text-[13px] font-medium">Ingresá al menos 2 caracteres para buscar</p>
+                        <p className="text-slate-700 dark:text-slate-500 text-[14px] font-medium">Ingresá al menos 2 caracteres para buscar</p>
                     </div>
                 )}
             </div>

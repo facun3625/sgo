@@ -52,11 +52,11 @@ function CertificadoCard({ cursoId, onDescargar, descargando }: { cursoId: numbe
                 <Award size={16} className="text-emerald-600 dark:text-emerald-400" />
             </div>
             <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-bold text-emerald-800 dark:text-emerald-300">Certificado disponible</p>
-                <p className="text-[11px] text-emerald-600/70 dark:text-emerald-400/70">Tu certificado fue emitido</p>
+                <p className="text-[14px] font-bold text-emerald-800 dark:text-emerald-300">Certificado disponible</p>
+                <p className="text-[12px] text-emerald-600/70 dark:text-emerald-400/70">Tu certificado fue emitido</p>
             </div>
             <button onClick={onDescargar} disabled={descargando}
-                className="flex items-center gap-1.5 px-3 h-8 bg-emerald-600 text-white rounded-lg text-[11px] font-bold hover:bg-emerald-700 transition-all disabled:opacity-60 flex-shrink-0">
+                className="flex items-center gap-1.5 px-3 h-8 bg-emerald-600 text-white rounded-lg text-[12px] font-bold hover:bg-emerald-700 transition-all disabled:opacity-60 flex-shrink-0">
                 {descargando ? <Loader2 size={11} className="animate-spin" /> : <Download size={11} />}
                 {descargando ? "Generando..." : "Descargar"}
             </button>
@@ -178,7 +178,7 @@ export default function CursoDetailPage() {
         <div className="p-4 md:p-8 space-y-5 pb-10">
             {/* Back */}
             <Link href="/dashboard/cursos"
-                className="inline-flex items-center gap-2 text-slate-700 hover:text-slate-600 dark:hover:text-slate-300 transition-colors text-[13px] font-medium">
+                className="inline-flex items-center gap-2 text-slate-700 hover:text-slate-600 dark:hover:text-slate-300 transition-colors text-[14px] font-medium">
                 <ArrowLeft size={15} /> Volver a cursos
             </Link>
 
@@ -194,30 +194,30 @@ export default function CursoDetailPage() {
                 <div className="flex items-start gap-3">
                     <div>
                         <div className="flex items-center gap-2 mb-2">
-                            <span className="px-2.5 py-0.5 rounded-full bg-[#063f68]/10 text-[#063f68] dark:bg-blue-900/30 dark:text-blue-400 text-[10px] font-bold uppercase tracking-wider">
+                            <span className="px-2.5 py-0.5 rounded-full bg-[#063f68]/10 text-[#063f68] dark:bg-blue-900/30 dark:text-blue-400 text-[11px] font-bold uppercase tracking-wider">
                                 {curso.modalidad}
                             </span>
                         </div>
-                        <h1 className="text-[17px] font-bold text-slate-800 dark:text-white leading-snug">{curso.titulo}</h1>
+                        <h1 className="text-[18px] font-bold text-slate-800 dark:text-white leading-snug">{curso.titulo}</h1>
                         {curso.organizador && (
-                            <p className="text-[12px] text-slate-700 mt-1 flex items-center gap-1.5">
+                            <p className="text-[13px] text-slate-700 mt-1 flex items-center gap-1.5">
                                 <Building2 size={12} /> {curso.organizador}
                             </p>
                         )}
                     </div>
                 </div>
 
-                <p className="text-[13px] text-slate-700 dark:text-slate-400 leading-relaxed">{curso.descripcion}</p>
+                <p className="text-[14px] text-slate-700 dark:text-slate-400 leading-relaxed">{curso.descripcion}</p>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-                    <div className="flex items-center gap-2.5 text-[12px] text-slate-700 dark:text-slate-400">
+                    <div className="flex items-center gap-2.5 text-[13px] text-slate-700 dark:text-slate-400">
                         <div className="w-7 h-7 rounded-lg bg-slate-50 dark:bg-slate-800 flex items-center justify-center">
                             <Calendar size={13} className="text-[#063f68] dark:text-blue-400" />
                         </div>
                         {formatFecha(curso.fecha, curso.fechaFin)}
                     </div>
                     {curso.hora && (
-                        <div className="flex items-center gap-2.5 text-[12px] text-slate-700 dark:text-slate-400">
+                        <div className="flex items-center gap-2.5 text-[13px] text-slate-700 dark:text-slate-400">
                             <div className="w-7 h-7 rounded-lg bg-slate-50 dark:bg-slate-800 flex items-center justify-center">
                                 <Clock size={13} className="text-[#063f68] dark:text-blue-400" />
                             </div>
@@ -225,7 +225,7 @@ export default function CursoDetailPage() {
                         </div>
                     )}
                     {curso.lugar && (
-                        <div className="flex items-center gap-2.5 text-[12px] text-slate-700 dark:text-slate-400">
+                        <div className="flex items-center gap-2.5 text-[13px] text-slate-700 dark:text-slate-400">
                             <div className="w-7 h-7 rounded-lg bg-slate-50 dark:bg-slate-800 flex items-center justify-center">
                                 <MapPin size={13} className="text-[#063f68] dark:text-blue-400" />
                             </div>
@@ -233,7 +233,7 @@ export default function CursoDetailPage() {
                         </div>
                     )}
                     {curso.fechaLimiteInscripcion && (
-                        <div className="flex items-center gap-2.5 text-[12px] text-slate-700 dark:text-slate-400">
+                        <div className="flex items-center gap-2.5 text-[13px] text-slate-700 dark:text-slate-400">
                             <div className="w-7 h-7 rounded-lg bg-slate-50 dark:bg-slate-800 flex items-center justify-center">
                                 <Users size={13} className="text-[#063f68] dark:text-blue-400" />
                             </div>
@@ -246,11 +246,11 @@ export default function CursoDetailPage() {
             {/* Estado si ya inscrito */}
             {yaInscrito && curso.inscripcion && (
                 <div className="space-y-3">
-                    <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border text-[13px] font-medium ${estadoBadge[curso.inscripcion.estado]?.cls || ""}`}>
+                    <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border text-[14px] font-medium ${estadoBadge[curso.inscripcion.estado]?.cls || ""}`}>
                         <CheckCircle2 size={16} />
                         {estadoBadge[curso.inscripcion.estado]?.label || curso.inscripcion.estado}
                         {curso.inscripcion.opcionId && (
-                            <span className="ml-auto text-[12px] opacity-70">
+                            <span className="ml-auto text-[13px] opacity-70">
                                 {curso.opciones.find(o => o.id === curso.inscripcion!.opcionId)?.nombre}
                             </span>
                         )}
@@ -266,13 +266,13 @@ export default function CursoDetailPage() {
                         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-5">
                             <div className="flex items-center gap-2 mb-4">
                                 <ScanLine size={15} className="text-[#063f68] dark:text-blue-400" />
-                                <p className="text-[13px] font-bold text-slate-700 dark:text-slate-200">Tu QR de asistencia</p>
+                                <p className="text-[14px] font-bold text-slate-700 dark:text-slate-200">Tu QR de asistencia</p>
                             </div>
                             <div className="flex flex-col items-center gap-3">
                                 <div className="p-4 bg-white rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
                                     <QRCodeSVG value={expediente} size={180} />
                                 </div>
-                                <p className="text-[11px] text-slate-700 text-center max-w-xs">
+                                <p className="text-[12px] text-slate-700 text-center max-w-xs">
                                     Mostrá este QR al momento de registrar tu asistencia. El administrador lo escaneará con el lector.
                                 </p>
                             </div>
@@ -285,7 +285,7 @@ export default function CursoDetailPage() {
                             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-5 space-y-3">
                                 <div className="flex items-center justify-between gap-4">
                                     <div>
-                                        <p className="text-[11px] font-bold text-slate-700 uppercase tracking-widest mb-0.5">Monto a abonar</p>
+                                        <p className="text-[12px] font-bold text-slate-700 uppercase tracking-widest mb-0.5">Monto a abonar</p>
                                         <p className="text-2xl font-black text-slate-900 dark:text-white">
                                             ${opcion?.precio.toLocaleString("es-AR") ?? "—"}
                                         </p>
@@ -295,7 +295,7 @@ export default function CursoDetailPage() {
                                             tipo="curso"
                                             ref={String(curso.inscripcion!.id)}
                                             label="Pagar con Mercado Pago"
-                                            className="w-full h-11 px-6 bg-[#063f68] hover:bg-[#0a4d7a] text-white rounded-xl font-bold text-[13px] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                                            className="w-full h-11 px-6 bg-[#063f68] hover:bg-[#0a4d7a] text-white rounded-xl font-bold text-[14px] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                                         />
                                         {transferenciaHabilitada && (
                                             <TransferenciaPayButton
@@ -303,12 +303,12 @@ export default function CursoDetailPage() {
                                                 ref={String(curso.inscripcion!.id)}
                                                 monto={opcion?.precio ?? 0}
                                                 label="Pagar con transferencia"
-                                                className="w-full h-11 px-6 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-bold text-[13px] transition-all flex items-center justify-center gap-2"
+                                                className="w-full h-11 px-6 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-bold text-[14px] transition-all flex items-center justify-center gap-2"
                                             />
                                         )}
                                     </div>
                                 </div>
-                                <p className="text-[11px] text-slate-700">Al confirmar el pago, tu inscripción quedará activa automáticamente.</p>
+                                <p className="text-[12px] text-slate-700">Al confirmar el pago, tu inscripción quedará activa automáticamente.</p>
                             </div>
                         );
                     })()}
@@ -318,7 +318,7 @@ export default function CursoDetailPage() {
             {/* Selector de opciones (solo si no está inscrito) */}
             {!yaInscrito && !vencida && curso.opciones.length > 0 && (
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-5 space-y-3">
-                    <h2 className="text-[13px] font-bold text-slate-700 dark:text-slate-300">Seleccioná una opción</h2>
+                    <h2 className="text-[14px] font-bold text-slate-700 dark:text-slate-300">Seleccioná una opción</h2>
                     <div className="space-y-2">
                         {curso.opciones.map(op => (
                             <button
@@ -336,15 +336,15 @@ export default function CursoDetailPage() {
                                         {opcionSeleccionada === op.id && <div className="w-2 h-2 rounded-full bg-[#063f68] dark:bg-blue-400" />}
                                     </div>
                                     <div>
-                                        <p className="text-[13px] font-semibold text-slate-700 dark:text-slate-300">{op.nombre}</p>
+                                        <p className="text-[14px] font-semibold text-slate-700 dark:text-slate-300">{op.nombre}</p>
                                         {op.cupo > 0 && (
-                                            <p className="text-[11px] text-slate-700">
+                                            <p className="text-[12px] text-slate-700">
                                                 {op.disponible ? `${op.cupo - op.inscritos} lugar${op.cupo - op.inscritos !== 1 ? "es" : ""} disponible${op.cupo - op.inscritos !== 1 ? "s" : ""}` : "Sin cupo disponible"}
                                             </p>
                                         )}
                                     </div>
                                 </div>
-                                <span className={`text-[13px] font-bold ${opcionSeleccionada === op.id ? "text-[#063f68] dark:text-blue-400" : "text-slate-600 dark:text-slate-300"}`}>
+                                <span className={`text-[14px] font-bold ${opcionSeleccionada === op.id ? "text-[#063f68] dark:text-blue-400" : "text-slate-600 dark:text-slate-300"}`}>
                                     {op.precio === 0 ? "Gratuito" : `$${op.precio.toLocaleString("es-AR")}`}
                                 </span>
                             </button>
@@ -352,13 +352,13 @@ export default function CursoDetailPage() {
                     </div>
 
                     {error && (
-                        <div className="flex items-center gap-2 px-3 py-2.5 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 rounded-xl text-[12px] text-red-600 dark:text-red-400">
+                        <div className="flex items-center gap-2 px-3 py-2.5 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 rounded-xl text-[13px] text-red-600 dark:text-red-400">
                             <AlertCircle size={14} /> {error}
                         </div>
                     )}
 
                     {success && (
-                        <div className="flex items-center gap-2 px-3 py-2.5 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 rounded-xl text-[12px] text-emerald-600 dark:text-emerald-400">
+                        <div className="flex items-center gap-2 px-3 py-2.5 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 rounded-xl text-[13px] text-emerald-600 dark:text-emerald-400">
                             <CheckCircle2 size={14} /> ¡Inscripción realizada exitosamente!
                         </div>
                     )}
@@ -366,7 +366,7 @@ export default function CursoDetailPage() {
                     <button
                         onClick={handleInscribirse}
                         disabled={!opcionSeleccionada || inscribiendo || success}
-                        className="w-full h-11 bg-[#063f68] text-white rounded-xl text-[13px] font-bold hover:bg-[#0a4d7a] transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                        className="w-full h-11 bg-[#063f68] text-white rounded-xl text-[14px] font-bold hover:bg-[#0a4d7a] transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
                         {inscribiendo ? (
                             <><Loader2 size={15} className="animate-spin" /> Inscribiendo...</>
                         ) : (
@@ -383,7 +383,7 @@ export default function CursoDetailPage() {
 
             {/* Inscripción cerrada */}
             {!yaInscrito && vencida && (
-                <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[13px] text-slate-700 dark:text-slate-400">
+                <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[14px] text-slate-700 dark:text-slate-400">
                     <AlertCircle size={15} />
                     El período de inscripción ha cerrado.
                 </div>

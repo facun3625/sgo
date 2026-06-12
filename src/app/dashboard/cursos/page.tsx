@@ -103,12 +103,12 @@ export default function CursosPage() {
                                         </div>
                                     )}
                                     {/* Modalidad */}
-                                    <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-[#063f68]/90 text-white text-[10px] font-bold uppercase tracking-wider">
+                                    <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-[#063f68]/90 text-white text-[11px] font-bold uppercase tracking-wider">
                                         {curso.modalidad}
                                     </div>
                                     {/* Estado inscripción */}
                                     {inscBadge && (
-                                        <div className={`absolute top-3 right-3 px-2.5 py-1 rounded-full text-[10px] font-bold ${inscBadge.cls}`}>
+                                        <div className={`absolute top-3 right-3 px-2.5 py-1 rounded-full text-[11px] font-bold ${inscBadge.cls}`}>
                                             {inscBadge.label}
                                         </div>
                                     )}
@@ -116,25 +116,25 @@ export default function CursosPage() {
 
                                 {/* Contenido */}
                                 <div className="p-4 flex flex-col flex-1 gap-3">
-                                    <h3 className="font-bold text-slate-800 dark:text-white text-[14px] leading-snug line-clamp-2 group-hover:text-[#063f68] dark:group-hover:text-blue-400 transition-colors">
+                                    <h3 className="font-bold text-slate-800 dark:text-white text-[15px] leading-snug line-clamp-2 group-hover:text-[#063f68] dark:group-hover:text-blue-400 transition-colors">
                                         {curso.titulo}
                                     </h3>
 
                                     <div className="space-y-1.5 flex-1">
-                                        <div className="flex items-center gap-2 text-[11px] text-slate-700">
+                                        <div className="flex items-center gap-2 text-[12px] text-slate-700">
                                             <Calendar size={12} />
                                             {formatFecha(curso.fecha, curso.fechaFin)}
                                             {curso.hora && <><Clock size={11} />{curso.hora}</>}
                                         </div>
                                         {curso.lugar && (
-                                            <div className="flex items-center gap-2 text-[11px] text-slate-700">
+                                            <div className="flex items-center gap-2 text-[12px] text-slate-700">
                                                 <MapPin size={12} />
                                                 {curso.lugar}
                                             </div>
                                         )}
                                     </div>
 
-                                    <div className="pt-2 border-t border-slate-50 dark:border-slate-800 flex items-center gap-1 text-[12px] font-semibold text-[#063f68] dark:text-blue-400 group-hover:underline underline-offset-2 transition-colors">
+                                    <div className="pt-2 border-t border-slate-50 dark:border-slate-800 flex items-center gap-1 text-[13px] font-semibold text-[#063f68] dark:text-blue-400 group-hover:underline underline-offset-2 transition-colors">
                                         {vencida && !curso.inscripcion ? "Inscripción cerrada" : curso.inscripcion ? "Ver detalle" : "Ver e inscribirme"}
                                         <ChevronRight size={13} />
                                     </div>

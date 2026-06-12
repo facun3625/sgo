@@ -127,7 +127,7 @@ export default function SolicitudSuspensionPage() {
                     </Link>
                     <div className="flex items-center gap-3">
                         <XOctagon size={18} className="text-rose-500" />
-                        <h2 className="text-[15px] font-bold text-black dark:text-white tracking-tight">Solicitud de Suspensión / Cancelación</h2>
+                        <h2 className="text-[16px] font-bold text-black dark:text-white tracking-tight">Solicitud de Suspensión / Cancelación</h2>
                     </div>
                 </div>
             </div>
@@ -175,7 +175,7 @@ export default function SolicitudSuspensionPage() {
                             <div className="p-2 rounded-lg bg-white dark:bg-slate-800 text-[#063f68] dark:text-blue-400 shrink-0">
                                 <Info size={16} />
                             </div>
-                            <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
+                            <p className="text-[12px] text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
                                 Estando al día con las cuotas sociales de esta Institución, solicito tenga a bien proceder a realizar el trámite correspondiente.
                             </p>
                         </div>
@@ -184,7 +184,7 @@ export default function SolicitudSuspensionPage() {
                             <div className="grid grid-cols-1 gap-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest ml-1 flex items-center gap-2">
+                                        <label className="text-[11px] font-bold text-slate-700 uppercase tracking-widest ml-1 flex items-center gap-2">
                                             <User size={10} /> Nombre Completo
                                         </label>
                                         <input
@@ -195,7 +195,7 @@ export default function SolicitudSuspensionPage() {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest ml-1 flex items-center gap-2">
+                                        <label className="text-[11px] font-bold text-slate-700 uppercase tracking-widest ml-1 flex items-center gap-2">
                                             <IdCard size={10} /> Matrícula
                                         </label>
                                         <input
@@ -208,7 +208,7 @@ export default function SolicitudSuspensionPage() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest ml-1">Solicito tenga a bien proceder a la</label>
+                                    <label className="text-[11px] font-bold text-slate-700 uppercase tracking-widest ml-1">Solicito tenga a bien proceder a la</label>
                                     <select
                                         value={tipoTramite}
                                         onChange={(e) => setTipoTramite(e.target.value)}
@@ -220,7 +220,7 @@ export default function SolicitudSuspensionPage() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest ml-1 flex items-center gap-2">
+                                    <label className="text-[11px] font-bold text-slate-700 uppercase tracking-widest ml-1 flex items-center gap-2">
                                         <CalendarIcon size={12} /> de mi matrícula profesional a partir de
                                     </label>
                                     <input
@@ -233,7 +233,7 @@ export default function SolicitudSuspensionPage() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest ml-1">en razón de</label>
+                                    <label className="text-[11px] font-bold text-slate-700 uppercase tracking-widest ml-1">en razón de</label>
                                     <select
                                         value={motivo}
                                         onChange={(e) => setMotivo(e.target.value)}

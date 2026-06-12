@@ -17,28 +17,28 @@ export default function CuilGate() {
                         <AlertCircle size={28} />
                     </div>
                     <div>
-                        <h2 className="text-[17px] font-bold text-black dark:text-white tracking-tight">
+                        <h2 className="text-[18px] font-bold text-black dark:text-white tracking-tight">
                             Completá tu CUIL para continuar
                         </h2>
-                        <p className="text-[12px] text-slate-700 dark:text-slate-500 mt-0.5 font-medium">
+                        <p className="text-[13px] text-slate-700 dark:text-slate-500 mt-0.5 font-medium">
                             Acción requerida antes de usar la plataforma
                         </p>
                     </div>
                 </div>
 
-                <p className="text-[13px] text-slate-600 dark:text-slate-300 leading-relaxed">
+                <p className="text-[14px] text-slate-600 dark:text-slate-300 leading-relaxed">
                     Para continuar usando el sistema necesitamos que completes tu número de CUIL.
                     Aprovechá también para verificar que tus datos de contacto estén correctos y actualizados.
                 </p>
 
-                <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 text-[12px] text-slate-700 dark:text-slate-400 leading-relaxed">
+                <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 text-[13px] text-slate-700 dark:text-slate-400 leading-relaxed">
                     <p className="font-semibold text-slate-600 dark:text-slate-300 mb-1">Aviso sobre migración de sistemas</p>
                     Hemos realizado una migración de sistemas. Si detecta alguna inconsistencia, error u omisión en sus datos, por favor comuníquese con el Colegio para que podamos verificar la información y realizar la corrección correspondiente.
                 </div>
 
                 <Link
                     href="/dashboard/mis-datos"
-                    className="flex items-center justify-center gap-2 w-full h-12 bg-[#063f68] dark:bg-blue-600 text-white rounded-2xl font-bold text-[13px] hover:bg-[#0a4d7a] dark:hover:bg-blue-500 transition-all active:scale-95"
+                    className="flex items-center justify-center gap-2 w-full h-12 bg-[#063f68] dark:bg-blue-600 text-white rounded-2xl font-bold text-[14px] hover:bg-[#0a4d7a] dark:hover:bg-blue-500 transition-all active:scale-95"
                 >
                     Completar mis datos →
                 </Link>

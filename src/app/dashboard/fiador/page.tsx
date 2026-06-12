@@ -23,10 +23,10 @@ function PersonaCard({ persona }: { persona: FiadorPersona }) {
                 <User size={18} className="text-[#063f68] dark:text-blue-400" />
             </div>
             <div>
-                <p className="text-[14px] font-bold text-slate-800 dark:text-white">
+                <p className="text-[15px] font-bold text-slate-800 dark:text-white">
                     {tieneNombre ? `${persona.apellido}, ${persona.nombre}` : "Sin datos en el sistema"}
                 </p>
-                <p className="text-[12px] text-slate-700 mt-0.5">Expediente {persona.expediente}</p>
+                <p className="text-[13px] text-slate-700 mt-0.5">Expediente {persona.expediente}</p>
             </div>
         </div>
     );
@@ -36,7 +36,7 @@ function EmptyState({ texto }: { texto: string }) {
     return (
         <div className="flex flex-col items-center gap-2 py-8 text-center bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 max-w-3xl">
             <HandshakeIcon size={20} className="text-slate-300" />
-            <p className="text-[12px] text-slate-700">{texto}</p>
+            <p className="text-[13px] text-slate-700">{texto}</p>
         </div>
     );
 }
@@ -67,7 +67,7 @@ export default function FiadorPage() {
                     </Link>
                     <div className="flex items-center gap-3">
                         <HandshakeIcon size={18} className="text-slate-700" />
-                        <h2 className="text-[15px] font-bold text-black dark:text-white tracking-tight">Fiadores</h2>
+                        <h2 className="text-[16px] font-bold text-black dark:text-white tracking-tight">Fiadores</h2>
                     </div>
                 </div>
             </div>
@@ -84,7 +84,7 @@ export default function FiadorPage() {
                         <section className="space-y-3">
                             <div className="flex items-center gap-2">
                                 <HandshakeIcon size={15} className="text-slate-700" />
-                                <h2 className="text-[13px] font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wide">
+                                <h2 className="text-[14px] font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wide">
                                     Tu fiador
                                 </h2>
                             </div>
@@ -101,11 +101,11 @@ export default function FiadorPage() {
                         <section className="space-y-3">
                             <div className="flex items-center gap-2">
                                 <HandshakeIcon size={15} className="text-slate-700" />
-                                <h2 className="text-[13px] font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wide">
+                                <h2 className="text-[14px] font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wide">
                                     Sos fiador de
                                 </h2>
                                 {(data?.avalaA.length ?? 0) > 0 && (
-                                    <span className="ml-2 px-2 py-0.5 bg-[#063f68]/10 dark:bg-blue-400/10 text-[#063f68] dark:text-blue-400 text-[10px] font-bold rounded-full">
+                                    <span className="ml-2 px-2 py-0.5 bg-[#063f68]/10 dark:bg-blue-400/10 text-[#063f68] dark:text-blue-400 text-[11px] font-bold rounded-full">
                                         {data!.avalaA.length}
                                     </span>
                                 )}

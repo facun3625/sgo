@@ -61,7 +61,7 @@ export default function DebugCreateEventPage() {
                     </Link>
                     <div className="flex items-center gap-3">
                         <Wrench size={18} className="text-blue-500" />
-                        <h2 className="text-[15px] font-bold text-black dark:text-white tracking-tight">Debug Panel - Generador de Eventos</h2>
+                        <h2 className="text-[16px] font-bold text-black dark:text-white tracking-tight">Debug Panel - Generador de Eventos</h2>
                     </div>
                 </div>
             </div>
@@ -75,7 +75,7 @@ export default function DebugCreateEventPage() {
 
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-[#063f68] dark:text-blue-400 ml-2">Título del Evento</label>
+                            <label className="text-[11px] font-black uppercase tracking-widest text-[#063f68] dark:text-blue-400 ml-2">Título del Evento</label>
                             <div className="relative">
                                 <Type className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
                                 <input
@@ -90,7 +90,7 @@ export default function DebugCreateEventPage() {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-[#063f68] dark:text-blue-400 ml-2">Fecha</label>
+                            <label className="text-[11px] font-black uppercase tracking-widest text-[#063f68] dark:text-blue-400 ml-2">Fecha</label>
                             <div className="relative">
                                 <Calendar className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
                                 <input
@@ -104,7 +104,7 @@ export default function DebugCreateEventPage() {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-[#063f68] dark:text-blue-400 ml-2">Tipo de Evento</label>
+                            <label className="text-[11px] font-black uppercase tracking-widest text-[#063f68] dark:text-blue-400 ml-2">Tipo de Evento</label>
                             <div className="relative">
                                 <Tag className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
                                 <select
@@ -121,7 +121,7 @@ export default function DebugCreateEventPage() {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-[#063f68] dark:text-blue-400 ml-2">Descripción</label>
+                            <label className="text-[11px] font-black uppercase tracking-widest text-[#063f68] dark:text-blue-400 ml-2">Descripción</label>
                             <div className="relative">
                                 <AlignLeft className="absolute left-6 top-6 text-slate-300" size={18} />
                                 <textarea

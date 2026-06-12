@@ -100,7 +100,7 @@ export default function MensajesPage() {
                 <div className={`flex flex-col bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden
                     ${selected ? "hidden md:flex w-72 flex-shrink-0" : "flex flex-1"}`}>
                     <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800">
-                        <p className="text-[12px] font-bold text-slate-700 dark:text-slate-400 uppercase tracking-widest">Conversaciones</p>
+                        <p className="text-[13px] font-bold text-slate-700 dark:text-slate-400 uppercase tracking-widest">Conversaciones</p>
                     </div>
                     <div className="flex-1 overflow-y-auto">
                         {loading ? (
@@ -110,7 +110,7 @@ export default function MensajesPage() {
                         ) : convs.length === 0 ? (
                             <div className="flex flex-col items-center justify-center py-16 gap-3 px-4 text-center">
                                 <MessageCircle size={32} className="text-slate-200 dark:text-slate-700" />
-                                <p className="text-[13px] text-slate-700">No tenés mensajes aún</p>
+                                <p className="text-[14px] text-slate-700">No tenés mensajes aún</p>
                             </div>
                         ) : (
                             convs.map(c => (
@@ -123,18 +123,18 @@ export default function MensajesPage() {
                                                 {c.unread > 0 && (
                                                     <span className="w-2 h-2 bg-sky-500 rounded-full flex-shrink-0" />
                                                 )}
-                                                <p className={`text-[13px] truncate leading-tight ${c.unread > 0 ? "font-bold text-slate-800 dark:text-white" : "font-medium text-slate-600 dark:text-slate-300"}`}>
+                                                <p className={`text-[14px] truncate leading-tight ${c.unread > 0 ? "font-bold text-slate-800 dark:text-white" : "font-medium text-slate-600 dark:text-slate-300"}`}>
                                                     {c.asunto}
                                                 </p>
                                             </div>
                                             {c.ultimoMensaje && (
-                                                <p className="text-[11px] text-slate-700 truncate mt-0.5 ml-4">
+                                                <p className="text-[12px] text-slate-700 truncate mt-0.5 ml-4">
                                                     {c.ultimoMensaje.de === "user" ? "Vos: " : "CPASF: "}
                                                     {c.ultimoMensaje.contenido}
                                                 </p>
                                             )}
                                         </div>
-                                        <span className="text-[10px] text-slate-700 flex-shrink-0 mt-0.5">{timeAgo(c.updatedAt)}</span>
+                                        <span className="text-[11px] text-slate-700 flex-shrink-0 mt-0.5">{timeAgo(c.updatedAt)}</span>
                                     </div>
                                 </button>
                             ))
@@ -152,7 +152,7 @@ export default function MensajesPage() {
                     ) : !selected ? (
                         <div className="flex flex-col items-center justify-center gap-3 text-center px-8">
                             <Mail size={36} className="text-slate-200 dark:text-slate-700" />
-                            <p className="text-[13px] text-slate-700">Seleccioná una conversación</p>
+                            <p className="text-[14px] text-slate-700">Seleccioná una conversación</p>
                         </div>
                     ) : (
                         <>
@@ -165,8 +165,8 @@ export default function MensajesPage() {
                                     <Mail size={14} className="text-sky-500" />
                                 </div>
                                 <div className="min-w-0">
-                                    <p className="text-[13px] font-bold text-slate-800 dark:text-white truncate">{selected.asunto}</p>
-                                    <p className="text-[11px] text-slate-700">CPASF</p>
+                                    <p className="text-[14px] font-bold text-slate-800 dark:text-white truncate">{selected.asunto}</p>
+                                    <p className="text-[12px] text-slate-700">CPASF</p>
                                 </div>
                             </div>
 
@@ -179,8 +179,8 @@ export default function MensajesPage() {
                                             <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 ${isUser
                                                 ? "bg-[#063f68] text-white rounded-br-sm"
                                                 : "bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-white rounded-bl-sm"}`}>
-                                                <p className="text-[13px] leading-relaxed whitespace-pre-wrap">{msg.contenido}</p>
-                                                <p className={`text-[10px] mt-1 ${isUser ? "text-white/50" : "text-slate-700"}`}>
+                                                <p className="text-[14px] leading-relaxed whitespace-pre-wrap">{msg.contenido}</p>
+                                                <p className={`text-[11px] mt-1 ${isUser ? "text-white/50" : "text-slate-700"}`}>
                                                     {timeAgo(msg.createdAt)}
                                                 </p>
                                             </div>
@@ -200,7 +200,7 @@ export default function MensajesPage() {
                                         onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendReply(); } }}
                                         placeholder="Escribí tu respuesta... (Enter para enviar)"
                                         rows={2}
-                                        className="flex-1 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-[13px] focus:outline-none focus:ring-2 focus:ring-sky-300/50 focus:border-sky-400 resize-none"
+                                        className="flex-1 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-[14px] focus:outline-none focus:ring-2 focus:ring-sky-300/50 focus:border-sky-400 resize-none"
                                     />
                                     <button onClick={sendReply} disabled={sending || !reply.trim()}
                                         className="w-10 h-10 flex items-center justify-center rounded-xl bg-sky-500 text-white hover:bg-sky-600 disabled:opacity-40 transition-all flex-shrink-0">

@@ -89,7 +89,7 @@ export default function TopNav({ user, onMenuClick }: TopNavProps) {
     if (!mounted) {
         return (
             <header className="h-16 bg-[#063f68] flex items-center justify-between px-8 sticky top-0 z-50">
-                <div className="flex items-center gap-4 text-white/50 animate-pulse text-[12px] font-medium tracking-wide italic">
+                <div className="flex items-center gap-4 text-white/50 animate-pulse text-[13px] font-medium tracking-wide italic">
                     Cargando sistema...
                 </div>
             </header>
@@ -119,12 +119,12 @@ export default function TopNav({ user, onMenuClick }: TopNavProps) {
                     {user.isSuspended ? (
                         <div className={`h-8 flex items-center gap-2 px-3 rounded-lg backdrop-blur-sm animate-pulse border ${user.status === "cancelled" ? "bg-purple-500/20 border-purple-500/40" : "bg-rose-500/20 border-rose-500/40"}`}>
                             <div className={`w-1.5 h-1.5 rounded-full ${user.status === "cancelled" ? "bg-purple-400 shadow-[0_0_8px_rgba(192,132,252,0.8)]" : "bg-rose-400 shadow-[0_0_8px_rgba(251,113,133,0.8)]"}`}></div>
-                            <span className={`text-[10px] font-extrabold uppercase tracking-widest leading-none ${user.status === "cancelled" ? "text-purple-300" : "text-rose-300"}`}>{user.status === "cancelled" ? "Matrícula Cancelada" : "Matrícula Suspendida"}</span>
+                            <span className={`text-[11px] font-extrabold uppercase tracking-widest leading-none ${user.status === "cancelled" ? "text-purple-300" : "text-rose-300"}`}>{user.status === "cancelled" ? "Matrícula Cancelada" : "Matrícula Suspendida"}</span>
                         </div>
                     ) : (
                         <div className="h-8 flex items-center gap-2 px-3 bg-white/10 rounded-lg backdrop-blur-sm">
                             <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></div>
-                            <span className="text-[10px] font-extrabold text-white uppercase tracking-widest leading-none">Matrícula Activa</span>
+                            <span className="text-[11px] font-extrabold text-white uppercase tracking-widest leading-none">Matrícula Activa</span>
                         </div>
                     )}
 
@@ -135,13 +135,13 @@ export default function TopNav({ user, onMenuClick }: TopNavProps) {
                             className="h-8 flex items-center gap-2 px-3 bg-red-500/20 border border-red-500/30 rounded-lg backdrop-blur-sm hover:bg-red-500/30 transition-all group animate-pulse"
                         >
                             <div className="w-1.5 h-1.5 bg-red-500 rounded-full shadow-[0_0_8px_rgba(239,68,68,0.8)]"></div>
-                            <span className="text-[10px] font-extrabold text-white uppercase tracking-widest leading-none">Usted posee deuda vencida</span>
+                            <span className="text-[11px] font-extrabold text-white uppercase tracking-widest leading-none">Usted posee deuda vencida</span>
                             <ArrowRight size={12} className="text-white/50 group-hover:text-white transition-colors" />
                         </Link>
                     ) : (
                         <div className="h-8 flex items-center gap-2 px-3 bg-white/10 rounded-lg backdrop-blur-sm">
                             <div className="w-1.5 h-1.5 bg-green-400 rounded-full"></div>
-                            <span className="text-[10px] font-extrabold text-white uppercase tracking-widest leading-none">No posee deuda vencida</span>
+                            <span className="text-[11px] font-extrabold text-white uppercase tracking-widest leading-none">No posee deuda vencida</span>
                         </div>
                     )}
                 </div>
@@ -176,7 +176,7 @@ export default function TopNav({ user, onMenuClick }: TopNavProps) {
                             {deferredPrompt ? <Download size={20} /> : <Share size={20} />}
                         </button>
                         {showIOSHint && (
-                            <div className="absolute right-0 top-12 w-60 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-3 shadow-xl z-50 text-[12px] text-slate-700 dark:text-slate-300 leading-relaxed">
+                            <div className="absolute right-0 top-12 w-60 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-3 shadow-xl z-50 text-[13px] text-slate-700 dark:text-slate-300 leading-relaxed">
                                 {isIOS
                                     ? <>Tocá <strong>Compartir</strong> <Share size={11} className="inline mb-0.5" /> en Safari y luego <strong>"Agregar a pantalla de inicio"</strong></>
                                     : <>En el menú de tu browser tocá <strong>"Agregar a pantalla de inicio"</strong> o <strong>"Instalar app"</strong></>
@@ -192,7 +192,7 @@ export default function TopNav({ user, onMenuClick }: TopNavProps) {
                         onClick={() => setIsProfileOpen(!isProfileOpen)}
                         className="flex items-center gap-3 p-1.5 rounded-2xl hover:bg-white/10 transition-all duration-300 group"
                     >
-                        <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center text-white font-bold text-[12px] border border-white/20 relative overflow-hidden shadow-inner">
+                        <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center text-white font-bold text-[13px] border border-white/20 relative overflow-hidden shadow-inner">
                             {user.image ? (
                                 <img src={user.image} alt="Profile" className="w-full h-full object-cover animate-fade-in" />
                             ) : (
@@ -203,10 +203,10 @@ export default function TopNav({ user, onMenuClick }: TopNavProps) {
                             )}
                         </div>
                         <div className="text-left hidden sm:block">
-                            <p className="text-[13px] font-bold text-white leading-tight tracking-tight group-hover:text-white/90 transition-colors">
+                            <p className="text-[14px] font-bold text-white leading-tight tracking-tight group-hover:text-white/90 transition-colors">
                                 {user.apellido}, {user.nombre}
                             </p>
-                            <p className="text-[10px] text-white/50 font-medium">Mat. {user.expediente}</p>
+                            <p className="text-[11px] text-white/50 font-medium">Mat. {user.expediente}</p>
                         </div>
                         <ChevronDown size={14} className={`text-white/30 transition-transform duration-300 ${isProfileOpen ? "rotate-180" : "group-hover:translate-y-0.5"}`} />
                     </button>

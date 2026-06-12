@@ -309,7 +309,7 @@ export default function SolicitudCertificadoPage() {
                 </Link>
                 <div className="flex items-center gap-3">
                     <FileText size={18} className="text-blue-600" />
-                    <h2 className="text-[15px] font-bold text-black dark:text-white tracking-tight">Certificado de Matriculación</h2>
+                    <h2 className="text-[16px] font-bold text-black dark:text-white tracking-tight">Certificado de Matriculación</h2>
                 </div>
             </div>
 
@@ -320,7 +320,7 @@ export default function SolicitudCertificadoPage() {
                         <div className="p-2 rounded-lg bg-white dark:bg-slate-800 text-red-500 shadow-sm shrink-0">
                             <Info size={15} />
                         </div>
-                        <p className="text-[13px] text-red-700 dark:text-red-400 font-medium leading-relaxed">{blocked}</p>
+                        <p className="text-[14px] text-red-700 dark:text-red-400 font-medium leading-relaxed">{blocked}</p>
                     </div>
                 )}
 
@@ -329,7 +329,7 @@ export default function SolicitudCertificadoPage() {
                     <div className="p-2 rounded-lg bg-white dark:bg-slate-800 text-amber-500 shadow-sm shrink-0">
                         <Info size={15} />
                     </div>
-                    <p className="text-[11px] text-amber-700 dark:text-amber-400/80 leading-relaxed font-medium">
+                    <p className="text-[12px] text-amber-700 dark:text-amber-400/80 leading-relaxed font-medium">
                         El certificado se genera automáticamente en PDF y quedará disponible en{" "}
                         <Link href="/dashboard/solicitudes/enviadas" className="underline font-bold">Solicitudes enviadas</Link>.{" "}
                         Si necesitás presentarlo ante más de un organismo, podés generar uno nuevo por cada destino.
@@ -349,7 +349,7 @@ export default function SolicitudCertificadoPage() {
 
                     {/* Campo editable */}
                     <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest ml-1">
+                        <label className="text-[11px] font-bold text-slate-700 uppercase tracking-widest ml-1">
                             Certificado para ser presentado ante <span className="text-rose-400">*</span>
                         </label>
                         <textarea
@@ -388,8 +388,8 @@ export default function SolicitudCertificadoPage() {
 function ReadOnly({ label, value, span = 1 }: { label: string; value: string | null | undefined; span?: number }) {
     return (
         <div className={`space-y-1.5 ${span === 2 ? "md:col-span-2" : ""}`}>
-            <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest ml-1">{label}</label>
-            <div className="w-full h-12 px-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/20 flex items-center text-[13px] text-slate-600 dark:text-slate-400 font-medium">
+            <label className="text-[11px] font-bold text-slate-700 uppercase tracking-widest ml-1">{label}</label>
+            <div className="w-full h-12 px-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/20 flex items-center text-[14px] text-slate-600 dark:text-slate-400 font-medium">
                 {value || "--"}
             </div>
         </div>

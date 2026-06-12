@@ -121,7 +121,7 @@ export default function SolicitudJurisprudenciaPage() {
                     </Link>
                     <div className="flex items-center gap-3">
                         <FileText size={18} className="text-blue-600" />
-                        <h2 className="text-[15px] font-bold text-black dark:text-white tracking-tight">Solicitud de Jurisprudencia</h2>
+                        <h2 className="text-[16px] font-bold text-black dark:text-white tracking-tight">Solicitud de Jurisprudencia</h2>
                     </div>
                 </div>
             </div>
@@ -152,7 +152,7 @@ export default function SolicitudJurisprudenciaPage() {
                             <div className="p-2 rounded-lg bg-white dark:bg-slate-800 text-blue-500 shrink-0">
                                 <Info size={16} />
                             </div>
-                            <p className="text-[11px] text-blue-700 dark:text-blue-400/80 leading-relaxed font-medium">
+                            <p className="text-[12px] text-blue-700 dark:text-blue-400/80 leading-relaxed font-medium">
                                 Puede solicitar búsquedas de jurisprudencia específica indicando los detalles necesarios. Los datos de contacto se utilizarán para enviarle los resultados.
                             </p>
                         </div>
@@ -161,7 +161,7 @@ export default function SolicitudJurisprudenciaPage() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {/* Nombre */}
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest ml-1 flex items-center gap-2">
+                                    <label className="text-[11px] font-bold text-slate-700 uppercase tracking-widest ml-1 flex items-center gap-2">
                                         <User size={10} /> Nombre
                                     </label>
                                     <input
@@ -174,7 +174,7 @@ export default function SolicitudJurisprudenciaPage() {
 
                                 {/* Apellido */}
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest ml-1 flex items-center gap-2">
+                                    <label className="text-[11px] font-bold text-slate-700 uppercase tracking-widest ml-1 flex items-center gap-2">
                                         <User size={10} /> Apellido
                                     </label>
                                     <input
@@ -187,7 +187,7 @@ export default function SolicitudJurisprudenciaPage() {
 
                                 {/* Matrícula/Expediente */}
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest ml-1 flex items-center gap-2">
+                                    <label className="text-[11px] font-bold text-slate-700 uppercase tracking-widest ml-1 flex items-center gap-2">
                                         <IdCard size={10} /> Matrícula
                                     </label>
                                     <input
@@ -200,7 +200,7 @@ export default function SolicitudJurisprudenciaPage() {
 
                                 {/* Email */}
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest ml-1 flex items-center gap-2">
+                                    <label className="text-[11px] font-bold text-slate-700 uppercase tracking-widest ml-1 flex items-center gap-2">
                                         <Mail size={10} /> Email de contacto
                                     </label>
                                     <input
@@ -213,7 +213,7 @@ export default function SolicitudJurisprudenciaPage() {
 
                                 {/* Telefono (Editable) */}
                                 <div className="space-y-2 md:col-span-2">
-                                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest ml-1 flex items-center gap-2">
+                                    <label className="text-[11px] font-bold text-slate-700 uppercase tracking-widest ml-1 flex items-center gap-2">
                                         <Phone size={10} /> Teléfono (Opcional)
                                     </label>
                                     <input
@@ -227,7 +227,7 @@ export default function SolicitudJurisprudenciaPage() {
 
                                 {/* Pedido / Mensaje */}
                                 <div className="space-y-2 md:col-span-2">
-                                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest ml-1">Su pedido</label>
+                                    <label className="text-[11px] font-bold text-slate-700 uppercase tracking-widest ml-1">Su pedido</label>
                                     <textarea
                                         required
                                         value={pedido}

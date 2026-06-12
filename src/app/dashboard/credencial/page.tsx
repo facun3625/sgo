@@ -52,8 +52,8 @@ export default async function CredencialPage() {
                             <span className="text-rose-500 text-xl font-black">!</span>
                         </div>
                         <div>
-                            <p className="text-[14px] font-black text-rose-700 dark:text-rose-400 uppercase tracking-wide">Matrícula Suspendida</p>
-                            <p className="text-[12px] text-rose-500 dark:text-rose-500 mt-0.5">Esta credencial no es válida para ejercer la profesión. Comuníquese con el CPASF.</p>
+                            <p className="text-[15px] font-black text-rose-700 dark:text-rose-400 uppercase tracking-wide">Matrícula Suspendida</p>
+                            <p className="text-[13px] text-rose-500 dark:text-rose-500 mt-0.5">Esta credencial no es válida para ejercer la profesión. Comuníquese con el CPASF.</p>
                         </div>
                     </div>
                 )}
@@ -72,7 +72,7 @@ export default async function CredencialPage() {
                             </Link>
                             <div className="flex items-center gap-3">
                                 <IdCard size={18} className="text-amber-500" />
-                                <h2 className="text-[15px] font-bold text-black dark:text-white tracking-tight">Credencial Digital - Frente</h2>
+                                <h2 className="text-[16px] font-bold text-black dark:text-white tracking-tight">Credencial Digital - Frente</h2>
                             </div>
                         </div>
                     </div>
@@ -89,7 +89,7 @@ export default async function CredencialPage() {
                                         <div className="absolute inset-0 z-20 flex items-center justify-center" style={{ background: "rgba(255,255,255,0.15)" }}>
                                             <div className="absolute inset-0 border-4 border-rose-500 rounded-[20px]" />
                                             <div className="rotate-[-30deg] text-center pointer-events-none select-none">
-                                                <p className="text-rose-600 font-black uppercase tracking-widest border-4 border-rose-600 px-4 py-1 rounded-lg text-[18px] opacity-80" style={{ textShadow: "none" }}>
+                                                <p className="text-rose-600 font-black uppercase tracking-widest border-4 border-rose-600 px-4 py-1 rounded-lg text-[19px] opacity-80" style={{ textShadow: "none" }}>
                                                     MATRÍCULA<br />SUSPENDIDA
                                                 </p>
                                             </div>
@@ -100,8 +100,8 @@ export default async function CredencialPage() {
                                     <div className="flex items-center gap-3 mb-4 pb-3 border-b border-[#f1f5f9]">
                                         <img src="/sgo_nuevo.png" alt="Logo" className="w-10 h-10 object-contain" />
                                         <div>
-                                            <h2 className="text-[#063f68] text-[11px] font-bold leading-tight">Colegio de la Abogacía de Santa Fe</h2>
-                                            <h2 className="text-[#94a3b8] text-[9px] font-black uppercase tracking-tighter">Credencial Profesional</h2>
+                                            <h2 className="text-[#063f68] text-[12px] font-bold leading-tight">Colegio de la Abogacía de Santa Fe</h2>
+                                            <h2 className="text-[#94a3b8] text-[10px] font-black uppercase tracking-tighter">Credencial Profesional</h2>
                                         </div>
                                     </div>
 
@@ -123,14 +123,14 @@ export default async function CredencialPage() {
                                         </div>
 
                                         <div className="flex-1">
-                                            <h3 className="text-black text-[15px] font-bold uppercase leading-tight mb-3">
+                                            <h3 className="text-black text-[16px] font-bold uppercase leading-tight mb-3">
                                                 {user.apellido}, {user.nombre}
                                             </h3>
                                             <div className="space-y-1">
-                                                <p className="text-[10px] text-[#94a3b8] font-bold uppercase">Expediente: <span className="text-black ml-1 font-extrabold">{user.expediente}</span></p>
-                                                <p className="text-[10px] text-[#94a3b8] font-bold uppercase">DNI: <span className="text-black ml-1 font-extrabold">{dato?.documento || "---"}</span></p>
-                                                <p className="text-[10px] text-[#94a3b8] font-bold uppercase">Folio/Tomo: <span className="text-black ml-1 font-extrabold">{dato?.folio || "--"} / {dato?.tomo || "--"}</span></p>
-                                                <p className="text-[10px] text-[#94a3b8] font-bold uppercase">Matriculación: <span className="text-black ml-1 font-extrabold">{fechaMatriculacion}</span></p>
+                                                <p className="text-[11px] text-[#94a3b8] font-bold uppercase">Expediente: <span className="text-black ml-1 font-extrabold">{user.expediente}</span></p>
+                                                <p className="text-[11px] text-[#94a3b8] font-bold uppercase">DNI: <span className="text-black ml-1 font-extrabold">{dato?.documento || "---"}</span></p>
+                                                <p className="text-[11px] text-[#94a3b8] font-bold uppercase">Folio/Tomo: <span className="text-black ml-1 font-extrabold">{dato?.folio || "--"} / {dato?.tomo || "--"}</span></p>
+                                                <p className="text-[11px] text-[#94a3b8] font-bold uppercase">Matriculación: <span className="text-black ml-1 font-extrabold">{fechaMatriculacion}</span></p>
                                             </div>
                                         </div>
                                     </div>
@@ -142,10 +142,10 @@ export default async function CredencialPage() {
                                                 {user.signature ? (
                                                     <img src={user.signature} alt="Firma" className="max-w-full max-h-full object-contain mix-blend-multiply" />
                                                 ) : (
-                                                    <span className="text-[8px] italic text-[#f1f5f9]">Firma del Matriculado</span>
+                                                    <span className="text-[9px] italic text-[#f1f5f9]">Firma del Matriculado</span>
                                                 )}
                                             </div>
-                                            <p className="text-[7px] font-black text-[#94a3b8] uppercase tracking-widest text-center">Titular</p>
+                                            <p className="text-[8px] font-black text-[#94a3b8] uppercase tracking-widest text-center">Titular</p>
                                         </div>
 
                                         <div className="bg-white border border-[#f8fafc] p-1 rounded-lg">
@@ -158,7 +158,7 @@ export default async function CredencialPage() {
                             {/* Columna de Acciones Lateral */}
                             <div className="w-full lg:w-64 space-y-4">
                                 <div className="p-5 rounded-[24px] bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
-                                    <p className="text-slate-700 dark:text-slate-400 text-[11px] font-medium leading-relaxed">
+                                    <p className="text-slate-700 dark:text-slate-400 text-[12px] font-medium leading-relaxed">
                                         Identificación oficial del Colegio de la Abogacía de Santa Fe.
                                     </p>
                                 </div>
@@ -179,7 +179,7 @@ export default async function CredencialPage() {
                     <div className="sticky top-16 z-10 bg-white dark:bg-[#02182b] flex items-center justify-between px-8 py-3.5 border-b border-[#f1f5f9] dark:border-slate-800 transition-colors duration-300">
                         <div className="flex items-center gap-3 ml-4">
                             <IdCard size={18} className="text-amber-500" />
-                            <h2 className="text-[15px] font-bold text-black dark:text-white tracking-tight">Credencial Digital - Dorso</h2>
+                            <h2 className="text-[16px] font-bold text-black dark:text-white tracking-tight">Credencial Digital - Dorso</h2>
                         </div>
                     </div>
 
@@ -190,7 +190,7 @@ export default async function CredencialPage() {
                             <div className="flex-1 w-full max-w-[450px]">
                                 <div id="digital-credential-back" className="relative w-full bg-white rounded-[20px] shadow-xl border border-[#e2e8f0] overflow-hidden flex flex-col p-4 sm:p-8 md:aspect-[1.58/1] pointer-events-none select-none">
                                     <div className="flex-1">
-                                        <p className="text-[#475569] text-[11px] leading-relaxed italic font-medium mb-10 text-center border-b border-[#f1f5f9] pb-6">
+                                        <p className="text-[#475569] text-[12px] leading-relaxed italic font-medium mb-10 text-center border-b border-[#f1f5f9] pb-6">
                                             "En el ejercicio de su profesión, el abogado está equiparado a los magistrados judiciales en cuanto al respeto y consideración que debe guardársele."
                                         </p>
 
@@ -201,22 +201,22 @@ export default async function CredencialPage() {
                                                         {f.firma ? (
                                                             <img src={f.firma} alt={`Firma ${f.cargo}`} className="max-h-full max-w-[90px] object-contain mix-blend-multiply" />
                                                         ) : (
-                                                            <span className="text-[12px] font-serif text-[#f1f5f9] italic opacity-40">Firma</span>
+                                                            <span className="text-[13px] font-serif text-[#f1f5f9] italic opacity-40">Firma</span>
                                                         )}
                                                     </div>
                                                     <div className="border-t border-[#f1f5f9] pt-1">
-                                                        <p className="text-[8px] font-bold text-slate-800">{f.cargo}</p>
-                                                        {f.nombre && <p className="text-[7px] text-slate-700 mt-0.5 leading-tight">{f.nombre}</p>}
+                                                        <p className="text-[9px] font-bold text-slate-800">{f.cargo}</p>
+                                                        {f.nombre && <p className="text-[8px] text-slate-700 mt-0.5 leading-tight">{f.nombre}</p>}
                                                     </div>
                                                 </div>
                                             )) : (
-                                                <span className="text-[8px] italic text-[#f1f5f9] opacity-40">Sin firmas configuradas</span>
+                                                <span className="text-[9px] italic text-[#f1f5f9] opacity-40">Sin firmas configuradas</span>
                                             )}
                                         </div>
                                     </div>
 
                                     <div className="mt-auto pt-4 text-center border-t border-[#f1f5f9]">
-                                        <p className="text-[#94a3b8] text-[8px] font-black uppercase tracking-tighter">
+                                        <p className="text-[#94a3b8] text-[9px] font-black uppercase tracking-tighter">
                                             Matrícula válida en Santa Fe · Propiedad del CPASF · Intransferible
                                         </p>
                                     </div>
@@ -226,7 +226,7 @@ export default async function CredencialPage() {
                             {/* Columna info dorso */}
                             <div className="w-full lg:w-64">
                                 <div className="p-5 rounded-[24px] bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
-                                    <p className="text-slate-700 dark:text-slate-400 text-[11px] font-medium leading-relaxed">
+                                    <p className="text-slate-700 dark:text-slate-400 text-[12px] font-medium leading-relaxed">
                                         Leyenda legal y firmas de las autoridades institucionales.
                                     </p>
                                 </div>

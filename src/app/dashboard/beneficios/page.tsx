@@ -57,7 +57,7 @@ export default async function BeneficiosPage() {
                             </Link>
                             <div className="flex items-center gap-3">
                                 <CreditCard size={18} className="text-blue-500" />
-                                <h2 className="text-[15px] font-bold text-black dark:text-white tracking-tight">Tarjeta de Beneficios</h2>
+                                <h2 className="text-[16px] font-bold text-black dark:text-white tracking-tight">Tarjeta de Beneficios</h2>
                             </div>
                         </div>
                     </div>
@@ -107,7 +107,7 @@ export default async function BeneficiosPage() {
                                             </div>
                                             <div>
                                                 <p className="text-base md:text-xl font-bold tracking-tight leading-none mb-1 text-white">CPASF</p>
-                                                <p className="text-[8px] md:text-[9px] font-semibold tracking-[0.1em] opacity-70 uppercase text-white/70">Colegio de Profesionales de la Abogacía de Santa Fe</p>
+                                                <p className="text-[9px] md:text-[10px] font-semibold tracking-[0.1em] opacity-70 uppercase text-white/70">Colegio de Profesionales de la Abogacía de Santa Fe</p>
                                             </div>
                                         </div>
                                     </div>
@@ -120,16 +120,16 @@ export default async function BeneficiosPage() {
 
                                         <div className="flex gap-6 md:gap-10">
                                             <div className="flex flex-col">
-                                                <p className="text-[7px] md:text-[8px] font-normal text-white/50 uppercase tracking-[0.2em] mb-1">Matrícula</p>
-                                                <p className="text-[11px] md:text-[14px] font-light tracking-[0.1em] md:tracking-[0.15em] text-white">{session.expediente}</p>
+                                                <p className="text-[8px] md:text-[9px] font-normal text-white/50 uppercase tracking-[0.2em] mb-1">Matrícula</p>
+                                                <p className="text-[12px] md:text-[15px] font-light tracking-[0.1em] md:tracking-[0.15em] text-white">{session.expediente}</p>
                                             </div>
                                             <div className="flex flex-col">
-                                                <p className="text-[7px] md:text-[8px] font-normal text-white/50 uppercase tracking-[0.2em] mb-1">Folio</p>
-                                                <p className="text-[11px] md:text-[14px] font-light tracking-[0.1em] md:tracking-[0.15em] text-white">{dato?.folio || "--"}</p>
+                                                <p className="text-[8px] md:text-[9px] font-normal text-white/50 uppercase tracking-[0.2em] mb-1">Folio</p>
+                                                <p className="text-[12px] md:text-[15px] font-light tracking-[0.1em] md:tracking-[0.15em] text-white">{dato?.folio || "--"}</p>
                                             </div>
                                             <div className="flex flex-col">
-                                                <p className="text-[7px] md:text-[8px] font-normal text-white/50 uppercase tracking-[0.2em] mb-1">Tomo</p>
-                                                <p className="text-[11px] md:text-[14px] font-light tracking-[0.1em] md:tracking-[0.15em] text-white">{dato?.tomo || "--"}</p>
+                                                <p className="text-[8px] md:text-[9px] font-normal text-white/50 uppercase tracking-[0.2em] mb-1">Tomo</p>
+                                                <p className="text-[12px] md:text-[15px] font-light tracking-[0.1em] md:tracking-[0.15em] text-white">{dato?.tomo || "--"}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -141,7 +141,7 @@ export default async function BeneficiosPage() {
                                                 : "bg-white/5 border-white/5"
                                             }`}>
                                             <div className={`w-1 h-1 rounded-full animate-pulse ${isBlocked ? "bg-rose-500" : "bg-green-400"}`}></div>
-                                            <span className={`text-[8px] font-black uppercase tracking-[0.12em] ${isBlocked ? "text-rose-400" : "text-white/60"}`}>
+                                            <span className={`text-[9px] font-black uppercase tracking-[0.12em] ${isBlocked ? "text-rose-400" : "text-white/60"}`}>
                                                 {isBlocked ? "Tarjeta de beneficios inhabilitada" : "Tarjeta de beneficios habilitada"}
                                             </span>
                                         </div>
@@ -160,7 +160,7 @@ export default async function BeneficiosPage() {
                             {/* Columna de Acciones Lateral Compacta */}
                             <div className="w-full lg:w-64 space-y-4">
                                 <div className="p-5 rounded-[24px] bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
-                                    <p className="text-slate-700 dark:text-slate-400 text-[11px] font-medium leading-relaxed">
+                                    <p className="text-slate-700 dark:text-slate-400 text-[12px] font-medium leading-relaxed">
                                         Presentá esta tarjeta en los comercios adheridos para acceder a los beneficios exclusivos.
                                     </p>
                                 </div>
@@ -176,14 +176,14 @@ export default async function BeneficiosPage() {
 
                         <div className="mt-6 md:mt-10 pt-6 md:pt-8 grid grid-cols-2 md:grid-cols-2 gap-6 md:gap-8">
                             <div>
-                                <h4 className="text-[10px] font-bold text-black dark:text-white/40 uppercase tracking-widest mb-2 leading-none">Alcance</h4>
-                                <p className="text-black dark:text-white/80 text-[11px] font-medium leading-relaxed">
+                                <h4 className="text-[11px] font-bold text-black dark:text-white/40 uppercase tracking-widest mb-2 leading-none">Alcance</h4>
+                                <p className="text-black dark:text-white/80 text-[12px] font-medium leading-relaxed">
                                     Documento personal de la 1era Circunscripción del CPASF.
                                 </p>
                             </div>
                             <div className="md:text-right">
-                                <h4 className="text-[10px] font-bold text-black dark:text-white/40 uppercase tracking-widest mb-2 leading-none">Actualización</h4>
-                                <p className="text-black dark:text-white/80 text-[11px] font-medium leading-relaxed font-mono">
+                                <h4 className="text-[11px] font-bold text-black dark:text-white/40 uppercase tracking-widest mb-2 leading-none">Actualización</h4>
+                                <p className="text-black dark:text-white/80 text-[12px] font-medium leading-relaxed font-mono">
                                     Legajo actualizado en tiempo real.
                                 </p>
                             </div>

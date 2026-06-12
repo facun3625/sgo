@@ -121,7 +121,7 @@ export default function NotificacionesBell() {
             >
                 <Bell size={20} />
                 {visibleUnreadCount > 0 && (
-                    <span className="absolute top-1 right-1 min-w-[16px] h-4 px-0.5 bg-red-500 text-white text-[9px] font-black rounded-full border-2 border-[#063f68] flex items-center justify-center leading-none">
+                    <span className="absolute top-1 right-1 min-w-[16px] h-4 px-0.5 bg-red-500 text-white text-[10px] font-black rounded-full border-2 border-[#063f68] flex items-center justify-center leading-none">
                         {displayCount}
                     </span>
                 )}
@@ -131,12 +131,12 @@ export default function NotificacionesBell() {
                 <div className="fixed left-3 right-3 top-[4.25rem] sm:absolute sm:left-auto sm:right-0 sm:top-auto sm:mt-2 sm:w-80 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-xl z-50 overflow-hidden animate-fade-in">
                     {/* Header */}
                     <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-800">
-                        <p className="text-[13px] font-bold text-slate-800 dark:text-white">Notificaciones</p>
+                        <p className="text-[14px] font-bold text-slate-800 dark:text-white">Notificaciones</p>
                         {visibleUnreadCount > 0 && (
                             <button
                                 onClick={marcarTodasLeidas}
                                 disabled={marking}
-                                className="text-[11px] font-semibold text-[#063f68] dark:text-blue-400 hover:underline disabled:opacity-50 transition-all"
+                                className="text-[12px] font-semibold text-[#063f68] dark:text-blue-400 hover:underline disabled:opacity-50 transition-all"
                             >
                                 Marcar todas como leídas
                             </button>
@@ -148,7 +148,7 @@ export default function NotificacionesBell() {
                         {visibleNotificaciones.length === 0 ? (
                             <div className="flex flex-col items-center justify-center py-10 gap-3">
                                 <Bell size={28} className="text-slate-200 dark:text-slate-700" />
-                                <p className="text-[12px] text-slate-700 font-medium">Sin notificaciones</p>
+                                <p className="text-[13px] text-slate-700 font-medium">Sin notificaciones</p>
                             </div>
                         ) : (
                             visibleNotificaciones.map((n) => {
@@ -184,9 +184,9 @@ export default function NotificacionesBell() {
                                             )}
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-[13px] font-bold text-slate-800 dark:text-white leading-snug">{n.titulo}</p>
-                                            <p className="text-[12px] text-slate-700 mt-0.5 leading-snug">{n.mensaje}</p>
-                                            <p className="text-[11px] text-slate-300 dark:text-slate-600 mt-1">{timeAgo(n.createdAt)}</p>
+                                            <p className="text-[14px] font-bold text-slate-800 dark:text-white leading-snug">{n.titulo}</p>
+                                            <p className="text-[13px] text-slate-700 mt-0.5 leading-snug">{n.mensaje}</p>
+                                            <p className="text-[12px] text-slate-300 dark:text-slate-600 mt-1">{timeAgo(n.createdAt)}</p>
                                         </div>
                                     </div>
                                 );

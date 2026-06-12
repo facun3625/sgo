@@ -56,7 +56,7 @@ function FileDropzone({ label, accept, file, onChange }: {
 }) {
     return (
         <div className="space-y-1.5">
-            <p className="text-[11px] font-black text-slate-700 uppercase tracking-widest">{label}</p>
+            <p className="text-[12px] font-black text-slate-700 uppercase tracking-widest">{label}</p>
             <label className="relative group block cursor-pointer">
                 <input type="file" accept={accept} className="absolute inset-0 opacity-0 w-full h-full cursor-pointer z-10"
                     onChange={e => { const f = e.target.files?.[0]; if (f) onChange(f); }} />
@@ -64,8 +64,8 @@ function FileDropzone({ label, accept, file, onChange }: {
                     ${file ? "border-emerald-300 bg-emerald-50/40 dark:border-emerald-800 dark:bg-emerald-900/10"
                            : "border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40 group-hover:border-[#063f68]"}`}>
                     {file
-                        ? <><CheckCircle2 size={22} className="text-emerald-500" /><p className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 truncate max-w-[180px] px-2">{file.name}</p></>
-                        : <><Upload size={22} className="text-slate-300 group-hover:text-[#063f68] transition-colors" /><p className="text-[11px] text-slate-700 font-medium">Seleccionar archivo</p></>
+                        ? <><CheckCircle2 size={22} className="text-emerald-500" /><p className="text-[12px] font-bold text-emerald-600 dark:text-emerald-400 truncate max-w-[180px] px-2">{file.name}</p></>
+                        : <><Upload size={22} className="text-slate-300 group-hover:text-[#063f68] transition-colors" /><p className="text-[12px] text-slate-700 font-medium">Seleccionar archivo</p></>
                     }
                 </div>
             </label>
@@ -200,13 +200,13 @@ export default function RehabilitacionPage() {
                 <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 rounded-2xl flex items-center justify-center">
                     <Clock size={28} className="text-amber-500" />
                 </div>
-                <h2 className="text-[17px] font-bold text-slate-800 dark:text-white">Solicitud en revisión</h2>
-                <p className="text-[13px] text-slate-700 dark:text-slate-400 leading-relaxed max-w-md">
+                <h2 className="text-[18px] font-bold text-slate-800 dark:text-white">Solicitud en revisión</h2>
+                <p className="text-[14px] text-slate-700 dark:text-slate-400 leading-relaxed max-w-md">
                     Completaste todos los pasos. El Consejo revisará tu solicitud y recibirás una notificación con la resolución.
                 </p>
-                {error && <p className="text-[12px] text-rose-500">{error}</p>}
+                {error && <p className="text-[13px] text-rose-500">{error}</p>}
                 <button onClick={cancelar} disabled={saving}
-                    className="text-[11px] text-slate-700 hover:text-rose-500 transition-colors underline underline-offset-2 disabled:opacity-50">
+                    className="text-[12px] text-slate-700 hover:text-rose-500 transition-colors underline underline-offset-2 disabled:opacity-50">
                     {saving ? "Cancelando..." : "Cancelar solicitud y reiniciar"}
                 </button>
             </div>
@@ -220,13 +220,13 @@ export default function RehabilitacionPage() {
                 <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-900/30 rounded-2xl flex items-center justify-center">
                     <ShieldCheck size={28} className="text-emerald-500" />
                 </div>
-                <h2 className="text-[17px] font-bold text-slate-800 dark:text-white">¡Rehabilitación aprobada!</h2>
+                <h2 className="text-[18px] font-bold text-slate-800 dark:text-white">¡Rehabilitación aprobada!</h2>
                 {solicitud.respuesta && (
-                    <p className="text-[13px] text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 rounded-xl p-4 text-left max-w-md">
+                    <p className="text-[14px] text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 rounded-xl p-4 text-left max-w-md">
                         {solicitud.respuesta}
                     </p>
                 )}
-                <Link href="/dashboard" className="inline-flex items-center gap-2 px-6 h-11 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-[13px] font-bold transition-all">
+                <Link href="/dashboard" className="inline-flex items-center gap-2 px-6 h-11 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-[14px] font-bold transition-all">
                     <ShieldCheck size={14} /> Ir al inicio
                 </Link>
             </div>
@@ -241,16 +241,16 @@ export default function RehabilitacionPage() {
                     <div className="flex items-start gap-3 p-4 bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800 rounded-2xl">
                         <XCircle size={16} className="text-rose-500 flex-shrink-0 mt-0.5" />
                         <div>
-                            <p className="text-[13px] font-bold text-rose-700 dark:text-rose-400">Solicitud anterior rechazada</p>
-                            {ultimaRechazada.respuesta && <p className="text-[12px] text-rose-600/70 dark:text-rose-400/60 mt-0.5">{ultimaRechazada.respuesta}</p>}
-                            <p className="text-[11px] text-rose-500/60 mt-1">Podés iniciar una nueva solicitud.</p>
+                            <p className="text-[14px] font-bold text-rose-700 dark:text-rose-400">Solicitud anterior rechazada</p>
+                            {ultimaRechazada.respuesta && <p className="text-[13px] text-rose-600/70 dark:text-rose-400/60 mt-0.5">{ultimaRechazada.respuesta}</p>}
+                            <p className="text-[12px] text-rose-500/60 mt-1">Podés iniciar una nueva solicitud.</p>
                         </div>
                     </div>
                 )}
 
                 <div className="grid md:grid-cols-2 gap-6">
                     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6 space-y-4">
-                        <p className="text-[13px] font-semibold text-slate-600 dark:text-slate-300">El proceso consta de <strong>5 pasos</strong>:</p>
+                        <p className="text-[14px] font-semibold text-slate-600 dark:text-slate-300">El proceso consta de <strong>5 pasos</strong>:</p>
                         <ol className="space-y-2">
                             {[
                                 "Regularización de deuda vencida (si corresponde)",
@@ -259,8 +259,8 @@ export default function RehabilitacionPage() {
                                 "Adhesión a débito automático",
                                 "Pago del costo de rehabilitación",
                             ].map((s, i) => (
-                                <li key={i} className="flex items-start gap-2.5 text-[13px] text-slate-600 dark:text-slate-300">
-                                    <span className="w-5 h-5 rounded-full bg-[#063f68]/10 text-[#063f68] dark:bg-blue-400/10 dark:text-blue-400 text-[10px] font-black flex items-center justify-center flex-shrink-0 mt-0.5">{i + 1}</span>
+                                <li key={i} className="flex items-start gap-2.5 text-[14px] text-slate-600 dark:text-slate-300">
+                                    <span className="w-5 h-5 rounded-full bg-[#063f68]/10 text-[#063f68] dark:bg-blue-400/10 dark:text-blue-400 text-[11px] font-black flex items-center justify-center flex-shrink-0 mt-0.5">{i + 1}</span>
                                     {s}
                                 </li>
                             ))}
@@ -272,18 +272,18 @@ export default function RehabilitacionPage() {
                             {ctx.deudaTotal > 0 && (
                                 <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-950/20 rounded-xl border border-amber-100 dark:border-amber-900/30">
                                     <AlertTriangle size={14} className="text-amber-500 flex-shrink-0 mt-0.5" />
-                                    <p className="text-[12px] text-amber-700 dark:text-amber-400">
+                                    <p className="text-[13px] text-amber-700 dark:text-amber-400">
                                         Tenés una deuda de <strong>{fmt(ctx.deudaTotal)}</strong>. Podés adjuntar comprobante de pago durante el trámite o abonar previamente por MercadoPago.
                                     </p>
                                 </div>
                             )}
-                            <p className="text-[12px] text-slate-700 leading-relaxed">
+                            <p className="text-[13px] text-slate-700 leading-relaxed">
                                 Al iniciar el trámite se registrará el estado actual de tu deuda. Tenés que completar todos los pasos para que la solicitud llegue al Consejo.
                             </p>
                         </div>
-                        {error && <p className="text-[12px] text-rose-500 flex items-center gap-1"><AlertTriangle size={12} /> {error}</p>}
+                        {error && <p className="text-[13px] text-rose-500 flex items-center gap-1"><AlertTriangle size={12} /> {error}</p>}
                         <button onClick={iniciar} disabled={saving}
-                            className="w-full h-11 flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-[13px] disabled:opacity-50 transition-all">
+                            className="w-full h-11 flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-[14px] disabled:opacity-50 transition-all">
                             {saving ? <Loader2 size={15} className="animate-spin" /> : <ShieldCheck size={15} />}
                             Iniciar trámite de rehabilitación
                         </button>
@@ -302,13 +302,13 @@ export default function RehabilitacionPage() {
                     <BackLink />
                     <div className="flex items-center gap-3">
                         <ShieldCheck size={18} className="text-emerald-500" />
-                        <h2 className="text-[15px] font-bold text-slate-800 dark:text-white">Solicitud de Rehabilitación</h2>
+                        <h2 className="text-[16px] font-bold text-slate-800 dark:text-white">Solicitud de Rehabilitación</h2>
                     </div>
                 </div>
                 {/* Cancelar + Barra de progreso */}
                 <div className="hidden md:flex items-center gap-4">
                 <button onClick={cancelar} disabled={saving}
-                    className="text-[11px] text-slate-700 hover:text-rose-500 transition-colors flex items-center gap-1 disabled:opacity-50">
+                    className="text-[12px] text-slate-700 hover:text-rose-500 transition-colors flex items-center gap-1 disabled:opacity-50">
                     <X size={11} /> Cancelar
                 </button>
                 <div className="flex items-center gap-1">
@@ -319,11 +319,11 @@ export default function RehabilitacionPage() {
                         return (
                             <div key={n} className="flex items-center">
                                 <div className="flex items-center gap-1.5">
-                                    <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all
+                                    <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold transition-all
                                         ${done ? "bg-emerald-500 text-white" : active ? "bg-[#063f68] text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-700"}`}>
                                         {done ? <CheckCircle2 size={12} /> : n}
                                     </div>
-                                    <span className={`text-[11px] font-bold uppercase tracking-wider ${active ? "text-slate-800 dark:text-white" : "text-slate-700"}`}>{label}</span>
+                                    <span className={`text-[12px] font-bold uppercase tracking-wider ${active ? "text-slate-800 dark:text-white" : "text-slate-700"}`}>{label}</span>
                                 </div>
                                 {i < PASOS.length - 1 && <div className={`w-8 h-px mx-2 ${done ? "bg-emerald-400" : "bg-slate-200 dark:bg-slate-700"}`} />}
                             </div>
@@ -335,7 +335,7 @@ export default function RehabilitacionPage() {
 
             <div className="p-6 md:p-10 space-y-6">
             {error && (
-                <div className="flex items-center gap-2 p-3 bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800 rounded-xl text-[12px] text-rose-600 dark:text-rose-400">
+                <div className="flex items-center gap-2 p-3 bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800 rounded-xl text-[13px] text-rose-600 dark:text-rose-400">
                     <AlertTriangle size={13} /> {error}
                 </div>
             )}
@@ -344,22 +344,22 @@ export default function RehabilitacionPage() {
             {paso === 1 && (
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6 space-y-5">
                     <div>
-                        <h2 className="text-[15px] font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                        <h2 className="text-[16px] font-bold text-slate-800 dark:text-white flex items-center gap-2">
                             <Banknote size={16} className="text-amber-500" /> Regularización de deuda vencida
                         </h2>
-                        <p className="text-[12px] text-slate-700 mt-0.5">Deuda vencida registrada al iniciar el trámite: <strong>{fmt(solicitud.deudaOriginal ?? 0)}</strong></p>
+                        <p className="text-[13px] text-slate-700 mt-0.5">Deuda vencida registrada al iniciar el trámite: <strong>{fmt(solicitud.deudaOriginal ?? 0)}</strong></p>
                     </div>
 
                     {(solicitud.deudaOriginal ?? 0) === 0 ? (
                         <div className="flex items-center gap-3 p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl">
                             <CheckCircle2 size={18} className="text-emerald-500" />
-                            <p className="text-[13px] text-emerald-700 dark:text-emerald-400 font-medium">Sin deuda vencida. Este paso se completa automáticamente.</p>
+                            <p className="text-[14px] text-emerald-700 dark:text-emerald-400 font-medium">Sin deuda vencida. Este paso se completa automáticamente.</p>
                         </div>
                     ) : (
                         <div className="space-y-4">
                             <div className="flex items-start gap-2 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-xl border border-blue-100 dark:border-blue-900/30">
                                 <Info size={14} className="text-blue-500 flex-shrink-0 mt-0.5" />
-                                <p className="text-[12px] text-blue-700 dark:text-blue-400">
+                                <p className="text-[13px] text-blue-700 dark:text-blue-400">
                                     Si abonaste la deuda vencida por MercadoPago, seleccioná esa opción y verificaremos automáticamente.
                                     Si pagaste por transferencia o efectivo, adjuntá el comprobante.
                                 </p>
@@ -367,13 +367,13 @@ export default function RehabilitacionPage() {
                             <div className="grid grid-cols-2 gap-3">
                                 <button onClick={() => setP1Metodo("mercadopago")}
                                     className={`p-4 rounded-xl border-2 text-left transition-all ${p1Metodo === "mercadopago" ? "border-blue-500 bg-blue-50/50 dark:bg-blue-900/10" : "border-slate-200 dark:border-slate-700 hover:border-slate-300"}`}>
-                                    <p className="text-[13px] font-bold text-slate-800 dark:text-white">MercadoPago</p>
-                                    <p className="text-[11px] text-slate-700 mt-0.5">Ya lo pagué por MP</p>
+                                    <p className="text-[14px] font-bold text-slate-800 dark:text-white">MercadoPago</p>
+                                    <p className="text-[12px] text-slate-700 mt-0.5">Ya lo pagué por MP</p>
                                 </button>
                                 <button onClick={() => setP1Metodo("transferencia")}
                                     className={`p-4 rounded-xl border-2 text-left transition-all ${p1Metodo === "transferencia" ? "border-amber-500 bg-amber-50/50 dark:bg-amber-900/10" : "border-slate-200 dark:border-slate-700 hover:border-slate-300"}`}>
-                                    <p className="text-[13px] font-bold text-slate-800 dark:text-white">Transferencia / Efectivo</p>
-                                    <p className="text-[11px] text-slate-700 mt-0.5">Adjuntar comprobante</p>
+                                    <p className="text-[14px] font-bold text-slate-800 dark:text-white">Transferencia / Efectivo</p>
+                                    <p className="text-[12px] text-slate-700 mt-0.5">Adjuntar comprobante</p>
                                 </button>
                             </div>
                             {p1Metodo === "transferencia" && (
@@ -382,7 +382,7 @@ export default function RehabilitacionPage() {
                             <button
                                 onClick={() => submitPaso(1, { metodo: p1Metodo }, p1Metodo === "transferencia" ? { comprobante: p1File } : {})}
                                 disabled={saving || !p1Metodo || (p1Metodo === "transferencia" && !p1File)}
-                                className="w-full h-11 flex items-center justify-center gap-2 bg-[#063f68] hover:bg-[#0a4d7a] text-white rounded-xl font-bold text-[13px] disabled:opacity-40 transition-all">
+                                className="w-full h-11 flex items-center justify-center gap-2 bg-[#063f68] hover:bg-[#0a4d7a] text-white rounded-xl font-bold text-[14px] disabled:opacity-40 transition-all">
                                 {saving ? <Loader2 size={14} className="animate-spin" /> : <ChevronRight size={14} />}
                                 Continuar
                             </button>
@@ -395,14 +395,14 @@ export default function RehabilitacionPage() {
             {paso === 2 && (
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6 space-y-5">
                     <div>
-                        <h2 className="text-[15px] font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                        <h2 className="text-[16px] font-bold text-slate-800 dark:text-white flex items-center gap-2">
                             <FileText size={16} className="text-blue-500" /> Formulario de rehabilitación
                         </h2>
-                        <p className="text-[12px] text-slate-700 mt-0.5">Revisá el texto auto-completado, completá los campos marcados y aceptá.</p>
+                        <p className="text-[13px] text-slate-700 mt-0.5">Revisá el texto auto-completado, completá los campos marcados y aceptá.</p>
                     </div>
 
                     {/* Carta formal */}
-                    <div className="bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 rounded-xl p-5 text-[12px] text-slate-700 dark:text-slate-300 leading-relaxed space-y-3 font-mono">
+                    <div className="bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 rounded-xl p-5 text-[13px] text-slate-700 dark:text-slate-300 leading-relaxed space-y-3 font-mono">
                         <p className="text-right">Santa Fe, {new Date().toLocaleDateString("es-AR", { day: "2-digit", month: "long", year: "numeric" })}</p>
                         <div className="mt-4 space-y-1">
                             <p>Señor Presidente del Colegio de Abogados</p>
@@ -453,13 +453,13 @@ export default function RehabilitacionPage() {
 
                     <div className="flex gap-3">
                         <button onClick={() => { setError(""); setSolicitud(s => s ? { ...s, pasoActual: 1 } : s); }}
-                            className="flex items-center gap-1.5 px-4 h-10 border border-slate-200 dark:border-slate-700 text-slate-700 rounded-xl text-[12px] font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                            className="flex items-center gap-1.5 px-4 h-10 border border-slate-200 dark:border-slate-700 text-slate-700 rounded-xl text-[13px] font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
                             <ArrowLeft size={13} /> Atrás
                         </button>
                         <button
                             onClick={() => submitPaso(2, { desde: p2Desde, razon: p2Razon })}
                             disabled={saving || !p2Desde.trim() || !p2Razon.trim()}
-                            className="flex-1 h-10 flex items-center justify-center gap-2 bg-[#063f68] hover:bg-[#0a4d7a] text-white rounded-xl font-bold text-[13px] disabled:opacity-40 transition-all">
+                            className="flex-1 h-10 flex items-center justify-center gap-2 bg-[#063f68] hover:bg-[#0a4d7a] text-white rounded-xl font-bold text-[14px] disabled:opacity-40 transition-all">
                             {saving ? <Loader2 size={14} className="animate-spin" /> : <><CheckCircle2 size={14} /> Aceptar y continuar</>}
                         </button>
                     </div>
@@ -470,10 +470,10 @@ export default function RehabilitacionPage() {
             {paso === 3 && (
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6 space-y-5">
                     <div>
-                        <h2 className="text-[15px] font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                        <h2 className="text-[16px] font-bold text-slate-800 dark:text-white flex items-center gap-2">
                             <FileText size={16} className="text-purple-500" /> Registro Nacional de Reincidencia
                         </h2>
-                        <p className="text-[12px] text-slate-700 mt-0.5">Descargá el formulario, completalo y adjuntalo en PDF.</p>
+                        <p className="text-[13px] text-slate-700 mt-0.5">Descargá el formulario, completalo y adjuntalo en PDF.</p>
                     </div>
                     <a
                         href="https://www.argentina.gob.ar/justicia/reincidencia/antecedentespenales"
@@ -483,20 +483,20 @@ export default function RehabilitacionPage() {
                             <ExternalLink size={16} className="text-[#063f68] dark:text-blue-400" />
                         </div>
                         <div>
-                            <p className="text-[13px] font-bold text-slate-700 dark:text-white group-hover:text-[#063f68] dark:group-hover:text-blue-400 transition-colors">
+                            <p className="text-[14px] font-bold text-slate-700 dark:text-white group-hover:text-[#063f68] dark:group-hover:text-blue-400 transition-colors">
                                 Formulario — Antecedentes Penales
                             </p>
-                            <p className="text-[11px] text-slate-700">argentina.gob.ar · Registro Nacional de Reincidencia</p>
+                            <p className="text-[12px] text-slate-700">argentina.gob.ar · Registro Nacional de Reincidencia</p>
                         </div>
                     </a>
                     <FileDropzone label="PDF del formulario completado" accept=".pdf,application/pdf" file={p3File} onChange={setP3File} />
                     <div className="flex gap-3">
                         <button onClick={() => setSolicitud(s => s ? { ...s, pasoActual: 2 } : s)}
-                            className="flex items-center gap-1.5 px-4 h-10 border border-slate-200 dark:border-slate-700 text-slate-700 rounded-xl text-[12px] font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                            className="flex items-center gap-1.5 px-4 h-10 border border-slate-200 dark:border-slate-700 text-slate-700 rounded-xl text-[13px] font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
                             <ArrowLeft size={13} /> Atrás
                         </button>
                         <button onClick={() => submitPaso(3, {}, { pdf: p3File })} disabled={saving || !p3File}
-                            className="flex-1 h-10 flex items-center justify-center gap-2 bg-[#063f68] hover:bg-[#0a4d7a] text-white rounded-xl font-bold text-[13px] disabled:opacity-40 transition-all">
+                            className="flex-1 h-10 flex items-center justify-center gap-2 bg-[#063f68] hover:bg-[#0a4d7a] text-white rounded-xl font-bold text-[14px] disabled:opacity-40 transition-all">
                             {saving ? <Loader2 size={14} className="animate-spin" /> : <ChevronRight size={14} />}
                             Continuar
                         </button>
@@ -508,37 +508,37 @@ export default function RehabilitacionPage() {
             {paso === 4 && (
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6 space-y-5">
                     <div>
-                        <h2 className="text-[15px] font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                        <h2 className="text-[16px] font-bold text-slate-800 dark:text-white flex items-center gap-2">
                             <Banknote size={16} className="text-cyan-500" /> Adhesión a débito automático
                         </h2>
-                        <p className="text-[12px] text-slate-700 mt-0.5">Sub-paso {s4Step} de 3</p>
+                        <p className="text-[13px] text-slate-700 mt-0.5">Sub-paso {s4Step} de 3</p>
                     </div>
 
                     {/* Sub-paso 1: selección tipo */}
                     {s4Step === 1 && (
                         <div className="space-y-4">
-                            <p className="text-[13px] text-slate-600 dark:text-slate-300">Seleccioná el método de débito automático.</p>
+                            <p className="text-[14px] text-slate-600 dark:text-slate-300">Seleccioná el método de débito automático.</p>
                             <div className="grid grid-cols-2 gap-4">
                                 <button onClick={() => setP4Tipo("CBU")}
                                     className={`p-5 rounded-xl border-2 text-left transition-all ${p4Tipo === "CBU" ? "border-[#063f68] bg-blue-50/50 dark:bg-blue-900/10" : "border-slate-200 dark:border-slate-700"}`}>
                                     <Library size={22} className={p4Tipo === "CBU" ? "text-[#063f68] dark:text-blue-400" : "text-slate-700"} />
-                                    <p className="text-[13px] font-bold text-slate-800 dark:text-white mt-3">Débito en cuenta</p>
-                                    <p className="text-[11px] text-slate-700 mt-0.5">CBU de cualquier banco</p>
+                                    <p className="text-[14px] font-bold text-slate-800 dark:text-white mt-3">Débito en cuenta</p>
+                                    <p className="text-[12px] text-slate-700 mt-0.5">CBU de cualquier banco</p>
                                 </button>
                                 <button onClick={() => setP4Tipo("Tarjeta")}
                                     className={`p-5 rounded-xl border-2 text-left transition-all ${p4Tipo === "Tarjeta" ? "border-[#063f68] bg-blue-50/50 dark:bg-blue-900/10" : "border-slate-200 dark:border-slate-700"}`}>
                                     <CreditCard size={22} className={p4Tipo === "Tarjeta" ? "text-[#063f68] dark:text-blue-400" : "text-slate-700"} />
-                                    <p className="text-[13px] font-bold text-slate-800 dark:text-white mt-3">Tarjeta de crédito</p>
-                                    <p className="text-[11px] text-slate-700 mt-0.5">Visa débito directo</p>
+                                    <p className="text-[14px] font-bold text-slate-800 dark:text-white mt-3">Tarjeta de crédito</p>
+                                    <p className="text-[12px] text-slate-700 mt-0.5">Visa débito directo</p>
                                 </button>
                             </div>
                             <div className="flex gap-3">
                                 <button onClick={() => setSolicitud(s => s ? { ...s, pasoActual: 3 } : s)}
-                                    className="flex items-center gap-1.5 px-4 h-10 border border-slate-200 dark:border-slate-700 text-slate-700 rounded-xl text-[12px] font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                                    className="flex items-center gap-1.5 px-4 h-10 border border-slate-200 dark:border-slate-700 text-slate-700 rounded-xl text-[13px] font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
                                     <ArrowLeft size={13} /> Atrás
                                 </button>
                                 <button onClick={() => setS4Step(2)} disabled={!p4Tipo}
-                                    className="flex-1 h-10 flex items-center justify-center gap-2 bg-[#063f68] hover:bg-[#0a4d7a] text-white rounded-xl font-bold text-[13px] disabled:opacity-40 transition-all">
+                                    className="flex-1 h-10 flex items-center justify-center gap-2 bg-[#063f68] hover:bg-[#0a4d7a] text-white rounded-xl font-bold text-[14px] disabled:opacity-40 transition-all">
                                     <ChevronRight size={14} /> Continuar
                                 </button>
                             </div>
@@ -551,7 +551,7 @@ export default function RehabilitacionPage() {
                             <div className="relative">
                                 <div ref={termsRef}
                                     onScroll={e => { const el = e.currentTarget; if (el.scrollTop + el.clientHeight >= el.scrollHeight - 10) setP4Scrolled(true); }}
-                                    className="p-4 bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 rounded-xl text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed max-h-52 overflow-y-auto space-y-2">
+                                    className="p-4 bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 rounded-xl text-[12px] text-slate-600 dark:text-slate-400 leading-relaxed max-h-52 overflow-y-auto space-y-2">
                                     <p className="font-bold text-slate-800 dark:text-slate-200">Reconozco y acepto en forma irrevocable los términos y condiciones de adhesión débito automático en cuenta bancaria o tarjeta de crédito de las CUOTAS DE MATRÍCULAS MENSUALES del COLEGIO DE PROFESIONALES DE LA ABOGACÍA DE SANTA FE DE LA PRIMERA CIRCUNSCRIPCIÓN (en adelante "CPASF"), devengadas por mi condición de MATRICULADO, que se regirá por las siguientes condiciones y declaraciones:</p>
                                     <ul className="list-disc pl-5 space-y-1.5">
                                         <li>Autorizo a que los importes de "las cuotas" se debiten el día de su vencimiento y en la medida que las mismas sean remitidas por el "CPASF", de la cuenta bancaria y/o tarjeta de crédito denunciada ante el "CPASF" a través del sistema SGO.</li>
@@ -564,20 +564,20 @@ export default function RehabilitacionPage() {
                                 </div>
                                 {!p4Scrolled && (
                                     <div className="absolute bottom-0 left-0 right-0 h-10 pointer-events-none rounded-b-xl bg-gradient-to-t from-slate-100 dark:from-slate-900 to-transparent flex items-end justify-center pb-1.5">
-                                        <span className="text-[9px] font-bold text-slate-700 animate-bounce">▼ Desplazá para leer todo</span>
+                                        <span className="text-[10px] font-bold text-slate-700 animate-bounce">▼ Desplazá para leer todo</span>
                                     </div>
                                 )}
                             </div>
                             <label className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${p4Scrolled ? "border-slate-200 dark:border-slate-700" : "opacity-50 cursor-not-allowed border-slate-100 dark:border-slate-800"}`}>
                                 <input type="checkbox" checked={p4Accepted} disabled={!p4Scrolled} onChange={e => p4Scrolled && setP4Accepted(e.target.checked)} className="w-4 h-4 accent-[#063f68]" />
-                                <span className="text-[12px] font-semibold text-slate-700 dark:text-slate-300">He leído y acepto los términos irrevocablemente</span>
+                                <span className="text-[13px] font-semibold text-slate-700 dark:text-slate-300">He leído y acepto los términos irrevocablemente</span>
                             </label>
                             <div className="flex gap-3">
-                                <button onClick={() => setS4Step(1)} className="flex items-center gap-1.5 px-4 h-10 border border-slate-200 dark:border-slate-700 text-slate-700 rounded-xl text-[12px] font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                                <button onClick={() => setS4Step(1)} className="flex items-center gap-1.5 px-4 h-10 border border-slate-200 dark:border-slate-700 text-slate-700 rounded-xl text-[13px] font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
                                     <ArrowLeft size={13} /> Atrás
                                 </button>
                                 <button onClick={() => setS4Step(3)} disabled={!p4Accepted}
-                                    className="flex-1 h-10 flex items-center justify-center gap-2 bg-[#063f68] hover:bg-[#0a4d7a] text-white rounded-xl font-bold text-[13px] disabled:opacity-40 transition-all">
+                                    className="flex-1 h-10 flex items-center justify-center gap-2 bg-[#063f68] hover:bg-[#0a4d7a] text-white rounded-xl font-bold text-[14px] disabled:opacity-40 transition-all">
                                     <ChevronRight size={14} /> Continuar
                                 </button>
                             </div>
@@ -589,7 +589,7 @@ export default function RehabilitacionPage() {
                         <div className="space-y-4">
                             <div className="flex items-center gap-2 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-xl border border-blue-100 dark:border-blue-900/30">
                                 <Info size={14} className="text-blue-500 flex-shrink-0" />
-                                <p className="text-[12px] text-blue-700 dark:text-blue-400">
+                                <p className="text-[13px] text-blue-700 dark:text-blue-400">
                                     Adjuntá tu DNI (frontal) y {p4Tipo === "CBU" ? "la constancia de CBU (home banking)" : "la foto frontal de la tarjeta Visa"}.
                                 </p>
                             </div>
@@ -601,13 +601,13 @@ export default function RehabilitacionPage() {
                                 />
                             </div>
                             <div className="flex gap-3">
-                                <button onClick={() => setS4Step(2)} className="flex items-center gap-1.5 px-4 h-10 border border-slate-200 dark:border-slate-700 text-slate-700 rounded-xl text-[12px] font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                                <button onClick={() => setS4Step(2)} className="flex items-center gap-1.5 px-4 h-10 border border-slate-200 dark:border-slate-700 text-slate-700 rounded-xl text-[13px] font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
                                     <ArrowLeft size={13} /> Atrás
                                 </button>
                                 <button
                                     onClick={() => submitPaso(4, { tipo: p4Tipo }, { dni: p4Dni, doc: p4Doc })}
                                     disabled={saving || !p4Dni || !p4Doc}
-                                    className="flex-1 h-10 flex items-center justify-center gap-2 bg-[#063f68] hover:bg-[#0a4d7a] text-white rounded-xl font-bold text-[13px] disabled:opacity-40 transition-all">
+                                    className="flex-1 h-10 flex items-center justify-center gap-2 bg-[#063f68] hover:bg-[#0a4d7a] text-white rounded-xl font-bold text-[14px] disabled:opacity-40 transition-all">
                                     {saving ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
                                     Confirmar adhesión
                                 </button>
@@ -621,41 +621,41 @@ export default function RehabilitacionPage() {
             {paso === 5 && (
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6 space-y-5">
                     <div>
-                        <h2 className="text-[15px] font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                        <h2 className="text-[16px] font-bold text-slate-800 dark:text-white flex items-center gap-2">
                             <CreditCard size={16} className="text-emerald-500" /> Pago del costo de rehabilitación
                         </h2>
-                        <p className="text-[12px] text-slate-700 mt-0.5">Último paso para enviar tu solicitud.</p>
+                        <p className="text-[13px] text-slate-700 mt-0.5">Último paso para enviar tu solicitud.</p>
                     </div>
 
                     {/* Costo */}
                     <div className="p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
                         <div className="flex items-center justify-between">
-                            <span className="text-[12px] text-slate-700">Costo de rehabilitación</span>
-                            <span className="text-[15px] font-black text-slate-800 dark:text-white">{solicitud.p5JusAmount} JUS = {fmt(solicitud.p5Pesos ?? 0)}</span>
+                            <span className="text-[13px] text-slate-700">Costo de rehabilitación</span>
+                            <span className="text-[16px] font-black text-slate-800 dark:text-white">{solicitud.p5JusAmount} JUS = {fmt(solicitud.p5Pesos ?? 0)}</span>
                         </div>
                         {ctx.motivoCobra && (
-                            <p className="text-[11px] text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                            <p className="text-[12px] text-amber-600 dark:text-amber-400 flex items-center gap-1">
                                 <AlertTriangle size={11} /> Costo diferencial aplicado por suspensión con deuda (motivo: {ctx.motivoNombre ?? "registrado"})
                             </p>
                         )}
                         {!ctx.motivoCobra && (
-                            <p className="text-[11px] text-slate-700">Tarifa estándar de 1,5 JUS.</p>
+                            <p className="text-[12px] text-slate-700">Tarifa estándar de 1,5 JUS.</p>
                         )}
                     </div>
 
                     {/* Método */}
                     <div className="space-y-3">
-                        <p className="text-[12px] font-semibold text-slate-600 dark:text-slate-300">Seleccioná método de pago</p>
+                        <p className="text-[13px] font-semibold text-slate-600 dark:text-slate-300">Seleccioná método de pago</p>
                         <div className="grid grid-cols-2 gap-3">
                             <button onClick={() => setP5Metodo("mercadopago")}
                                 className={`p-4 rounded-xl border-2 text-left transition-all ${p5Metodo === "mercadopago" ? "border-blue-500 bg-blue-50/50 dark:bg-blue-900/10" : "border-slate-200 dark:border-slate-700"}`}>
-                                <p className="text-[13px] font-bold text-slate-800 dark:text-white">MercadoPago</p>
-                                <p className="text-[11px] text-slate-700 mt-0.5">Pago online inmediato</p>
+                                <p className="text-[14px] font-bold text-slate-800 dark:text-white">MercadoPago</p>
+                                <p className="text-[12px] text-slate-700 mt-0.5">Pago online inmediato</p>
                             </button>
                             <button onClick={() => setP5Metodo("transferencia")}
                                 className={`p-4 rounded-xl border-2 text-left transition-all ${p5Metodo === "transferencia" ? "border-amber-500 bg-amber-50/50 dark:bg-amber-900/10" : "border-slate-200 dark:border-slate-700"}`}>
-                                <p className="text-[13px] font-bold text-slate-800 dark:text-white">Transferencia</p>
-                                <p className="text-[11px] text-slate-700 mt-0.5">Adjuntar comprobante</p>
+                                <p className="text-[14px] font-bold text-slate-800 dark:text-white">Transferencia</p>
+                                <p className="text-[12px] text-slate-700 mt-0.5">Adjuntar comprobante</p>
                             </button>
                         </div>
                         {p5Metodo === "transferencia" && (
@@ -665,25 +665,25 @@ export default function RehabilitacionPage() {
 
                     <div className="flex gap-3">
                         <button onClick={() => setSolicitud(s => s ? { ...s, pasoActual: 4 } : s)}
-                            className="flex items-center gap-1.5 px-4 h-10 border border-slate-200 dark:border-slate-700 text-slate-700 rounded-xl text-[12px] font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                            className="flex items-center gap-1.5 px-4 h-10 border border-slate-200 dark:border-slate-700 text-slate-700 rounded-xl text-[13px] font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
                             <ArrowLeft size={13} /> Atrás
                         </button>
                         {p5Metodo === "mercadopago" && (
                             <button onClick={pagarConMP} disabled={mpLoading}
-                                className="flex-1 h-10 flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-bold text-[13px] disabled:opacity-40 transition-all">
+                                className="flex-1 h-10 flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-bold text-[14px] disabled:opacity-40 transition-all">
                                 {mpLoading ? <Loader2 size={14} className="animate-spin" /> : <ExternalLink size={14} />}
                                 Pagar con MercadoPago
                             </button>
                         )}
                         {p5Metodo === "transferencia" && (
                             <button onClick={() => submitPaso(5, { metodo: "transferencia" }, { comprobante: p5File })} disabled={saving || !p5File}
-                                className="flex-1 h-10 flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-[13px] disabled:opacity-40 transition-all">
+                                className="flex-1 h-10 flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-[14px] disabled:opacity-40 transition-all">
                                 {saving ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
                                 Enviar solicitud
                             </button>
                         )}
                         {!p5Metodo && (
-                            <div className="flex-1 h-10 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center text-[12px] text-slate-700">
+                            <div className="flex-1 h-10 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center text-[13px] text-slate-700">
                                 Seleccioná un método
                             </div>
                         )}
@@ -711,7 +711,7 @@ function PageShell({ children }: { children: React.ReactNode }) {
                 <BackLink />
                 <div className="flex items-center gap-2">
                     <ShieldCheck size={18} className="text-emerald-500" />
-                    <h1 className="text-[15px] font-bold text-slate-800 dark:text-white">Solicitud de Rehabilitación</h1>
+                    <h1 className="text-[16px] font-bold text-slate-800 dark:text-white">Solicitud de Rehabilitación</h1>
                 </div>
             </div>
             <div className="p-6 md:p-10">

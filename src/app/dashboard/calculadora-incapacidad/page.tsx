@@ -171,7 +171,7 @@ export default function CalculadoraIncapacidadPage() {
                         <Scale size={24} className="text-slate-700" />
                     </div>
                     <h2 className="text-lg font-bold text-slate-700 dark:text-slate-200">Calculadora no disponible</h2>
-                    <p className="text-[13px] text-slate-700 max-w-xs">Esta herramienta está temporalmente deshabilitada. Contactá al colegio para más información.</p>
+                    <p className="text-[14px] text-slate-700 max-w-xs">Esta herramienta está temporalmente deshabilitada. Contactá al colegio para más información.</p>
                 </div>
             </div>
         );
@@ -193,7 +193,7 @@ export default function CalculadoraIncapacidadPage() {
             {/* Info */}
             <div className="flex items-start gap-2.5 p-4 rounded-xl bg-sky-50 dark:bg-sky-900/20 border border-sky-100 dark:border-sky-800">
                 <Info size={15} className="text-sky-500 mt-0.5 flex-shrink-0" />
-                <p className="text-[12px] text-sky-700 dark:text-sky-300 leading-relaxed">
+                <p className="text-[13px] text-sky-700 dark:text-sky-300 leading-relaxed">
                     Calcula el <strong>valor presente</strong> de la indemnización por incapacidad con ingresos proyectados variables y probabilísticos. Basado en la metodología de Acciarri (art. 1746 CCyC).
                     El <strong>ingreso implicado</strong> por tramo se calcula como IVE × incapacidad, donde IVE pondera el ingreso anterior y el nuevo según la probabilidad de incremento.
                 </p>
@@ -201,33 +201,33 @@ export default function CalculadoraIncapacidadPage() {
 
             {/* Datos base */}
             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6 space-y-5">
-                <h2 className="text-[12px] font-black uppercase tracking-widest text-slate-700">Datos base</h2>
+                <h2 className="text-[13px] font-black uppercase tracking-widest text-slate-700">Datos base</h2>
                 <div className="grid grid-cols-3 gap-4">
                     <div className="space-y-1.5">
-                        <label className="text-[12px] font-bold text-slate-700 uppercase tracking-wide">Edad inicial</label>
+                        <label className="text-[13px] font-bold text-slate-700 uppercase tracking-wide">Edad inicial</label>
                         <input
                             type="number" min="1" max="100"
                             value={edadInicial}
                             onChange={e => { setEdadInicial(e.target.value); setResultado(null); }}
-                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white text-[15px] font-semibold focus:outline-none focus:ring-2 focus:ring-[#063f68]/30"
+                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white text-[16px] font-semibold focus:outline-none focus:ring-2 focus:ring-[#063f68]/30"
                         />
                     </div>
                     <div className="space-y-1.5">
-                        <label className="text-[12px] font-bold text-slate-700 uppercase tracking-wide">Incapacidad %</label>
+                        <label className="text-[13px] font-bold text-slate-700 uppercase tracking-wide">Incapacidad %</label>
                         <input
                             type="text" inputMode="decimal" placeholder="50"
                             value={incapacidad}
                             onChange={e => { setIncapacidad(e.target.value); setResultado(null); }}
-                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white text-[15px] font-semibold focus:outline-none focus:ring-2 focus:ring-[#063f68]/30"
+                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white text-[16px] font-semibold focus:outline-none focus:ring-2 focus:ring-[#063f68]/30"
                         />
                     </div>
                     <div className="space-y-1.5">
-                        <label className="text-[12px] font-bold text-slate-700 uppercase tracking-wide">Tasa descuento %</label>
+                        <label className="text-[13px] font-bold text-slate-700 uppercase tracking-wide">Tasa descuento %</label>
                         <input
                             type="text" inputMode="decimal" placeholder="4"
                             value={tasa}
                             onChange={e => { setTasa(e.target.value); setResultado(null); }}
-                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white text-[15px] font-semibold focus:outline-none focus:ring-2 focus:ring-[#063f68]/30"
+                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white text-[16px] font-semibold focus:outline-none focus:ring-2 focus:ring-[#063f68]/30"
                         />
                     </div>
                 </div>
@@ -236,17 +236,17 @@ export default function CalculadoraIncapacidadPage() {
             {/* Tramos */}
             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden">
                 <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                    <h2 className="text-[12px] font-black uppercase tracking-widest text-slate-700">Tramos de ingresos</h2>
+                    <h2 className="text-[13px] font-black uppercase tracking-widest text-slate-700">Tramos de ingresos</h2>
                     <button
                         onClick={addTramo}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#063f68]/5 dark:bg-blue-900/20 text-[#063f68] dark:text-blue-400 text-[11px] font-bold border border-[#063f68]/15 hover:bg-[#063f68]/10 transition-all"
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#063f68]/5 dark:bg-blue-900/20 text-[#063f68] dark:text-blue-400 text-[12px] font-bold border border-[#063f68]/15 hover:bg-[#063f68]/10 transition-all"
                     >
                         <Plus size={12} /> Agregar tramo
                     </button>
                 </div>
 
                 {/* Encabezado tabla */}
-                <div className="grid grid-cols-[2rem_1fr_1.5fr_1fr_2rem] gap-3 px-6 py-2 bg-slate-50 dark:bg-slate-800/40 text-[10px] font-black uppercase tracking-wider text-slate-700 border-b border-slate-100 dark:border-slate-800">
+                <div className="grid grid-cols-[2rem_1fr_1.5fr_1fr_2rem] gap-3 px-6 py-2 bg-slate-50 dark:bg-slate-800/40 text-[11px] font-black uppercase tracking-wider text-slate-700 border-b border-slate-100 dark:border-slate-800">
                     <span>#</span>
                     <span>Edad fin</span>
                     <span>Ingreso anual proyectado ($)</span>
@@ -257,23 +257,23 @@ export default function CalculadoraIncapacidadPage() {
                 <div className="divide-y divide-slate-50 dark:divide-slate-800">
                     {tramos.map((t, idx) => (
                         <div key={t.id} className="grid grid-cols-[2rem_1fr_1.5fr_1fr_2rem] gap-3 items-center px-6 py-3">
-                            <span className="text-[11px] font-black text-slate-700">{idx + 1}</span>
+                            <span className="text-[12px] font-black text-slate-700">{idx + 1}</span>
                             <input
                                 type="number" min="1"
                                 value={t.edadFin}
                                 onChange={e => updateTramo(t.id, "edadFin", e.target.value)}
                                 placeholder="65"
-                                className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white text-[13px] font-semibold focus:outline-none focus:ring-2 focus:ring-[#063f68]/30"
+                                className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white text-[14px] font-semibold focus:outline-none focus:ring-2 focus:ring-[#063f68]/30"
                             />
                             <input
                                 type="text" inputMode="decimal"
                                 value={t.iap}
                                 onChange={e => updateTramo(t.id, "iap", e.target.value)}
                                 placeholder="100000"
-                                className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white text-[13px] font-semibold focus:outline-none focus:ring-2 focus:ring-[#063f68]/30"
+                                className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white text-[14px] font-semibold focus:outline-none focus:ring-2 focus:ring-[#063f68]/30"
                             />
                             {idx === 0 ? (
-                                <div className="px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 text-[12px] text-slate-700 font-semibold">
+                                <div className="px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 text-[13px] text-slate-700 font-semibold">
                                     Ingreso base
                                 </div>
                             ) : (
@@ -282,7 +282,7 @@ export default function CalculadoraIncapacidadPage() {
                                     value={t.prob}
                                     onChange={e => updateTramo(t.id, "prob", e.target.value)}
                                     placeholder="50"
-                                    className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white text-[13px] font-semibold focus:outline-none focus:ring-2 focus:ring-[#063f68]/30"
+                                    className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white text-[14px] font-semibold focus:outline-none focus:ring-2 focus:ring-[#063f68]/30"
                                 />
                             )}
                             <button
@@ -297,7 +297,7 @@ export default function CalculadoraIncapacidadPage() {
                 </div>
 
                 <div className="px-6 py-3 bg-slate-50/50 dark:bg-slate-800/20 border-t border-slate-100 dark:border-slate-800">
-                    <p className="text-[10px] text-slate-700 leading-relaxed">
+                    <p className="text-[11px] text-slate-700 leading-relaxed">
                         <strong>Edad fin:</strong> edad hasta la cual aplica el ingreso de ese tramo. · <strong>Prob. incremento:</strong> probabilidad de que el ingreso suba respecto al tramo anterior (0–100). El primer tramo es el ingreso base cierto.
                     </p>
                 </div>
@@ -307,14 +307,14 @@ export default function CalculadoraIncapacidadPage() {
             {error && (
                 <div className="flex items-center gap-2 p-3 rounded-xl bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-800">
                     <AlertCircle size={14} className="text-rose-500 flex-shrink-0" />
-                    <p className="text-[12px] text-rose-600 dark:text-rose-400">{error}</p>
+                    <p className="text-[13px] text-rose-600 dark:text-rose-400">{error}</p>
                 </div>
             )}
 
             {/* Calcular */}
             <button
                 onClick={handleCalcular}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-[#063f68] hover:bg-[#052f50] text-white text-[14px] font-semibold transition-all"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-[#063f68] hover:bg-[#052f50] text-white text-[15px] font-semibold transition-all"
             >
                 <Scale size={15} /> Calcular
             </button>
@@ -331,8 +331,8 @@ export default function CalculadoraIncapacidadPage() {
                         ].map(item => (
                             <div key={item.label}
                                 className={`bg-white dark:bg-slate-900 rounded-2xl border-2 p-5 ${item.highlight ? "border-emerald-400 dark:border-emerald-600 shadow-sm shadow-emerald-100 dark:shadow-emerald-900/20" : "border-slate-100 dark:border-slate-800"}`}>
-                                <p className="text-[10px] text-slate-700 uppercase tracking-wide font-semibold mb-1.5">{item.label}</p>
-                                <p className={`text-[18px] font-black ${item.color}`}>${fmt(item.value)}</p>
+                                <p className="text-[11px] text-slate-700 uppercase tracking-wide font-semibold mb-1.5">{item.label}</p>
+                                <p className={`text-[19px] font-black ${item.color}`}>${fmt(item.value)}</p>
                             </div>
                         ))}
                     </div>
@@ -341,12 +341,12 @@ export default function CalculadoraIncapacidadPage() {
                     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden">
                         <div className="px-5 py-3 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2">
                             <TrendingUp size={13} className="text-emerald-500" />
-                            <h3 className="text-[12px] font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wide">Detalle por tramo</h3>
+                            <h3 className="text-[13px] font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wide">Detalle por tramo</h3>
                         </div>
                         <div className="overflow-x-auto">
-                            <table className="w-full text-[11px]">
+                            <table className="w-full text-[12px]">
                                 <thead>
-                                    <tr className="bg-slate-50 dark:bg-slate-800/40 text-[10px] text-slate-700 font-black uppercase tracking-wider">
+                                    <tr className="bg-slate-50 dark:bg-slate-800/40 text-[11px] text-slate-700 font-black uppercase tracking-wider">
                                         <th className="px-4 py-2 text-left">Edades</th>
                                         <th className="px-4 py-2 text-right">Períodos</th>
                                         <th className="px-4 py-2 text-right">IAP</th>

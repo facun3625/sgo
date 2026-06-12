@@ -50,18 +50,18 @@ export default function InstallBanner() {
         <div className="mx-4 mt-4 rounded-2xl bg-[#063f68] text-white p-4 flex items-start gap-3 shadow-lg">
             <Image src="/sgo_nuevo.png" alt="SGO" width={40} height={40} className="rounded-xl shrink-0 mt-0.5" />
             <div className="flex-1 min-w-0">
-                <p className="font-bold text-[13px] leading-tight">Instalá la app en tu cel</p>
+                <p className="font-bold text-[14px] leading-tight">Instalá la app en tu cel</p>
                 {isIOS ? (
-                    <p className="text-[11px] text-white/70 mt-1 leading-relaxed">
+                    <p className="text-[12px] text-white/70 mt-1 leading-relaxed">
                         Tocá <Share size={11} className="inline mb-0.5" /> <strong>Compartir</strong> y luego <strong>"Agregar a pantalla de inicio"</strong>
                     </p>
                 ) : (
-                    <p className="text-[11px] text-white/70 mt-1">Acceso rápido sin abrir el browser.</p>
+                    <p className="text-[12px] text-white/70 mt-1">Acceso rápido sin abrir el browser.</p>
                 )}
                 {!isIOS && (
                     <button
                         onClick={install}
-                        className="mt-2 flex items-center gap-1.5 px-3 py-1.5 bg-white text-[#063f68] rounded-lg text-[11px] font-bold"
+                        className="mt-2 flex items-center gap-1.5 px-3 py-1.5 bg-white text-[#063f68] rounded-lg text-[12px] font-bold"
                     >
                         <Download size={12} /> Instalar
                     </button>

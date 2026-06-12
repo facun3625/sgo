@@ -134,7 +134,7 @@ export default function SolicitudCatastroPage() {
                     </Link>
                     <div className="flex items-center gap-3">
                         <FileText size={18} className="text-blue-600" />
-                        <h2 className="text-[15px] font-bold text-black dark:text-white tracking-tight">Solicitud de usuario CATASTRO/SIGIT</h2>
+                        <h2 className="text-[16px] font-bold text-black dark:text-white tracking-tight">Solicitud de usuario CATASTRO/SIGIT</h2>
                     </div>
                 </div>
             </div>
@@ -166,21 +166,21 @@ export default function SolicitudCatastroPage() {
                         <div className="flex-1">
                             {existing.estado === "completada" ? (
                                 <>
-                                    <p className="text-[14px] font-black text-emerald-800 dark:text-emerald-300 mb-1">Ya tenés tu usuario CATASTRO/SIGIT</p>
+                                    <p className="text-[15px] font-black text-emerald-800 dark:text-emerald-300 mb-1">Ya tenés tu usuario CATASTRO/SIGIT</p>
                                     {existing.detalles?.respuesta?.usuario && (
-                                        <p className="text-[13px] font-bold text-emerald-700 dark:text-emerald-400 mb-2">
+                                        <p className="text-[14px] font-bold text-emerald-700 dark:text-emerald-400 mb-2">
                                             Usuario: <strong>{existing.detalles.respuesta.usuario}</strong>
                                         </p>
                                     )}
                                 </>
                             ) : (
                                 <>
-                                    <p className="text-[14px] font-black text-amber-800 dark:text-amber-300 mb-1">Ya tenés una solicitud en proceso</p>
-                                    <p className="text-[12px] text-amber-700 dark:text-amber-400 mb-2">Tu pedido está siendo procesado por el Colegio.</p>
+                                    <p className="text-[15px] font-black text-amber-800 dark:text-amber-300 mb-1">Ya tenés una solicitud en proceso</p>
+                                    <p className="text-[13px] text-amber-700 dark:text-amber-400 mb-2">Tu pedido está siendo procesado por el Colegio.</p>
                                 </>
                             )}
                             <Link href="/dashboard/solicitudes/enviadas"
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-slate-800 border border-amber-200 dark:border-amber-700 text-amber-700 dark:text-amber-400 rounded-xl text-[11px] font-bold hover:bg-amber-50 transition-all">
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-slate-800 border border-amber-200 dark:border-amber-700 text-amber-700 dark:text-amber-400 rounded-xl text-[12px] font-bold hover:bg-amber-50 transition-all">
                                 Ver en mis solicitudes <ArrowRight size={11} />
                             </Link>
                         </div>
@@ -192,7 +192,7 @@ export default function SolicitudCatastroPage() {
                             <div className="p-2 rounded-lg bg-white dark:bg-slate-800 text-amber-500 shadow-sm shrink-0">
                                 <Info size={16} />
                             </div>
-                            <p className="text-[11px] text-amber-700 dark:text-amber-400/80 leading-relaxed font-medium">
+                            <p className="text-[12px] text-amber-700 dark:text-amber-400/80 leading-relaxed font-medium">
                                 Los datos que se autocompletan no pueden ser modificados desde este menú. Si desea hacerlo, diríjase a <Link href="/dashboard/mis-datos" className="underline font-bold">Modificar datos personales</Link>.
                             </p>
                         </div>
@@ -201,7 +201,7 @@ export default function SolicitudCatastroPage() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {/* Nombre y Apellido */}
                                 <div className="space-y-2 md:col-span-2">
-                                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest ml-1">Nombre</label>
+                                    <label className="text-[11px] font-bold text-slate-700 uppercase tracking-widest ml-1">Nombre</label>
                                     <input
                                         type="text"
                                         readOnly
@@ -212,7 +212,7 @@ export default function SolicitudCatastroPage() {
 
                                 {/* Tomo */}
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest ml-1">Inscripto al Tomo</label>
+                                    <label className="text-[11px] font-bold text-slate-700 uppercase tracking-widest ml-1">Inscripto al Tomo</label>
                                     <input
                                         type="text"
                                         readOnly
@@ -223,7 +223,7 @@ export default function SolicitudCatastroPage() {
 
                                 {/* Folio */}
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest ml-1">Folio Nº</label>
+                                    <label className="text-[11px] font-bold text-slate-700 uppercase tracking-widest ml-1">Folio Nº</label>
                                     <input
                                         type="text"
                                         readOnly
@@ -234,7 +234,7 @@ export default function SolicitudCatastroPage() {
 
                                 {/* Expediente */}
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest ml-1">Expediente</label>
+                                    <label className="text-[11px] font-bold text-slate-700 uppercase tracking-widest ml-1">Expediente</label>
                                     <input
                                         type="text"
                                         readOnly
@@ -245,7 +245,7 @@ export default function SolicitudCatastroPage() {
 
                                 {/* Email Legal */}
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest ml-1">Email</label>
+                                    <label className="text-[11px] font-bold text-slate-700 uppercase tracking-widest ml-1">Email</label>
                                     <input
                                         type="text"
                                         readOnly
@@ -256,13 +256,13 @@ export default function SolicitudCatastroPage() {
                             </div>
 
                             <div className="space-y-4">
-                                <p className="text-red-600 font-bold text-[13px] tracking-tight ml-1 leading-relaxed">
+                                <p className="text-red-600 font-bold text-[14px] tracking-tight ml-1 leading-relaxed">
                                     Solicita habilitación al acceso "Sistema de Integración y Gestión de Información Territorial" (SIGIT) implementado por el Servicio de Catastro e Información Territorial del Ministerio de Economía de la Provincia de Santa Fe.
                                 </p>
 
                                 {/* CUIT */}
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest ml-1">Constancia de inscripción tributaria (CUIT)</label>
+                                    <label className="text-[11px] font-bold text-slate-700 uppercase tracking-widest ml-1">Constancia de inscripción tributaria (CUIT)</label>
                                     <input
                                         type="text"
                                         readOnly
@@ -273,7 +273,7 @@ export default function SolicitudCatastroPage() {
 
                                 {/* File Upload */}
                                 <div className="space-y-3">
-                                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest ml-1 block">Adjuntar Constancia (PDF o Imagen)</label>
+                                    <label className="text-[11px] font-bold text-slate-700 uppercase tracking-widest ml-1 block">Adjuntar Constancia (PDF o Imagen)</label>
 
                                     {!archivo ? (
                                         <div
@@ -283,10 +283,10 @@ export default function SolicitudCatastroPage() {
                                             <div className="p-4 rounded-full bg-slate-50 dark:bg-slate-800 group-hover:bg-white dark:group-hover:bg-slate-700 transition-colors">
                                                 <Upload size={24} className="text-slate-700 group-hover:text-[#063f68] dark:group-hover:text-blue-400" />
                                             </div>
-                                            <p className="mt-3 text-[13px] font-bold text-slate-700 group-hover:text-[#063f68] dark:group-hover:text-blue-400">
+                                            <p className="mt-3 text-[14px] font-bold text-slate-700 group-hover:text-[#063f68] dark:group-hover:text-blue-400">
                                                 Seleccionar archivo
                                             </p>
-                                            <p className="text-[10px] text-slate-700 mt-1">Carga de archivo disponible desde ordenador</p>
+                                            <p className="text-[11px] text-slate-700 mt-1">Carga de archivo disponible desde ordenador</p>
                                         </div>
                                     ) : (
                                         <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 rounded-2xl">
@@ -295,8 +295,8 @@ export default function SolicitudCatastroPage() {
                                                     <FileIcon size={20} className="text-[#063f68] dark:text-blue-400" />
                                                 </div>
                                                 <div className="overflow-hidden">
-                                                    <p className="text-[13px] font-bold text-black dark:text-white truncate max-w-[200px] md:max-w-xs">{archivo.name}</p>
-                                                    <p className="text-[10px] text-slate-700 font-medium">{(archivo.size / 1024 / 1024).toFixed(2)} MB</p>
+                                                    <p className="text-[14px] font-bold text-black dark:text-white truncate max-w-[200px] md:max-w-xs">{archivo.name}</p>
+                                                    <p className="text-[11px] text-slate-700 font-medium">{(archivo.size / 1024 / 1024).toFixed(2)} MB</p>
                                                 </div>
                                             </div>
                                             <button

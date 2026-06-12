@@ -49,7 +49,7 @@ export default function ComunicadosPage() {
         <div className="p-4 md:p-8">
             <div className="mb-5">
                 {selected ? (
-                    <button onClick={() => setSelected(null)} className="flex items-center gap-1.5 text-slate-700 hover:text-slate-700 dark:hover:text-white transition-colors mb-2 text-[12px]">
+                    <button onClick={() => setSelected(null)} className="flex items-center gap-1.5 text-slate-700 hover:text-slate-700 dark:hover:text-white transition-colors mb-2 text-[13px]">
                         <ChevronLeft size={15} /> Volver a comunicados
                     </button>
                 ) : null}
@@ -66,8 +66,8 @@ export default function ComunicadosPage() {
                 <div className="max-w-2xl">
                     <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl overflow-hidden">
                         <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-amber-50/50 dark:bg-amber-900/10">
-                            <p className="text-[16px] font-bold text-slate-800 dark:text-white">{selected.asunto}</p>
-                            <p className="text-[11px] text-slate-700 mt-1 flex items-center gap-2">
+                            <p className="text-[17px] font-bold text-slate-800 dark:text-white">{selected.asunto}</p>
+                            <p className="text-[12px] text-slate-700 mt-1 flex items-center gap-2">
                                 <span>CPASF · {timeAgo(selected.createdAt)}</span>
                                 <span className="inline-flex items-center gap-1 text-emerald-500">
                                     <CheckCircle2 size={11} /> Leído
@@ -75,7 +75,7 @@ export default function ComunicadosPage() {
                             </p>
                         </div>
                         <div className="px-6 py-5">
-                            <p className="text-[14px] text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">{selected.contenido}</p>
+                            <p className="text-[15px] text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">{selected.contenido}</p>
                         </div>
                     </div>
                 </div>
@@ -89,7 +89,7 @@ export default function ComunicadosPage() {
                     ) : comunicados.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-16 gap-3 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl">
                             <Megaphone size={32} className="text-slate-200 dark:text-slate-700" />
-                            <p className="text-[13px] text-slate-700">No tenés comunicados aún</p>
+                            <p className="text-[14px] text-slate-700">No tenés comunicados aún</p>
                         </div>
                     ) : comunicados.map(c => (
                         <button key={c.id} onClick={() => open(c)}
@@ -105,14 +105,14 @@ export default function ComunicadosPage() {
                                         <Megaphone size={14} className={!c.leido ? "text-amber-500" : "text-slate-700"} />
                                     </div>
                                     <div className="min-w-0">
-                                        <p className={`text-[13px] truncate ${!c.leido ? "font-bold text-slate-800 dark:text-white" : "font-medium text-slate-600 dark:text-slate-300"}`}>
+                                        <p className={`text-[14px] truncate ${!c.leido ? "font-bold text-slate-800 dark:text-white" : "font-medium text-slate-600 dark:text-slate-300"}`}>
                                             {c.asunto}
                                         </p>
-                                        <p className="text-[11px] text-slate-700 mt-0.5">CPASF</p>
+                                        <p className="text-[12px] text-slate-700 mt-0.5">CPASF</p>
                                     </div>
                                 </div>
                                 <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
-                                    <span className="text-[10px] text-slate-700">{timeAgo(c.createdAt)}</span>
+                                    <span className="text-[11px] text-slate-700">{timeAgo(c.createdAt)}</span>
                                     {!c.leido ? (
                                         <span className="w-2 h-2 bg-amber-400 rounded-full" />
                                     ) : (

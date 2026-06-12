@@ -164,7 +164,7 @@ export default function AdhesionDebitoPage() {
                     </Link>
                     <div className="flex items-center gap-3">
                         <Banknote size={18} className="text-cyan-500" />
-                        <h2 className="text-[15px] font-bold text-black dark:text-white tracking-tight">Adhesión a Débito Automático</h2>
+                        <h2 className="text-[16px] font-bold text-black dark:text-white tracking-tight">Adhesión a Débito Automático</h2>
                     </div>
                 </div>
 
@@ -172,12 +172,12 @@ export default function AdhesionDebitoPage() {
                 <div className="hidden md:flex items-center gap-6">
                     {[1, 2, 3].map((s) => (
                         <div key={s} className="flex items-center gap-2">
-                            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all ${step === s ? "bg-[#063f68] text-white" :
+                            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold transition-all ${step === s ? "bg-[#063f68] text-white" :
                                 step > s ? "bg-emerald-500 text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-700"
                                 }`}>
                                 {step > s ? <CheckCircle2 size={12} /> : s}
                             </div>
-                            <span className={`text-[11px] font-bold uppercase tracking-wider ${step === s ? "text-black dark:text-white" : "text-slate-700"
+                            <span className={`text-[12px] font-bold uppercase tracking-wider ${step === s ? "text-black dark:text-white" : "text-slate-700"
                                 }`}>
                                 {s === 1 ? "Adhesión" : s === 2 ? "Términos" : "Datos"}
                             </span>
@@ -314,7 +314,7 @@ export default function AdhesionDebitoPage() {
                                     <h3 className="text-lg font-black text-slate-900 dark:text-white tracking-tight">Términos y Condiciones</h3>
                                     <div className="relative">
                                     <div
-                                        className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 text-slate-600 dark:text-slate-400 text-[12px] leading-relaxed max-h-[220px] overflow-y-auto font-medium space-y-3 custom-scrollbar"
+                                        className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 text-slate-600 dark:text-slate-400 text-[13px] leading-relaxed max-h-[220px] overflow-y-auto font-medium space-y-3 custom-scrollbar"
                                         onScroll={(e) => {
                                             const el = e.currentTarget;
                                             const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 10;
@@ -331,7 +331,7 @@ export default function AdhesionDebitoPage() {
                                             <li>Para el caso de no haber saldo suficiente en mi cuenta bancaria, autorizo a debitar las sumas adeudadas al momento que la cuenta bancaria posea saldo positivo o acreedor y/o me comprometo a abonar en forma personal "las cuotas", no canceladas, en la Tesorería del "CPASF".</li>
                                             <li>Me comprometo a informar, con la suficiente antelación y por medio fehaciente de comunicación, cualquier modificación de la tarjeta de crédito por renovación del plástico, a los efectos de garantizar el débito de "las cuotas" y/ o abonar en forma personal "las cuotas", no canceladas, en la Tesorería del "CPASF".</li>
                                         </ul>
-                                        <p className="font-bold text-slate-900 dark:text-slate-200 text-[13px]">Manifiesto conocer y aceptar las condiciones de suspensión y/o reversión de débitos que se detallan a continuación:</p>
+                                        <p className="font-bold text-slate-900 dark:text-slate-200 text-[14px]">Manifiesto conocer y aceptar las condiciones de suspensión y/o reversión de débitos que se detallan a continuación:</p>
                                         <ul className="list-disc pl-5 space-y-1">
                                             <li>a) La suspensión de un débito puede ordenarse al Banco donde reside la cuenta de débito hasta el día hábil anterior - inclusive - a la fecha de vencimiento y la alternativa de revertir débitos por el total de cada operación.</li>
                                             <li>b) Dentro de los 30 días corridos, contados desde la fecha del débito, se podrá solicitar la reversión.</li>
@@ -341,7 +341,7 @@ export default function AdhesionDebitoPage() {
                                     {/* Indicador de scroll */}
                                     {!hasScrolledTerms && (
                                         <div className="absolute bottom-0 left-0 right-0 h-12 pointer-events-none rounded-b-2xl bg-gradient-to-t from-slate-100 dark:from-slate-900 to-transparent flex items-end justify-center pb-2">
-                                            <span className="text-[10px] font-bold text-slate-700 dark:text-slate-500 flex items-center gap-1 animate-bounce">
+                                            <span className="text-[11px] font-bold text-slate-700 dark:text-slate-500 flex items-center gap-1 animate-bounce">
                                                 <ChevronRight size={12} className="rotate-90" /> Desplazá para leer todo
                                             </span>
                                         </div>
@@ -371,10 +371,10 @@ export default function AdhesionDebitoPage() {
                                         }}
                                         className="w-5 h-5 rounded-lg border-2 border-slate-200 text-[#063f68] focus:ring-[#063f68] disabled:cursor-not-allowed"
                                     />
-                                    <span className="text-[13px] font-bold text-slate-700 dark:text-slate-300">He leído y acepto los términos y condiciones irrevocablemente</span>
+                                    <span className="text-[14px] font-bold text-slate-700 dark:text-slate-300">He leído y acepto los términos y condiciones irrevocablemente</span>
                                 </label>
                                 {showScrollWarning && !hasScrolledTerms && (
-                                    <p className="text-[12px] text-amber-600 dark:text-amber-400 font-semibold flex items-center gap-2">
+                                    <p className="text-[13px] text-amber-600 dark:text-amber-400 font-semibold flex items-center gap-2">
                                         <AlertCircle size={14} />
                                         Debés leer todos los términos antes de aceptar.
                                     </p>
@@ -415,7 +415,7 @@ export default function AdhesionDebitoPage() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     {/* DNI Frontal - Siempre necesario */}
                                     <div className="space-y-3">
-                                        <label className="text-[11px] font-black text-slate-700 uppercase tracking-widest ml-1">Foto DNI frontal</label>
+                                        <label className="text-[12px] font-black text-slate-700 uppercase tracking-widest ml-1">Foto DNI frontal</label>
                                         <div className="relative group">
                                             <input
                                                 type="file"
@@ -428,7 +428,7 @@ export default function AdhesionDebitoPage() {
                                                 {previews.dni === "__pdf__" ? (
                                                     <div className="w-full h-full flex flex-col items-center justify-center gap-2">
                                                         <FileText size={32} className="text-blue-400" />
-                                                        <span className="text-[11px] font-bold text-emerald-600">{dniFrontal?.name}</span>
+                                                        <span className="text-[12px] font-bold text-emerald-600">{dniFrontal?.name}</span>
                                                     </div>
                                                 ) : previews.dni ? (
                                                     <div className="w-full h-full p-2 relative">
@@ -440,17 +440,17 @@ export default function AdhesionDebitoPage() {
                                                 ) : (
                                                     <>
                                                         <Upload size={24} className="text-slate-300 group-hover:text-[#063f68] transition-colors" />
-                                                        <span className="text-[11px] font-bold text-slate-700 group-hover:text-slate-600 transition-colors">Seleccionar archivo</span>
+                                                        <span className="text-[12px] font-bold text-slate-700 group-hover:text-slate-600 transition-colors">Seleccionar archivo</span>
                                                     </>
                                                 )}
                                             </div>
                                         </div>
-                                        {dniFrontal && <p className="text-[10px] text-emerald-600 font-bold flex items-center gap-1"><CheckCircle2 size={10} /> {dniFrontal.name}</p>}
+                                        {dniFrontal && <p className="text-[11px] text-emerald-600 font-bold flex items-center gap-1"><CheckCircle2 size={10} /> {dniFrontal.name}</p>}
                                     </div>
 
                                     {/* Condicional según medio */}
                                     <div className="space-y-3">
-                                        <label className="text-[11px] font-black text-slate-700 uppercase tracking-widest ml-1">
+                                        <label className="text-[12px] font-black text-slate-700 uppercase tracking-widest ml-1">
                                             {tipoAdhesion === "CBU" ? "Constancia de CBU (Home Banking)" : "Foto frontal de la tarjeta"}
                                         </label>
                                         <div className="relative group">
@@ -465,7 +465,7 @@ export default function AdhesionDebitoPage() {
                                                 {previews[tipoAdhesion === "CBU" ? "cbu" : "tarjeta"] === "__pdf__" ? (
                                                     <div className="w-full h-full flex flex-col items-center justify-center gap-2">
                                                         <FileText size={32} className="text-blue-400" />
-                                                        <span className="text-[11px] font-bold text-emerald-600">{(constanciaCbu || frontalTarjeta)?.name}</span>
+                                                        <span className="text-[12px] font-bold text-emerald-600">{(constanciaCbu || frontalTarjeta)?.name}</span>
                                                     </div>
                                                 ) : previews[tipoAdhesion === "CBU" ? "cbu" : "tarjeta"] ? (
                                                     <div className="w-full h-full p-2 relative">
@@ -477,13 +477,13 @@ export default function AdhesionDebitoPage() {
                                                 ) : (
                                                     <>
                                                         <Upload size={24} className="text-slate-300 group-hover:text-[#063f68] transition-colors" />
-                                                        <span className="text-[11px] font-bold text-slate-700 group-hover:text-slate-600 transition-colors">Seleccionar archivo</span>
+                                                        <span className="text-[12px] font-bold text-slate-700 group-hover:text-slate-600 transition-colors">Seleccionar archivo</span>
                                                     </>
                                                 )}
                                             </div>
                                         </div>
                                         {(constanciaCbu || frontalTarjeta) && (
-                                            <p className="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
+                                            <p className="text-[11px] text-emerald-600 font-bold flex items-center gap-1">
                                                 <CheckCircle2 size={10} /> {(constanciaCbu || frontalTarjeta)?.name}
                                             </p>
                                         )}

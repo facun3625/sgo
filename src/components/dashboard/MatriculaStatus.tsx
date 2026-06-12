@@ -141,8 +141,8 @@ export default function MatriculaStatus() {
                         <Briefcase size={20} className="text-white" />
                     </div>
                     <div>
-                        <p className="text-[13px] font-bold text-indigo-800 dark:text-indigo-300">Matrícula Consultor</p>
-                        <p className="text-[12px] text-indigo-700/70 dark:text-indigo-400/60">Tu matrícula es de tipo consultor — no estás sujeto al pago de cuota mensual ni anual.</p>
+                        <p className="text-[14px] font-bold text-indigo-800 dark:text-indigo-300">Matrícula Consultor</p>
+                        <p className="text-[13px] text-indigo-700/70 dark:text-indigo-400/60">Tu matrícula es de tipo consultor — no estás sujeto al pago de cuota mensual ni anual.</p>
                     </div>
                 </div>
             )}
@@ -154,8 +154,8 @@ export default function MatriculaStatus() {
                         <GraduationCap size={20} className="text-white" />
                     </div>
                     <div>
-                        <p className="text-[13px] font-bold text-teal-800 dark:text-teal-300">Beneficio Joven Matriculado activo</p>
-                        <p className="text-[12px] text-teal-700/70 dark:text-teal-400/60">Tu matrícula tiene menos de 60 meses — aplicás el 50% de descuento en cuotas mensuales y anuales.</p>
+                        <p className="text-[14px] font-bold text-teal-800 dark:text-teal-300">Beneficio Joven Matriculado activo</p>
+                        <p className="text-[13px] text-teal-700/70 dark:text-teal-400/60">Tu matrícula tiene menos de 60 meses — aplicás el 50% de descuento en cuotas mensuales y anuales.</p>
                     </div>
                 </div>
             )}
@@ -167,8 +167,8 @@ export default function MatriculaStatus() {
                         <Award size={20} className="text-white" />
                     </div>
                     <div>
-                        <p className="text-[13px] font-bold text-amber-800 dark:text-amber-300">Beneficio Trayectoria activo</p>
-                        <p className="text-[12px] text-amber-700/70 dark:text-amber-400/60">Tu matrícula tiene entre 40 y 49 años — aplicás el 50% de descuento en cuotas mensuales y anuales.</p>
+                        <p className="text-[14px] font-bold text-amber-800 dark:text-amber-300">Beneficio Trayectoria activo</p>
+                        <p className="text-[13px] text-amber-700/70 dark:text-amber-400/60">Tu matrícula tiene entre 40 y 49 años — aplicás el 50% de descuento en cuotas mensuales y anuales.</p>
                     </div>
                 </div>
             )}
@@ -180,8 +180,8 @@ export default function MatriculaStatus() {
                         <Star size={20} className="text-white" />
                     </div>
                     <div>
-                        <p className="text-[13px] font-bold text-violet-800 dark:text-violet-300">Exento de pago — 50 años de matrícula</p>
-                        <p className="text-[12px] text-violet-700/70 dark:text-violet-400/60">Con más de 50 años de matrícula, estás exento del pago de cuota mensual y anual.</p>
+                        <p className="text-[14px] font-bold text-violet-800 dark:text-violet-300">Exento de pago — 50 años de matrícula</p>
+                        <p className="text-[13px] text-violet-700/70 dark:text-violet-400/60">Con más de 50 años de matrícula, estás exento del pago de cuota mensual y anual.</p>
                     </div>
                 </div>
             )}
@@ -202,7 +202,7 @@ export default function MatriculaStatus() {
                         </div>
                         <div className="flex items-center gap-8 w-full md:w-auto">
                             <div className="text-left md:text-right">
-                                <p className="text-[10px] font-bold text-red-800/40 dark:text-red-400/40 uppercase tracking-widest mb-1">Total a Pagar</p>
+                                <p className="text-[11px] font-bold text-red-800/40 dark:text-red-400/40 uppercase tracking-widest mb-1">Total a Pagar</p>
                                 <p className="text-3xl font-black text-red-600 dark:text-red-400">${totalDeuda.toLocaleString()}</p>
                             </div>
                             <div className="flex flex-col gap-2">
@@ -214,7 +214,7 @@ export default function MatriculaStatus() {
                                 )}
                                 {data?.boletas?.deuda && data?.boletaDescarga?.deuda !== false && (
                                     <a href={data.boletas.deuda.archivo} target="_blank" rel="noopener noreferrer"
-                                        className="w-full h-10 px-4 bg-white dark:bg-slate-800 border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-2xl font-bold text-[11px] transition-all flex items-center justify-center gap-2">
+                                        className="w-full h-10 px-4 bg-white dark:bg-slate-800 border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-2xl font-bold text-[12px] transition-all flex items-center justify-center gap-2">
                                         <Download size={13} /> Descargar boleta
                                     </a>
                                 )}
@@ -245,12 +245,12 @@ export default function MatriculaStatus() {
                     </div>
                     {data?.hasDebitoAutomatico && (
                         <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 rounded-xl border border-emerald-100 dark:border-emerald-900/50 shadow-sm">
-                            <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Débito Activo</span>
+                            <span className="text-[11px] font-bold text-emerald-600 uppercase tracking-widest">Débito Activo</span>
                         </div>
                     )}
                     {data?.hasDebitoEnTramite && (
                         <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 rounded-xl border border-amber-100 dark:border-amber-900/50 shadow-sm">
-                            <span className="text-[10px] font-bold text-amber-600 uppercase tracking-widest">Débito en Trámite</span>
+                            <span className="text-[11px] font-bold text-amber-600 uppercase tracking-widest">Débito en Trámite</span>
                         </div>
                     )}
                 </div>
@@ -269,7 +269,7 @@ export default function MatriculaStatus() {
                                 <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 flex items-center justify-center">
                                     <Calendar size={24} />
                                 </div>
-                                <span className="px-3 py-1 bg-blue-50 dark:bg-blue-400/10 text-blue-600 dark:text-blue-400 rounded-lg text-[10px] font-bold uppercase tracking-widest border border-blue-100 dark:border-blue-900/50">
+                                <span className="px-3 py-1 bg-blue-50 dark:bg-blue-400/10 text-blue-600 dark:text-blue-400 rounded-lg text-[11px] font-bold uppercase tracking-widest border border-blue-100 dark:border-blue-900/50">
                                     Ciclo 2026
                                 </span>
                             </div>
@@ -283,7 +283,7 @@ export default function MatriculaStatus() {
                                 {data?.esConsultor ? (
                                     <div className="w-full flex items-center justify-between">
                                         <div>
-                                            <p className="text-[10px] font-bold text-slate-700 uppercase tracking-widest mb-1">Estado</p>
+                                            <p className="text-[11px] font-bold text-slate-700 uppercase tracking-widest mb-1">Estado</p>
                                             <p className="text-sm font-bold text-indigo-600 dark:text-indigo-400">Matrícula Consultor — no aplica</p>
                                         </div>
                                         <div className="w-10 h-10 rounded-full bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 border border-indigo-100 dark:border-indigo-500/20 flex items-center justify-center">
@@ -293,7 +293,7 @@ export default function MatriculaStatus() {
                                 ) : data?.esExento ? (
                                     <div className="w-full flex items-center justify-between">
                                         <div>
-                                            <p className="text-[10px] font-bold text-slate-700 uppercase tracking-widest mb-1">Estado</p>
+                                            <p className="text-[11px] font-bold text-slate-700 uppercase tracking-widest mb-1">Estado</p>
                                             <p className="text-sm font-bold text-violet-600 dark:text-violet-400">Exento — 50 años de matrícula</p>
                                         </div>
                                         <div className="w-10 h-10 rounded-full bg-violet-50 dark:bg-violet-500/10 text-violet-600 border border-violet-100 dark:border-violet-500/20 flex items-center justify-center">
@@ -303,7 +303,7 @@ export default function MatriculaStatus() {
                                 ) : data?.hasPagoAnualActivo || data?.hasDebitoAutomatico ? (
                                     <div className="w-full flex items-center justify-between">
                                         <div>
-                                            <p className="text-[10px] font-bold text-slate-700 uppercase tracking-widest mb-1">Estado</p>
+                                            <p className="text-[11px] font-bold text-slate-700 uppercase tracking-widest mb-1">Estado</p>
                                             <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
                                                 {data?.hasPagoAnualActivo ? "Pago Anual Realizado" : "Adherido a Débito Automático"}
                                             </p>
@@ -315,18 +315,18 @@ export default function MatriculaStatus() {
                                 ) : isSuspended ? (
                                     <div className="w-full flex items-center justify-between">
                                         <div>
-                                            <p className="text-[10px] font-bold text-slate-700 uppercase tracking-widest mb-1">Monto Final</p>
+                                            <p className="text-[11px] font-bold text-slate-700 uppercase tracking-widest mb-1">Monto Final</p>
                                             <p className="text-3xl font-black text-black dark:text-white">${montoAnual.toLocaleString()}</p>
                                         </div>
                                         <div className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
-                                            <p className="text-[10px] font-bold text-slate-700 uppercase tracking-widest">No disponible</p>
-                                            <p className="text-[11px] text-slate-700 dark:text-slate-400">Matrícula suspendida</p>
+                                            <p className="text-[11px] font-bold text-slate-700 uppercase tracking-widest">No disponible</p>
+                                            <p className="text-[12px] text-slate-700 dark:text-slate-400">Matrícula suspendida</p>
                                         </div>
                                     </div>
                                 ) : (
                                     <div className="w-full space-y-3">
                                         <div>
-                                            <p className="text-[10px] font-bold text-slate-700 uppercase tracking-widest mb-1">Monto Final</p>
+                                            <p className="text-[11px] font-bold text-slate-700 uppercase tracking-widest mb-1">Monto Final</p>
                                             <p className="text-3xl font-black text-black dark:text-white">${montoAnual.toLocaleString()}</p>
                                         </div>
                                         <MpPayButton
@@ -346,7 +346,7 @@ export default function MatriculaStatus() {
                                         )}
                                         {data?.boletas?.anual && data?.boletaDescarga?.anual !== false && (
                                             <a href={data.boletas.anual.archivo} target="_blank" rel="noopener noreferrer"
-                                                className="w-full h-10 px-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/50 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-950/40 rounded-xl font-bold text-[11px] transition-all flex items-center justify-center gap-2">
+                                                className="w-full h-10 px-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/50 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-950/40 rounded-xl font-bold text-[12px] transition-all flex items-center justify-center gap-2">
                                                 <Download size={13} /> Descargar boleta
                                             </a>
                                         )}
@@ -366,7 +366,7 @@ export default function MatriculaStatus() {
                             <div className="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
                                 <Wallet size={24} />
                             </div>
-                            <span className="px-3 py-1 bg-emerald-50 dark:bg-emerald-400/10 text-emerald-600 dark:text-emerald-400 rounded-lg text-[10px] font-bold uppercase tracking-widest border border-emerald-100 dark:border-emerald-900/50">
+                            <span className="px-3 py-1 bg-emerald-50 dark:bg-emerald-400/10 text-emerald-600 dark:text-emerald-400 rounded-lg text-[11px] font-bold uppercase tracking-widest border border-emerald-100 dark:border-emerald-900/50">
                                 Período Actual
                             </span>
                         </div>
@@ -380,9 +380,9 @@ export default function MatriculaStatus() {
                             {data?.esConsultor ? (
                                 <div className="w-full flex items-center justify-between">
                                     <div>
-                                        <p className="text-[10px] font-bold text-slate-700 uppercase tracking-widest mb-1">Estado de Pago</p>
+                                        <p className="text-[11px] font-bold text-slate-700 uppercase tracking-widest mb-1">Estado de Pago</p>
                                         <p className="text-sm font-bold text-indigo-600 dark:text-indigo-400">Matrícula Consultor — no aplica</p>
-                                        <p className="text-[11px] text-slate-700 mt-0.5">Los consultores no abonan cuota mensual ni anual.</p>
+                                        <p className="text-[12px] text-slate-700 mt-0.5">Los consultores no abonan cuota mensual ni anual.</p>
                                     </div>
                                     <div className="w-10 h-10 rounded-full bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 border border-indigo-100 dark:border-indigo-500/20 flex items-center justify-center">
                                         <Briefcase size={18} />
@@ -391,9 +391,9 @@ export default function MatriculaStatus() {
                             ) : data?.esExento ? (
                                 <div className="w-full flex items-center justify-between">
                                     <div>
-                                        <p className="text-[10px] font-bold text-slate-700 uppercase tracking-widest mb-1">Estado de Pago</p>
+                                        <p className="text-[11px] font-bold text-slate-700 uppercase tracking-widest mb-1">Estado de Pago</p>
                                         <p className="text-sm font-bold text-violet-600 dark:text-violet-400">Exento — 50 años de matrícula</p>
-                                        <p className="text-[11px] text-slate-700 mt-0.5">No abonás cuota mensual ni anual.</p>
+                                        <p className="text-[12px] text-slate-700 mt-0.5">No abonás cuota mensual ni anual.</p>
                                     </div>
                                     <div className="w-10 h-10 rounded-full bg-violet-50 dark:bg-violet-500/10 text-violet-600 border border-violet-100 dark:border-violet-500/20 flex items-center justify-center">
                                         <Star size={18} />
@@ -402,7 +402,7 @@ export default function MatriculaStatus() {
                             ) : data?.hasDebitoAutomatico ? (
                                 <div className="w-full flex items-center justify-between">
                                     <div>
-                                        <p className="text-[10px] font-bold text-slate-700 uppercase tracking-widest mb-1">Estado de Pago</p>
+                                        <p className="text-[11px] font-bold text-slate-700 uppercase tracking-widest mb-1">Estado de Pago</p>
                                         <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">Adherido a Débito Automático</p>
                                     </div>
                                     <div className="w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 border border-emerald-100 dark:border-emerald-500/20 flex items-center justify-center">
@@ -412,7 +412,7 @@ export default function MatriculaStatus() {
                             ) : data?.hasPagoAnualActivo ? (
                                 <div className="w-full flex items-center justify-between">
                                     <div>
-                                        <p className="text-[10px] font-bold text-slate-700 uppercase tracking-widest mb-1">Estado de Pago</p>
+                                        <p className="text-[11px] font-bold text-slate-700 uppercase tracking-widest mb-1">Estado de Pago</p>
                                         <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">Pago Anual Realizado</p>
                                     </div>
                                     <div className="w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 border border-emerald-100 dark:border-emerald-500/20 flex items-center justify-center">
@@ -423,12 +423,12 @@ export default function MatriculaStatus() {
                                 <div className="w-full space-y-3">
                                     <div className="flex items-center justify-between">
                                         <div>
-                                            <p className="text-[10px] font-bold text-slate-700 uppercase tracking-widest mb-1">Estado de Pago</p>
+                                            <p className="text-[11px] font-bold text-slate-700 uppercase tracking-widest mb-1">Estado de Pago</p>
                                             <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
                                                 Abonado — {formatPeriodo(data.cuotaActual.periodo)}
                                             </p>
                                             {labelMetodoPago(data.cuotaActual.metodoPago) && (
-                                                <p className="text-[11px] text-slate-700 mt-0.5">
+                                                <p className="text-[12px] text-slate-700 mt-0.5">
                                                     vía {labelMetodoPago(data.cuotaActual.metodoPago)}
                                                 </p>
                                             )}
@@ -441,18 +441,18 @@ export default function MatriculaStatus() {
                             ) : data?.cuotaActual?.estado === "pendiente" && isSuspended ? (
                                 <div className="w-full flex items-center justify-between">
                                     <div>
-                                        <p className="text-[10px] font-bold text-slate-700 uppercase tracking-widest mb-1">Monto a Pagar</p>
+                                        <p className="text-[11px] font-bold text-slate-700 uppercase tracking-widest mb-1">Monto a Pagar</p>
                                         <p className="text-3xl font-black text-black dark:text-white">${data.cuotaActual.monto.toLocaleString()}</p>
                                     </div>
                                     <div className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
-                                        <p className="text-[10px] font-bold text-slate-700 uppercase tracking-widest">No disponible</p>
-                                        <p className="text-[11px] text-slate-700 dark:text-slate-400">Matrícula suspendida</p>
+                                        <p className="text-[11px] font-bold text-slate-700 uppercase tracking-widest">No disponible</p>
+                                        <p className="text-[12px] text-slate-700 dark:text-slate-400">Matrícula suspendida</p>
                                     </div>
                                 </div>
                             ) : data?.cuotaActual?.estado === "pendiente" ? (
                                 <div className="w-full space-y-3">
                                     <div>
-                                        <p className="text-[10px] font-bold text-slate-700 uppercase tracking-widest mb-1">Monto a Pagar</p>
+                                        <p className="text-[11px] font-bold text-slate-700 uppercase tracking-widest mb-1">Monto a Pagar</p>
                                         <p className="text-3xl font-black text-black dark:text-white">${data.cuotaActual.monto.toLocaleString()}</p>
                                     </div>
                                     <MpPayButton
@@ -472,14 +472,14 @@ export default function MatriculaStatus() {
                                     )}
                                     {data?.boletas?.mensual && data?.boletaDescarga?.mensual !== false && (
                                         <a href={data.boletas.mensual.archivo} target="_blank" rel="noopener noreferrer"
-                                            className="w-full h-10 px-4 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/50 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-950/40 rounded-xl font-bold text-[11px] transition-all flex items-center justify-center gap-2">
+                                            className="w-full h-10 px-4 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/50 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-950/40 rounded-xl font-bold text-[12px] transition-all flex items-center justify-center gap-2">
                                             <Download size={13} /> Descargar boleta
                                         </a>
                                     )}
                                 </div>
                             ) : (
                                 <div className="w-full">
-                                    <p className="text-[10px] font-bold text-slate-700 uppercase tracking-widest mb-1">Estado</p>
+                                    <p className="text-[11px] font-bold text-slate-700 uppercase tracking-widest mb-1">Estado</p>
                                     <p className="text-sm font-bold text-slate-700 dark:text-slate-400">Sin cuota generada para este período</p>
                                 </div>
                             )}
@@ -511,7 +511,7 @@ export default function MatriculaStatus() {
                             />
                         ))
                     ) : (!data?.deudasPagadas || data.deudasPagadas.length === 0) ? (
-                        <div className="p-6 text-[13px] text-slate-700 text-center">Sin historial de cuotas</div>
+                        <div className="p-6 text-[14px] text-slate-700 text-center">Sin historial de cuotas</div>
                     ) : null}
                     {data?.deudasPagadas && data.deudasPagadas.map((d, i) => (
                         <ConceptItem
@@ -531,7 +531,7 @@ export default function MatriculaStatus() {
                 <div className="p-2 rounded-lg bg-white dark:bg-slate-800 text-blue-500 shadow-sm shrink-0">
                     <Info size={16} />
                 </div>
-                <p className="text-[11px] text-slate-700 dark:text-slate-400 leading-relaxed font-medium">
+                <p className="text-[12px] text-slate-700 dark:text-slate-400 leading-relaxed font-medium">
                     Los pagos realizados pueden demorar hasta 48 horas hábiles en verse reflejados en tu estado de cuenta institucional. Guardá siempre el comprobante emitido por el sistema.
                 </p>
             </div>
@@ -551,27 +551,27 @@ function ConceptItem({ label, amount, status, metodo, isLast }: {
 
     function MetodoTag() {
         if (metodo === "transferencia") return (
-            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-slate-700 dark:text-slate-400">
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-700 dark:text-slate-400">
                 <Landmark size={10} /> Transferencia
             </span>
         );
         if (metodo === "home_banking") return (
-            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-slate-700 dark:text-slate-400">
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-700 dark:text-slate-400">
                 <Landmark size={10} /> Home Banking
             </span>
         );
         if (metodo === "mercadopago") return (
-            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-slate-700 dark:text-slate-400">
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-700 dark:text-slate-400">
                 <CreditCard size={10} /> Mercado Pago
             </span>
         );
         if (metodo === "transferencia_pendiente") return (
-            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-500">
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-500">
                 <Clock size={10} /> Transferencia pendiente
             </span>
         );
         if (metodo === "matriculacion") return (
-            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-teal-500">
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-teal-500">
                 <GraduationCap size={10} /> Incluido en matrícula
             </span>
         );
@@ -585,13 +585,13 @@ function ConceptItem({ label, amount, status, metodo, isLast }: {
                     <CheckCircle2 size={18} />
                 </div>
                 <div>
-                    <h5 className="text-[13px] font-bold text-black dark:text-white">{label}</h5>
+                    <h5 className="text-[14px] font-bold text-black dark:text-white">{label}</h5>
                     <MetodoTag />
                 </div>
             </div>
             <div className="text-right">
-                <p className="text-[14px] font-black text-black dark:text-white">${amount}</p>
-                <p className={`text-[10px] font-bold uppercase tracking-widest ${paid ? "text-emerald-500" : "text-amber-500"}`}>
+                <p className="text-[15px] font-black text-black dark:text-white">${amount}</p>
+                <p className={`text-[11px] font-bold uppercase tracking-widest ${paid ? "text-emerald-500" : "text-amber-500"}`}>
                     {paid ? "Pagado" : "Pendiente"}
                 </p>
             </div>

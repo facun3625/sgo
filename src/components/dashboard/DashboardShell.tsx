@@ -80,14 +80,14 @@ export default function DashboardShell({ user, children }: DashboardShellProps) 
                 {/* Banner impersonación */}
                 {user.impersonando && (
                     <div className="sticky top-0 z-50 flex items-center justify-between gap-3 px-4 py-2.5 bg-amber-400 text-amber-950">
-                        <div className="flex items-center gap-2 text-[13px] font-bold">
+                        <div className="flex items-center gap-2 text-[14px] font-bold">
                             <Eye size={16} />
                             Estás viendo como <span className="uppercase">{user.apellido}, {user.nombre}</span>
                             <span className="font-normal opacity-70">(exp. {user.expediente})</span>
                             {user.impersonadoPor && <span className="font-normal opacity-60 hidden sm:inline">— Admin: {user.impersonadoPor}</span>}
                         </div>
                         <button onClick={salirImpersonacion} disabled={saliendo}
-                            className="flex items-center gap-1.5 px-3 py-1 bg-amber-950/15 hover:bg-amber-950/25 rounded-lg text-[12px] font-bold transition-all whitespace-nowrap">
+                            className="flex items-center gap-1.5 px-3 py-1 bg-amber-950/15 hover:bg-amber-950/25 rounded-lg text-[13px] font-bold transition-all whitespace-nowrap">
                             <LogOut size={13} />
                             {saliendo ? "Saliendo..." : "Volver al superadmin"}
                         </button>
@@ -126,20 +126,20 @@ export default function DashboardShell({ user, children }: DashboardShellProps) 
                         {/* Contenido */}
                         <div className="p-6 space-y-3">
                             <div className="flex items-center gap-2">
-                                <span className="px-2.5 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-[10px] font-bold rounded-full uppercase tracking-wider">
+                                <span className="px-2.5 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-[11px] font-bold rounded-full uppercase tracking-wider">
                                     Novedad
                                 </span>
                             </div>
-                            <h2 className="text-[17px] font-bold text-slate-800 dark:text-white leading-snug">{popup.titulo}</h2>
-                            <p className="text-[13px] text-slate-700 dark:text-slate-400 leading-relaxed line-clamp-3">{popup.contenido}</p>
+                            <h2 className="text-[18px] font-bold text-slate-800 dark:text-white leading-snug">{popup.titulo}</h2>
+                            <p className="text-[14px] text-slate-700 dark:text-slate-400 leading-relaxed line-clamp-3">{popup.contenido}</p>
 
                             <div className="flex items-center gap-3 pt-2">
                                 <button onClick={closePopup}
-                                    className="flex-1 h-11 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-[13px] font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                                    className="flex-1 h-11 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-[14px] font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
                                     Cerrar
                                 </button>
                                 <Link href={`/dashboard/noticias/${popup.id}`} onClick={closePopup}
-                                    className="flex-1 h-11 rounded-xl bg-[#063f68] text-white text-[13px] font-bold flex items-center justify-center gap-2 hover:bg-[#0a4d7a] transition-all">
+                                    className="flex-1 h-11 rounded-xl bg-[#063f68] text-white text-[14px] font-bold flex items-center justify-center gap-2 hover:bg-[#0a4d7a] transition-all">
                                     Ver noticia <ArrowRight size={14} />
                                 </Link>
                             </div>

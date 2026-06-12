@@ -88,13 +88,13 @@ export default function CalendarioPage() {
                     </Link>
                     <div className="flex items-center gap-3">
                         <CalendarDays size={18} className="text-[#063f68] dark:text-blue-400" />
-                        <h2 className="text-[15px] font-bold text-black dark:text-white tracking-tight">Agenda Institucional</h2>
+                        <h2 className="text-[16px] font-bold text-black dark:text-white tracking-tight">Agenda Institucional</h2>
                     </div>
                 </div>
 
                 <div className="hidden md:flex items-center gap-2 px-4 py-1.5 bg-slate-50 dark:bg-slate-900 rounded-full border border-slate-100 dark:border-slate-800">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-700">Total:</span>
-                    <span className="text-[10px] font-black text-[#063f68] dark:text-blue-400">{eventos.length} Eventos</span>
+                    <span className="text-[11px] font-black uppercase tracking-widest text-slate-700">Total:</span>
+                    <span className="text-[11px] font-black text-[#063f68] dark:text-blue-400">{eventos.length} Eventos</span>
                 </div>
             </div>
 
@@ -109,7 +109,7 @@ export default function CalendarioPage() {
                             >
                                 <X size={20} />
                             </button>
-                            <div className="inline-flex px-3 py-1 rounded-full bg-white/10 border border-white/20 backdrop-blur-md text-[9px] font-black uppercase tracking-widest text-white/90 mb-3">
+                            <div className="inline-flex px-3 py-1 rounded-full bg-white/10 border border-white/20 backdrop-blur-md text-[10px] font-black uppercase tracking-widest text-white/90 mb-3">
                                 {selectedEvent.tipo}
                             </div>
                             <h3 className="text-xl font-bold text-white tracking-tight truncate pr-10">{selectedEvent.titulo}</h3>
@@ -122,7 +122,7 @@ export default function CalendarioPage() {
                                         <CalendarIcon size={18} />
                                     </div>
                                     <div className="flex flex-col">
-                                        <span className="text-[10px] font-black text-slate-700 uppercase tracking-widest">Fecha</span>
+                                        <span className="text-[11px] font-black text-slate-700 uppercase tracking-widest">Fecha</span>
                                         <span className="text-sm font-bold text-slate-900 dark:text-white">
                                             {(() => {
                                                 const part = selectedEvent.fecha.split("T")[0];
@@ -139,7 +139,7 @@ export default function CalendarioPage() {
                                         <Info size={18} />
                                     </div>
                                     <div className="flex flex-col">
-                                        <span className="text-[10px] font-black text-slate-700 uppercase tracking-widest">Descripción</span>
+                                        <span className="text-[11px] font-black text-slate-700 uppercase tracking-widest">Descripción</span>
                                         <p className="text-sm font-medium text-slate-600 dark:text-slate-400 leading-relaxed">
                                             {selectedEvent.descripcion || "Sin descripción disponible."}
                                         </p>
@@ -199,24 +199,24 @@ export default function CalendarioPage() {
                                     {/* Date Badge */}
                                     <div className="flex flex-col items-center justify-center min-w-[70px] h-[70px] rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 group-hover:bg-[#063f68] group-hover:border-[#063f68] transition-all">
                                         <span className="text-xl font-black text-slate-900 dark:text-white group-hover:text-white transition-colors leading-none">{String(day).padStart(2, '0')}</span>
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-700 group-hover:text-white/70 transition-colors mt-1">{month}</span>
+                                        <span className="text-[11px] font-black uppercase tracking-widest text-slate-700 group-hover:text-white/70 transition-colors mt-1">{month}</span>
                                     </div>
 
                                     {/* Content */}
                                     <div className="flex-1 space-y-2">
                                         <div className="flex flex-wrap items-center gap-3">
-                                            <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest border ${getTipoStyles(ev.tipo)}`}>
+                                            <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-widest border ${getTipoStyles(ev.tipo)}`}>
                                                 {ev.tipo}
                                             </span>
-                                            <span className="text-[10px] font-bold text-slate-700 dark:text-slate-500 uppercase tracking-wider">
+                                            <span className="text-[11px] font-bold text-slate-700 dark:text-slate-500 uppercase tracking-wider">
                                                 {weekday}
                                             </span>
                                         </div>
-                                        <h3 className="text-[15px] md:text-[17px] font-bold text-slate-900 dark:text-white leading-tight group-hover:text-[#063f68] dark:group-hover:text-blue-400 transition-colors">
+                                        <h3 className="text-[16px] md:text-[18px] font-bold text-slate-900 dark:text-white leading-tight group-hover:text-[#063f68] dark:group-hover:text-blue-400 transition-colors">
                                             {ev.titulo}
                                         </h3>
                                         {ev.descripcion && (
-                                            <p className="text-[12px] font-medium text-slate-700 dark:text-slate-400 line-clamp-1">
+                                            <p className="text-[13px] font-medium text-slate-700 dark:text-slate-400 line-clamp-1">
                                                 {ev.descripcion}
                                             </p>
                                         )}

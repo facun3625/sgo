@@ -56,20 +56,20 @@ export default function NoticiasPage() {
                                     </div>
                                 )}
                                 {n.destacada && (
-                                    <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-400 text-white text-[10px] font-bold uppercase tracking-wider">
+                                    <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-400 text-white text-[11px] font-bold uppercase tracking-wider">
                                         <Star size={10} fill="white" /> Destacada
                                     </div>
                                 )}
                             </div>
                             <div className="p-4 flex flex-col flex-1 gap-2">
-                                <p className="text-[11px] text-slate-700">
+                                <p className="text-[12px] text-slate-700">
                                     {new Date(n.createdAt).toLocaleDateString("es-AR", { timeZone: "UTC", day: "2-digit", month: "long", year: "numeric" })}
                                 </p>
-                                <h3 className="font-bold text-slate-800 dark:text-white text-[14px] leading-snug line-clamp-2 group-hover:text-[#063f68] dark:group-hover:text-blue-400 transition-colors flex-1">
+                                <h3 className="font-bold text-slate-800 dark:text-white text-[15px] leading-snug line-clamp-2 group-hover:text-[#063f68] dark:group-hover:text-blue-400 transition-colors flex-1">
                                     {n.titulo}
                                 </h3>
-                                <p className="text-[12px] text-slate-700 line-clamp-2">{n.contenido}</p>
-                                <div className="pt-2 border-t border-slate-50 dark:border-slate-800 flex items-center gap-1 text-[12px] font-semibold text-[#063f68] dark:text-blue-400 group-hover:underline underline-offset-2 transition-colors">
+                                <p className="text-[13px] text-slate-700 line-clamp-2">{n.contenido}</p>
+                                <div className="pt-2 border-t border-slate-50 dark:border-slate-800 flex items-center gap-1 text-[13px] font-semibold text-[#063f68] dark:text-blue-400 group-hover:underline underline-offset-2 transition-colors">
                                     Leer más <ChevronRight size={13} />
                                 </div>
                             </div>

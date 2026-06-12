@@ -84,7 +84,7 @@ export default function FaqPage() {
                 <input
                     value={search} onChange={e => setSearch(e.target.value)}
                     placeholder="Buscar en las preguntas frecuentes..."
-                    className="w-full h-10 pl-9 pr-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white text-[13px] focus:outline-none focus:ring-2 focus:ring-[#063f68]/30 focus:border-[#063f68]"
+                    className="w-full h-10 pl-9 pr-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#063f68]/30 focus:border-[#063f68]"
                 />
             </div>
 
@@ -110,10 +110,10 @@ export default function FaqPage() {
                                         <span className={`w-7 h-7 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-200 ${catOpen ? "bg-[#063f68] text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-700 group-hover:bg-[#063f68]/10 group-hover:text-[#063f68]"}`}>
                                             <HelpCircle size={13} />
                                         </span>
-                                        <span className={`text-[14px] font-bold transition-colors duration-200 ${catOpen ? "text-[#063f68] dark:text-blue-400" : "text-slate-800 dark:text-white group-hover:text-[#063f68] dark:group-hover:text-blue-400"}`}>
+                                        <span className={`text-[15px] font-bold transition-colors duration-200 ${catOpen ? "text-[#063f68] dark:text-blue-400" : "text-slate-800 dark:text-white group-hover:text-[#063f68] dark:group-hover:text-blue-400"}`}>
                                             {cat.nombre}
                                         </span>
-                                        <span className="text-[11px] text-slate-700 font-medium">{cat.faqs.length} pregunta{cat.faqs.length !== 1 ? "s" : ""}</span>
+                                        <span className="text-[12px] text-slate-700 font-medium">{cat.faqs.length} pregunta{cat.faqs.length !== 1 ? "s" : ""}</span>
                                     </div>
                                     <span className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center transition-all duration-300 ${catOpen ? "bg-[#063f68] text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-700 group-hover:bg-[#063f68]/10 group-hover:text-[#063f68]"}`}>
                                         {catOpen ? <Minus size={11} /> : <Plus size={11} />}
@@ -130,7 +130,7 @@ export default function FaqPage() {
                                                     <div key={faq.id} className={`transition-colors duration-200 ${isOpen ? "bg-[#063f68]/[0.02] dark:bg-blue-900/10" : ""}`}>
                                                         <button onClick={() => toggleFaq(faq.id)}
                                                             className="w-full flex items-center justify-between gap-4 px-6 py-3.5 text-left group">
-                                                            <span className={`text-[13px] font-medium leading-snug transition-colors duration-200 ${isOpen ? "text-[#063f68] dark:text-blue-400" : "text-slate-700 dark:text-slate-300 group-hover:text-[#063f68] dark:group-hover:text-blue-400"}`}>
+                                                            <span className={`text-[14px] font-medium leading-snug transition-colors duration-200 ${isOpen ? "text-[#063f68] dark:text-blue-400" : "text-slate-700 dark:text-slate-300 group-hover:text-[#063f68] dark:group-hover:text-blue-400"}`}>
                                                                 {faq.pregunta}
                                                             </span>
                                                             <ChevronDown size={14} className={`flex-shrink-0 text-slate-700 transition-transform duration-300 ${isOpen ? "rotate-180 text-[#063f68] dark:text-blue-400" : ""}`} />
@@ -139,7 +139,7 @@ export default function FaqPage() {
                                                             <div className="overflow-hidden">
                                                                 <div className="px-6 pb-4 pt-0">
                                                                     <div className="border-l-2 border-[#063f68]/20 dark:border-blue-400/20 pl-4">
-                                                                        <p className="text-[13px] text-slate-700 dark:text-slate-400 leading-relaxed whitespace-pre-line">
+                                                                        <p className="text-[14px] text-slate-700 dark:text-slate-400 leading-relaxed whitespace-pre-line">
                                                                             {faq.respuesta}
                                                                         </p>
                                                                     </div>

@@ -119,25 +119,25 @@ export default function RepositorioPage() {
                     <input
                         value={search} onChange={e => setSearch(e.target.value)}
                         placeholder="Buscar documentos..."
-                        className="w-full h-10 pl-9 pr-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white text-[13px] focus:outline-none focus:ring-2 focus:ring-indigo-300/50 focus:border-indigo-400"
+                        className="w-full h-10 pl-9 pr-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white text-[14px] focus:outline-none focus:ring-2 focus:ring-indigo-300/50 focus:border-indigo-400"
                     />
                 </div>
                 <div className="flex gap-2 flex-wrap">
                     <button onClick={() => setCatFiltro(null)}
-                        className={`px-3 h-10 rounded-xl text-[12px] font-semibold border transition-all
+                        className={`px-3 h-10 rounded-xl text-[13px] font-semibold border transition-all
                             ${catFiltro === null ? "bg-indigo-600 border-indigo-600 text-white" : "border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"}`}>
                         Todas
                     </button>
                     {cats.map(c => (
                         <button key={c.id} onClick={() => setCatFiltro(c.id === catFiltro ? null : c.id)}
-                            className={`px-3 h-10 rounded-xl text-[12px] font-semibold border transition-all
+                            className={`px-3 h-10 rounded-xl text-[13px] font-semibold border transition-all
                                 ${catFiltro === c.id ? "bg-indigo-600 border-indigo-600 text-white" : "border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"}`}>
                             {c.nombre}
                         </button>
                     ))}
                     {isFiltering && (
                         <button onClick={() => { setSearch(""); setCatFiltro(null); }}
-                            className="flex items-center gap-1.5 px-3 h-10 rounded-xl text-[12px] font-semibold border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                            className="flex items-center gap-1.5 px-3 h-10 rounded-xl text-[13px] font-semibold border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
                             <X size={12} /> Limpiar
                         </button>
                     )}
@@ -161,7 +161,7 @@ export default function RepositorioPage() {
             ) : (
                 <>
                     {isFiltering && (
-                        <p className="text-[12px] text-slate-700">{totalResultados} resultado{totalResultados !== 1 ? "s" : ""}</p>
+                        <p className="text-[13px] text-slate-700">{totalResultados} resultado{totalResultados !== 1 ? "s" : ""}</p>
                     )}
                     <div className="space-y-3">
                         {filteredCats.map(cat => {
@@ -174,10 +174,10 @@ export default function RepositorioPage() {
                                         <span className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 transition-all ${isOpen ? "bg-indigo-600 text-white" : "bg-indigo-50 dark:bg-indigo-900/20 text-indigo-500 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/30"}`}>
                                             <FolderOpen size={14} />
                                         </span>
-                                        <span className={`text-[14px] font-bold transition-colors ${isOpen ? "text-indigo-600 dark:text-indigo-400" : "text-slate-800 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400"}`}>
+                                        <span className={`text-[15px] font-bold transition-colors ${isOpen ? "text-indigo-600 dark:text-indigo-400" : "text-slate-800 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400"}`}>
                                             {cat.nombre}
                                         </span>
-                                        <span className="text-[11px] text-slate-700">{cat.archivos.length} archivo{cat.archivos.length !== 1 ? "s" : ""}</span>
+                                        <span className="text-[12px] text-slate-700">{cat.archivos.length} archivo{cat.archivos.length !== 1 ? "s" : ""}</span>
                                         <ChevronDown size={15} className={`ml-auto text-slate-700 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`} />
                                     </button>
 
@@ -192,21 +192,21 @@ export default function RepositorioPage() {
                                                                 {tipoIcon[arch.tipo] || tipoIcon.otro}
                                                             </div>
                                                             <div className="flex-1 min-w-0">
-                                                                <p className="text-[13px] font-semibold text-slate-800 dark:text-white leading-snug line-clamp-2">{arch.nombre}</p>
+                                                                <p className="text-[14px] font-semibold text-slate-800 dark:text-white leading-snug line-clamp-2">{arch.nombre}</p>
                                                                 {arch.descripcion && (
-                                                                    <p className="text-[11px] text-slate-700 dark:text-slate-400 mt-0.5 line-clamp-1">{arch.descripcion}</p>
+                                                                    <p className="text-[12px] text-slate-700 dark:text-slate-400 mt-0.5 line-clamp-1">{arch.descripcion}</p>
                                                                 )}
                                                                 <div className="flex items-center gap-2 mt-2">
-                                                                    <span className="text-[10px] font-bold text-slate-700 uppercase">{tipoLabel[arch.tipo] || "Archivo"}</span>
-                                                                    {arch.tamano && <span className="text-[10px] text-slate-700">{arch.tamano}</span>}
+                                                                    <span className="text-[11px] font-bold text-slate-700 uppercase">{tipoLabel[arch.tipo] || "Archivo"}</span>
+                                                                    {arch.tamano && <span className="text-[11px] text-slate-700">{arch.tamano}</span>}
                                                                 </div>
                                                                 <div className="flex gap-2 mt-2.5">
                                                                     <a href={arch.archivo} target="_blank" rel="noopener noreferrer"
-                                                                        className="flex items-center gap-1 px-2.5 h-7 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-[11px] font-semibold text-slate-600 dark:text-slate-300 hover:text-indigo-600 hover:border-indigo-300 transition-all">
+                                                                        className="flex items-center gap-1 px-2.5 h-7 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-[12px] font-semibold text-slate-600 dark:text-slate-300 hover:text-indigo-600 hover:border-indigo-300 transition-all">
                                                                         <ExternalLink size={10} /> Ver
                                                                     </a>
                                                                     <a href={arch.archivo} download onClick={() => trackDownload(arch.id)}
-                                                                        className="flex items-center gap-1 px-2.5 h-7 bg-indigo-600 border border-indigo-600 rounded-lg text-[11px] font-semibold text-white hover:bg-indigo-700 transition-all">
+                                                                        className="flex items-center gap-1 px-2.5 h-7 bg-indigo-600 border border-indigo-600 rounded-lg text-[12px] font-semibold text-white hover:bg-indigo-700 transition-all">
                                                                         <Download size={10} /> Descargar
                                                                     </a>
                                                                 </div>

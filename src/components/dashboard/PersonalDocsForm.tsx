@@ -144,8 +144,8 @@ export default function PersonalDocsForm() {
                 <div className="p-4 rounded-2xl border border-amber-200 dark:border-amber-800/50 bg-amber-50 dark:bg-amber-950/20 flex items-start gap-3">
                     <AlertCircle size={18} className="text-amber-500 mt-0.5 flex-shrink-0" />
                     <div>
-                        <p className="text-[13px] font-bold text-amber-700 dark:text-amber-400">Completá tu CUIL para continuar usando la plataforma</p>
-                        <p className="text-[12px] text-amber-600 dark:text-amber-500 mt-0.5">
+                        <p className="text-[14px] font-bold text-amber-700 dark:text-amber-400">Completá tu CUIL para continuar usando la plataforma</p>
+                        <p className="text-[13px] text-amber-600 dark:text-amber-500 mt-0.5">
                             Ingresá tu número de CUIL y aprovechá para verificar que el resto de tus datos estén actualizados.
                         </p>
                     </div>
@@ -166,14 +166,14 @@ export default function PersonalDocsForm() {
 
             {/* Botón Editar / Guardar / Cancelar */}
             <div className="flex items-center justify-between">
-                <p className="text-[11px] text-slate-700 dark:text-slate-500 font-medium">
+                <p className="text-[12px] text-slate-700 dark:text-slate-500 font-medium">
                     {isEditing ? "Modificá los campos que necesitás actualizar." : "Tus datos personales y de contacto registrados en el Colegio."}
                 </p>
                 {!isEditing ? (
                     <button
                         type="button"
                         onClick={handleEdit}
-                        className="flex items-center gap-2 px-5 h-10 bg-[#063f68] dark:bg-blue-600 text-white rounded-xl font-bold text-[12px] hover:bg-[#0a4d7a] dark:hover:bg-blue-500 transition-all active:scale-95"
+                        className="flex items-center gap-2 px-5 h-10 bg-[#063f68] dark:bg-blue-600 text-white rounded-xl font-bold text-[13px] hover:bg-[#0a4d7a] dark:hover:bg-blue-500 transition-all active:scale-95"
                     >
                         <Pencil size={14} />
                         Editar datos
@@ -184,7 +184,7 @@ export default function PersonalDocsForm() {
                             <button
                                 type="button"
                                 onClick={handleCancel}
-                                className="flex items-center gap-2 px-4 h-10 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-bold text-[12px] hover:bg-slate-50 dark:hover:bg-slate-800 transition-all active:scale-95"
+                                className="flex items-center gap-2 px-4 h-10 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-bold text-[13px] hover:bg-slate-50 dark:hover:bg-slate-800 transition-all active:scale-95"
                             >
                                 <X size={14} />
                                 Cancelar
@@ -193,7 +193,7 @@ export default function PersonalDocsForm() {
                         <button
                             type="submit"
                             disabled={saving}
-                            className="flex items-center gap-2 px-5 h-10 bg-[#063f68] dark:bg-blue-600 text-white rounded-xl font-bold text-[12px] hover:bg-[#0a4d7a] dark:hover:bg-blue-500 transition-all active:scale-95 disabled:opacity-50"
+                            className="flex items-center gap-2 px-5 h-10 bg-[#063f68] dark:bg-blue-600 text-white rounded-xl font-bold text-[13px] hover:bg-[#0a4d7a] dark:hover:bg-blue-500 transition-all active:scale-95 disabled:opacity-50"
                         >
                             {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
                             {saving ? "Guardando..." : "Guardar"}
@@ -209,11 +209,11 @@ export default function PersonalDocsForm() {
                         <div className="w-8 h-8 rounded-xl bg-[#063f68]/10 dark:bg-blue-400/10 text-[#063f68] dark:text-blue-400 flex items-center justify-center">
                             <ShieldAlert size={16} />
                         </div>
-                        <h3 className="text-[14px] font-bold text-black dark:text-white tracking-tight">Datos Institucionales</h3>
+                        <h3 className="text-[15px] font-bold text-black dark:text-white tracking-tight">Datos Institucionales</h3>
                     </div>
                     <div className="px-3 py-1 bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 rounded-lg border border-amber-100 dark:border-amber-900/50 flex items-center gap-1.5">
                         <Info size={11} />
-                        <span className="text-[9px] font-bold uppercase tracking-widest">Solo Lectura</span>
+                        <span className="text-[10px] font-bold uppercase tracking-widest">Solo Lectura</span>
                     </div>
                 </div>
 
@@ -236,7 +236,7 @@ export default function PersonalDocsForm() {
                     {/* CUIL — editable solo la primera vez */}
                     {!savedData?.cuil ? (
                         <div className="space-y-1.5 group md:col-span-1">
-                            <label className="text-[10px] font-bold text-amber-500 uppercase tracking-widest ml-1">
+                            <label className="text-[11px] font-bold text-amber-500 uppercase tracking-widest ml-1">
                                 CUIL *
                             </label>
                             <input
@@ -244,15 +244,15 @@ export default function PersonalDocsForm() {
                                 value={formData.cuil || ""}
                                 onChange={(e) => handleChange("cuil", e.target.value)}
                                 placeholder="Ej: 20-12345678-9"
-                                className="w-full h-11 px-4 rounded-2xl border-2 border-amber-300 dark:border-amber-700 bg-white dark:bg-slate-900 focus:border-amber-500 focus:ring-1 focus:ring-amber-200 transition-all outline-none text-[13px] text-black dark:text-white font-medium"
+                                className="w-full h-11 px-4 rounded-2xl border-2 border-amber-300 dark:border-amber-700 bg-white dark:bg-slate-900 focus:border-amber-500 focus:ring-1 focus:ring-amber-200 transition-all outline-none text-[14px] text-black dark:text-white font-medium"
                             />
                         </div>
                     ) : (
                         <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold text-slate-700 dark:text-slate-500 uppercase tracking-widest ml-1 flex items-center gap-1">
+                            <label className="text-[11px] font-bold text-slate-700 dark:text-slate-500 uppercase tracking-widest ml-1 flex items-center gap-1">
                                 CUIL <Lock size={9} />
                             </label>
-                            <div className="w-full h-11 px-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/20 flex items-center text-[13px] text-slate-600 dark:text-slate-400 font-medium">
+                            <div className="w-full h-11 px-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/20 flex items-center text-[14px] text-slate-600 dark:text-slate-400 font-medium">
                                 {formData.cuil}
                             </div>
                         </div>
@@ -266,7 +266,7 @@ export default function PersonalDocsForm() {
                     <div className="w-8 h-8 rounded-xl bg-[#063f68]/10 dark:bg-blue-400/10 text-[#063f68] dark:text-blue-400 flex items-center justify-center">
                         <Home size={16} />
                     </div>
-                    <h3 className="text-[14px] font-bold text-black dark:text-white tracking-tight">Domicilio Legal</h3>
+                    <h3 className="text-[15px] font-bold text-black dark:text-white tracking-tight">Domicilio Legal</h3>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -292,7 +292,7 @@ export default function PersonalDocsForm() {
                     <div className="w-8 h-8 rounded-xl bg-[#063f68]/10 dark:bg-blue-400/10 text-[#063f68] dark:text-blue-400 flex items-center justify-center">
                         <User size={16} />
                     </div>
-                    <h3 className="text-[14px] font-bold text-black dark:text-white tracking-tight">Domicilio Real</h3>
+                    <h3 className="text-[15px] font-bold text-black dark:text-white tracking-tight">Domicilio Real</h3>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -321,7 +321,7 @@ export default function PersonalDocsForm() {
                         <button
                             type="button"
                             onClick={handleCancel}
-                            className="flex items-center gap-2 px-4 h-10 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-bold text-[12px] hover:bg-slate-50 dark:hover:bg-slate-800 transition-all active:scale-95"
+                            className="flex items-center gap-2 px-4 h-10 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-bold text-[13px] hover:bg-slate-50 dark:hover:bg-slate-800 transition-all active:scale-95"
                         >
                             <X size={14} />
                             Cancelar
@@ -330,7 +330,7 @@ export default function PersonalDocsForm() {
                     <button
                         type="submit"
                         disabled={saving}
-                        className="flex items-center gap-2 px-5 h-10 bg-[#063f68] dark:bg-blue-600 text-white rounded-xl font-bold text-[12px] hover:bg-[#0a4d7a] dark:hover:bg-blue-500 transition-all active:scale-95 disabled:opacity-50"
+                        className="flex items-center gap-2 px-5 h-10 bg-[#063f68] dark:bg-blue-600 text-white rounded-xl font-bold text-[13px] hover:bg-[#0a4d7a] dark:hover:bg-blue-500 transition-all active:scale-95 disabled:opacity-50"
                     >
                         {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
                         {saving ? "Guardando..." : "Guardar"}
@@ -344,8 +344,8 @@ export default function PersonalDocsForm() {
 function DisplayField({ label, value }: { label: string; value: string | null }) {
     return (
         <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-slate-700 dark:text-slate-500 uppercase tracking-widest ml-1">{label}</label>
-            <div className="w-full h-11 px-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/20 flex items-center text-[13px] text-slate-600 dark:text-slate-400 font-medium">
+            <label className="text-[11px] font-bold text-slate-700 dark:text-slate-500 uppercase tracking-widest ml-1">{label}</label>
+            <div className="w-full h-11 px-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/20 flex items-center text-[14px] text-slate-600 dark:text-slate-400 font-medium">
                 {value || <span className="text-slate-300 dark:text-slate-600">--</span>}
             </div>
         </div>
@@ -368,7 +368,7 @@ function Field({
 
     return (
         <div className="space-y-1.5 group">
-            <label className="text-[10px] font-bold text-slate-700 dark:text-slate-500 uppercase tracking-widest ml-1 group-focus-within:text-[#063f68] dark:group-focus-within:text-blue-500 transition-colors">
+            <label className="text-[11px] font-bold text-slate-700 dark:text-slate-500 uppercase tracking-widest ml-1 group-focus-within:text-[#063f68] dark:group-focus-within:text-blue-500 transition-colors">
                 {label}
             </label>
             <input
@@ -376,7 +376,7 @@ function Field({
                 value={value || ""}
                 onChange={(e) => onChange(e.target.value)}
                 placeholder={placeholder}
-                className="w-full h-11 px-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:border-[#063f68] dark:focus:border-blue-500 focus:ring-1 focus:ring-[#063f68]/10 transition-all outline-none text-[13px] text-black dark:text-white font-medium"
+                className="w-full h-11 px-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:border-[#063f68] dark:focus:border-blue-500 focus:ring-1 focus:ring-[#063f68]/10 transition-all outline-none text-[14px] text-black dark:text-white font-medium"
             />
         </div>
     );

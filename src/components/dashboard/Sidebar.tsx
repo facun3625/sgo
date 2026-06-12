@@ -39,7 +39,7 @@ const SidebarLink = ({ icon, label, href, active, color, onClose, badge }: {
         <span className={`transition-all duration-200 flex-shrink-0 ${active ? "text-white scale-110" : `group-hover:scale-110 ${color || "text-gray-700"}`}`}>
             {React.isValidElement(icon) ? React.cloneElement(icon as React.ReactElement<{ size?: number }>, { size: 17 }) : icon}
         </span>
-        <span className={`text-[13.5px] leading-tight ${active ? "font-semibold text-white" : "font-normal"}`}>{label}</span>
+        <span className={`text-[14.5px] leading-tight ${active ? "font-semibold text-white" : "font-normal"}`}>{label}</span>
         {badge && <span className="ml-auto">{badge}</span>}
     </Link>
 );
@@ -61,7 +61,7 @@ const SidebarSubmenu = ({ icon, label, color, children, onClose }: {
                     <span className={`flex-shrink-0 transition-all duration-200 ${isOpen || anyActive ? "text-[#063f68]" : `group-hover:scale-110 ${color || "text-gray-700"}`}`}>
                         {React.isValidElement(icon) ? React.cloneElement(icon as React.ReactElement<{ size?: number }>, { size: 17 }) : icon}
                     </span>
-                    <span className="text-[13.5px] font-normal">{label}</span>
+                    <span className="text-[14.5px] font-normal">{label}</span>
                 </div>
                 {isOpen ? <ChevronDown size={13} className="text-gray-700" /> : <ChevronRight size={13} className="text-gray-700 group-hover:text-[#063f68]" />}
             </button>
@@ -71,12 +71,12 @@ const SidebarSubmenu = ({ icon, label, color, children, onClose }: {
                         {children.map((child, i) =>
                             child.external ? (
                                 <a key={i} href={child.href} target="_blank" rel="noopener noreferrer"
-                                    className="flex items-center gap-1 py-1.5 text-[13px] font-normal transition-all duration-200 hover:translate-x-1 text-gray-700 dark:text-white/60 hover:text-[#063f68] dark:hover:text-white">
+                                    className="flex items-center gap-1 py-1.5 text-[14px] font-normal transition-all duration-200 hover:translate-x-1 text-gray-700 dark:text-white/60 hover:text-[#063f68] dark:hover:text-white">
                                     {child.label} <Globe size={10} className="opacity-50 flex-shrink-0" />
                                 </a>
                             ) : (
                                 <Link key={i} href={child.href} onClick={onClose}
-                                    className={`block py-1.5 text-[13px] font-normal transition-all duration-200 hover:translate-x-1
+                                    className={`block py-1.5 text-[14px] font-normal transition-all duration-200 hover:translate-x-1
                                         ${pathname === child.href ? "text-[#063f68] dark:text-blue-400 font-semibold" : "text-gray-700 dark:text-white/60 hover:text-[#063f68] dark:hover:text-white"}`}>
                                     {child.label}
                                 </Link>
@@ -91,7 +91,7 @@ const SidebarSubmenu = ({ icon, label, color, children, onClose }: {
 
 const SectionLabel = ({ label }: { label: string }) => (
     <div className="px-3 pt-4 pb-1.5">
-        <p className="text-[9px] font-black uppercase tracking-widest text-slate-700 dark:text-slate-600">{label}</p>
+        <p className="text-[10px] font-black uppercase tracking-widest text-slate-700 dark:text-slate-600">{label}</p>
     </div>
 );
 
@@ -214,8 +214,8 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
                 <div className="flex items-center gap-3">
                     <Image src="/sgo_nuevo.png" alt="SGO CPASF" width={48} height={48} className="object-contain" />
                     <div>
-                        <h1 className="text-white font-bold text-[14px] leading-tight tracking-tight uppercase">SGO - CPASF</h1>
-                        <p className="text-white/50 text-[8px] font-medium tracking-wider uppercase">Sistema de Gestión</p>
+                        <h1 className="text-white font-bold text-[15px] leading-tight tracking-tight uppercase">SGO - CPASF</h1>
+                        <p className="text-white/50 text-[9px] font-medium tracking-wider uppercase">Sistema de Gestión</p>
                     </div>
                 </div>
             </div>
@@ -256,7 +256,7 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
             </div>
 
             <div className="px-4 pt-3 pb-1">
-                <div className="rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-700/50 px-3 py-2.5 text-[10px] text-slate-700 dark:text-slate-500 leading-relaxed">
+                <div className="rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-700/50 px-3 py-2.5 text-[11px] text-slate-700 dark:text-slate-500 leading-relaxed">
                     <p className="font-semibold text-slate-700 dark:text-slate-400 mb-0.5">Aviso — Migración de sistemas</p>
                     Hemos realizado una migración de sistemas. Si detecta alguna inconsistencia en sus datos, comuníquese con el Colegio para su corrección.
                 </div>
@@ -274,16 +274,16 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
                         <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white dark:border-[#02182b]"></div>
                     </div>
                     <div className="overflow-hidden">
-                        <p className="text-[13px] font-bold text-slate-700 dark:text-slate-200 truncate group-hover:text-[#063f68] dark:group-hover:text-blue-400 transition-colors">
+                        <p className="text-[14px] font-bold text-slate-700 dark:text-slate-200 truncate group-hover:text-[#063f68] dark:group-hover:text-blue-400 transition-colors">
                             {user.nombre} {user.apellido[0]}.
                         </p>
-                        <p className={`text-[10px] font-medium ${isSuspended ? (user.status === "cancelled" ? "text-purple-500" : "text-rose-500") : "text-slate-700 dark:text-slate-500"}`}>
+                        <p className={`text-[11px] font-medium ${isSuspended ? (user.status === "cancelled" ? "text-purple-500" : "text-rose-500") : "text-slate-700 dark:text-slate-500"}`}>
                             {isSuspended ? (user.status === "cancelled" ? "Matrícula cancelada" : "Matrícula suspendida") : `Mat. ${user.expediente}`}
                         </p>
                     </div>
                 </Link>
                 <a href="https://kubbo.com.ar" target="_blank" rel="noopener noreferrer"
-                    className="block mt-3 text-center text-[9px] text-slate-300 dark:text-slate-600 hover:text-slate-400 dark:hover:text-slate-500 transition-colors">
+                    className="block mt-3 text-center text-[10px] text-slate-300 dark:text-slate-600 hover:text-slate-400 dark:hover:text-slate-500 transition-colors">
                     Desarrollado por <span style={{ color: "#3EDE7C" }}>kubbo</span>
                 </a>
             </div>
@@ -318,7 +318,7 @@ function ComunicadosBadge() {
     }, [refresh]);
     if (count === 0) return null;
     return (
-        <span className="min-w-[18px] h-[18px] px-1 bg-amber-400 text-white text-[9px] font-black rounded-full flex items-center justify-center leading-none">
+        <span className="min-w-[18px] h-[18px] px-1 bg-amber-400 text-white text-[10px] font-black rounded-full flex items-center justify-center leading-none">
             {count > 9 ? "9+" : count}
         </span>
     );
@@ -332,7 +332,7 @@ function AdhesionBadge() {
         }).catch(() => {});
     }, []);
     if (status.pending) return (
-        <span className="px-1.5 py-0.5 bg-amber-500/10 text-amber-500 text-[8px] font-black uppercase tracking-tighter rounded-md border border-amber-500/20 animate-pulse">Pendiente</span>
+        <span className="px-1.5 py-0.5 bg-amber-500/10 text-amber-500 text-[9px] font-black uppercase tracking-tighter rounded-md border border-amber-500/20 animate-pulse">Pendiente</span>
     );
     if (status.approved) return <CheckCircle2 size={12} className="text-emerald-500" />;
     return null;

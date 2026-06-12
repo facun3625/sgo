@@ -86,9 +86,9 @@ function TutorialItem({ tutorial }: { tutorial: Tutorial }) {
                     <PlayCircle size={17} className="text-pink-500" />
                 </div>
                 <div className="flex-1 min-w-0">
-                    <p className="font-bold text-slate-800 dark:text-white text-[13px] leading-snug">{tutorial.titulo}</p>
+                    <p className="font-bold text-slate-800 dark:text-white text-[14px] leading-snug">{tutorial.titulo}</p>
                     {tutorial.descripcion && (
-                        <p className="text-slate-700 text-[11px] mt-0.5 truncate">{tutorial.descripcion}</p>
+                        <p className="text-slate-700 text-[12px] mt-0.5 truncate">{tutorial.descripcion}</p>
                     )}
                 </div>
                 <ChevronDown
@@ -127,7 +127,7 @@ export default function TutorialesPage() {
                 </Link>
                 <div className="flex items-center gap-3">
                     <PlayCircle size={18} className="text-pink-500" />
-                    <h2 className="text-[15px] font-bold text-black dark:text-white tracking-tight">Tutoriales</h2>
+                    <h2 className="text-[16px] font-bold text-black dark:text-white tracking-tight">Tutoriales</h2>
                 </div>
             </div>
 
@@ -135,7 +135,7 @@ export default function TutorialesPage() {
                 {loading ? (
                     <div className="flex flex-col items-center justify-center py-20 gap-4">
                         <Loader2 size={28} className="animate-spin text-[#063f68] dark:text-blue-400" />
-                        <p className="text-slate-700 text-[13px] font-medium">Cargando tutoriales...</p>
+                        <p className="text-slate-700 text-[14px] font-medium">Cargando tutoriales...</p>
                     </div>
                 ) : tutoriales.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20 gap-3 text-center">
@@ -143,8 +143,8 @@ export default function TutorialesPage() {
                             <PlayCircle size={28} />
                         </div>
                         <div className="space-y-1">
-                            <h3 className="text-[15px] font-bold text-slate-700 dark:text-slate-200">Sin tutoriales</h3>
-                            <p className="text-slate-700 text-[12px]">Próximamente se publicarán guías de ayuda.</p>
+                            <h3 className="text-[16px] font-bold text-slate-700 dark:text-slate-200">Sin tutoriales</h3>
+                            <p className="text-slate-700 text-[13px]">Próximamente se publicarán guías de ayuda.</p>
                         </div>
                     </div>
                 ) : (

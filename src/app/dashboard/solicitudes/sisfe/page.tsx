@@ -104,7 +104,7 @@ export default function SolicitudSISFEPage() {
                     </Link>
                     <div className="flex items-center gap-3">
                         <FileText size={18} className="text-blue-600" />
-                        <h2 className="text-[15px] font-bold text-black dark:text-white tracking-tight text-balance">Solicitud de Visualización de expedientes judiciales</h2>
+                        <h2 className="text-[16px] font-bold text-black dark:text-white tracking-tight text-balance">Solicitud de Visualización de expedientes judiciales</h2>
                     </div>
                 </div>
             </div>
@@ -136,21 +136,21 @@ export default function SolicitudSISFEPage() {
                         <div className="flex-1">
                             {existing.estado === "completada" ? (
                                 <>
-                                    <p className="text-[14px] font-black text-emerald-800 dark:text-emerald-300 mb-1">Ya tenés tu clave SISFE</p>
+                                    <p className="text-[15px] font-black text-emerald-800 dark:text-emerald-300 mb-1">Ya tenés tu clave SISFE</p>
                                     {existing.detalles?.respuesta?.clave && (
-                                        <p className="text-[13px] font-bold text-emerald-700 dark:text-emerald-400 mb-2">
+                                        <p className="text-[14px] font-bold text-emerald-700 dark:text-emerald-400 mb-2">
                                             Clave: <strong>{existing.detalles.respuesta.clave}</strong>
                                         </p>
                                     )}
                                 </>
                             ) : (
                                 <>
-                                    <p className="text-[14px] font-black text-amber-800 dark:text-amber-300 mb-1">Ya tenés una solicitud en proceso</p>
-                                    <p className="text-[12px] text-amber-700 dark:text-amber-400 mb-2">Tu pedido está siendo procesado por el Colegio.</p>
+                                    <p className="text-[15px] font-black text-amber-800 dark:text-amber-300 mb-1">Ya tenés una solicitud en proceso</p>
+                                    <p className="text-[13px] text-amber-700 dark:text-amber-400 mb-2">Tu pedido está siendo procesado por el Colegio.</p>
                                 </>
                             )}
                             <Link href="/dashboard/solicitudes/enviadas"
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-slate-800 border border-amber-200 dark:border-amber-700 text-amber-700 dark:text-amber-400 rounded-xl text-[11px] font-bold hover:bg-amber-50 transition-all">
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-slate-800 border border-amber-200 dark:border-amber-700 text-amber-700 dark:text-amber-400 rounded-xl text-[12px] font-bold hover:bg-amber-50 transition-all">
                                 Ver en mis solicitudes <ArrowRight size={11} />
                             </Link>
                         </div>
@@ -162,7 +162,7 @@ export default function SolicitudSISFEPage() {
                             <div className="p-2 rounded-lg bg-white dark:bg-slate-800 text-amber-500 shadow-sm shrink-0">
                                 <Info size={16} />
                             </div>
-                            <p className="text-[11px] text-amber-700 dark:text-amber-400/80 leading-relaxed font-medium">
+                            <p className="text-[12px] text-amber-700 dark:text-amber-400/80 leading-relaxed font-medium">
                                 Los datos que se autocompletan no pueden ser modificados desde este menú. Si desea hacerlo, diríjase a <Link href="/dashboard/mis-datos" className="underline font-bold">Modificar datos personales</Link>.
                             </p>
                         </div>
@@ -171,7 +171,7 @@ export default function SolicitudSISFEPage() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {/* Nombre y Apellido */}
                                 <div className="space-y-2 md:col-span-2">
-                                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest ml-1">El que suscribe, Dr/Dra</label>
+                                    <label className="text-[11px] font-bold text-slate-700 uppercase tracking-widest ml-1">El que suscribe, Dr/Dra</label>
                                     <input
                                         type="text"
                                         readOnly
@@ -182,7 +182,7 @@ export default function SolicitudSISFEPage() {
 
                                 {/* Tomo */}
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest ml-1">Inscripto al Tomo</label>
+                                    <label className="text-[11px] font-bold text-slate-700 uppercase tracking-widest ml-1">Inscripto al Tomo</label>
                                     <input
                                         type="text"
                                         readOnly
@@ -193,7 +193,7 @@ export default function SolicitudSISFEPage() {
 
                                 {/* Folio */}
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest ml-1">Folio Nº</label>
+                                    <label className="text-[11px] font-bold text-slate-700 uppercase tracking-widest ml-1">Folio Nº</label>
                                     <input
                                         type="text"
                                         readOnly
@@ -204,7 +204,7 @@ export default function SolicitudSISFEPage() {
 
                                 {/* Expediente */}
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest ml-1">Expediente</label>
+                                    <label className="text-[11px] font-bold text-slate-700 uppercase tracking-widest ml-1">Expediente</label>
                                     <input
                                         type="text"
                                         readOnly
@@ -215,7 +215,7 @@ export default function SolicitudSISFEPage() {
 
                                 {/* Fecha */}
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest ml-1">En Fecha</label>
+                                    <label className="text-[11px] font-bold text-slate-700 uppercase tracking-widest ml-1">En Fecha</label>
                                     <input
                                         type="text"
                                         readOnly
@@ -226,7 +226,7 @@ export default function SolicitudSISFEPage() {
 
                                 {/* Email Legal */}
                                 <div className="space-y-2 md:col-span-2">
-                                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest ml-1">Email (Legal)</label>
+                                    <label className="text-[11px] font-bold text-slate-700 uppercase tracking-widest ml-1">Email (Legal)</label>
                                     <input
                                         type="text"
                                         readOnly
@@ -237,7 +237,7 @@ export default function SolicitudSISFEPage() {
                             </div>
 
                             <div className="py-2">
-                                <p className="text-red-500 font-bold text-[14px] tracking-tight ml-1 animate-pulse">
+                                <p className="text-red-500 font-bold text-[15px] tracking-tight ml-1 animate-pulse">
                                     Solicito la clave de visualización de expedientes judiciales
                                 </p>
                             </div>

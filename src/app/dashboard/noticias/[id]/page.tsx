@@ -69,7 +69,7 @@ export default function NoticiaDetailPage() {
             <div className="p-4 md:p-8 pb-12">
                 {/* Back */}
                 <Link href="/dashboard/noticias"
-                    className="inline-flex items-center gap-1.5 text-slate-700 hover:text-slate-600 dark:hover:text-slate-300 text-[13px] font-medium transition-colors mb-5">
+                    className="inline-flex items-center gap-1.5 text-slate-700 hover:text-slate-600 dark:hover:text-slate-300 text-[14px] font-medium transition-colors mb-5">
                     <ArrowLeft size={14} /> Volver a noticias
                 </Link>
 
@@ -87,7 +87,7 @@ export default function NoticiaDetailPage() {
 
                     <div className="p-6 md:p-10">
                         {/* Meta */}
-                        <div className="flex items-center gap-2 text-[11px] text-slate-700 font-medium uppercase tracking-wider mb-3">
+                        <div className="flex items-center gap-2 text-[12px] text-slate-700 font-medium uppercase tracking-wider mb-3">
                             <Calendar size={12} />
                             {new Date(noticia.createdAt).toLocaleDateString("es-AR", {
                                 timeZone: "UTC", weekday: "long", day: "numeric", month: "long", year: "numeric"
@@ -105,7 +105,7 @@ export default function NoticiaDetailPage() {
                         {/* Cuerpo */}
                         <div className="space-y-4">
                             {paragraphs.map((p, i) => (
-                                <p key={i} className="text-[15px] text-slate-600 dark:text-slate-300 leading-relaxed">
+                                <p key={i} className="text-[16px] text-slate-600 dark:text-slate-300 leading-relaxed">
                                     {p}
                                 </p>
                             ))}
@@ -114,7 +114,7 @@ export default function NoticiaDetailPage() {
                         {/* Volver */}
                         <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800">
                             <Link href="/dashboard/noticias"
-                                className="inline-flex items-center gap-1.5 text-[#063f68] dark:text-blue-400 text-[13px] font-semibold hover:underline underline-offset-2 transition-colors">
+                                className="inline-flex items-center gap-1.5 text-[#063f68] dark:text-blue-400 text-[14px] font-semibold hover:underline underline-offset-2 transition-colors">
                                 <ArrowLeft size={14} /> Volver a noticias
                             </Link>
                         </div>
@@ -124,7 +124,7 @@ export default function NoticiaDetailPage() {
                             <div className="mt-10 pt-8 border-t border-slate-100 dark:border-slate-800">
                                 <div className="flex items-center gap-2 mb-4">
                                     <Images size={15} className="text-slate-700" />
-                                    <h2 className="text-[12px] font-bold text-slate-700 uppercase tracking-widest">
+                                    <h2 className="text-[13px] font-bold text-slate-700 uppercase tracking-widest">
                                         Galería · {noticia.imagenes.length} {noticia.imagenes.length === 1 ? "foto" : "fotos"}
                                     </h2>
                                 </div>
@@ -166,7 +166,7 @@ export default function NoticiaDetailPage() {
                     <img src={noticia.imagenes[lightbox.index]} alt={`Foto ${lightbox.index + 1}`}
                         className="max-w-[90vw] max-h-[85vh] object-contain rounded-xl"
                         onClick={e => e.stopPropagation()} />
-                    <p className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/50 text-[12px]">
+                    <p className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/50 text-[13px]">
                         {lightbox.index + 1} / {noticia.imagenes.length}
                     </p>
                 </div>
