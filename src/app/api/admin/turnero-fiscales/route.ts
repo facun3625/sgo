@@ -31,20 +31,25 @@ export async function POST(req: NextRequest) {
     if (!file) return NextResponse.json({ error: "El archivo es requerido" }, { status: 400 });
     if (file.type !== "application/pdf") return NextResponse.json({ error: "Solo se permiten archivos PDF" }, { status: 400 });
 
-    const uploadDir = path.join(process.cwd(), "public/uploads/fiscales");
-    await mkdir(uploadDir, { recursive: true });
+    try {
+        const uploadDir = path.join(process.cwd(), "public/uploads/fiscales");
+        await mkdir(uploadDir, { recursive: true });
 
-    const ext = ".pdf";
-    const nombre = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}${ext.endsWith(".pdf") ? "" : ext}`;
-    const bytes = await file.arrayBuffer();
-    await writeFile(path.join(uploadDir, nombre), Buffer.from(bytes));
+        const nombre = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
+        const bytes = await file.arrayBuffer();
+        await writeFile(path.join(uploadDir, nombre), Buffer.from(bytes));
 
-    const count = await prisma.turneroFiscal.count();
-    const item = await prisma.turneroFiscal.create({
-        data: { titulo: titulo.trim(), archivo: `/uploads/fiscales/${nombre}`, orden: count },
-    });
+        const count = await prisma.turneroFiscal.count();
+        const item = await prisma.turneroFiscal.create({
+            data: { titulo: titulo.trim(), archivo: `/uploads/fiscales/${nombre}`, orden: count },
+        });
 
-    return NextResponse.json(item);
+        return NextResponse.json(item);
+    } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : "Error desconocido";
+        console.error("[turnero-fiscales POST]", msg);
+        return NextResponse.json({ error: msg }, { status: 500 });
+    }
 }
 
 export async function DELETE(req: NextRequest) {

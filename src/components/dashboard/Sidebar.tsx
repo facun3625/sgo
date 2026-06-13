@@ -143,6 +143,16 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
         {
             label: "INSTITUCIÓN",
             items: [
+                {
+                    icon: <Calculator />, label: "Calculadores", color: "text-emerald-500",
+                    children: [
+                        { label: "Calculadora de Intereses", href: "/dashboard/calculadora" },
+                        { label: "Calculadora de Fechas", href: "/dashboard/calculadora-fechas" },
+                        { label: "Cálculo de Incapacidad por Daños y Perjuicios", href: "/dashboard/calculadora-incapacidad" },
+                        { label: "Cómputo de Penas", href: "/dashboard/calculadora-penas" },
+                        { label: "Calculadora de Honorarios", href: "/dashboard/calculadora-honorarios" },
+                    ],
+                },
                 { icon: <GraduationCap />, label: "Cursos", href: "/dashboard/cursos", color: "text-pink-500" },
                 { icon: <Calendar />, label: "Calendario", href: "/dashboard/calendario", color: "text-orange-500" },
                 { icon: <Cpu />, label: "Ventas", href: "/dashboard/ventas", color: "text-violet-500" },
@@ -155,16 +165,6 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
                     ],
                 },
                 { icon: <FolderOpen />, label: "Repositorio de Archivos", href: "/dashboard/archivos", color: "text-indigo-500" },
-                {
-                    icon: <Calculator />, label: "Calculadores", color: "text-emerald-500",
-                    children: [
-                        { label: "Calculadora de Intereses", href: "/dashboard/calculadora" },
-                        { label: "Calculadora de Fechas", href: "/dashboard/calculadora-fechas" },
-                        { label: "Cálculo de Incapacidad por Daños y Perjuicios", href: "/dashboard/calculadora-incapacidad" },
-                        { label: "Cómputo de Penas", href: "/dashboard/calculadora-penas" },
-                        { label: "Calculadora de Honorarios", href: "/dashboard/calculadora-honorarios" },
-                    ],
-                },
                 { icon: <HelpCircle />, label: "Preguntas Frecuentes", href: "/dashboard/faq", color: "text-slate-700" },
                 { icon: <PlayCircle />, label: "Tutoriales", href: "/dashboard/tutoriales", color: "text-pink-400" },
                 { icon: <FileText />, label: "Turnero de Fiscales", href: "/dashboard/turnero-fiscales", color: "text-sky-500" },
