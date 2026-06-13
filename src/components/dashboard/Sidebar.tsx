@@ -167,6 +167,7 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
                 },
                 { icon: <HelpCircle />, label: "Preguntas Frecuentes", href: "/dashboard/faq", color: "text-slate-700" },
                 { icon: <PlayCircle />, label: "Tutoriales", href: "/dashboard/tutoriales", color: "text-pink-400" },
+                { icon: <FileText />, label: "Turnero de Fiscales", href: "/dashboard/turnero-fiscales", color: "text-sky-500" },
                 { icon: <BookUser />, label: "Guía de Abogados", href: "/dashboard/guia", color: "text-teal-500" },
                 { icon: <Mail />, label: "Mensajes Privados", href: "/dashboard/mensajes", color: "text-sky-500" },
             ],

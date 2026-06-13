@@ -82,6 +82,7 @@ const navItems = [
     { href: "/admin/boletas", label: "Importar Boletas de Pago", icon: ReceiptText, color: "text-orange-500" },
     { href: "/admin/tribunal-etica", label: "Tribunal de Ética", icon: Scale, color: "text-rose-500" },
     { href: "/admin/tutoriales", label: "Tutoriales", icon: PlayCircle, color: "text-pink-400" },
+    { href: "/admin/turnero-fiscales", label: "Turnero de Fiscales", icon: BookUser, color: "text-sky-500" },
     { href: "/admin/repositorio", label: "Repositorio de Archivos", icon: FolderOpen, color: "text-indigo-500" },
     { href: "/admin/logs", label: "Registro de Actividad", icon: ClipboardList, color: "text-slate-400" },
 ];

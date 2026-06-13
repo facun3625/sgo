@@ -656,3 +656,13 @@ model Fiador {
 
   @@map("fiadores")
 }
+
+model TurneroFiscal {
+  id        Int      @id @default(autoincrement())
+  titulo    String
+  archivo   String
+  orden     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@map("turnero_fiscales")
+}
