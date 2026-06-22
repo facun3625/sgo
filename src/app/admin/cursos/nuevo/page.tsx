@@ -9,6 +9,7 @@ interface Opcion {
     nombre: string;
     precio: number;
     cupo: number;
+    infoPrivada: string;
 }
 
 interface Dia {
@@ -39,7 +40,7 @@ export default function NuevoCursoPage() {
         diasMinimos: 1,
     });
     const [opciones, setOpciones] = useState<Opcion[]>([
-        { nombre: "", precio: 0, cupo: 0 }
+        { nombre: "", precio: 0, cupo: 0, infoPrivada: "" }
     ]);
     const [dias, setDias] = useState<Dia[]>([]);
     const [error, setError] = useState("");
@@ -79,7 +80,7 @@ export default function NuevoCursoPage() {
     }
 
     function addOpcion() {
-        setOpciones(prev => [...prev, { nombre: "", precio: 0, cupo: 0 }]);
+        setOpciones(prev => [...prev, { nombre: "", precio: 0, cupo: 0, infoPrivada: "" }]);
     }
 
     function removeOpcion(i: number) {
@@ -124,6 +125,7 @@ export default function NuevoCursoPage() {
                         nombre: o.nombre,
                         precio: Number(o.precio),
                         cupo: Number(o.cupo),
+                        infoPrivada: o.infoPrivada || null,
                     })),
                     dias: form.tipoAsistencia === "por_dia" ? dias : [],
                 }),
@@ -410,44 +412,56 @@ export default function NuevoCursoPage() {
 
                     <div className="space-y-3">
                         {opciones.map((op, i) => (
-                            <div key={i} className="flex items-end gap-2 p-3 bg-slate-50 dark:bg-slate-800 rounded-xl">
-                                <div className="flex-1 space-y-1.5">
-                                    <label className="text-[11px] font-medium text-slate-400">Nombre</label>
-                                    <input
-                                        value={op.nombre}
-                                        onChange={e => updateOpcion(i, "nombre", e.target.value)}
-                                        placeholder="Ej: Matriculado"
-                                        className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white text-[12px] focus:outline-none focus:ring-2 focus:ring-[#063f68]/30 focus:border-[#063f68]"
+                            <div key={i} className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl space-y-2">
+                                <div className="flex items-end gap-2">
+                                    <div className="flex-1 space-y-1.5">
+                                        <label className="text-[11px] font-medium text-slate-400">Nombre</label>
+                                        <input
+                                            value={op.nombre}
+                                            onChange={e => updateOpcion(i, "nombre", e.target.value)}
+                                            placeholder="Ej: Presencial"
+                                            className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white text-[12px] focus:outline-none focus:ring-2 focus:ring-[#063f68]/30 focus:border-[#063f68]"
+                                        />
+                                    </div>
+                                    <div className="w-24 space-y-1.5">
+                                        <label className="text-[11px] font-medium text-slate-400">Precio $</label>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            value={op.precio}
+                                            onChange={e => updateOpcion(i, "precio", e.target.value)}
+                                            className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white text-[12px] focus:outline-none focus:ring-2 focus:ring-[#063f68]/30 focus:border-[#063f68]"
+                                        />
+                                    </div>
+                                    <div className="w-20 space-y-1.5">
+                                        <label className="text-[11px] font-medium text-slate-400">Cupo</label>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            value={op.cupo}
+                                            onChange={e => updateOpcion(i, "cupo", e.target.value)}
+                                            className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white text-[12px] focus:outline-none focus:ring-2 focus:ring-[#063f68]/30 focus:border-[#063f68]"
+                                        />
+                                    </div>
+                                    {opciones.length > 1 && (
+                                        <button
+                                            type="button"
+                                            onClick={() => removeOpcion(i)}
+                                            className="flex items-center justify-center w-9 h-9 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all">
+                                            <Trash2 size={13} />
+                                        </button>
+                                    )}
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-[11px] font-medium text-slate-400">Información privada para inscriptos <span className="font-normal opacity-60">(opcional — solo visible al confirmar)</span></label>
+                                    <textarea
+                                        value={op.infoPrivada}
+                                        onChange={e => updateOpcion(i, "infoPrivada", e.target.value)}
+                                        placeholder="Ej: Link de Zoom: https://... · ID: 123 · Clave: abc"
+                                        rows={2}
+                                        className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white text-[12px] focus:outline-none focus:ring-2 focus:ring-[#063f68]/30 focus:border-[#063f68] resize-none"
                                     />
                                 </div>
-                                <div className="w-24 space-y-1.5">
-                                    <label className="text-[11px] font-medium text-slate-400">Precio $</label>
-                                    <input
-                                        type="number"
-                                        min="0"
-                                        value={op.precio}
-                                        onChange={e => updateOpcion(i, "precio", e.target.value)}
-                                        className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white text-[12px] focus:outline-none focus:ring-2 focus:ring-[#063f68]/30 focus:border-[#063f68]"
-                                    />
-                                </div>
-                                <div className="w-20 space-y-1.5">
-                                    <label className="text-[11px] font-medium text-slate-400">Cupo</label>
-                                    <input
-                                        type="number"
-                                        min="0"
-                                        value={op.cupo}
-                                        onChange={e => updateOpcion(i, "cupo", e.target.value)}
-                                        className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white text-[12px] focus:outline-none focus:ring-2 focus:ring-[#063f68]/30 focus:border-[#063f68]"
-                                    />
-                                </div>
-                                {opciones.length > 1 && (
-                                    <button
-                                        type="button"
-                                        onClick={() => removeOpcion(i)}
-                                        className="flex items-center justify-center w-9 h-9 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all">
-                                        <Trash2 size={13} />
-                                    </button>
-                                )}
                             </div>
                         ))}
                     </div>

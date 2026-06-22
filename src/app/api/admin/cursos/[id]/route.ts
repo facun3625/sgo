@@ -69,11 +69,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (opciones) {
         await prisma.cursoOpcion.deleteMany({ where: { cursoId: id } });
         await prisma.cursoOpcion.createMany({
-            data: opciones.map((o: { nombre: string; precio: number; cupo: number }) => ({
+            data: opciones.map((o: { nombre: string; precio: number; cupo: number; infoPrivada?: string }) => ({
                 cursoId: id,
                 nombre: o.nombre,
                 precio: o.precio ?? 0,
                 cupo: o.cupo ?? 0,
+                infoPrivada: o.infoPrivada || null,
             }))
         });
     }

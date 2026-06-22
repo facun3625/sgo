@@ -52,10 +52,11 @@ export async function POST(req: NextRequest) {
             porcentajeMin: tipoAsis === "global" ? (porcentajeMin ?? null) : null,
             diasMinimos: tipoAsis === "por_dia" ? (diasMinimos ?? null) : null,
             opciones: {
-                create: (opciones || []).map((o: { nombre: string; precio: number; cupo: number }) => ({
+                create: (opciones || []).map((o: { nombre: string; precio: number; cupo: number; infoPrivada?: string }) => ({
                     nombre: o.nombre,
                     precio: o.precio ?? 0,
                     cupo: o.cupo ?? 0,
+                    infoPrivada: o.infoPrivada || null,
                 }))
             },
             dias: tipoAsis === "por_dia" && dias?.length ? {

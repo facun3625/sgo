@@ -1,6 +1,3 @@
-// SGO - Sistema de Gestión
-// Prisma Schema
-
 generator client {
   provider = "prisma-client-js"
   output   = "../src/generated/prisma"
@@ -11,21 +8,21 @@ datasource db {
 }
 
 model User {
-  id          Int      @id @default(autoincrement())
-  apellido    String
-  nombre      String
-  expediente  String?  @unique
-  cod         String?  @unique
-  password    String
+  id             Int       @id @default(autoincrement())
+  apellido       String
+  nombre         String
+  expediente     String?   @unique
+  cod            String?   @unique
+  password       String
   status         String    @default("active")
-  suspendedUntil DateTime? @map("suspended_until")
   accessLevel    String    @default("user") @map("access_level")
-  registered  Int      @default(1)
-  image       String?
-  permisos    String   @default("[]")
-  signature   String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  registered     Int       @default(1)
+  image          String?
+  signature      String?
+  permisos       String    @default("[]")
+  suspendedUntil DateTime? @map("suspended_until")
 
   @@map("users")
 }
@@ -43,7 +40,6 @@ model Dato {
   expediente         String?
   folio              String?
   tipo               String?
-  cuil               String?
   documento          String?
   tomo               String?
   domicilioReal      String?   @map("domicilio_real")
@@ -59,6 +55,7 @@ model Dato {
   fechaMatriculacion DateTime? @map("fecha_matriculacion")
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
+  cuil               String?
 
   @@map("datos")
 }
@@ -97,14 +94,14 @@ model Config {
 model CuotaMensual {
   id          Int       @id @default(autoincrement())
   expediente  String
-  periodo     String    // "2026-03"
+  periodo     String
   monto       Float
-  estado      String    @default("pendiente") // pendiente / pagado
+  estado      String    @default("pendiente")
   fechaPago   DateTime?
-  metodoPago  String?   // mercadopago | transferencia | home_banking
-  mpPaymentId String?   @map("mp_payment_id")
-  exportado   Boolean   @default(false)
   createdAt   DateTime  @default(now())
+  metodoPago  String?
+  exportado   Boolean   @default(false)
+  mpPaymentId String?   @map("mp_payment_id")
 
   @@unique([expediente, periodo])
   @@map("cuotas_mensuales")
@@ -113,74 +110,72 @@ model CuotaMensual {
 model PagoAnual {
   id          Int       @id @default(autoincrement())
   expediente  String
-  mpPaymentId String?   @map("mp_payment_id")
-  fechaPago   DateTime?
   exportado   Boolean   @default(false)
+  fechaPago   DateTime?
+  mpPaymentId String?   @map("mp_payment_id")
 
   @@map("pago_anual")
 }
 
 model Solicitud {
-  id              Int      @id @default(autoincrement())
-  expediente      String
-  tipo            String // Ejemplo: "Certificado de Matriculación", "SISFE", etc.
-  fecha           DateTime @default(now())
-  estado          String   @default("pendiente") // pendiente, completada, rechazada
-  presentarAnte   String?
-  emailLegal      String?
-  adjunto         String?  // Ruta o URL del archivo adjunto (PDF/Imagen)
-  detalles        Json?    // Para guardar datos específicos como CUIT
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id            Int      @id @default(autoincrement())
+  expediente    String
+  tipo          String
+  fecha         DateTime @default(now())
+  estado        String   @default("pendiente")
+  presentarAnte String?
+  emailLegal    String?
+  detalles      Json?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  adjunto       String?
 
   @@map("solicitudes")
 }
 
 model AdhesionDebito {
-  id              Int      @id @default(autoincrement())
-  expediente      String
-  tipoAdhesion    String   // "CBU" o "Tarjeta"
-  estado          String   @default("pendiente") // pendiente, aprobada, rechazada
-  motivo          String?  // Motivo de rechazo
-  dniFrontal      String?  // Ruta o URL del archivo
-  constanciaCbu   String?  // Ruta o URL del archivo (Solo para CBU)
-  frontalTarjeta  String?  // Ruta o URL del archivo (Solo para Tarjeta)
-  terminosAceptados Boolean @default(false)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id                Int      @id @default(autoincrement())
+  expediente        String
+  tipoAdhesion      String
+  estado            String   @default("pendiente")
+  dniFrontal        String?
+  constanciaCbu     String?
+  frontalTarjeta    String?
+  terminosAceptados Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  motivo            String?
 
   @@map("adhesiones_debito")
 }
 
 model Curso {
-  id                     Int               @id @default(autoincrement())
+  id                     Int                @id @default(autoincrement())
   titulo                 String
   descripcion            String
+  hora                   String?
+  modalidad              String             @default("Presencial")
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
+  activo                 Boolean            @default(true)
+  fechaLimiteInscripcion DateTime?
+  imagen                 String?
+  lugar                  String?
   organizador            String?
   fecha                  DateTime
   fechaFin               DateTime?
-  hora                   String?
-  lugar                  String?
-  imagen                 String?
-  modalidad              String            @default("Presencial") // Presencial / Virtual / Híbrida
-  fechaLimiteInscripcion DateTime?
-  activo                 Boolean           @default(true)
-  mostrarEnCalendario    Boolean           @default(false)
-  // Asistencia
-  tipoAsistencia         String            @default("ninguna") @map("tipo_asistencia") // "ninguna" | "por_dia" | "global"
-  porcentajeMin          Float?            @map("porcentaje_min") // para "global": % mínimo de sesiones asistidas
-  diasMinimos            Int?              @map("dias_minimos")   // para "por_dia": mínimo de días presentes
-  // Certificado
-  certTexto              String?           @map("cert_texto")     // cuerpo del texto del certificado
-  certCabecera           String?           @map("cert_cabecera")  // URL imagen cabecera
-  certFirmasIds          Int[]             @default([]) @map("cert_firmas_ids") // IDs de FirmaAutoridad
+  mostrarEnCalendario    Boolean            @default(false)
+  certCabecera           String?            @map("cert_cabecera")
+  certFirmasIds          Int[]              @default([]) @map("cert_firmas_ids")
+  certTexto              String?            @map("cert_texto")
+  diasMinimos            Int?               @map("dias_minimos")
+  porcentajeMin          Float?             @map("porcentaje_min")
+  tipoAsistencia         String             @default("ninguna") @map("tipo_asistencia")
+  certificados           CertificadoCurso[]
+  dias                   CursoDia[]
   opciones               CursoOpcion[]
   inscripciones          InscripcionCurso[]
-  dias                   CursoDia[]
   sesiones               SesionAsistencia[]
-  certificados           CertificadoCurso[]
-  createdAt              DateTime          @default(now())
-  updatedAt              DateTime          @updatedAt
 
   @@map("cursos")
 }
@@ -188,12 +183,12 @@ model Curso {
 model CursoDia {
   id        Int                @id @default(autoincrement())
   cursoId   Int                @map("curso_id")
-  curso     Curso              @relation(fields: [cursoId], references: [id], onDelete: Cascade)
   fecha     DateTime
   nombre    String?
   orden     Int                @default(0)
-  sesiones  SesionAsistencia[]
   createdAt DateTime           @default(now())
+  curso     Curso              @relation(fields: [cursoId], references: [id], onDelete: Cascade)
+  sesiones  SesionAsistencia[]
 
   @@map("curso_dias")
 }
@@ -201,13 +196,13 @@ model CursoDia {
 model SesionAsistencia {
   id          Int               @id @default(autoincrement())
   cursoId     Int               @map("curso_id")
-  curso       Curso             @relation(fields: [cursoId], references: [id], onDelete: Cascade)
   diaId       Int?              @map("dia_id")
-  dia         CursoDia?         @relation(fields: [diaId], references: [id])
   token       String            @unique @default(uuid())
   activa      Boolean           @default(true)
-  asistencias AsistenciaCurso[]
   createdAt   DateTime          @default(now())
+  asistencias AsistenciaCurso[]
+  curso       Curso             @relation(fields: [cursoId], references: [id], onDelete: Cascade)
+  dia         CursoDia?         @relation(fields: [diaId], references: [id])
 
   @@map("sesiones_asistencia")
 }
@@ -215,9 +210,9 @@ model SesionAsistencia {
 model AsistenciaCurso {
   id         Int              @id @default(autoincrement())
   sesionId   Int              @map("sesion_id")
-  sesion     SesionAsistencia @relation(fields: [sesionId], references: [id], onDelete: Cascade)
   expediente String
   createdAt  DateTime         @default(now())
+  sesion     SesionAsistencia @relation(fields: [sesionId], references: [id], onDelete: Cascade)
 
   @@unique([sesionId, expediente])
   @@map("asistencias_cursos")
@@ -227,23 +222,24 @@ model CertificadoCurso {
   id         Int      @id @default(autoincrement())
   expediente String
   cursoId    Int      @map("curso_id")
-  curso      Curso    @relation(fields: [cursoId], references: [id], onDelete: Cascade)
   emitidoAt  DateTime @default(now())
+  curso      Curso    @relation(fields: [cursoId], references: [id], onDelete: Cascade)
 
   @@unique([expediente, cursoId])
   @@map("certificados_cursos")
 }
 
 model CursoOpcion {
-  id            Int               @id @default(autoincrement())
-  cursoId       Int               @map("curso_id")
+  id            Int                @id @default(autoincrement())
+  cursoId       Int                @map("curso_id")
   nombre        String
-  precio        Float             @default(0)
-  cupo          Int               @default(0)
-  inscritos     Int               @default(0)
-  curso         Curso             @relation(fields: [cursoId], references: [id], onDelete: Cascade)
+  precio        Float              @default(0)
+  cupo          Int                @default(0)
+  inscritos     Int                @default(0)
+  createdAt     DateTime           @default(now())
+  infoPrivada   String?            @map("info_privada")
+  curso         Curso              @relation(fields: [cursoId], references: [id], onDelete: Cascade)
   inscripciones InscripcionCurso[]
-  createdAt     DateTime          @default(now())
 
   @@map("curso_opciones")
 }
@@ -252,47 +248,47 @@ model InscripcionCurso {
   id          Int          @id @default(autoincrement())
   expediente  String
   cursoId     Int          @map("curso_id")
-  opcionId    Int?         @map("opcion_id")
+  fecha       DateTime     @default(now())
   estado      String       @default("pendiente_pago")
   metodoPago  String?      @map("metodo_pago")
-  mpPaymentId String?      @map("mp_payment_id")
+  opcionId    Int?         @map("opcion_id")
   fechaPago   DateTime?    @map("fecha_pago")
+  mpPaymentId String?      @map("mp_payment_id")
   curso       Curso        @relation(fields: [cursoId], references: [id])
   opcion      CursoOpcion? @relation(fields: [opcionId], references: [id])
-  fecha       DateTime     @default(now())
 
   @@map("inscripciones_cursos")
 }
 
 model Noticia {
-  id          Int      @id @default(autoincrement())
-  titulo      String
-  contenido   String
-  imagen      String?
-  imagenes    String[] @default([])
-  activa      Boolean  @default(true)
-  destacada   Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        Int      @id @default(autoincrement())
+  titulo    String
+  contenido String
+  imagen    String?
+  activa    Boolean  @default(true)
+  destacada Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  imagenes  String[] @default([])
 
   @@map("noticias")
 }
 
 model Biblioteca {
-  id          Int      @id @default(autoincrement())
-  tipo        String   // "libro" | "jurisprudencia"
-  titulo      String
-  autor       String
-  categoria   String
-  tags        String[] @default([])
-  archivo     String   // URL del PDF
-  portada     String?  // URL imagen opcional
-  activa      Boolean  @default(true)
-  destacado   Boolean  @default(false)
-  vistas      Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  favoritos   BibliotecaFavorito[]
+  id        Int                  @id @default(autoincrement())
+  tipo      String
+  titulo    String
+  autor     String
+  categoria String
+  tags      String[]             @default([])
+  archivo   String
+  portada   String?
+  activa    Boolean              @default(true)
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+  destacado Boolean              @default(false)
+  vistas    Int                  @default(0)
+  favoritos BibliotecaFavorito[]
 
   @@map("biblioteca")
 }
@@ -306,11 +302,11 @@ model BibliotecaCategoria {
 }
 
 model BibliotecaFavorito {
-  id           Int       @id @default(autoincrement())
+  id           Int        @id @default(autoincrement())
   expediente   String
-  bibliotecaId Int       @map("biblioteca_id")
+  bibliotecaId Int        @map("biblioteca_id")
+  createdAt    DateTime   @default(now())
   biblioteca   Biblioteca @relation(fields: [bibliotecaId], references: [id], onDelete: Cascade)
-  createdAt    DateTime  @default(now())
 
   @@unique([expediente, bibliotecaId])
   @@map("biblioteca_favoritos")
@@ -321,7 +317,7 @@ model Evento {
   titulo      String
   descripcion String?
   fecha       DateTime
-  tipo        String   @default("institucional") // institucional, social, feriado, curso
+  tipo        String   @default("institucional")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -334,7 +330,7 @@ model Producto {
   precio        Float
   stock         Int
   habilitado    Boolean  @default(true)
-  limiteMensual Int?     // opcional — null = sin límite
+  limiteMensual Int?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   pedidos       Pedido[]
@@ -346,16 +342,16 @@ model Pedido {
   id          Int      @id @default(autoincrement())
   expediente  String
   productoId  Int      @map("producto_id")
-  producto    Producto @relation(fields: [productoId], references: [id])
   cantidad    Int      @default(1)
-  metodoPago  String   // "mercadopago" | "transferencia" | "efectivo"
-  comprobante String?  // URL — solo transferencia
-  estado      String   @default("pendiente") // pendiente | aprobado | entregado | cancelado
+  metodoPago  String
+  comprobante String?
+  estado      String   @default("pendiente")
   observacion String?
-  mpPaymentId String?  @map("mp_payment_id")
-  exportado   Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  exportado   Boolean  @default(false)
+  mpPaymentId String?  @map("mp_payment_id")
+  producto    Producto @relation(fields: [productoId], references: [id])
 
   @@map("pedidos")
 }
@@ -365,7 +361,7 @@ model Notificacion {
   expediente String
   titulo     String
   mensaje    String
-  tipo       String   @default("general") // general | pedido
+  tipo       String   @default("general")
   leida      Boolean  @default(false)
   createdAt  DateTime @default(now())
 
@@ -376,8 +372,8 @@ model FaqCategoria {
   id        Int      @id @default(autoincrement())
   nombre    String
   orden     Int      @default(0)
-  faqs      Faq[]
   createdAt DateTime @default(now())
+  faqs      Faq[]
 
   @@map("faq_categorias")
 }
@@ -385,11 +381,11 @@ model FaqCategoria {
 model Faq {
   id          Int          @id @default(autoincrement())
   categoriaId Int          @map("categoria_id")
-  categoria   FaqCategoria @relation(fields: [categoriaId], references: [id], onDelete: Cascade)
   pregunta    String
   respuesta   String
   orden       Int          @default(0)
   createdAt   DateTime     @default(now())
+  categoria   FaqCategoria @relation(fields: [categoriaId], references: [id], onDelete: Cascade)
 
   @@map("faqs")
 }
@@ -399,9 +395,9 @@ model Conversacion {
   expediente String
   asunto     String
   archivada  Boolean       @default(false)
-  mensajes   MensajeChat[]
   createdAt  DateTime      @default(now())
   updatedAt  DateTime      @updatedAt
+  mensajes   MensajeChat[]
 
   @@map("conversaciones")
 }
@@ -409,24 +405,24 @@ model Conversacion {
 model MensajeChat {
   id             Int          @id @default(autoincrement())
   conversacionId Int          @map("conversacion_id")
-  conversacion   Conversacion @relation(fields: [conversacionId], references: [id], onDelete: Cascade)
-  de             String       // "admin" | "user"
+  de             String
   contenido      String
   leido          Boolean      @default(false)
   createdAt      DateTime     @default(now())
+  conversacion   Conversacion @relation(fields: [conversacionId], references: [id], onDelete: Cascade)
 
   @@map("mensajes_chat")
 }
 
 model FirmaAutoridad {
-  id              Int      @id @default(autoincrement())
-  cargo           String
-  nombre          String?
-  firma           String?
-  enCredencial    Boolean  @default(false)
-  enCertificado   Boolean  @default(false)
-  orden           Int      @default(0)
-  updatedAt       DateTime @updatedAt
+  id            Int      @id @default(autoincrement())
+  cargo         String
+  nombre        String?
+  firma         String?
+  updatedAt     DateTime @updatedAt
+  enCertificado Boolean  @default(false)
+  enCredencial  Boolean  @default(false)
+  orden         Int      @default(0)
 
   @@map("firmas_autoridades")
 }
@@ -436,8 +432,8 @@ model EnvioMasivo {
   asunto        String
   contenido     String
   totalEnvios   Int                       @default(0)
-  destinatarios EnvioMasivoDestinatario[]
   createdAt     DateTime                  @default(now())
+  destinatarios EnvioMasivoDestinatario[]
 
   @@map("envios_masivos")
 }
@@ -445,10 +441,10 @@ model EnvioMasivo {
 model EnvioMasivoDestinatario {
   id         Int         @id @default(autoincrement())
   envioId    Int         @map("envio_id")
-  envio      EnvioMasivo @relation(fields: [envioId], references: [id], onDelete: Cascade)
   expediente String
   leido      Boolean     @default(false)
   leidoAt    DateTime?   @map("leido_at")
+  envio      EnvioMasivo @relation(fields: [envioId], references: [id], onDelete: Cascade)
 
   @@unique([envioId, expediente])
   @@map("envios_masivos_destinatarios")
@@ -473,13 +469,13 @@ model AdminLog {
 }
 
 model TribunalEtica {
-  id          Int      @id @default(autoincrement())
-  expediente  String
-  texto       String
-  inicio      DateTime?
-  fin         DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         Int       @id @default(autoincrement())
+  expediente String
+  texto      String
+  inicio     DateTime?
+  fin        DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
   @@map("tribunal_etica")
 }
@@ -488,18 +484,18 @@ model RepositorioCategoria {
   id        Int                  @id @default(autoincrement())
   nombre    String
   orden     Int                  @default(0)
-  archivos  RepositorioArchivo[]
   createdAt DateTime             @default(now())
+  archivos  RepositorioArchivo[]
 
   @@map("repositorio_categorias")
 }
 
 model CambioDatos {
-  id          Int      @id @default(autoincrement())
-  expediente  String
-  campos      Json     // { fieldName: { anterior: string, nuevo: string } }
-  leido       Boolean  @default(false)
-  createdAt   DateTime @default(now())
+  id         Int      @id @default(autoincrement())
+  expediente String
+  campos     Json
+  leido      Boolean  @default(false)
+  createdAt  DateTime @default(now())
 
   @@map("cambios_datos")
 }
@@ -507,7 +503,6 @@ model CambioDatos {
 model RepositorioArchivo {
   id          Int                  @id @default(autoincrement())
   categoriaId Int                  @map("categoria_id")
-  categoria   RepositorioCategoria @relation(fields: [categoriaId], references: [id], onDelete: Cascade)
   nombre      String
   descripcion String?
   archivo     String
@@ -515,6 +510,7 @@ model RepositorioArchivo {
   tamano      String?
   descargas   Int                  @default(0)
   createdAt   DateTime             @default(now())
+  categoria   RepositorioCategoria @relation(fields: [categoriaId], references: [id], onDelete: Cascade)
 
   @@map("repositorio_archivos")
 }
@@ -522,11 +518,11 @@ model RepositorioArchivo {
 model PagoPendiente {
   id          Int      @id @default(autoincrement())
   expediente  String
-  tipo        String   // "matricula_mensual" | "matricula_anual" | "deuda" | "curso"
-  ref         String   // cuotaId / "anual" / comma-separated deudaIds / inscripcionId
+  tipo        String
+  ref         String
   monto       Float
-  comprobante String   // URL del comprobante
-  estado      String   @default("pendiente") // "pendiente" | "aprobado" | "rechazado"
+  comprobante String
+  estado      String   @default("pendiente")
   nota        String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -546,17 +542,17 @@ model RecuperacionToken {
 }
 
 model HistorialMatricula {
-  id           Int      @id @default(autoincrement())
+  id           Int       @id @default(autoincrement())
   expediente   String
-  accion       String   // "suspension" | "habilitacion" | "cancelacion"
+  accion       String
   comentario   String
-  motivoNombre String?
-  motivoId     Int?
-  motivoCobra  Boolean?  // snapshot: si el motivo cobra al rehabilitar
-  fechaInicio  DateTime? @map("fecha_inicio")
-  fechaFin     DateTime? @map("fecha_fin")
   adminNombre  String?
   createdAt    DateTime  @default(now())
+  motivoNombre String?
+  motivoId     Int?
+  motivoCobra  Boolean?
+  fechaFin     DateTime? @map("fecha_fin")
+  fechaInicio  DateTime? @map("fecha_inicio")
 
   @@index([expediente])
   @@map("historial_matricula")
@@ -565,10 +561,10 @@ model HistorialMatricula {
 model MotivoSuspension {
   id          Int      @id @default(autoincrement())
   nombre      String
-  tipo        String   // "suspension" | "cancelacion" | "ambos"
-  aplicaMulta Boolean  @default(false) // cobra al rehabilitar (usa valor global JUS)
+  tipo        String
   activo      Boolean  @default(true)
   createdAt   DateTime @default(now())
+  aplicaMulta Boolean  @default(false)
 
   @@map("motivos_suspension")
 }
@@ -576,43 +572,32 @@ model MotivoSuspension {
 model SolicitudRehabilitacion {
   id            Int      @id @default(autoincrement())
   expediente    String
-  estado        String   @default("borrador") // borrador | pendiente | aprobada | rechazada
-  pasoActual    Int      @default(1)
-
-  // Paso 1 — Pago de deuda
-  deudaOriginal Float?   // snapshot al iniciar
-  p1Metodo      String?  // sin_deuda | mercadopago | transferencia
-  p1Comprobante String?
-  p1MpPaymentId String?
-  p1Ok          Boolean  @default(false)
-
-  // Paso 2 — Formulario
-  p2Desde       String?  // "a partir de"
-  p2Razon       String?  // "en razón de"
-  p2Ok          Boolean  @default(false)
-
-  // Paso 3 — PDF Reincidencia
-  p3Pdf         String?
-  p3Ok          Boolean  @default(false)
-
-  // Paso 4 — Adhesión a débito
-  p4Tipo        String?  // CBU | Tarjeta
-  p4Dni         String?
-  p4Doc         String?
-  p4Ok          Boolean  @default(false)
-
-  // Paso 5 — Costo rehabilitación
-  p5JusAmount   Float?
-  p5Pesos       Float?
-  p5Metodo      String?  // mercadopago | transferencia
-  p5Comprobante String?
-  p5MpPaymentId String?
-  p5Ok          Boolean  @default(false)
-
+  estado        String   @default("borrador")
   respuesta     String?
   adminNombre   String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+  deudaOriginal Float?
+  p1Comprobante String?
+  p1Metodo      String?
+  p1MpPaymentId String?
+  p1Ok          Boolean  @default(false)
+  p2Desde       String?
+  p2Ok          Boolean  @default(false)
+  p2Razon       String?
+  p3Ok          Boolean  @default(false)
+  p3Pdf         String?
+  p4Dni         String?
+  p4Doc         String?
+  p4Ok          Boolean  @default(false)
+  p4Tipo        String?
+  p5Comprobante String?
+  p5JusAmount   Float?
+  p5Metodo      String?
+  p5MpPaymentId String?
+  p5Ok          Boolean  @default(false)
+  p5Pesos       Float?
+  pasoActual    Int      @default(1)
 
   @@index([expediente])
   @@map("solicitudes_rehabilitacion")
@@ -620,7 +605,7 @@ model SolicitudRehabilitacion {
 
 model FacturaSantaFe {
   id         Int      @id @default(autoincrement())
-  tipo       String   // "mensual" | "anual" | "deuda"
+  tipo       String
   periodo    String
   expediente String
   cod        String
@@ -638,7 +623,7 @@ model Tutorial {
   titulo      String
   descripcion String?
   videoUrl    String
-  tipo        String   @default("url") // "url" | "embed"
+  tipo        String   @default("url")
   orden       Int      @default(0)
   activo      Boolean  @default(true)
   createdAt   DateTime @default(now())

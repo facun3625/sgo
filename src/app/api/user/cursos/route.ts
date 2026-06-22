@@ -25,30 +25,37 @@ export async function GET() {
 
     const inscritosMap = new Map(inscripciones.map(i => [i.cursoId, i]));
 
-    const data = cursos.map(curso => ({
-        id: curso.id,
-        titulo: curso.titulo,
-        descripcion: curso.descripcion,
-        organizador: curso.organizador,
-        fecha: curso.fecha,
-        fechaFin: curso.fechaFin,
-        hora: curso.hora,
-        lugar: curso.lugar,
-        imagen: curso.imagen,
-        modalidad: curso.modalidad,
-        fechaLimiteInscripcion: curso.fechaLimiteInscripcion,
-        totalInscripciones: curso._count.inscripciones,
-        opciones: curso.opciones.map(op => ({
-            id: op.id,
-            nombre: op.nombre,
-            precio: op.precio,
-            cupo: op.cupo,
-            inscritos: op.inscritos,
-            disponible: op.cupo === 0 || op.inscritos < op.cupo,
-        })),
-        tipoAsistencia: curso.tipoAsistencia,
-        inscripcion: inscritosMap.get(curso.id) || null,
-    }));
+    const data = cursos.map(curso => {
+        const inscripcion = inscritosMap.get(curso.id) || null;
+        const infoPrivada = inscripcion?.estado === "confirmada" && inscripcion.opcionId
+            ? (curso.opciones.find(o => o.id === inscripcion.opcionId)?.infoPrivada ?? null)
+            : null;
+
+        return {
+            id: curso.id,
+            titulo: curso.titulo,
+            descripcion: curso.descripcion,
+            organizador: curso.organizador,
+            fecha: curso.fecha,
+            fechaFin: curso.fechaFin,
+            hora: curso.hora,
+            lugar: curso.lugar,
+            imagen: curso.imagen,
+            modalidad: curso.modalidad,
+            fechaLimiteInscripcion: curso.fechaLimiteInscripcion,
+            totalInscripciones: curso._count.inscripciones,
+            opciones: curso.opciones.map(op => ({
+                id: op.id,
+                nombre: op.nombre,
+                precio: op.precio,
+                cupo: op.cupo,
+                inscritos: op.inscritos,
+                disponible: op.cupo === 0 || op.inscritos < op.cupo,
+            })),
+            tipoAsistencia: curso.tipoAsistencia,
+            inscripcion: inscripcion ? { ...inscripcion, infoPrivada } : null,
+        };
+    });
 
     return NextResponse.json({ cursos: data, transferenciaHabilitada: transferenciaConfig?.valor === "1", expediente: session.expediente });
 }

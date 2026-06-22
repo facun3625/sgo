@@ -31,7 +31,7 @@ interface Curso {
     fechaLimiteInscripcion: string | null;
     tipoAsistencia: string;
     opciones: Opcion[];
-    inscripcion: { id: number; cursoId: number; opcionId: number | null; estado: string } | null;
+    inscripcion: { id: number; cursoId: number; opcionId: number | null; estado: string; infoPrivada?: string | null } | null;
 }
 
 function CertificadoCard({ cursoId, onDescargar, descargando }: { cursoId: number; onDescargar: () => void; descargando: boolean }) {
@@ -256,7 +256,15 @@ export default function CursoDetailPage() {
                         )}
                     </div>
 
-                            {/* Certificado */}
+                            {/* Info privada de la opción */}
+                    {curso.inscripcion.estado === "confirmada" && curso.inscripcion.infoPrivada && (
+                        <div className="px-4 py-3.5 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl space-y-1">
+                            <p className="text-[13px] font-bold text-blue-800 dark:text-blue-300">Información de acceso</p>
+                            <p className="text-[13px] text-blue-700 dark:text-blue-400 whitespace-pre-wrap">{curso.inscripcion.infoPrivada}</p>
+                        </div>
+                    )}
+
+                    {/* Certificado */}
                     {curso.inscripcion.estado === "confirmada" && (
                         <CertificadoCard cursoId={curso.id} onDescargar={handleDescargarCertificado} descargando={descargando} />
                     )}

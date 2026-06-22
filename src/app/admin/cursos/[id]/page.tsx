@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Upload, X, Plus, Trash2, Loader2, GraduationCap, Users, AlertCircle, CalendarDays, UserCheck, Award, CheckCircle2, RotateCcw } from "lucide-react";
+import { ArrowLeft, Upload, X, Plus, Trash2, Loader2, GraduationCap, Users, AlertCircle, CalendarDays, UserCheck, Award, CheckCircle2, RotateCcw, Download } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 
 interface Opcion {
@@ -12,6 +12,7 @@ interface Opcion {
     precio: number;
     cupo: number;
     inscritos?: number;
+    infoPrivada?: string | null;
 }
 
 interface Dia {
@@ -183,7 +184,7 @@ export default function EditarCursoPage() {
     }
 
     function addOpcion() {
-        setOpciones(prev => [...prev, { nombre: "", precio: 0, cupo: 0 }]);
+        setOpciones(prev => [...prev, { nombre: "", precio: 0, cupo: 0, infoPrivada: "" }]);
     }
 
     function removeOpcion(i: number) {
@@ -228,6 +229,7 @@ export default function EditarCursoPage() {
                         nombre: o.nombre,
                         precio: Number(o.precio),
                         cupo: Number(o.cupo),
+                        infoPrivada: o.infoPrivada || null,
                     })),
                     dias: form.tipoAsistencia === "por_dia" ? dias : [],
                 }),
@@ -602,28 +604,40 @@ export default function EditarCursoPage() {
 
                         <div className="space-y-3">
                             {opciones.map((op, i) => (
-                                <div key={i} className="flex items-end gap-2 p-3 bg-slate-50 dark:bg-slate-800 rounded-xl">
-                                    <div className="flex-1 space-y-1.5">
-                                        <label className="text-[11px] font-medium text-slate-400">Nombre</label>
-                                        <input value={op.nombre} onChange={e => updateOpcion(i, "nombre", e.target.value)}
-                                            className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white text-[12px] focus:outline-none focus:ring-2 focus:ring-[#063f68]/30 focus:border-[#063f68]" />
+                                <div key={i} className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl space-y-2">
+                                    <div className="flex items-end gap-2">
+                                        <div className="flex-1 space-y-1.5">
+                                            <label className="text-[11px] font-medium text-slate-400">Nombre</label>
+                                            <input value={op.nombre} onChange={e => updateOpcion(i, "nombre", e.target.value)}
+                                                className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white text-[12px] focus:outline-none focus:ring-2 focus:ring-[#063f68]/30 focus:border-[#063f68]" />
+                                        </div>
+                                        <div className="w-24 space-y-1.5">
+                                            <label className="text-[11px] font-medium text-slate-400">Precio $</label>
+                                            <input type="number" min="0" value={op.precio} onChange={e => updateOpcion(i, "precio", e.target.value)}
+                                                className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white text-[12px] focus:outline-none focus:ring-2 focus:ring-[#063f68]/30 focus:border-[#063f68]" />
+                                        </div>
+                                        <div className="w-20 space-y-1.5">
+                                            <label className="text-[11px] font-medium text-slate-400">Cupo</label>
+                                            <input type="number" min="0" value={op.cupo} onChange={e => updateOpcion(i, "cupo", e.target.value)}
+                                                className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white text-[12px] focus:outline-none focus:ring-2 focus:ring-[#063f68]/30 focus:border-[#063f68]" />
+                                        </div>
+                                        {opciones.length > 1 && (
+                                            <button type="button" onClick={() => removeOpcion(i)}
+                                                className="flex items-center justify-center w-9 h-9 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all">
+                                                <Trash2 size={13} />
+                                            </button>
+                                        )}
                                     </div>
-                                    <div className="w-24 space-y-1.5">
-                                        <label className="text-[11px] font-medium text-slate-400">Precio $</label>
-                                        <input type="number" min="0" value={op.precio} onChange={e => updateOpcion(i, "precio", e.target.value)}
-                                            className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white text-[12px] focus:outline-none focus:ring-2 focus:ring-[#063f68]/30 focus:border-[#063f68]" />
+                                    <div className="space-y-1.5">
+                                        <label className="text-[11px] font-medium text-slate-400">Información privada para inscriptos <span className="font-normal opacity-60">(opcional — solo visible al confirmar)</span></label>
+                                        <textarea
+                                            value={op.infoPrivada ?? ""}
+                                            onChange={e => updateOpcion(i, "infoPrivada", e.target.value)}
+                                            placeholder="Ej: Link de Zoom: https://... · ID: 123 · Clave: abc"
+                                            rows={2}
+                                            className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white text-[12px] focus:outline-none focus:ring-2 focus:ring-[#063f68]/30 focus:border-[#063f68] resize-none"
+                                        />
                                     </div>
-                                    <div className="w-20 space-y-1.5">
-                                        <label className="text-[11px] font-medium text-slate-400">Cupo</label>
-                                        <input type="number" min="0" value={op.cupo} onChange={e => updateOpcion(i, "cupo", e.target.value)}
-                                            className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white text-[12px] focus:outline-none focus:ring-2 focus:ring-[#063f68]/30 focus:border-[#063f68]" />
-                                    </div>
-                                    {opciones.length > 1 && (
-                                        <button type="button" onClick={() => removeOpcion(i)}
-                                            className="flex items-center justify-center w-9 h-9 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all">
-                                            <Trash2 size={13} />
-                                        </button>
-                                    )}
                                 </div>
                             ))}
                         </div>
@@ -657,7 +671,15 @@ export default function EditarCursoPage() {
                         </div>
                     ) : (
                         <>
-                            {/* Contadores */}
+                            {/* Contadores + Export */}
+                            <div className="flex items-center gap-3">
+                                <a
+                                    href={`/api/admin/cursos/${id}/export`}
+                                    download
+                                    className="flex items-center gap-1.5 px-3 h-8 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-[11px] font-bold hover:bg-slate-100 dark:hover:bg-slate-700 transition-all ml-auto">
+                                    <Download size={12} /> Descargar listado
+                                </a>
+                            </div>
                             <div className="grid grid-cols-3 gap-3">
                                 {[
                                     { label: "Total", count: inscripciones.length, cls: "bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300" },
