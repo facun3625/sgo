@@ -16,7 +16,7 @@ export async function GET() {
     if (!session?.expediente) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     const expediente = session.expediente;
 
-    const [solicitud, dato, deudas, jusConfig, user, lastSusp] = await Promise.all([
+    const [solicitud, dato, deudas, jusConfig, user, lastSusp, paso5Config] = await Promise.all([
         prisma.solicitudRehabilitacion.findFirst({
             where: { expediente, estado: { in: ["borrador", "pendiente"] } },
             orderBy: { createdAt: "desc" },
@@ -29,6 +29,7 @@ export async function GET() {
             where: { expediente, accion: { in: ["suspension", "cancelacion"] } },
             orderBy: { createdAt: "desc" },
         }),
+        prisma.config.findUnique({ where: { clave: "rehab_paso5_habilitado" } }),
     ]);
 
     // También traer la última solicitud rechazada
@@ -41,6 +42,7 @@ export async function GET() {
     const jusValor = jusConfig ? parseFloat(jusConfig.valor) : 0;
     const motivoCobra = lastSusp?.motivoCobra ?? false;
     const costoJus = calcularJus(deudaTotal, jusValor, motivoCobra);
+    const paso5Habilitado = paso5Config ? paso5Config.valor !== "0" : true;
 
     return NextResponse.json({
         solicitud,
@@ -54,6 +56,7 @@ export async function GET() {
         costoJus,
         costoPesos: jusValor * costoJus,
         userStatus: user?.status ?? "active",
+        paso5Habilitado,
     });
 }
 

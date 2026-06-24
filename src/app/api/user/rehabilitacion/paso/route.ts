@@ -76,7 +76,12 @@ export async function PATCH(req: NextRequest) {
         update = { p4Tipo: tipo, p4Dni: dniUrl, p4Doc: docUrl, p4Ok: true, pasoActual: 5 };
     } else if (paso === 5) {
         const metodo = fd.get("metodo") as string;
-        if (metodo === "transferencia") {
+        if (metodo === "presencial") {
+            const paso5Config = await prisma.config.findUnique({ where: { clave: "rehab_paso5_habilitado" } });
+            const paso5Habilitado = paso5Config ? paso5Config.valor !== "0" : true;
+            if (paso5Habilitado) return NextResponse.json({ error: "El pago online está habilitado, usá un método de pago" }, { status: 400 });
+            update = { p5Metodo: "presencial", p5Ok: true, estado: "pendiente" };
+        } else if (metodo === "transferencia") {
             const file = fd.get("comprobante") as File;
             const url = await saveFile(file, "p5", expediente);
             if (!url) return NextResponse.json({ error: "El comprobante es requerido" }, { status: 400 });

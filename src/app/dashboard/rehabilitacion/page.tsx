@@ -42,6 +42,7 @@ interface Context {
     costoJus: number;
     costoPesos: number;
     userStatus: string;
+    paso5Habilitado: boolean;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -81,7 +82,7 @@ export default function RehabilitacionPage() {
     const [ultimaRechazada, setUltimaRechazada] = useState<Solicitud | null>(null);
     const [ctx, setCtx] = useState<Context>({
         dato: null, deudaTotal: 0, deudas: [], jusValor: 0,
-        motivoCobra: false, motivoNombre: null, costoJus: 1.5, costoPesos: 0, userStatus: "active",
+        motivoCobra: false, motivoNombre: null, costoJus: 1.5, costoPesos: 0, userStatus: "active", paso5Habilitado: true,
     });
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState("");
@@ -125,6 +126,7 @@ export default function RehabilitacionPage() {
                 dato: data.dato, deudaTotal: data.deudaTotal, deudas: data.deudas ?? [],
                 jusValor: data.jusValor, motivoCobra: data.motivoCobra, motivoNombre: data.motivoNombre,
                 costoJus: data.costoJus, costoPesos: data.costoPesos, userStatus: data.userStatus,
+                paso5Habilitado: data.paso5Habilitado !== false,
             });
         } finally { setLoading(false); }
     }
@@ -617,8 +619,42 @@ export default function RehabilitacionPage() {
                 </div>
             )}
 
-            {/* ── PASO 5: Pago ── */}
-            {paso === 5 && (
+            {/* ── PASO 5: Pago (o presencial) ── */}
+            {paso === 5 && !ctx.paso5Habilitado && (
+                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6 space-y-5">
+                    <div>
+                        <h2 className="text-[16px] font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                            <ShieldOff size={16} className="text-amber-500" /> Finalización del trámite
+                        </h2>
+                        <p className="text-[13px] text-slate-700 mt-0.5">Último paso para enviar tu solicitud.</p>
+                    </div>
+
+                    <div className="p-5 bg-amber-50 dark:bg-amber-900/20 border-2 border-amber-300 dark:border-amber-700 rounded-2xl space-y-3 text-center">
+                        <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/40 rounded-xl flex items-center justify-center mx-auto">
+                            <Library size={22} className="text-amber-600 dark:text-amber-400" />
+                        </div>
+                        <p className="text-[15px] font-black text-amber-800 dark:text-amber-300 uppercase tracking-wide leading-snug">
+                            DEBEN ASISTIR EN FORMA PRESENCIAL AL COLEGIO, AL ÁREA DE MATRICULACIÓN, PARA FINALIZAR EL TRÁMITE DE REHABILITACIÓN, SINO DICHO TRÁMITE NO ESTARÁ COMPLETO
+                        </p>
+                    </div>
+
+                    <div className="flex gap-3">
+                        <button onClick={() => setSolicitud(s => s ? { ...s, pasoActual: 4 } : s)}
+                            className="flex items-center gap-1.5 px-4 h-10 border border-slate-200 dark:border-slate-700 text-slate-700 rounded-xl text-[13px] font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                            <ArrowLeft size={13} /> Atrás
+                        </button>
+                        <button
+                            onClick={() => submitPaso(5, { metodo: "presencial" })}
+                            disabled={saving}
+                            className="flex-1 h-10 flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-[14px] disabled:opacity-40 transition-all">
+                            {saving ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
+                            Entendido — Enviar solicitud
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {paso === 5 && ctx.paso5Habilitado && (
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6 space-y-5">
                     <div>
                         <h2 className="text-[16px] font-bold text-slate-800 dark:text-white flex items-center gap-2">

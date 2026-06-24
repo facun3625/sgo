@@ -35,6 +35,7 @@ export async function GET() {
         calculadoraHonorariosActiva:  map.calculadoraHonorariosActiva  !== "0",
         valorJus:                     map.valorJus ?? "",
         valorJusActualizadoEn:        map.valorJusActualizadoEn ?? "",
+        rehab_paso5_habilitado:       map.rehab_paso5_habilitado !== "0",
     });
 }
 

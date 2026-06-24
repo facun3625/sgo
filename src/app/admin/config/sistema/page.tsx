@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Trash2, Loader2, ShieldAlert, Settings2, ToggleLeft, ToggleRight, Calculator, CalendarDays, Scale, Gavel, Banknote, Save } from "lucide-react";
+import { Trash2, Loader2, ShieldAlert, Settings2, ToggleLeft, ToggleRight, Calculator, CalendarDays, Scale, Gavel, Banknote, Save, ShieldOff } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 
 const IMPORTAR_TABS = [
@@ -43,6 +43,10 @@ export default function ConfigSistemaPage() {
     const [calculadoraHonorariosActiva, setCalculadoraHonorariosActiva] = useState(true);
     const [guardandoCalcHonorarios, setGuardandoCalcHonorarios] = useState(false);
 
+    // Rehabilitación paso 5
+    const [rehab5Habilitado, setRehab5Habilitado] = useState(true);
+    const [guardandoRehab5, setGuardandoRehab5] = useState(false);
+
     // Valor JUS
     const [valorJus, setValorJus] = useState("");
     const [valorJusActualizadoEn, setValorJusActualizadoEn] = useState("");
@@ -63,6 +67,7 @@ export default function ConfigSistemaPage() {
                     setCalculadoraIncapacidadActiva(data.calculadoraIncapacidadActiva !== false);
                     setCalculadoraPenasActiva(data.calculadoraPenasActiva !== false);
                     setCalculadoraHonorariosActiva(data.calculadoraHonorariosActiva !== false);
+                    setRehab5Habilitado(data.rehab_paso5_habilitado !== false);
                     if (data.valorJus) setValorJus(data.valorJus);
                     if (data.valorJusActualizadoEn) setValorJusActualizadoEn(data.valorJusActualizadoEn);
                 }
@@ -398,6 +403,47 @@ export default function ConfigSistemaPage() {
                             </button>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            {/* Rehabilitación — Paso 5 */}
+            <div className="border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden">
+                <div className="px-5 py-3 bg-slate-50 dark:bg-slate-800/50 flex items-center gap-2 border-b border-slate-100 dark:border-slate-800">
+                    <ShieldOff size={14} className="text-slate-500" />
+                    <span className="text-[12px] font-bold text-slate-700 dark:text-slate-300">Rehabilitación — Paso 5 (pago online)</span>
+                </div>
+                <div className="px-5 py-5 space-y-3">
+                    <p className="text-[12px] text-slate-500 dark:text-slate-400">
+                        Si está deshabilitado, el paso 5 reemplaza el pago online por un aviso para que el matriculado finalice el trámite en forma presencial en el área de matriculación.
+                    </p>
+                    <button
+                        onClick={async () => {
+                            const nuevo = !rehab5Habilitado;
+                            setRehab5Habilitado(nuevo);
+                            setGuardandoRehab5(true);
+                            try {
+                                const res = await fetch("/api/admin/config", {
+                                    method: "POST",
+                                    headers: { "Content-Type": "application/json" },
+                                    body: JSON.stringify({ clave: "rehab_paso5_habilitado", valor: nuevo ? "1" : "0" }),
+                                });
+                                if (res.ok) showToast(`Paso 5 de rehabilitación ${nuevo ? "habilitado" : "deshabilitado"}`, "success");
+                                else showToast("Error al guardar", "error");
+                            } catch { showToast("Error de conexión", "error"); }
+                            finally { setGuardandoRehab5(false); }
+                        }}
+                        disabled={guardandoRehab5}
+                        className={`flex items-center justify-between gap-3 px-4 py-3 rounded-xl border text-[13px] font-medium transition-all w-full sm:w-72
+                            ${rehab5Habilitado
+                                ? "bg-[#063f68]/5 dark:bg-blue-900/20 border-[#063f68]/20 dark:border-blue-700 text-slate-700 dark:text-slate-200"
+                                : "bg-slate-50 dark:bg-slate-800/30 border-slate-100 dark:border-slate-700 text-slate-400"}`}>
+                        <span>{rehab5Habilitado ? "Pago online habilitado" : "Pago online deshabilitado (presencial)"}</span>
+                        {guardandoRehab5
+                            ? <Loader2 size={18} className="animate-spin text-slate-400 shrink-0" />
+                            : rehab5Habilitado
+                                ? <ToggleRight size={22} className="text-[#063f68] dark:text-blue-400 shrink-0" />
+                                : <ToggleLeft size={22} className="text-slate-300 dark:text-slate-600 shrink-0" />}
+                    </button>
                 </div>
             </div>
 
