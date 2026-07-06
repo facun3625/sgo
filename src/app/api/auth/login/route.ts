@@ -15,9 +15,8 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        const user = await prisma.user.findFirst({
-            where: { OR: [{ expediente }, { cod: expediente }] },
-        });
+        const user = (await prisma.user.findFirst({ where: { expediente } }))
+            ?? (await prisma.user.findFirst({ where: { cod: expediente } }));
 
         if (!user) {
             return NextResponse.json(

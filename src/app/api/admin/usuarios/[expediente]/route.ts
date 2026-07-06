@@ -14,13 +14,12 @@ export async function DELETE(
     const { expediente } = await params;
     if (!expediente) return NextResponse.json({ error: "Expediente requerido" }, { status: 400 });
 
-    // Buscar el dato para obtener también el cod
-    const dato = await prisma.dato.findFirst({
-        where: { OR: [{ expediente }, { cod: expediente }] },
-    });
+    // Buscar el dato exclusivamente por expediente — si no matchea, no se busca por cod
+    const dato = await prisma.dato.findFirst({ where: { expediente } });
+    if (!dato) return NextResponse.json({ error: "Matriculado no encontrado" }, { status: 404 });
 
-    const exp = dato?.expediente ?? expediente;
-    const cod = dato?.cod ?? expediente;
+    const exp = dato.expediente!;
+    const cod = dato.cod;
 
     await prisma.$transaction([
         // Trámites / gestiones

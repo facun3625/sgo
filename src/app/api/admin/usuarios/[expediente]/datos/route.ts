@@ -9,9 +9,7 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ expedi
     const session = await getSession();
     if (!session || !isAdmin(session.accessLevel)) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     const { expediente } = await params;
-    const dato = await prisma.dato.findFirst({
-        where: { OR: [{ expediente }, { cod: expediente }] },
-    });
+    const dato = await prisma.dato.findFirst({ where: { expediente } });
     if (!dato) return NextResponse.json({ error: "No encontrado" }, { status: 404 });
     return NextResponse.json(dato);
 }
@@ -21,9 +19,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ ex
     if (!session || !isAdmin(session.accessLevel)) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     const { expediente } = await params;
 
-    const dato = await prisma.dato.findFirst({
-        where: { OR: [{ expediente }, { cod: expediente }] },
-    });
+    const dato = await prisma.dato.findFirst({ where: { expediente } });
     if (!dato) return NextResponse.json({ error: "No encontrado" }, { status: 404 });
 
     const body = await req.json();

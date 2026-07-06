@@ -28,13 +28,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ ex
         if (motivo) { motivoNombre = motivo.nombre; motivoCobra = motivo.aplicaMulta; }
     }
 
-    const user = (await prisma.user.findFirst({ where: { expediente } }))
-        ?? (await prisma.user.findFirst({ where: { cod: expediente } }));
+    const user = await prisma.user.findFirst({ where: { expediente } });
 
     // Sin cuenta: solo dejar registro en historial, sin crear User
     if (!user) {
-        const dato = (await prisma.dato.findFirst({ where: { expediente } }))
-            ?? (await prisma.dato.findFirst({ where: { cod: expediente } }));
+        const dato = await prisma.dato.findFirst({ where: { expediente } });
         if (!dato) return NextResponse.json({ error: "Matriculado no encontrado" }, { status: 404 });
 
         await prisma.historialMatricula.create({

@@ -26,8 +26,7 @@ export async function POST(req: NextRequest) {
         const trimmed = exp.trim();
         if (!trimmed) continue;
 
-        const user = (await prisma.user.findFirst({ where: { expediente: trimmed } }))
-            ?? (await prisma.user.findFirst({ where: { cod: trimmed } }));
+        const user = await prisma.user.findFirst({ where: { expediente: trimmed } });
 
         if (!user) {
             noEncontrados.push(trimmed);
