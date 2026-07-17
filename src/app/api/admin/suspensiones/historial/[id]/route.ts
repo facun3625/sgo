@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { logAdmin } from "@/lib/admin-log";
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const session = await getSession();
@@ -27,10 +28,20 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         data,
     });
 
+    await logAdmin({
+        adminId: session.id,
+        adminNombre: `${session.apellido}, ${session.nombre}`,
+        expediente: updated.expediente ?? null,
+        modulo: "usuarios",
+        accion: "Editó registro de historial de matrícula",
+        detalle: { registroId: id, campos: Object.keys(data) },
+        req,
+    });
+
     return NextResponse.json(updated);
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const session = await getSession();
     if (!session || session.accessLevel !== "superadmin")
         return NextResponse.json({ error: "No autorizado" }, { status: 403 });
@@ -39,7 +50,18 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
     const id = parseInt(idStr);
     if (isNaN(id)) return NextResponse.json({ error: "ID inválido" }, { status: 400 });
 
+    const reg = await (prisma as any).historialMatricula.findUnique({ where: { id } });
     await (prisma as any).historialMatricula.delete({ where: { id } });
+
+    await logAdmin({
+        adminId: session.id,
+        adminNombre: `${session.apellido}, ${session.nombre}`,
+        expediente: reg?.expediente ?? null,
+        modulo: "usuarios",
+        accion: "Eliminó registro de historial de matrícula",
+        detalle: { registroId: id, accion: reg?.accion, comentario: reg?.comentario },
+        req,
+    });
 
     return NextResponse.json({ ok: true });
 }

@@ -147,6 +147,8 @@ export default function LegajoDetallePage({
     const [avalaInput, setAvalaInput] = useState("");
     const [avalaLoading, setAvalaLoading] = useState(false);
     const [avalaError, setAvalaError] = useState("");
+    const [deletingHistorialId, setDeletingHistorialId] = useState<number | null>(null);
+    const [deletingTribunalId, setDeletingTribunalId] = useState<number | null>(null);
 
     useEffect(() => {
         fetch(`/api/admin/legajo/${expediente}`)
@@ -219,6 +221,42 @@ export default function LegajoDetallePage({
             setAvalaInput("");
         } finally {
             setAvalaLoading(false);
+        }
+    }
+
+    async function handleDeleteHistorial(id: number) {
+        if (!confirm("¿Eliminar este registro del historial de matrícula?")) return;
+        setDeletingHistorialId(id);
+        try {
+            const res = await fetch(`/api/admin/suspensiones/historial/${id}`, { method: "DELETE" });
+            if (!res.ok) {
+                const j = await res.json().catch(() => ({}));
+                alert(j.error ?? "No se pudo eliminar el registro");
+                return;
+            }
+            setData((prev) => prev ? { ...prev, historialMatricula: prev.historialMatricula.filter(h => h.id !== id) } : prev);
+        } finally {
+            setDeletingHistorialId(null);
+        }
+    }
+
+    async function handleDeleteTribunal(id: number) {
+        if (!confirm("¿Eliminar este registro del Tribunal de Ética?")) return;
+        setDeletingTribunalId(id);
+        try {
+            const res = await fetch("/api/admin/tribunal-etica", {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id }),
+            });
+            if (!res.ok) {
+                const j = await res.json().catch(() => ({}));
+                alert(j.error ?? "No se pudo eliminar el registro");
+                return;
+            }
+            setData((prev) => prev ? { ...prev, tribunalEtica: prev.tribunalEtica.filter(t => t.id !== id) } : prev);
+        } finally {
+            setDeletingTribunalId(null);
         }
     }
 
@@ -441,7 +479,7 @@ export default function LegajoDetallePage({
                                                         <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 z-10 text-[11px] font-black border-2 border-white dark:border-[#02182b] ${badge.cls}`}>
                                                             {h.accion === "habilitacion" ? "✓" : h.accion === "suspension" ? "!" : "✕"}
                                                         </div>
-                                                        <div className="flex-1 bg-slate-50 dark:bg-slate-800/40 rounded-2xl p-5 border border-slate-100 dark:border-slate-800">
+                                                        <div className="flex-1 bg-slate-50 dark:bg-slate-800/40 rounded-2xl p-5 border border-slate-100 dark:border-slate-800 group">
                                                             <div className="flex flex-wrap items-center gap-2 mb-2">
                                                                 <span className={`px-2.5 py-0.5 rounded-lg text-[11px] font-bold ${badge.cls}`}>
                                                                     {badge.label}
@@ -450,6 +488,17 @@ export default function LegajoDetallePage({
                                                                     <span className="text-[11px] text-slate-500 dark:text-slate-400">· {h.motivoNombre}</span>
                                                                 )}
                                                                 <span className="ml-auto text-[11px] text-slate-400">{fmtFull(h.createdAt)}</span>
+                                                                <button
+                                                                    onClick={() => handleDeleteHistorial(h.id)}
+                                                                    disabled={deletingHistorialId === h.id}
+                                                                    className="p-1.5 rounded-lg text-slate-300 hover:bg-rose-50 dark:hover:bg-rose-900/20 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-all disabled:opacity-40"
+                                                                    title="Eliminar registro"
+                                                                >
+                                                                    {deletingHistorialId === h.id
+                                                                        ? <Loader2 size={13} className="animate-spin" />
+                                                                        : <Trash2 size={13} />
+                                                                    }
+                                                                </button>
                                                             </div>
                                                             {h.comentario && (
                                                                 <p className="text-[13px] text-slate-700 dark:text-slate-300 mb-2">{h.comentario}</p>
@@ -482,7 +531,7 @@ export default function LegajoDetallePage({
                                     <EmptyState text="Sin registros del Tribunal de Ética" />
                                 ) : (
                                     data.tribunalEtica.map((t) => (
-                                        <div key={t.id} className="bg-slate-50 dark:bg-slate-800/40 rounded-2xl p-6 border border-slate-100 dark:border-slate-800">
+                                        <div key={t.id} className="bg-slate-50 dark:bg-slate-800/40 rounded-2xl p-6 border border-slate-100 dark:border-slate-800 group">
                                             <div className="flex flex-wrap items-center gap-3 mb-3">
                                                 <span className="px-2.5 py-0.5 rounded-lg text-[11px] font-bold bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400 flex items-center gap-1.5">
                                                     <Scale size={11} /> Tribunal de Ética
@@ -491,6 +540,17 @@ export default function LegajoDetallePage({
                                                     {fmtFull(t.inicio)} — {fmtFull(t.fin)}
                                                 </span>
                                                 <span className="ml-auto text-[10px] text-slate-300">Registrado: {fmt(t.createdAt)}</span>
+                                                <button
+                                                    onClick={() => handleDeleteTribunal(t.id)}
+                                                    disabled={deletingTribunalId === t.id}
+                                                    className="p-1.5 rounded-lg text-slate-300 hover:bg-rose-50 dark:hover:bg-rose-900/20 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-all disabled:opacity-40"
+                                                    title="Eliminar registro"
+                                                >
+                                                    {deletingTribunalId === t.id
+                                                        ? <Loader2 size={13} className="animate-spin" />
+                                                        : <Trash2 size={13} />
+                                                    }
+                                                </button>
                                             </div>
                                             <p className="text-[13px] text-slate-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed">{t.texto}</p>
                                         </div>
