@@ -197,7 +197,7 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
             ],
         },
         {
-            label: "REHABILITACIÓN",
+            label: "REHABILITACIÓN Y CANCELACIÓN",
             items: [
                 { icon: <ShieldCheck />, label: "Solicitar rehabilitación", href: "/dashboard/rehabilitacion", color: "text-emerald-500" },
                 { icon: <XOctagon />, label: "Solicitar cancelación", href: "/dashboard/suspension", color: "text-rose-500" },
