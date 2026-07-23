@@ -26,10 +26,6 @@ export async function POST(req: NextRequest) {
         select: { status: true },
     });
 
-    if (dbUser?.status === "cancelled") {
-        return NextResponse.json({ error: "La matrícula está cancelada. No es posible emitir el certificado." }, { status: 403 });
-    }
-
     // Snapshot del firmante activo al momento de emisión
     const firmante = await prisma.firmaAutoridad.findFirst({ where: { enCertificado: true } });
 
@@ -46,9 +42,9 @@ export async function POST(req: NextRequest) {
         },
     }) as Awaited<ReturnType<typeof prisma.tribunalEtica.findMany>>;
 
-    // Si está suspendido, obtener la última suspensión para el certificado
+    // Si está suspendido o cancelado, obtener el último registro para el certificado
     let ultimaSuspension = null;
-    if (dbUser?.status === "suspended") {
+    if (dbUser?.status === "suspended" || dbUser?.status === "cancelled") {
         ultimaSuspension = await (prisma as any).historialMatricula.findFirst({
             where: { expediente, accion: { in: ["suspension", "cancelacion"] } },
             orderBy: { createdAt: "desc" },

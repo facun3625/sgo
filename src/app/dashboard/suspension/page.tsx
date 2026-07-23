@@ -29,6 +29,7 @@ export default function SolicitudSuspensionPage() {
     const [submitted, setSubmitted] = useState(false);
     const [hasDebt, setHasDebt] = useState(false);
     const [totalDeuda, setTotalDeuda] = useState(0);
+    const [isSuspended, setIsSuspended] = useState(false);
 
     // Campos del formulario
     const [tipoTramite, setTipoTramite] = useState("Suspensión");
@@ -53,6 +54,10 @@ export default function SolicitudSuspensionPage() {
                     const deudaTotal = dataPagos.totalDeuda || 0;
                     setTotalDeuda(deudaTotal);
                     setHasDebt(deudaTotal > 0);
+                    if (dataPagos.userStatus === "suspended") {
+                        setIsSuspended(true);
+                        setTipoTramite("Cancelación");
+                    }
                 }
             } catch (error) {
                 console.error("Error fetching data:", error);
@@ -127,7 +132,9 @@ export default function SolicitudSuspensionPage() {
                     </Link>
                     <div className="flex items-center gap-3">
                         <XOctagon size={18} className="text-rose-500" />
-                        <h2 className="text-[16px] font-bold text-black dark:text-white tracking-tight">Solicitud de Suspensión / Cancelación</h2>
+                        <h2 className="text-[16px] font-bold text-black dark:text-white tracking-tight">
+                            {isSuspended ? "Solicitud de Cancelación" : "Solicitud de Suspensión / Cancelación"}
+                        </h2>
                     </div>
                 </div>
             </div>
@@ -209,14 +216,23 @@ export default function SolicitudSuspensionPage() {
 
                                 <div className="space-y-2">
                                     <label className="text-[11px] font-bold text-slate-700 uppercase tracking-widest ml-1">Solicito tenga a bien proceder a la</label>
-                                    <select
-                                        value={tipoTramite}
-                                        onChange={(e) => setTipoTramite(e.target.value)}
-                                        className="w-full h-14 px-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-black dark:text-white font-medium focus:ring-2 focus:ring-[#063f68] dark:focus:ring-blue-500 outline-none transition-all appearance-none cursor-pointer"
-                                    >
-                                        <option value="Suspensión">Suspensión</option>
-                                        <option value="Cancelación">Cancelación</option>
-                                    </select>
+                                    {isSuspended ? (
+                                        <input
+                                            type="text"
+                                            readOnly
+                                            value="Cancelación"
+                                            className="w-full h-14 px-5 bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 rounded-2xl text-black dark:text-white font-medium focus:outline-none cursor-not-allowed opacity-70"
+                                        />
+                                    ) : (
+                                        <select
+                                            value={tipoTramite}
+                                            onChange={(e) => setTipoTramite(e.target.value)}
+                                            className="w-full h-14 px-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-black dark:text-white font-medium focus:ring-2 focus:ring-[#063f68] dark:focus:ring-blue-500 outline-none transition-all appearance-none cursor-pointer"
+                                        >
+                                            <option value="Suspensión">Suspensión</option>
+                                            <option value="Cancelación">Cancelación</option>
+                                        </select>
+                                    )}
                                 </div>
 
                                 <div className="space-y-2">

@@ -98,6 +98,7 @@ const SectionLabel = ({ label }: { label: string }) => (
 export default function Sidebar({ user, onClose }: SidebarProps) {
     const pathname = usePathname();
     const isSuspended = user.isSuspended ?? false;
+    const isCancelled = user.status === "cancelled";
 
     const groupsNormal: NavGroup[] = [
         {
@@ -199,6 +200,7 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
             label: "REHABILITACIÓN",
             items: [
                 { icon: <ShieldCheck />, label: "Solicitar rehabilitación", href: "/dashboard/rehabilitacion", color: "text-emerald-500" },
+                { icon: <XOctagon />, label: "Solicitar cancelación", href: "/dashboard/suspension", color: "text-rose-500" },
             ],
         },
         {
@@ -209,7 +211,34 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
         },
     ];
 
-    const groups = isSuspended ? groupsSuspended : groupsNormal;
+    // Nav mínimo para usuarios con matrícula cancelada
+    const groupsCancelled: NavGroup[] = [
+        {
+            items: [
+                { icon: <Home />, label: "Inicio", href: "/dashboard", color: "text-slate-700" },
+            ],
+        },
+        {
+            label: "NOVEDADES",
+            items: [
+                { icon: <Newspaper />, label: "Actividades Institucionales", href: "/dashboard/noticias", color: "text-amber-500" },
+            ],
+        },
+        {
+            label: "TRÁMITES",
+            items: [
+                { icon: <FileText />, label: "Certificado de matriculación", href: "/dashboard/solicitudes/certificado", color: "text-blue-600" },
+            ],
+        },
+        {
+            label: "INSTITUCIÓN",
+            items: [
+                { icon: <Library />, label: "Biblioteca Digital", href: "/dashboard/biblioteca", color: "text-[#063f68] dark:text-blue-400" },
+            ],
+        },
+    ];
+
+    const groups = isCancelled ? groupsCancelled : isSuspended ? groupsSuspended : groupsNormal;
 
     return (
         <aside className="w-72 bg-white dark:bg-[#02182b] flex flex-col h-screen sticky top-0 overflow-y-auto border-0">

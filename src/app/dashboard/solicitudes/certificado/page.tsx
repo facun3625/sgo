@@ -65,6 +65,7 @@ function CertificateDocument({ datos, presentarAnte, solicitudId, baseUrl, firma
     const { dia, mes, anio } = fechaEnLetras();
     const qrUrl = solicitudId ? `${baseUrl}/verificar/certificado/${solicitudId}` : `${baseUrl}/verificar/${datos.expediente}`;
     const suspendido = userStatus === "suspended";
+    const cancelado = userStatus === "cancelled";
     const fechaSuspension = suspension?.fecha
         ? (() => {
             const [y, m, d] = suspension.fecha.slice(0, 10).split("-");
@@ -112,7 +113,15 @@ function CertificateDocument({ datos, presentarAnte, solicitudId, baseUrl, firma
                     Que, <strong>{datos.apellido} {datos.nombre}</strong>, DNI {datos.documento || "---"}, se inscribió en la matrícula de este Colegio de Profesionales de la Abogacía de la Primera Circunscripción Judicial de la Provincia de Santa Fe al Folio {datos.folio || "--"}, del Libro {datos.tomo || "--"}, Expediente Nº {datos.expediente} en fecha {formatFechaMatriculacion(datos.fechaMatriculacion)}.
                 </p>
 
-                {suspendido ? (
+                {cancelado ? (
+                    <p style={{ marginBottom: "20px" }}>
+                        Se deja constancia que el mencionado profesional se encuentra con <strong>matrícula CANCELADA</strong>
+                        {fechaSuspension ? ` desde el ${fechaSuspension}` : ""}
+                        {suspension?.motivoNombre ? `, por motivo: ${suspension.motivoNombre}` : ""}
+                        {suspension?.comentario && !suspension?.motivoNombre ? ` (${suspension.comentario})` : ""}.
+                        {sanciones.length === 0 && " No registra sanciones disciplinarias del Tribunal de Conducta en su legajo personal."}
+                    </p>
+                ) : suspendido ? (
                     <p style={{ marginBottom: "20px" }}>
                         Se deja constancia que el mencionado profesional se encuentra con <strong>matrícula SUSPENDIDA</strong>
                         {fechaSuspension ? ` desde el ${fechaSuspension}` : ""}

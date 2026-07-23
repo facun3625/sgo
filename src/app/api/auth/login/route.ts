@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
             });
         }
 
-        if (user.status !== "active" && user.status !== "suspended") {
+        if (user.status !== "active" && user.status !== "suspended" && user.status !== "cancelled") {
             return NextResponse.json(
                 { error: "Tu cuenta no está activa. Contactá al administrador." },
                 { status: 403 }
