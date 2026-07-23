@@ -35,6 +35,8 @@ interface Inscripcion {
     guestEmail?: string | null;
     guestDni?: string | null;
     comprobante?: string | null;
+    nombre?: string | null;
+    apellido?: string | null;
 }
 
 interface Firma {
@@ -748,7 +750,14 @@ export default function EditarCursoPage() {
                                                         </p>
                                                     </>
                                                 ) : (
-                                                    <p className="text-[13px] font-bold text-slate-700 dark:text-slate-200">{insc.expediente}</p>
+                                                    <>
+                                                        <p className="text-[13px] font-bold text-slate-700 dark:text-slate-200">
+                                                            {insc.apellido && insc.nombre ? `${insc.apellido}, ${insc.nombre}` : insc.expediente}
+                                                        </p>
+                                                        {insc.apellido && insc.nombre && (
+                                                            <p className="text-[11px] text-slate-400 mt-0.5">Mat. {insc.expediente}</p>
+                                                        )}
+                                                    </>
                                                 )}
                                                 <p className="text-[11px] text-slate-400 mt-0.5">
                                                     {insc.opcion?.nombre || "Sin opción"}

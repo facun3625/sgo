@@ -34,11 +34,21 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
     }) : [];
     const comprobanteMap = new Map(pagos.map(p => [p.ref, p.comprobante]));
 
+    // Resolver nombre/apellido de los matriculados reales (no invitados)
+    const expedientes = curso.inscripciones.filter(i => !i.esInvitado).map(i => i.expediente);
+    const usuarios = expedientes.length > 0 ? await prisma.user.findMany({
+        where: { expediente: { in: expedientes } },
+        select: { expediente: true, nombre: true, apellido: true },
+    }) : [];
+    const usuarioMap = new Map(usuarios.map(u => [u.expediente, u]));
+
     const data = {
         ...curso,
         inscripciones: curso.inscripciones.map(i => ({
             ...i,
             comprobante: comprobanteMap.get(String(i.id)) ?? null,
+            nombre: usuarioMap.get(i.expediente)?.nombre ?? null,
+            apellido: usuarioMap.get(i.expediente)?.apellido ?? null,
         })),
     };
 
