@@ -146,8 +146,8 @@ export default function CursoPublicoDetailPage() {
                 </Link>
 
                 {curso.imagen && (
-                    <div className="w-full h-48 rounded-2xl overflow-hidden bg-slate-100">
-                        <img src={curso.imagen} alt={curso.titulo} className="w-full h-full object-cover" />
+                    <div className="w-full max-h-[70vh] rounded-2xl overflow-hidden bg-slate-100 flex items-center justify-center">
+                        <img src={curso.imagen} alt={curso.titulo} className="w-full h-auto max-h-[70vh] object-contain" />
                     </div>
                 )}
 

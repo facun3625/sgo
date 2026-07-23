@@ -633,6 +633,12 @@ export default function EditarCursoPage() {
                             </button>
                         </div>
 
+                        {form.abiertoNoMatriculados && (
+                            <p className="text-[11px] text-violet-500 bg-violet-50 dark:bg-violet-900/20 rounded-lg px-3 py-2">
+                                Si dejás "Precio $" en 0 y cargás "Precio no matric.", esa opción queda exclusiva para el público general y no aparece para los matriculados.
+                            </p>
+                        )}
+
                         <div className="space-y-3">
                             {opciones.map((op, i) => (
                                 <div key={i} className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl space-y-2">

@@ -44,14 +44,17 @@ export async function GET() {
             modalidad: curso.modalidad,
             fechaLimiteInscripcion: curso.fechaLimiteInscripcion,
             totalInscripciones: curso._count.inscripciones,
-            opciones: curso.opciones.map(op => ({
-                id: op.id,
-                nombre: op.nombre,
-                precio: op.precio,
-                cupo: op.cupo,
-                inscritos: op.inscritos,
-                disponible: op.cupo === 0 || op.inscritos < op.cupo,
-            })),
+            // Una opción con precio $0 y precio no matriculado definido es exclusiva del público general
+            opciones: curso.opciones
+                .filter(op => !(op.precio === 0 && op.precioNoMatriculado != null))
+                .map(op => ({
+                    id: op.id,
+                    nombre: op.nombre,
+                    precio: op.precio,
+                    cupo: op.cupo,
+                    inscritos: op.inscritos,
+                    disponible: op.cupo === 0 || op.inscritos < op.cupo,
+                })),
             tipoAsistencia: curso.tipoAsistencia,
             inscripcion: inscripcion ? { ...inscripcion, infoPrivada } : null,
         };

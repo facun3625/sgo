@@ -29,6 +29,11 @@ export async function POST(req: NextRequest) {
     });
     if (!opcion) return NextResponse.json({ error: "Opción no válida" }, { status: 400 });
 
+    // Opción exclusiva del público general (precio $0 + precio no matriculado definido)
+    if (opcion.precio === 0 && opcion.precioNoMatriculado != null) {
+        return NextResponse.json({ error: "Opción no válida" }, { status: 400 });
+    }
+
     // Verificar cupo (0 = sin límite)
     if (opcion.cupo > 0 && opcion.inscritos >= opcion.cupo) {
         return NextResponse.json({ error: "No hay cupos disponibles para esta opción" }, { status: 400 });
