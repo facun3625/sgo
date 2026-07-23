@@ -32,12 +32,14 @@ async function getSmtpConfig() {
 }
 
 const YEAR = new Date().getFullYear();
+const LOGO_URL = `${process.env.NEXT_PUBLIC_BASE_URL ?? "https://sgo-casf.online"}/sgo_nuevo.png`;
 
 function baseLayout(content: string) {
     return `
     <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;background:#f8fafc;border-radius:16px;">
         <div style="text-align:center;margin-bottom:24px;">
-            <p style="font-size:12px;font-weight:700;letter-spacing:0.1em;color:#64748b;text-transform:uppercase;margin:0">CPASF · Sistema de Gestión</p>
+            <img src="${LOGO_URL}" alt="SGO" width="40" height="40" style="display:block;margin:0 auto 8px;border-radius:8px;" />
+            <p style="font-size:12px;font-weight:700;letter-spacing:0.1em;color:#64748b;text-transform:uppercase;margin:0">CPASF · SGO</p>
         </div>
         <div style="background:#fff;border-radius:12px;padding:32px;border:1px solid #e2e8f0;">
             ${content}
@@ -78,6 +80,40 @@ export async function enviarNotificacionMensaje(destinatario: string) {
                 <a href="https://sgo-casf.online/dashboard/mensajes" style="display:inline-block;background:#063f68;color:#fff;font-weight:700;font-size:14px;padding:14px 32px;border-radius:8px;text-decoration:none;">Ir al portal</a>
             </div>
         `),
+    });
+}
+
+export async function enviarInscripcionCursoConfirmada(destinatario: string, nombreCurso: string) {
+    const { smtp, from } = await getSmtpConfig();
+    const transporter = nodemailer.createTransport(smtp);
+    await transporter.sendMail({
+        from,
+        to: destinatario,
+        subject: `Inscripción confirmada — ${nombreCurso}`,
+        html: baseLayout(`
+            <h2 style="font-size:20px;font-weight:800;color:#0f172a;margin:0 0 12px">¡Inscripción confirmada!</h2>
+            <p style="color:#475569;font-size:15px;line-height:1.6;margin:0 0 12px">Tu inscripción al curso <strong>${nombreCurso}</strong> quedó confirmada.</p>
+            <p style="color:#64748b;font-size:13px;margin:0">El día del curso, el organizador va a registrar tu asistencia con tu nombre y DNI — no necesitás presentar nada más.</p>
+        `),
+    });
+}
+
+export async function enviarCertificadoCursoInvitado(destinatario: string, nombreCurso: string, pdfBuffer: Buffer) {
+    const { smtp, from } = await getSmtpConfig();
+    const transporter = nodemailer.createTransport(smtp);
+    await transporter.sendMail({
+        from,
+        to: destinatario,
+        subject: `Tu certificado — ${nombreCurso}`,
+        html: baseLayout(`
+            <h2 style="font-size:20px;font-weight:800;color:#0f172a;margin:0 0 12px">Certificado disponible</h2>
+            <p style="color:#475569;font-size:15px;line-height:1.6;margin:0">Adjuntamos tu certificado de participación del curso <strong>${nombreCurso}</strong>.</p>
+        `),
+        attachments: [{
+            filename: `certificado-${nombreCurso.replace(/\s+/g, "-").toLowerCase()}.pdf`,
+            content: pdfBuffer,
+            contentType: "application/pdf",
+        }],
     });
 }
 

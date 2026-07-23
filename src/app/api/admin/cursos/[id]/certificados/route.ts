@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { generarCertificadoPdfBuffer } from "@/lib/certificadoPdfServer";
+import { enviarCertificadoCursoInvitado } from "@/lib/mailer";
 
 function isAdmin(accessLevel: string) {
     return accessLevel === "superadmin" || accessLevel === "admin";
@@ -120,6 +122,30 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         await prisma.certificadoCurso.createMany({
             data: nuevos.map((exp: string) => ({ expediente: exp, cursoId })),
         });
+
+        // Invitados sin dashboard: generar el PDF ahora mismo y mandarlo por mail.
+        const guestInscripciones = await prisma.inscripcionCurso.findMany({
+            where: { cursoId, expediente: { in: nuevos }, esInvitado: true },
+        });
+        if (guestInscripciones.length > 0) {
+            const firmas = await prisma.firmaAutoridad.findMany({ where: { enCertificado: true }, orderBy: { orden: "asc" } });
+            const firmasFiltradas = curso.certFirmasIds.length > 0
+                ? firmas.filter(f => curso.certFirmasIds.includes(f.id))
+                : firmas;
+            const emitidoAt = new Date();
+
+            await Promise.allSettled(guestInscripciones.filter(g => g.guestEmail).map(async (g) => {
+                const pdfBuffer = await generarCertificadoPdfBuffer({
+                    alumno: { nombre: g.guestNombre ?? "", apellido: g.guestApellido ?? "", expediente: g.guestDni ?? g.expediente },
+                    curso: { titulo: curso.titulo, fecha: curso.fecha.toISOString(), fechaFin: curso.fechaFin?.toISOString() ?? null, certTexto: curso.certTexto, certCabecera: curso.certCabecera },
+                    firmas: firmasFiltradas,
+                    emitidoAt: emitidoAt.toISOString(),
+                });
+                await enviarCertificadoCursoInvitado(g.guestEmail!, curso.titulo, pdfBuffer);
+            })).then(results => {
+                results.forEach(r => { if (r.status === "rejected") console.error("[certificados] error mailing invitado:", r.reason); });
+            });
+        }
     }
 
     const todos = await prisma.certificadoCurso.findMany({ where: { cursoId } });

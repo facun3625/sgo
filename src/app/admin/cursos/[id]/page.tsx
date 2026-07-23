@@ -3,13 +3,14 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Upload, X, Plus, Trash2, Loader2, GraduationCap, Users, AlertCircle, CalendarDays, UserCheck, Award, CheckCircle2, RotateCcw, Download } from "lucide-react";
+import { ArrowLeft, Upload, X, Plus, Trash2, Loader2, GraduationCap, Users, AlertCircle, CalendarDays, UserCheck, Award, CheckCircle2, RotateCcw, Download, Eye } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 
 interface Opcion {
     id?: number;
     nombre: string;
     precio: number;
+    precioNoMatriculado?: number | null;
     cupo: number;
     inscritos?: number;
     infoPrivada?: string | null;
@@ -28,6 +29,12 @@ interface Inscripcion {
     metodoPago: string | null;
     fecha: string;
     opcion: { nombre: string } | null;
+    esInvitado?: boolean;
+    guestNombre?: string | null;
+    guestApellido?: string | null;
+    guestEmail?: string | null;
+    guestDni?: string | null;
+    comprobante?: string | null;
 }
 
 interface Firma {
@@ -58,6 +65,7 @@ interface Curso {
     fechaLimiteInscripcion: string | null;
     activo: boolean;
     mostrarEnCalendario: boolean;
+    abiertoNoMatriculados: boolean;
     tipoAsistencia: string;
     porcentajeMin: number | null;
     diasMinimos: number | null;
@@ -96,6 +104,7 @@ export default function EditarCursoPage() {
         fechaLimiteInscripcion: "",
         activo: true,
         mostrarEnCalendario: false,
+        abiertoNoMatriculados: false,
         tipoAsistencia: "ninguna",
         porcentajeMin: 75,
         diasMinimos: 1,
@@ -111,6 +120,8 @@ export default function EditarCursoPage() {
     const [opciones, setOpciones] = useState<Opcion[]>([]);
     const [dias, setDias] = useState<Dia[]>([]);
     const [inscripciones, setInscripciones] = useState<Inscripcion[]>([]);
+    const [previewComprobante, setPreviewComprobante] = useState<string | null>(null);
+    const [confirmandoId, setConfirmandoId] = useState<number | null>(null);
     const [error, setError] = useState("");
 
     useEffect(() => {
@@ -130,6 +141,7 @@ export default function EditarCursoPage() {
                     fechaLimiteInscripcion: data.fechaLimiteInscripcion ? data.fechaLimiteInscripcion.split("T")[0] : "",
                     activo: data.activo,
                     mostrarEnCalendario: data.mostrarEnCalendario,
+                    abiertoNoMatriculados: data.abiertoNoMatriculados,
                     tipoAsistencia: data.tipoAsistencia || "ninguna",
                     porcentajeMin: data.porcentajeMin ?? 75,
                     diasMinimos: data.diasMinimos ?? 1,
@@ -184,14 +196,14 @@ export default function EditarCursoPage() {
     }
 
     function addOpcion() {
-        setOpciones(prev => [...prev, { nombre: "", precio: 0, cupo: 0, infoPrivada: "" }]);
+        setOpciones(prev => [...prev, { nombre: "", precio: 0, precioNoMatriculado: null, cupo: 0, infoPrivada: "" }]);
     }
 
     function removeOpcion(i: number) {
         setOpciones(prev => prev.filter((_, idx) => idx !== i));
     }
 
-    function updateOpcion(i: number, key: keyof Opcion, value: string | number) {
+    function updateOpcion(i: number, key: keyof Opcion, value: string | number | null) {
         setOpciones(prev => prev.map((op, idx) => idx === i ? { ...op, [key]: value } : op));
     }
 
@@ -230,6 +242,7 @@ export default function EditarCursoPage() {
                         precio: Number(o.precio),
                         cupo: Number(o.cupo),
                         infoPrivada: o.infoPrivada || null,
+                        precioNoMatriculado: o.precioNoMatriculado == null || String(o.precioNoMatriculado).trim() === "" ? null : Number(o.precioNoMatriculado),
                     })),
                     dias: form.tipoAsistencia === "por_dia" ? dias : [],
                 }),
@@ -291,12 +304,17 @@ export default function EditarCursoPage() {
     }
 
     async function handleConfirmarPago(inscId: number) {
-        await fetch(`/api/admin/inscripciones/${inscId}`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ estado: "confirmada" }),
-        });
-        setInscripciones(prev => prev.map(i => i.id === inscId ? { ...i, estado: "confirmada" } : i));
+        setConfirmandoId(inscId);
+        try {
+            await fetch(`/api/admin/inscripciones/${inscId}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ estado: "confirmada" }),
+            });
+            setInscripciones(prev => prev.map(i => i.id === inscId ? { ...i, estado: "confirmada" } : i));
+        } finally {
+            setConfirmandoId(null);
+        }
     }
 
     async function handleCancelarInscripcion(inscId: number) {
@@ -505,6 +523,17 @@ export default function EditarCursoPage() {
                                 <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${form.mostrarEnCalendario ? "translate-x-5" : "translate-x-0"}`} />
                             </button>
                         </div>
+
+                        <div className="flex items-center justify-between py-1">
+                            <div>
+                                <p className="text-[13px] font-medium text-slate-700 dark:text-slate-300">Abierto a no matriculados</p>
+                                <p className="text-[11px] text-slate-400">Aparece en /cursos para que se inscriba público general (definí un precio por opción más abajo)</p>
+                            </div>
+                            <button type="button" onClick={() => setField("abiertoNoMatriculados", !form.abiertoNoMatriculados)}
+                                className={`relative w-11 h-6 rounded-full transition-colors ${form.abiertoNoMatriculados ? "bg-violet-500" : "bg-slate-200 dark:bg-slate-700"}`}>
+                                <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${form.abiertoNoMatriculados ? "translate-x-5" : "translate-x-0"}`} />
+                            </button>
+                        </div>
                     </div>
 
                     {/* Asistencia */}
@@ -616,6 +645,14 @@ export default function EditarCursoPage() {
                                             <input type="number" min="0" value={op.precio} onChange={e => updateOpcion(i, "precio", e.target.value)}
                                                 className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white text-[12px] focus:outline-none focus:ring-2 focus:ring-[#063f68]/30 focus:border-[#063f68]" />
                                         </div>
+                                        {form.abiertoNoMatriculados && (
+                                            <div className="w-28 space-y-1.5">
+                                                <label className="text-[11px] font-medium text-violet-500">Precio no matric. $</label>
+                                                <input type="number" min="0" placeholder="—" value={op.precioNoMatriculado ?? ""}
+                                                    onChange={e => updateOpcion(i, "precioNoMatriculado", e.target.value === "" ? null : e.target.value)}
+                                                    className="w-full h-9 px-3 rounded-lg border border-violet-200 dark:border-violet-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white text-[12px] focus:outline-none focus:ring-2 focus:ring-violet-300 focus:border-violet-400" />
+                                            </div>
+                                        )}
                                         <div className="w-20 space-y-1.5">
                                             <label className="text-[11px] font-medium text-slate-400">Cupo</label>
                                             <input type="number" min="0" value={op.cupo} onChange={e => updateOpcion(i, "cupo", e.target.value)}
@@ -700,7 +737,19 @@ export default function EditarCursoPage() {
                                     return (
                                         <div key={insc.id} className="bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 px-4 py-3 flex items-center gap-3">
                                             <div className="flex-1 min-w-0">
-                                                <p className="text-[13px] font-bold text-slate-700 dark:text-slate-200">{insc.expediente}</p>
+                                                {insc.esInvitado ? (
+                                                    <>
+                                                        <p className="text-[13px] font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
+                                                            {insc.guestApellido}, {insc.guestNombre}
+                                                            <span className="px-1.5 py-0.5 rounded-full bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 text-[9px] font-black uppercase tracking-wide">No matriculado</span>
+                                                        </p>
+                                                        <p className="text-[11px] text-slate-400 mt-0.5">
+                                                            DNI {insc.guestDni} · {insc.guestEmail}
+                                                        </p>
+                                                    </>
+                                                ) : (
+                                                    <p className="text-[13px] font-bold text-slate-700 dark:text-slate-200">{insc.expediente}</p>
+                                                )}
                                                 <p className="text-[11px] text-slate-400 mt-0.5">
                                                     {insc.opcion?.nombre || "Sin opción"}
                                                     <span className="mx-1.5">·</span>
@@ -710,11 +759,21 @@ export default function EditarCursoPage() {
                                             <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide flex-shrink-0 ${est.color}`}>
                                                 {est.label}
                                             </span>
+                                            {insc.comprobante && (
+                                                <button
+                                                    onClick={() => setPreviewComprobante(insc.comprobante!)}
+                                                    title="Ver comprobante"
+                                                    className="flex-shrink-0 w-8 h-8 flex items-center justify-center text-slate-400 hover:text-[#063f68] hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all">
+                                                    <Eye size={15} />
+                                                </button>
+                                            )}
                                             {insc.estado === "pendiente_pago" && (
                                                 <button
                                                     onClick={() => handleConfirmarPago(insc.id)}
-                                                    className="flex-shrink-0 px-3 h-8 bg-emerald-500 text-white rounded-lg text-[11px] font-bold hover:bg-emerald-600 transition-all active:scale-95">
-                                                    Confirmar
+                                                    disabled={confirmandoId === insc.id}
+                                                    className="flex-shrink-0 px-3 h-8 bg-emerald-500 text-white rounded-lg text-[11px] font-bold hover:bg-emerald-600 transition-all active:scale-95 disabled:opacity-60 flex items-center gap-1.5">
+                                                    {confirmandoId === insc.id ? <Loader2 size={12} className="animate-spin" /> : null}
+                                                    {confirmandoId === insc.id ? "Confirmando..." : "Confirmar"}
                                                 </button>
                                             )}
                                             <button
@@ -857,6 +916,7 @@ export default function EditarCursoPage() {
                                 {certData.elegibles.map(exp => {
                                     const cert = certData.certificados.find(c => c.expediente === exp);
                                     const isEmitiendo = emitiendo === exp;
+                                    const insc = inscripciones.find(i => i.expediente === exp);
                                     return (
                                         <div key={exp} className="flex items-center gap-3 px-5 py-3">
                                             <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${cert ? "bg-emerald-100 dark:bg-emerald-900/30" : "bg-slate-100 dark:bg-slate-800"}`}>
@@ -866,7 +926,14 @@ export default function EditarCursoPage() {
                                                 }
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <p className="text-[13px] font-bold text-slate-700 dark:text-slate-200">{exp}</p>
+                                                {insc?.esInvitado ? (
+                                                    <p className="text-[13px] font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
+                                                        {insc.guestApellido}, {insc.guestNombre}
+                                                        <span className="px-1.5 py-0.5 rounded-full bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 text-[9px] font-black uppercase tracking-wide">No matriculado</span>
+                                                    </p>
+                                                ) : (
+                                                    <p className="text-[13px] font-bold text-slate-700 dark:text-slate-200">{exp}</p>
+                                                )}
                                                 {cert && (
                                                     <p className="text-[11px] text-slate-400">
                                                         Emitido {new Date(cert.emitidoAt).toLocaleDateString("es-AR", { day: "2-digit", month: "short", year: "numeric" })}
@@ -891,6 +958,23 @@ export default function EditarCursoPage() {
                                     );
                                 })}
                             </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* Preview de comprobante de transferencia */}
+            {previewComprobante && (
+                <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setPreviewComprobante(null)}>
+                    <div className="relative max-w-3xl max-h-[90vh] w-full" onClick={e => e.stopPropagation()}>
+                        <button onClick={() => setPreviewComprobante(null)}
+                            className="absolute -top-10 right-0 text-white/70 hover:text-white flex items-center gap-1.5 text-[13px]">
+                            <X size={16} /> Cerrar
+                        </button>
+                        {previewComprobante.toLowerCase().endsWith(".pdf") ? (
+                            <iframe src={previewComprobante} className="w-full h-[80vh] rounded-xl bg-white" />
+                        ) : (
+                            <img src={previewComprobante} alt="Comprobante" className="w-full h-auto max-h-[85vh] object-contain rounded-xl" />
                         )}
                     </div>
                 </div>

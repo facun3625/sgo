@@ -15,6 +15,8 @@ interface PagoPendiente {
     nota: string | null;
     createdAt: string;
     usuario: { nombre: string; apellido: string } | null;
+    esInvitado?: boolean;
+    guestDni?: string | null;
 }
 
 type FilterEstado = "todos" | "pendiente" | "aprobado" | "rechazado";
@@ -108,10 +110,13 @@ export default function TransferenciasAdminPage() {
                                     <div className="flex-1 min-w-0 grid grid-cols-1 sm:grid-cols-4 gap-2 sm:gap-4">
                                         <div>
                                             <p className="text-[11px] text-slate-400 uppercase tracking-wide">Usuario</p>
-                                            <p className="text-[13px] font-bold text-slate-800 dark:text-white truncate">
+                                            <p className="text-[13px] font-bold text-slate-800 dark:text-white truncate flex items-center gap-1.5">
                                                 {p.usuario ? `${p.usuario.apellido}, ${p.usuario.nombre}` : p.expediente}
+                                                {p.esInvitado && (
+                                                    <span className="px-1.5 py-0.5 rounded-full bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 text-[9px] font-black uppercase tracking-wide">No matriculado</span>
+                                                )}
                                             </p>
-                                            <p className="text-[10px] text-slate-400">{p.expediente}</p>
+                                            <p className="text-[10px] text-slate-400">{p.esInvitado ? `DNI ${p.guestDni}` : p.expediente}</p>
                                         </div>
                                         <div>
                                             <p className="text-[11px] text-slate-400 uppercase tracking-wide">Concepto</p>

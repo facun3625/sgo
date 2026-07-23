@@ -28,11 +28,24 @@ export async function GET() {
     });
     const userMap = new Map(usuarios.map((u) => [u.expediente, u]));
 
-    const data = pagos.map((p) => ({
-        ...p,
-        tipoLabel: TIPO_LABELS[p.tipo] ?? p.tipo,
-        usuario: userMap.get(p.expediente) ?? null,
-    }));
+    // Enriquecer inscripciones de invitados (curso) con su nombre/DNI, ya que su expediente es sintético
+    const refsCurso = [...new Set(pagos.filter(p => p.tipo === "curso").map(p => parseInt(p.ref)).filter(n => !isNaN(n)))];
+    const inscripciones = refsCurso.length > 0 ? await prisma.inscripcionCurso.findMany({
+        where: { id: { in: refsCurso }, esInvitado: true },
+        select: { id: true, guestNombre: true, guestApellido: true, guestDni: true },
+    }) : [];
+    const inscripcionMap = new Map(inscripciones.map(i => [i.id, i]));
+
+    const data = pagos.map((p) => {
+        const inscGuest = p.tipo === "curso" ? inscripcionMap.get(parseInt(p.ref)) : undefined;
+        return {
+            ...p,
+            tipoLabel: TIPO_LABELS[p.tipo] ?? p.tipo,
+            usuario: userMap.get(p.expediente) ?? (inscGuest ? { nombre: inscGuest.guestNombre ?? "", apellido: inscGuest.guestApellido ?? "" } : null),
+            esInvitado: !!inscGuest,
+            guestDni: inscGuest?.guestDni ?? null,
+        };
+    });
 
     return NextResponse.json(data);
 }

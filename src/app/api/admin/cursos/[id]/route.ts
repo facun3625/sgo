@@ -25,7 +25,24 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
     });
 
     if (!curso) return NextResponse.json({ error: "No encontrado" }, { status: 404 });
-    return NextResponse.json(curso);
+
+    // Adjuntar el comprobante de transferencia pendiente (si lo hay) a cada inscripción
+    const refs = curso.inscripciones.map(i => String(i.id));
+    const pagos = refs.length > 0 ? await prisma.pagoPendiente.findMany({
+        where: { tipo: "curso", ref: { in: refs }, estado: "pendiente" },
+        select: { ref: true, comprobante: true },
+    }) : [];
+    const comprobanteMap = new Map(pagos.map(p => [p.ref, p.comprobante]));
+
+    const data = {
+        ...curso,
+        inscripciones: curso.inscripciones.map(i => ({
+            ...i,
+            comprobante: comprobanteMap.get(String(i.id)) ?? null,
+        })),
+    };
+
+    return NextResponse.json(data);
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -37,7 +54,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const { id: idStr } = await params;
     const id = parseInt(idStr);
     const body = await req.json();
-    const { titulo, descripcion, organizador, fecha, fechaFin, hora, lugar, imagen, modalidad, fechaLimiteInscripcion, activo, mostrarEnCalendario, opciones, tipoAsistencia, porcentajeMin, diasMinimos, dias, certTexto, certCabecera, certFirmasIds } = body;
+    const { titulo, descripcion, organizador, fecha, fechaFin, hora, lugar, imagen, modalidad, fechaLimiteInscripcion, activo, mostrarEnCalendario, opciones, tipoAsistencia, porcentajeMin, diasMinimos, dias, certTexto, certCabecera, certFirmasIds, abiertoNoMatriculados } = body;
 
     const mod = modalidad || "Presencial";
     const tipoAsis = mod === "Virtual" ? "ninguna" : (tipoAsistencia || "ninguna");
@@ -63,18 +80,20 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
             certTexto: certTexto ?? null,
             certCabecera: certCabecera ?? null,
             certFirmasIds: certFirmasIds ?? [],
+            abiertoNoMatriculados: abiertoNoMatriculados ?? false,
         }
     });
 
     if (opciones) {
         await prisma.cursoOpcion.deleteMany({ where: { cursoId: id } });
         await prisma.cursoOpcion.createMany({
-            data: opciones.map((o: { nombre: string; precio: number; cupo: number; infoPrivada?: string }) => ({
+            data: opciones.map((o: { nombre: string; precio: number; cupo: number; infoPrivada?: string; precioNoMatriculado?: number | null }) => ({
                 cursoId: id,
                 nombre: o.nombre,
                 precio: o.precio ?? 0,
                 cupo: o.cupo ?? 0,
                 infoPrivada: o.infoPrivada || null,
+                precioNoMatriculado: o.precioNoMatriculado ?? null,
             }))
         });
     }

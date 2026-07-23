@@ -16,7 +16,10 @@ interface Curso {
     diasMinimos: number | null;
     dias: Dia[];
 }
-interface Inscripcion { id: number; expediente: string; opcion: { nombre: string } | null }
+interface Inscripcion {
+    id: number; expediente: string; opcion: { nombre: string } | null;
+    esInvitado?: boolean; guestNombre?: string | null; guestApellido?: string | null; guestDni?: string | null;
+}
 interface Asistencia { id: number; expediente: string }
 interface Sesion { id: number; token: string; activa: boolean; diaId: number | null; asistencias: Asistencia[] }
 
@@ -349,7 +352,13 @@ export default function AsistenciaPage() {
                                         )}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-[13px] font-bold text-slate-700 dark:text-slate-200">{insc.expediente}</p>
+                                        {insc.esInvitado ? (
+                                            <p className="text-[13px] font-bold text-slate-700 dark:text-slate-200">
+                                                {insc.guestApellido}, {insc.guestNombre} <span className="text-[10px] font-normal text-slate-400">· DNI {insc.guestDni}</span>
+                                            </p>
+                                        ) : (
+                                            <p className="text-[13px] font-bold text-slate-700 dark:text-slate-200">{insc.expediente}</p>
+                                        )}
                                         {insc.opcion && <p className="text-[11px] text-slate-400">{insc.opcion.nombre}</p>}
                                     </div>
                                     {presenteHistorico && (

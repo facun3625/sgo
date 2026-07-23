@@ -8,6 +8,7 @@ import { ArrowLeft, Upload, X, Plus, Trash2, Loader2, GraduationCap, CalendarDay
 interface Opcion {
     nombre: string;
     precio: number;
+    precioNoMatriculado: string;
     cupo: number;
     infoPrivada: string;
 }
@@ -35,12 +36,13 @@ export default function NuevoCursoPage() {
         fechaLimiteInscripcion: "",
         activo: true,
         mostrarEnCalendario: false,
+        abiertoNoMatriculados: false,
         tipoAsistencia: "ninguna",
         porcentajeMin: 75,
         diasMinimos: 1,
     });
     const [opciones, setOpciones] = useState<Opcion[]>([
-        { nombre: "", precio: 0, cupo: 0, infoPrivada: "" }
+        { nombre: "", precio: 0, precioNoMatriculado: "", cupo: 0, infoPrivada: "" }
     ]);
     const [dias, setDias] = useState<Dia[]>([]);
     const [error, setError] = useState("");
@@ -80,7 +82,7 @@ export default function NuevoCursoPage() {
     }
 
     function addOpcion() {
-        setOpciones(prev => [...prev, { nombre: "", precio: 0, cupo: 0, infoPrivada: "" }]);
+        setOpciones(prev => [...prev, { nombre: "", precio: 0, precioNoMatriculado: "", cupo: 0, infoPrivada: "" }]);
     }
 
     function removeOpcion(i: number) {
@@ -126,6 +128,7 @@ export default function NuevoCursoPage() {
                         precio: Number(o.precio),
                         cupo: Number(o.cupo),
                         infoPrivada: o.infoPrivada || null,
+                        precioNoMatriculado: o.precioNoMatriculado.toString().trim() === "" ? null : Number(o.precioNoMatriculado),
                     })),
                     dias: form.tipoAsistencia === "por_dia" ? dias : [],
                 }),
@@ -311,6 +314,20 @@ export default function NuevoCursoPage() {
                             <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${form.mostrarEnCalendario ? "translate-x-5" : "translate-x-0"}`} />
                         </button>
                     </div>
+
+                    <div className="flex items-center justify-between py-1">
+                        <div>
+                            <p className="text-[13px] font-medium text-slate-700 dark:text-slate-300">Abierto a no matriculados</p>
+                            <p className="text-[11px] text-slate-400">Aparece en /cursos para que se inscriba público general (definí un precio por opción más abajo)</p>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => setField("abiertoNoMatriculados", !form.abiertoNoMatriculados)}
+                            className={`relative w-11 h-6 rounded-full transition-colors ${form.abiertoNoMatriculados ? "bg-violet-500" : "bg-slate-200 dark:bg-slate-700"}`}
+                        >
+                            <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${form.abiertoNoMatriculados ? "translate-x-5" : "translate-x-0"}`} />
+                        </button>
+                    </div>
                 </div>
 
                 {/* Asistencia */}
@@ -433,6 +450,19 @@ export default function NuevoCursoPage() {
                                             className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white text-[12px] focus:outline-none focus:ring-2 focus:ring-[#063f68]/30 focus:border-[#063f68]"
                                         />
                                     </div>
+                                    {form.abiertoNoMatriculados && (
+                                        <div className="w-28 space-y-1.5">
+                                            <label className="text-[11px] font-medium text-violet-500">Precio no matric. $</label>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                placeholder="—"
+                                                value={op.precioNoMatriculado}
+                                                onChange={e => updateOpcion(i, "precioNoMatriculado", e.target.value)}
+                                                className="w-full h-9 px-3 rounded-lg border border-violet-200 dark:border-violet-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white text-[12px] focus:outline-none focus:ring-2 focus:ring-violet-300 focus:border-violet-400"
+                                            />
+                                        </div>
+                                    )}
                                     <div className="w-20 space-y-1.5">
                                         <label className="text-[11px] font-medium text-slate-400">Cupo</label>
                                         <input

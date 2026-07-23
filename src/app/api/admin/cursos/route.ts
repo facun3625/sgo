@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { titulo, descripcion, organizador, fecha, fechaFin, hora, lugar, imagen, modalidad, fechaLimiteInscripcion, activo, opciones, tipoAsistencia, porcentajeMin, diasMinimos, dias } = body;
+    const { titulo, descripcion, organizador, fecha, fechaFin, hora, lugar, imagen, modalidad, fechaLimiteInscripcion, activo, opciones, tipoAsistencia, porcentajeMin, diasMinimos, dias, abiertoNoMatriculados } = body;
 
     const mod = modalidad || "Presencial";
     const tipoAsis = mod === "Virtual" ? "ninguna" : (tipoAsistencia || "ninguna");
@@ -51,12 +51,14 @@ export async function POST(req: NextRequest) {
             tipoAsistencia: tipoAsis,
             porcentajeMin: tipoAsis === "global" ? (porcentajeMin ?? null) : null,
             diasMinimos: tipoAsis === "por_dia" ? (diasMinimos ?? null) : null,
+            abiertoNoMatriculados: abiertoNoMatriculados ?? false,
             opciones: {
-                create: (opciones || []).map((o: { nombre: string; precio: number; cupo: number; infoPrivada?: string }) => ({
+                create: (opciones || []).map((o: { nombre: string; precio: number; cupo: number; infoPrivada?: string; precioNoMatriculado?: number | null }) => ({
                     nombre: o.nombre,
                     precio: o.precio ?? 0,
                     cupo: o.cupo ?? 0,
                     infoPrivada: o.infoPrivada || null,
+                    precioNoMatriculado: o.precioNoMatriculado ?? null,
                 }))
             },
             dias: tipoAsis === "por_dia" && dias?.length ? {

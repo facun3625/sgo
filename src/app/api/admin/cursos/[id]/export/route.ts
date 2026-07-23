@@ -48,13 +48,23 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
         cancelada: "Cancelada",
     };
 
-    const header = ["Expediente", "Apellido", "Nombre", "Opción", "Estado", "Método de pago", "Fecha inscripción"];
+    const header = [
+        "Expediente", "Apellido", "Nombre", "No matriculado", "DNI", "Email", "Celular",
+        "Dirección", "Localidad", "Provincia", "Opción", "Estado", "Método de pago", "Fecha inscripción",
+    ];
     const rows = inscripciones.map(i => {
         const u = usuariosMap.get(i.expediente);
         return [
             escapeCsv(i.expediente),
-            escapeCsv(u?.apellido),
-            escapeCsv(u?.nombre),
+            escapeCsv(i.esInvitado ? i.guestApellido : u?.apellido),
+            escapeCsv(i.esInvitado ? i.guestNombre : u?.nombre),
+            escapeCsv(i.esInvitado ? "Sí" : "No"),
+            escapeCsv(i.guestDni),
+            escapeCsv(i.guestEmail),
+            escapeCsv(i.guestTelefono),
+            escapeCsv(i.guestDireccion),
+            escapeCsv(i.guestLocalidad),
+            escapeCsv(i.guestProvincia),
             escapeCsv(i.opcion?.nombre),
             escapeCsv(estadoLabel[i.estado] ?? i.estado),
             escapeCsv(i.metodoPago),

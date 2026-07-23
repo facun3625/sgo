@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getMpClients, decodeRef } from "@/lib/mercadopago";
 import { crearNotificacion } from "@/lib/notificaciones";
+import { enviarInscripcionCursoConfirmada } from "@/lib/mailer";
 
 export async function POST(req: NextRequest) {
     try {
@@ -71,12 +72,16 @@ export async function POST(req: NextRequest) {
                         data: { inscritos: { increment: 1 } },
                     });
                 }
-                await crearNotificacion(
-                    expediente,
-                    "Inscripción confirmada",
-                    `Tu inscripción al curso "${inscripcion.curso.titulo}" fue confirmada.`,
-                    "curso"
-                );
+                if (inscripcion.esInvitado && inscripcion.guestEmail) {
+                    await enviarInscripcionCursoConfirmada(inscripcion.guestEmail, inscripcion.curso.titulo).catch(err => console.error("[mailer] error enviando confirmación a invitado:", err));
+                } else {
+                    await crearNotificacion(
+                        expediente,
+                        "Inscripción confirmada",
+                        `Tu inscripción al curso "${inscripcion.curso.titulo}" fue confirmada.`,
+                        "curso"
+                    );
+                }
             }
 
         } else if (tipo === "deuda") {

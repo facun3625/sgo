@@ -171,6 +171,7 @@ model Curso {
   diasMinimos            Int?               @map("dias_minimos")
   porcentajeMin          Float?             @map("porcentaje_min")
   tipoAsistencia         String             @default("ninguna") @map("tipo_asistencia")
+  abiertoNoMatriculados  Boolean            @default(false) @map("abierto_no_matriculados")
   certificados           CertificadoCurso[]
   dias                   CursoDia[]
   opciones               CursoOpcion[]
@@ -230,32 +231,42 @@ model CertificadoCurso {
 }
 
 model CursoOpcion {
-  id            Int                @id @default(autoincrement())
-  cursoId       Int                @map("curso_id")
-  nombre        String
-  precio        Float              @default(0)
-  cupo          Int                @default(0)
-  inscritos     Int                @default(0)
-  createdAt     DateTime           @default(now())
-  infoPrivada   String?            @map("info_privada")
-  curso         Curso              @relation(fields: [cursoId], references: [id], onDelete: Cascade)
-  inscripciones InscripcionCurso[]
+  id                 Int                @id @default(autoincrement())
+  cursoId            Int                @map("curso_id")
+  nombre             String
+  precio             Float              @default(0)
+  precioNoMatriculado Float?            @map("precio_no_matriculado")
+  cupo               Int                @default(0)
+  inscritos          Int                @default(0)
+  createdAt          DateTime           @default(now())
+  infoPrivada        String?            @map("info_privada")
+  curso              Curso              @relation(fields: [cursoId], references: [id], onDelete: Cascade)
+  inscripciones      InscripcionCurso[]
 
   @@map("curso_opciones")
 }
 
 model InscripcionCurso {
-  id          Int          @id @default(autoincrement())
-  expediente  String
-  cursoId     Int          @map("curso_id")
-  fecha       DateTime     @default(now())
-  estado      String       @default("pendiente_pago")
-  metodoPago  String?      @map("metodo_pago")
-  opcionId    Int?         @map("opcion_id")
-  fechaPago   DateTime?    @map("fecha_pago")
-  mpPaymentId String?      @map("mp_payment_id")
-  curso       Curso        @relation(fields: [cursoId], references: [id])
-  opcion      CursoOpcion? @relation(fields: [opcionId], references: [id])
+  id           Int          @id @default(autoincrement())
+  expediente   String
+  cursoId      Int          @map("curso_id")
+  fecha        DateTime     @default(now())
+  estado       String       @default("pendiente_pago")
+  metodoPago   String?      @map("metodo_pago")
+  opcionId     Int?         @map("opcion_id")
+  fechaPago    DateTime?    @map("fecha_pago")
+  mpPaymentId  String?      @map("mp_payment_id")
+  esInvitado   Boolean      @default(false) @map("es_invitado")
+  guestNombre  String?      @map("guest_nombre")
+  guestApellido String?     @map("guest_apellido")
+  guestEmail   String?      @map("guest_email")
+  guestTelefono String?     @map("guest_telefono")
+  guestDni     String?      @map("guest_dni")
+  guestDireccion String?    @map("guest_direccion")
+  guestLocalidad String?    @map("guest_localidad")
+  guestProvincia String?    @map("guest_provincia")
+  curso        Curso        @relation(fields: [cursoId], references: [id])
+  opcion       CursoOpcion? @relation(fields: [opcionId], references: [id])
 
   @@map("inscripciones_cursos")
 }

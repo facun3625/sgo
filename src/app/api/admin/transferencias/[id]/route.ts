@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { crearNotificacion } from "@/lib/notificaciones";
+import { enviarInscripcionCursoConfirmada } from "@/lib/mailer";
 
 function isAdmin(lvl: string) { return lvl === "superadmin" || lvl === "admin"; }
 
@@ -67,8 +68,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
             if (inscripcion.opcionId) {
                 await prisma.cursoOpcion.update({ where: { id: inscripcion.opcionId }, data: { inscritos: { increment: 1 } } });
             }
-            await crearNotificacion(expediente, "Inscripción confirmada",
-                `Tu transferencia para el curso "${inscripcion.curso.titulo}" fue aprobada.`, "curso");
+            if (inscripcion.esInvitado && inscripcion.guestEmail) {
+                enviarInscripcionCursoConfirmada(inscripcion.guestEmail, inscripcion.curso.titulo).catch(err => console.error("[mailer] error enviando confirmación a invitado:", err));
+            } else {
+                await crearNotificacion(expediente, "Inscripción confirmada",
+                    `Tu transferencia para el curso "${inscripcion.curso.titulo}" fue aprobada.`, "curso");
+            }
         }
     }
 
