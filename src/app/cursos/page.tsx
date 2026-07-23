@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Calendar, MapPin, GraduationCap, ArrowRight } from "lucide-react";
 import prisma from "@/lib/prisma";
+import CursoFlyerButton from "@/components/cursos-publicos/CursoFlyerButton";
 
 const UTC = { timeZone: "UTC" } as const;
 
@@ -49,8 +50,9 @@ export default async function CursosPublicosPage() {
                             className="block bg-white rounded-2xl border border-slate-100 hover:border-slate-200 hover:shadow-md transition-all overflow-hidden">
                             <div className="flex flex-col sm:flex-row">
                                 {curso.imagen && (
-                                    <div className="sm:w-48 h-40 sm:h-auto bg-slate-100 flex-shrink-0">
+                                    <div className="relative sm:w-48 h-40 sm:h-auto bg-slate-100 flex-shrink-0">
                                         <img src={curso.imagen} alt={curso.titulo} className="w-full h-full object-cover" />
+                                        <CursoFlyerButton imagen={curso.imagen} titulo={curso.titulo} />
                                     </div>
                                 )}
                                 <div className="p-5 space-y-2 flex-1">

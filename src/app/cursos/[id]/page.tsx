@@ -4,9 +4,10 @@ import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, Calendar, Clock, MapPin, Loader2, CheckCircle2, AlertCircle, Building2, GraduationCap, Search, Maximize2, X } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, MapPin, Loader2, CheckCircle2, AlertCircle, Building2, GraduationCap, Search } from "lucide-react";
 import GuestMpPayButton from "@/components/cursos-publicos/GuestMpPayButton";
 import GuestTransferenciaPayButton from "@/components/cursos-publicos/GuestTransferenciaPayButton";
+import CursoFlyerButton from "@/components/cursos-publicos/CursoFlyerButton";
 
 interface Opcion {
     id: number;
@@ -53,7 +54,6 @@ export default function CursoPublicoDetailPage() {
     const [enviando, setEnviando] = useState(false);
     const [error, setError] = useState("");
     const [inscripcion, setInscripcion] = useState<{ id: number; estado: string; monto: number } | null>(null);
-    const [imagenAmpliada, setImagenAmpliada] = useState(false);
 
     const [consultaDni, setConsultaDni] = useState("");
     const [consultando, setConsultando] = useState(false);
@@ -149,22 +149,7 @@ export default function CursoPublicoDetailPage() {
                 {curso.imagen && (
                     <div className="relative w-full h-48 rounded-2xl overflow-hidden bg-slate-100">
                         <img src={curso.imagen} alt={curso.titulo} className="w-full h-full object-cover" />
-                        <button onClick={() => setImagenAmpliada(true)}
-                            className="absolute bottom-3 right-3 flex items-center gap-1.5 px-3 h-9 bg-white/95 hover:bg-white shadow-md rounded-xl text-[12px] font-bold text-slate-800 transition-all">
-                            <Maximize2 size={13} /> Ver flyer
-                        </button>
-                    </div>
-                )}
-
-                {imagenAmpliada && curso.imagen && (
-                    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setImagenAmpliada(false)}>
-                        <div className="relative max-w-3xl max-h-[90vh] w-full" onClick={e => e.stopPropagation()}>
-                            <button onClick={() => setImagenAmpliada(false)}
-                                className="absolute -top-10 right-0 text-white/70 hover:text-white flex items-center gap-1.5 text-[13px]">
-                                <X size={16} /> Cerrar
-                            </button>
-                            <img src={curso.imagen} alt={curso.titulo} className="w-full h-auto max-h-[85vh] object-contain rounded-xl" />
-                        </div>
+                        <CursoFlyerButton imagen={curso.imagen} titulo={curso.titulo} />
                     </div>
                 )}
 
