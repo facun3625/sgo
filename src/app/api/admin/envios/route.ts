@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
     const session = await getSession();
     if (!session || !isAdmin(session.accessLevel)) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
-    const { asunto, contenido, expedientes, enviarATodos, emailAsunto, emailCuerpo, emailBtnUrl, emailBtnTexto } = await req.json();
+    const { asunto, contenido, expedientes, enviarATodos, emailAsunto, emailCuerpo, emailBtnUrl, emailBtnTexto, adjuntoUrl, adjuntoTipo } = await req.json();
     if (!asunto?.trim() || !contenido?.trim()) {
         return NextResponse.json({ error: "Datos incompletos" }, { status: 400 });
     }
@@ -69,6 +69,8 @@ export async function POST(req: NextRequest) {
             data: {
                 asunto: asunto.trim(),
                 contenido: contenido.trim(),
+                adjuntoUrl: adjuntoUrl || null,
+                adjuntoTipo: adjuntoTipo || null,
                 totalEnvios: validExp.length,
                 destinatarios: {
                     create: validExp.map(exp => ({ expediente: exp })),
@@ -94,7 +96,8 @@ export async function POST(req: NextRequest) {
     });
     const emails = datos.map(d => d.emailLegal!).filter(Boolean);
     if (emails.length > 0) {
-        enviarComunicadoMasivo(emails, emailAsuntoFinal, emailCuerpoFinal ?? undefined, emailBtnUrl?.trim() || undefined, emailBtnTexto?.trim() || undefined)
+        const adjunto = adjuntoUrl ? { url: adjuntoUrl as string, tipo: adjuntoTipo as "imagen" | "pdf" | "doc" } : null;
+        enviarComunicadoMasivo(emails, emailAsuntoFinal, emailCuerpoFinal ?? undefined, emailBtnUrl?.trim() || undefined, emailBtnTexto?.trim() || undefined, adjunto)
             .catch(err => console.error("[mailer] Error enviando comunicado:", err));
     }
 

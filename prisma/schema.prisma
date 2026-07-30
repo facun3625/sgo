@@ -442,11 +442,39 @@ model EnvioMasivo {
   id            Int                       @id @default(autoincrement())
   asunto        String
   contenido     String
+  adjuntoUrl    String?                   @map("adjunto_url")
+  adjuntoTipo   String?                   @map("adjunto_tipo")
   totalEnvios   Int                       @default(0)
   createdAt     DateTime                  @default(now())
   destinatarios EnvioMasivoDestinatario[]
 
   @@map("envios_masivos")
+}
+
+model EmailMarketing {
+  id            Int                          @id @default(autoincrement())
+  asunto        String
+  contenido     String
+  enviarATodos  Boolean                      @default(false) @map("enviar_a_todos")
+  adminNombre   String                       @map("admin_nombre")
+  totalEnvios   Int                          @default(0)
+  createdAt     DateTime                     @default(now())
+  destinatarios EmailMarketingDestinatario[]
+
+  @@map("email_marketing")
+}
+
+model EmailMarketingDestinatario {
+  id           Int            @id @default(autoincrement())
+  campanaId    Int            @map("campana_id")
+  expediente   String
+  email        String
+  estado       String         @default("pendiente")
+  error        String?
+  enviadoAt    DateTime?      @map("enviado_at")
+  campana      EmailMarketing @relation(fields: [campanaId], references: [id], onDelete: Cascade)
+
+  @@map("email_marketing_destinatarios")
 }
 
 model EnvioMasivoDestinatario {

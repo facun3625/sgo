@@ -36,6 +36,8 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
         id: dest.envio.id,
         asunto: dest.envio.asunto,
         contenido: dest.envio.contenido,
+        adjuntoUrl: dest.envio.adjuntoUrl,
+        adjuntoTipo: dest.envio.adjuntoTipo,
         leido: true,
         createdAt: dest.envio.createdAt,
     });

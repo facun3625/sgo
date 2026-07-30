@@ -61,6 +61,8 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
         id: envio.id,
         asunto: envio.asunto,
         contenido: envio.contenido,
+        adjuntoUrl: envio.adjuntoUrl,
+        adjuntoTipo: envio.adjuntoTipo,
         totalEnvios: envio.totalEnvios,
         leidos: destinatarios.filter(d => d.leido).length,
         createdAt: envio.createdAt,

@@ -1,5 +1,7 @@
 import nodemailer from "nodemailer";
 import prisma from "@/lib/prisma";
+import { readFile } from "fs/promises";
+import path from "path";
 
 const FALLBACK_SMTP = {
     host: "vps-1445550-x.dattaweb.com",
@@ -32,7 +34,8 @@ async function getSmtpConfig() {
 }
 
 const YEAR = new Date().getFullYear();
-const LOGO_URL = `${process.env.NEXT_PUBLIC_BASE_URL ?? "https://sgo-casf.online"}/sgo_nuevo.png`;
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "https://sgo-casf.online";
+const LOGO_URL = `${BASE_URL}/sgo_nuevo.png`;
 
 function baseLayout(content: string) {
     return `
@@ -120,7 +123,9 @@ export async function enviarCertificadoCursoInvitado(destinatario: string, nombr
 const MAIL_CHUNK = 20;
 const MAIL_DELAY_MS = 5000;
 
-export async function enviarComunicadoMasivo(destinatarios: string[], asunto: string, cuerpo?: string, btnUrl?: string, btnTexto?: string) {
+export interface AdjuntoComunicado { url: string; tipo: "imagen" | "pdf" | "doc"; }
+
+export async function enviarComunicadoMasivo(destinatarios: string[], asunto: string, cuerpo?: string, btnUrl?: string, btnTexto?: string, adjunto?: AdjuntoComunicado | null) {
     const { smtp, from } = await getSmtpConfig();
     const transporter = nodemailer.createTransport(smtp);
 
@@ -131,7 +136,12 @@ export async function enviarComunicadoMasivo(destinatarios: string[], asunto: st
     const url = btnUrl || "https://app.sgo-casf.online/";
     const texto = btnTexto || "Ir al portal";
 
+    const imagenHtml = adjunto?.tipo === "imagen"
+        ? `<img src="${BASE_URL}${adjunto.url}" alt="" style="max-width:100%;border-radius:12px;margin-bottom:20px;display:block;" />`
+        : "";
+
     const html = baseLayout(`
+        ${imagenHtml}
         <h2 style="font-size:20px;font-weight:800;color:#0f172a;margin:0 0 12px">${asunto}</h2>
         <p style="color:#475569;font-size:15px;line-height:1.6;margin:0 0 28px">${cuerpoHtml}</p>
         <div style="text-align:center;">
@@ -139,11 +149,22 @@ export async function enviarComunicadoMasivo(destinatarios: string[], asunto: st
         </div>
     `);
 
+    let attachments: { filename: string; content: Buffer }[] | undefined;
+    if (adjunto && adjunto.tipo !== "imagen") {
+        try {
+            const filePath = path.join(process.cwd(), "public", adjunto.url);
+            const content = await readFile(filePath);
+            attachments = [{ filename: path.basename(adjunto.url), content }];
+        } catch (err) {
+            console.error("[mailer] No se pudo adjuntar el archivo:", err);
+        }
+    }
+
     (async () => {
         for (let i = 0; i < destinatarios.length; i += MAIL_CHUNK) {
             const lote = destinatarios.slice(i, i + MAIL_CHUNK);
             const results = await Promise.allSettled(
-                lote.map(email => transporter.sendMail({ from, to: email, subject: asunto, html }))
+                lote.map(email => transporter.sendMail({ from, to: email, subject: asunto, html, attachments }))
             );
             results.forEach((r, idx) => {
                 if (r.status === "rejected") console.error(`[mailer] Error enviando a ${lote[idx]}:`, r.reason);
@@ -153,4 +174,39 @@ export async function enviarComunicadoMasivo(destinatarios: string[], asunto: st
             }
         }
     })().catch(err => console.error("[mailer] Error general:", err));
+}
+
+export async function enviarEmailMarketing(campanaId: number) {
+    const { smtp, from } = await getSmtpConfig();
+    const transporter = nodemailer.createTransport(smtp);
+
+    const campana = await prisma.emailMarketing.findUnique({ where: { id: campanaId } });
+    if (!campana) return;
+
+    const destinatarios = await prisma.emailMarketingDestinatario.findMany({
+        where: { campanaId, estado: "pendiente" },
+    });
+
+    const html = baseLayout(`<div style="color:#1e293b;font-size:15px;line-height:1.6">${campana.contenido}</div>`);
+
+    for (let i = 0; i < destinatarios.length; i += MAIL_CHUNK) {
+        const lote = destinatarios.slice(i, i + MAIL_CHUNK);
+        await Promise.allSettled(lote.map(async (d) => {
+            try {
+                await transporter.sendMail({ from, to: d.email, subject: campana.asunto, html });
+                await prisma.emailMarketingDestinatario.update({
+                    where: { id: d.id },
+                    data: { estado: "enviado", enviadoAt: new Date() },
+                });
+            } catch (err) {
+                await prisma.emailMarketingDestinatario.update({
+                    where: { id: d.id },
+                    data: { estado: "error", error: String(err) },
+                });
+            }
+        }));
+        if (i + MAIL_CHUNK < destinatarios.length) {
+            await new Promise(r => setTimeout(r, MAIL_DELAY_MS));
+        }
+    }
 }

@@ -40,6 +40,7 @@ import {
     HardDrive,
     ShieldCheck,
     Eye,
+    Megaphone,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { SessionPayload } from "@/lib/auth";
@@ -72,6 +73,7 @@ const navItems = [
     { href: "/admin/faq", label: "Preguntas Frecuentes", icon: HelpCircle, color: "text-slate-400" },
     { href: "/admin/mensajes", label: "Mensajes Privados", icon: Mail, color: "text-sky-500" },
     { href: "/admin/envios", label: "Envíos Masivos", icon: Send, color: "text-amber-500" },
+    { href: "/admin/email-marketing", label: "Email Marketing", icon: Megaphone, color: "text-sky-500" },
     { href: "/admin/firmas", label: "Firmas de Autoridades", icon: PenLine, color: "text-indigo-500" },
     { href: "/admin/adhesiones", label: "Débito Automático", icon: Banknote, color: "text-emerald-500" },
     { href: "/admin/suspensiones", label: "Suspensiones", icon: ShieldOff, color: "text-rose-500" },

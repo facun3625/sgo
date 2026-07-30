@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Send, Plus, X, Loader2, ChevronLeft, Users, CheckCircle2, Clock, AlertCircle, BarChart3, Search, Trash2 } from "lucide-react";
+import { Send, Plus, X, Loader2, ChevronLeft, Users, CheckCircle2, Clock, AlertCircle, BarChart3, Search, Trash2, Upload, FileText, Download, RotateCw } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
+import CursoFlyerButton from "@/components/cursos-publicos/CursoFlyerButton";
 
 interface EnvioItem {
     id: number;
@@ -26,6 +27,8 @@ interface EnvioDetalle {
     id: number;
     asunto: string;
     contenido: string;
+    adjuntoUrl: string | null;
+    adjuntoTipo: string | null;
     totalEnvios: number;
     leidos: number;
     createdAt: string;
@@ -86,6 +89,9 @@ export default function AdminEnviosPage() {
     const [emailBtnTexto, setEmailBtnTexto] = useState("Ir al portal");
     const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
     const [deleting, setDeleting] = useState(false);
+    const [adjunto, setAdjunto] = useState<{ url: string; tipo: string; nombre: string } | null>(null);
+    const [subiendoAdjunto, setSubiendoAdjunto] = useState(false);
+    const [reenviando, setReenviando] = useState(false);
 
     const parsed = parseExpedientes(newExpRaw);
     const uniqueParsed = [...new Set(parsed)];
@@ -109,6 +115,20 @@ export default function AdminEnviosPage() {
         setLoadingDetail(false);
     }
 
+    async function handleUploadAdjunto(file: File) {
+        setSubiendoAdjunto(true);
+        try {
+            const form = new FormData();
+            form.append("file", file);
+            const res = await fetch("/api/admin/envios/upload", { method: "POST", body: form });
+            const data = await res.json();
+            if (!res.ok) { showToast(data.error || "Error al subir el archivo", "error"); return; }
+            setAdjunto({ url: data.url, tipo: data.tipo, nombre: file.name });
+        } finally {
+            setSubiendoAdjunto(false);
+        }
+    }
+
     async function crear() {
         if (!newAsunto.trim() || !newContenido.trim()) return;
         if (!enviarATodos && uniqueParsed.length === 0) return;
@@ -116,7 +136,11 @@ export default function AdminEnviosPage() {
         const res = await fetch("/api/admin/envios", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ asunto: newAsunto, contenido: newContenido, expedientes: uniqueParsed, enviarATodos, emailAsunto, emailCuerpo, emailBtnUrl, emailBtnTexto }),
+            body: JSON.stringify({
+                asunto: newAsunto, contenido: newContenido, expedientes: uniqueParsed, enviarATodos,
+                emailAsunto, emailCuerpo, emailBtnUrl, emailBtnTexto,
+                adjuntoUrl: adjunto?.url || null, adjuntoTipo: adjunto?.tipo || null,
+            }),
         });
         const data = await res.json();
         if (res.ok) {
@@ -126,12 +150,28 @@ export default function AdminEnviosPage() {
             setNewAsunto(""); setNewContenido(""); setNewExpRaw(""); setEnviarATodos(false);
             setEmailAsunto(""); setEmailCuerpo("");
             setEmailBtnUrl("https://app.sgo-casf.online/"); setEmailBtnTexto("Ir al portal");
+            setAdjunto(null);
             try { new BroadcastChannel("sgo-updates").postMessage({ type: "new-comunicado" }); } catch {}
             load();
         } else {
             showToast(data.error || "Error al enviar", "error");
         }
         setCreando(false);
+    }
+
+    async function reenviarEmail(id: number) {
+        setReenviando(true);
+        try {
+            const res = await fetch(`/api/admin/envios/${id}/reenviar`, { method: "POST" });
+            const data = await res.json();
+            if (res.ok) {
+                showToast(`Email reenviado a ${data.emailsEnviados} destinatarios`, "success");
+            } else {
+                showToast(data.error || "Error al reenviar", "error");
+            }
+        } finally {
+            setReenviando(false);
+        }
     }
 
     async function eliminar(id: number) {
@@ -182,10 +222,17 @@ export default function AdminEnviosPage() {
                     </p>
                 </div>
                 {selected ? (
-                    <button onClick={() => setConfirmDelete(selected.id)}
-                        className="flex items-center gap-1.5 px-3 h-9 text-[12px] font-semibold text-rose-500 border border-rose-200 dark:border-rose-800 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all">
-                        <Trash2 size={13} /> Eliminar
-                    </button>
+                    <div className="flex items-center gap-2">
+                        <button onClick={() => reenviarEmail(selected.id)} disabled={reenviando}
+                            className="flex items-center gap-1.5 px-3 h-9 text-[12px] font-semibold text-sky-600 dark:text-sky-400 border border-sky-200 dark:border-sky-800 rounded-xl hover:bg-sky-50 dark:hover:bg-sky-900/20 transition-all disabled:opacity-50">
+                            {reenviando ? <Loader2 size={13} className="animate-spin" /> : <RotateCw size={13} />}
+                            Reenviar email
+                        </button>
+                        <button onClick={() => setConfirmDelete(selected.id)}
+                            className="flex items-center gap-1.5 px-3 h-9 text-[12px] font-semibold text-rose-500 border border-rose-200 dark:border-rose-800 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all">
+                            <Trash2 size={13} /> Eliminar
+                        </button>
+                    </div>
                 ) : (
                     <button onClick={() => setShowModal(true)}
                         className="flex items-center gap-1.5 px-4 h-9 bg-sky-500 text-white rounded-xl text-[12px] font-bold hover:bg-sky-600 transition-all">
@@ -216,9 +263,24 @@ export default function AdminEnviosPage() {
                     </div>
 
                     {/* Contenido del mensaje */}
-                    <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5">
-                        <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-3">Contenido del comunicado</p>
-                        <p className="text-[13px] text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">{selected.contenido}</p>
+                    <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl overflow-hidden">
+                        {selected.adjuntoUrl && selected.adjuntoTipo === "imagen" && (
+                            <div className="relative w-full h-48 bg-slate-100 dark:bg-slate-800">
+                                <img src={selected.adjuntoUrl} alt="" className="w-full h-full object-cover" />
+                                <CursoFlyerButton imagen={selected.adjuntoUrl} titulo={selected.asunto} />
+                            </div>
+                        )}
+                        <div className="p-5">
+                            <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-3">Contenido del comunicado</p>
+                            <p className="text-[13px] text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">{selected.contenido}</p>
+                            {selected.adjuntoUrl && (selected.adjuntoTipo === "pdf" || selected.adjuntoTipo === "doc") && (
+                                <a href={selected.adjuntoUrl} target="_blank" rel="noopener noreferrer"
+                                    className="mt-4 inline-flex items-center gap-2 px-4 h-9 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-[12px] font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all">
+                                    {selected.adjuntoTipo === "pdf" ? <FileText size={13} /> : <Download size={13} />}
+                                    Ver adjunto
+                                </a>
+                            )}
+                        </div>
                     </div>
 
                     {/* Timeline */}
@@ -459,6 +521,25 @@ export default function AdminEnviosPage() {
                                         rows={4}
                                         className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-[13px] focus:outline-none focus:ring-2 focus:ring-sky-300/50 resize-none"
                                     />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-[12px] font-semibold text-slate-500">Adjunto (imagen, PDF o Word) — opcional</label>
+                                    {adjunto ? (
+                                        <div className="flex items-center gap-3 p-3 rounded-xl border border-emerald-200 dark:border-emerald-700/30 bg-emerald-50 dark:bg-emerald-900/10">
+                                            <CheckCircle2 size={16} className="text-emerald-500 flex-shrink-0" />
+                                            <span className="text-[12px] text-emerald-700 dark:text-emerald-400 flex-1 truncate">{adjunto.nombre}</span>
+                                            <button type="button" onClick={() => setAdjunto(null)}>
+                                                <X size={14} className="text-slate-400" />
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <label className="flex items-center gap-3 p-3 rounded-xl border border-dashed border-slate-300 dark:border-slate-600 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                                            {subiendoAdjunto ? <Loader2 size={15} className="animate-spin text-slate-400" /> : <Upload size={15} className="text-slate-400" />}
+                                            <span className="text-[12px] text-slate-400">{subiendoAdjunto ? "Subiendo..." : "Subir imagen, PDF o Word"}</span>
+                                            <input type="file" className="hidden" accept="image/*,.pdf,.doc,.docx"
+                                                onChange={e => { const f = e.target.files?.[0]; if (f) handleUploadAdjunto(f); }} disabled={subiendoAdjunto} />
+                                        </label>
+                                    )}
                                 </div>
                                 <div className="grid grid-cols-2 gap-3">
                                     <div className="space-y-1.5">

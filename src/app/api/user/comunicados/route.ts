@@ -11,7 +11,7 @@ export async function GET() {
         where: { expediente: session.expediente },
         orderBy: { envio: { createdAt: "desc" } },
         include: {
-            envio: { select: { id: true, asunto: true, contenido: true, createdAt: true } },
+            envio: { select: { id: true, asunto: true, contenido: true, adjuntoUrl: true, adjuntoTipo: true, createdAt: true } },
         },
     });
 
@@ -20,6 +20,8 @@ export async function GET() {
         destinatarioId: d.id,
         asunto: d.envio.asunto,
         contenido: d.envio.contenido,
+        adjuntoUrl: d.envio.adjuntoUrl,
+        adjuntoTipo: d.envio.adjuntoTipo,
         leido: d.leido,
         leidoAt: d.leidoAt,
         createdAt: d.envio.createdAt,

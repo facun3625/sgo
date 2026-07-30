@@ -22,6 +22,7 @@ export const ADMIN_SECCIONES = [
     { key: "faq",            label: "Preguntas Frecuentes",         group: "" },
     { key: "mensajes",       label: "Mensajes Privados",            group: "" },
     { key: "envios",         label: "Envíos Masivos",               group: "" },
+    { key: "email-marketing", label: "Email Marketing",             group: "" },
     { key: "firmas",         label: "Firmas de Autoridades",        group: "" },
     { key: "adhesiones",     label: "Débito Automático",            group: "" },
     { key: "suspensiones",   label: "Suspensiones",                 group: "" },
