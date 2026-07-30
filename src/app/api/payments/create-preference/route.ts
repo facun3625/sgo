@@ -112,6 +112,9 @@ export async function POST(req: NextRequest) {
             body: {
                 items: [{ id: externalReference, title, unit_price: unitPrice, quantity, currency_id: "ARS" }],
                 external_reference: externalReference,
+                payment_methods: {
+                    excluded_payment_types: [{ id: "ticket" }],
+                },
                 ...(isPublicUrl && {
                     back_urls: {
                         success: `${BASE_URL}/dashboard/pagos?mp=success`,

@@ -44,6 +44,9 @@ export async function POST(req: NextRequest) {
             body: {
                 items: [{ id: externalReference, title, unit_price: unitPrice, quantity: 1, currency_id: "ARS" }],
                 external_reference: externalReference,
+                payment_methods: {
+                    excluded_payment_types: [{ id: "ticket" }],
+                },
                 ...(isPublicUrl && {
                     back_urls: {
                         success: `${BASE_URL}/cursos/${inscripcion.cursoId}?mp=success`,
