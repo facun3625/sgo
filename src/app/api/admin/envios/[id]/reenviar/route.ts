@@ -29,8 +29,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         return NextResponse.json({ error: "Ningún destinatario tiene email registrado" }, { status: 400 });
     }
 
-    const adjunto = envio.adjuntoUrl ? { url: envio.adjuntoUrl, tipo: envio.adjuntoTipo as "imagen" | "pdf" | "doc" } : null;
-    enviarComunicadoMasivo(emails, envio.asunto, undefined, undefined, undefined, adjunto)
+    enviarComunicadoMasivo(emails, envio.asunto, undefined, undefined, undefined)
         .catch(err => console.error("[mailer] Error reenviando comunicado:", err));
 
     await logAdmin({

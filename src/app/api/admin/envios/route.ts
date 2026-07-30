@@ -96,8 +96,7 @@ export async function POST(req: NextRequest) {
     });
     const emails = datos.map(d => d.emailLegal!).filter(Boolean);
     if (emails.length > 0) {
-        const adjunto = adjuntoUrl ? { url: adjuntoUrl as string, tipo: adjuntoTipo as "imagen" | "pdf" | "doc" } : null;
-        enviarComunicadoMasivo(emails, emailAsuntoFinal, emailCuerpoFinal ?? undefined, emailBtnUrl?.trim() || undefined, emailBtnTexto?.trim() || undefined, adjunto)
+        enviarComunicadoMasivo(emails, emailAsuntoFinal, emailCuerpoFinal ?? undefined, emailBtnUrl?.trim() || undefined, emailBtnTexto?.trim() || undefined)
             .catch(err => console.error("[mailer] Error enviando comunicado:", err));
     }
 

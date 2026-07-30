@@ -449,6 +449,26 @@ export default function AdminEnviosPage() {
                                     className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-[13px] focus:outline-none focus:ring-2 focus:ring-sky-300/50 resize-none" />
                             </div>
                             <div className="space-y-1.5">
+                                <label className="text-[12px] font-semibold text-slate-500">Adjunto (imagen, PDF o Word) — opcional</label>
+                                <p className="text-[11px] text-slate-400">Queda disponible dentro del comunicado en el portal. No se envía por email.</p>
+                                {adjunto ? (
+                                    <div className="flex items-center gap-3 p-3 rounded-xl border border-emerald-200 dark:border-emerald-700/30 bg-emerald-50 dark:bg-emerald-900/10">
+                                        <CheckCircle2 size={16} className="text-emerald-500 flex-shrink-0" />
+                                        <span className="text-[12px] text-emerald-700 dark:text-emerald-400 flex-1 truncate">{adjunto.nombre}</span>
+                                        <button type="button" onClick={() => setAdjunto(null)}>
+                                            <X size={14} className="text-slate-400" />
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <label className="flex items-center gap-3 p-3 rounded-xl border border-dashed border-slate-300 dark:border-slate-600 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                                        {subiendoAdjunto ? <Loader2 size={15} className="animate-spin text-slate-400" /> : <Upload size={15} className="text-slate-400" />}
+                                        <span className="text-[12px] text-slate-400">{subiendoAdjunto ? "Subiendo..." : "Subir imagen, PDF o Word"}</span>
+                                        <input type="file" className="hidden" accept="image/*,.pdf,.doc,.docx"
+                                            onChange={e => { const f = e.target.files?.[0]; if (f) handleUploadAdjunto(f); }} disabled={subiendoAdjunto} />
+                                    </label>
+                                )}
+                            </div>
+                            <div className="space-y-1.5">
                                 <label className="text-[12px] font-semibold text-slate-500">Destinatarios *</label>
 
                                 {/* Tilde enviar a todos */}
@@ -521,25 +541,6 @@ export default function AdminEnviosPage() {
                                         rows={4}
                                         className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-[13px] focus:outline-none focus:ring-2 focus:ring-sky-300/50 resize-none"
                                     />
-                                </div>
-                                <div className="space-y-1.5">
-                                    <label className="text-[12px] font-semibold text-slate-500">Adjunto (imagen, PDF o Word) — opcional</label>
-                                    {adjunto ? (
-                                        <div className="flex items-center gap-3 p-3 rounded-xl border border-emerald-200 dark:border-emerald-700/30 bg-emerald-50 dark:bg-emerald-900/10">
-                                            <CheckCircle2 size={16} className="text-emerald-500 flex-shrink-0" />
-                                            <span className="text-[12px] text-emerald-700 dark:text-emerald-400 flex-1 truncate">{adjunto.nombre}</span>
-                                            <button type="button" onClick={() => setAdjunto(null)}>
-                                                <X size={14} className="text-slate-400" />
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <label className="flex items-center gap-3 p-3 rounded-xl border border-dashed border-slate-300 dark:border-slate-600 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
-                                            {subiendoAdjunto ? <Loader2 size={15} className="animate-spin text-slate-400" /> : <Upload size={15} className="text-slate-400" />}
-                                            <span className="text-[12px] text-slate-400">{subiendoAdjunto ? "Subiendo..." : "Subir imagen, PDF o Word"}</span>
-                                            <input type="file" className="hidden" accept="image/*,.pdf,.doc,.docx"
-                                                onChange={e => { const f = e.target.files?.[0]; if (f) handleUploadAdjunto(f); }} disabled={subiendoAdjunto} />
-                                        </label>
-                                    )}
                                 </div>
                                 <div className="grid grid-cols-2 gap-3">
                                     <div className="space-y-1.5">
