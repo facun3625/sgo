@@ -49,6 +49,24 @@ function baseLayout(content: string) {
     </div>`;
 }
 
+// Cabecera con marca institucional (azul + logo), usada en Email Marketing
+function marketingLayout(content: string) {
+    return `
+    <div style="font-family:sans-serif;max-width:480px;margin:0 auto;background:#f8fafc;border-radius:16px;overflow:hidden;">
+        <div style="background:#063f68;padding:32px 24px;text-align:center;">
+            <img src="${LOGO_URL}" alt="CPASF" width="56" height="56" style="display:block;margin:0 auto 12px;border-radius:12px;" />
+            <p style="font-size:15px;font-weight:800;color:#fff;margin:0">Colegio de Profesionales de la Abogacía</p>
+            <p style="font-size:11px;font-weight:700;letter-spacing:0.1em;color:#93c5fd;text-transform:uppercase;margin:4px 0 0">Santa Fe · 1ª Circunscripción</p>
+        </div>
+        <div style="padding:24px;">
+            <div style="background:#fff;border-radius:12px;padding:32px;border:1px solid #e2e8f0;">
+                ${content}
+            </div>
+            <p style="text-align:center;color:#cbd5e1;font-size:11px;margin-top:20px;">© ${YEAR} CPASF · 1ª Circunscripción</p>
+        </div>
+    </div>`;
+}
+
 export async function enviarTokenRecuperacion(destinatario: string, token: string) {
     const { smtp, from } = await getSmtpConfig();
     const transporter = nodemailer.createTransport(smtp);
@@ -167,7 +185,7 @@ export async function enviarEmailMarketing(campanaId: number) {
         where: { campanaId, estado: "pendiente" },
     });
 
-    const html = baseLayout(`<div style="color:#1e293b;font-size:15px;line-height:1.6">${campana.contenido}</div>`);
+    const html = marketingLayout(`<div style="color:#1e293b;font-size:15px;line-height:1.6">${campana.contenido}</div>`);
 
     for (let i = 0; i < destinatarios.length; i += MAIL_CHUNK) {
         const lote = destinatarios.slice(i, i + MAIL_CHUNK);

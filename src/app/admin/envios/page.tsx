@@ -41,6 +41,14 @@ function pct(leidos: number, total: number) {
     return Math.round((leidos / total) * 100);
 }
 
+// Etiqueta de porcentaje: evita mostrar "0%" cuando en realidad hubo lecturas (ej: 16 de 4506 redondea a 0)
+function pctLabel(leidos: number, total: number): string {
+    if (total === 0) return "0%";
+    const raw = (leidos / total) * 100;
+    if (raw > 0 && raw < 1) return "<1%";
+    return `${Math.round(raw)}%`;
+}
+
 function fmtDate(d: string) {
     return new Date(d).toLocaleDateString("es-AR", { day: "2-digit", month: "short", year: "numeric" });
 }
@@ -56,14 +64,15 @@ function parseExpedientes(raw: string): string[] {
         .filter(Boolean);
 }
 
-function PctBar({ value }: { value: number }) {
+function PctBar({ leidos, total }: { leidos: number; total: number }) {
+    const value = pct(leidos, total);
     const color = value >= 60 ? "bg-emerald-400" : value >= 30 ? "bg-amber-400" : "bg-rose-400";
     return (
         <div className="flex items-center gap-2">
             <div className="flex-1 h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
                 <div className={`h-full rounded-full transition-all ${color}`} style={{ width: `${value}%` }} />
             </div>
-            <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300 w-8 text-right">{value}%</span>
+            <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300 w-8 text-right">{pctLabel(leidos, total)}</span>
         </div>
     );
 }
@@ -250,7 +259,7 @@ export default function AdminEnviosPage() {
                             { label: "Total enviados", value: selected.totalEnvios, icon: <Users size={16} />, color: "text-sky-500 bg-sky-50 dark:bg-sky-900/20" },
                             { label: "Leídos", value: selected.leidos, icon: <CheckCircle2 size={16} />, color: "text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20" },
                             { label: "No leídos", value: selected.totalEnvios - selected.leidos, icon: <Clock size={16} />, color: "text-amber-500 bg-amber-50 dark:bg-amber-900/20" },
-                            { label: "Tasa de apertura", value: `${pct(selected.leidos, selected.totalEnvios)}%`, icon: <BarChart3 size={16} />, color: "text-violet-500 bg-violet-50 dark:bg-violet-900/20" },
+                            { label: "Tasa de apertura", value: pctLabel(selected.leidos, selected.totalEnvios), icon: <BarChart3 size={16} />, color: "text-violet-500 bg-violet-50 dark:bg-violet-900/20" },
                         ].map((card, i) => (
                             <div key={i} className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-4">
                                 <div className={`w-8 h-8 rounded-xl flex items-center justify-center mb-3 ${card.color}`}>
@@ -397,7 +406,7 @@ export default function AdminEnviosPage() {
                                                 </span>
                                             </td>
                                             <td className="px-5 py-3.5 min-w-[160px]">
-                                                <PctBar value={pct(e.leidos, e.totalEnvios)} />
+                                                <PctBar leidos={e.leidos} total={e.totalEnvios} />
                                                 <p className="text-[10px] text-slate-400 mt-0.5">{e.leidos} de {e.totalEnvios} leídos</p>
                                             </td>
                                             <td className="px-5 py-3.5">

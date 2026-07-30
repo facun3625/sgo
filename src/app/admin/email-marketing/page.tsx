@@ -285,10 +285,13 @@ export default function EmailMarketingPage() {
                         {/* Preview en vivo */}
                         <div className="bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 flex flex-col">
                             <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-3">Vista previa del mail</p>
-                            <div className="flex-1 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 overflow-y-auto max-h-[560px]">
-                                <div className="text-center mb-5">
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">CPASF · SGO</p>
+                            <div className="flex-1 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden overflow-y-auto max-h-[560px]">
+                                <div className="bg-[#063f68] px-6 py-8 text-center">
+                                    <img src="/sgo_nuevo.png" alt="CPASF" className="w-14 h-14 mx-auto mb-3 rounded-xl object-contain bg-white/10" />
+                                    <p className="text-[15px] font-black text-white">Colegio de Profesionales de la Abogacía</p>
+                                    <p className="text-[11px] font-bold text-blue-200 uppercase tracking-widest mt-1">Santa Fe · 1ª Circunscripción</p>
                                 </div>
+                                <div className="p-6 bg-slate-50 dark:bg-slate-950/40">
                                 <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl p-6">
                                     <p className="text-[13px] font-bold text-slate-400 uppercase tracking-wide mb-3">{asunto || "Asunto del mail"}</p>
                                     {contenido && contenido !== "<p></p>" ? (
@@ -296,6 +299,7 @@ export default function EmailMarketingPage() {
                                     ) : (
                                         <p className="text-[13px] text-slate-300 italic">El contenido que escribas va a aparecer acá...</p>
                                     )}
+                                </div>
                                 </div>
                             </div>
                         </div>
