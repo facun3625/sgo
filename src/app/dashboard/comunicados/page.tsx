@@ -4,6 +4,11 @@ import { useState, useEffect } from "react";
 import { Megaphone, Loader2, ChevronLeft, CheckCircle2, Clock, FileText, Download } from "lucide-react";
 import CursoFlyerButton from "@/components/cursos-publicos/CursoFlyerButton";
 
+// Comunicados viejos se guardaron como texto plano; los nuevos vienen como HTML del editor
+function esHtml(contenido: string): boolean {
+    return /^\s*<[a-z][\s\S]*>/i.test(contenido);
+}
+
 interface Comunicado {
     id: number;
     destinatarioId: number;
@@ -84,7 +89,11 @@ export default function ComunicadosPage() {
                             </div>
                         )}
                         <div className="px-6 py-5">
-                            <p className="text-[15px] text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">{selected.contenido}</p>
+                            {esHtml(selected.contenido) ? (
+                                <div className="prose prose-sm max-w-none text-[15px] text-slate-700 dark:text-slate-300" dangerouslySetInnerHTML={{ __html: selected.contenido }} />
+                            ) : (
+                                <p className="text-[15px] text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">{selected.contenido}</p>
+                            )}
                             {selected.adjuntoUrl && (selected.adjuntoTipo === "pdf" || selected.adjuntoTipo === "doc") && (
                                 <a href={selected.adjuntoUrl} target="_blank" rel="noopener noreferrer"
                                     className="mt-4 inline-flex items-center gap-2 px-4 h-10 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-[13px] font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all">

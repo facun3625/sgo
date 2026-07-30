@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Send, Plus, X, Loader2, ChevronLeft, Users, CheckCircle2, Clock, AlertCircle, BarChart3, Search, Trash2, Upload, FileText, Download, RotateCw } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 import CursoFlyerButton from "@/components/cursos-publicos/CursoFlyerButton";
+import RichTextEditor from "@/components/admin/RichTextEditor";
 
 interface EnvioItem {
     id: number;
@@ -34,6 +35,11 @@ interface EnvioDetalle {
     createdAt: string;
     timeline: TimelineBucket[];
     destinatarios: DestinatarioDetalle[];
+}
+
+// Comunicados viejos se guardaron como texto plano; los nuevos vienen como HTML del editor
+function esHtml(contenido: string): boolean {
+    return /^\s*<[a-z][\s\S]*>/i.test(contenido);
 }
 
 function pct(leidos: number, total: number) {
@@ -87,6 +93,7 @@ export default function AdminEnviosPage() {
 
     // Modal crear
     const [showModal, setShowModal] = useState(false);
+    const [editorKey, setEditorKey] = useState(0);
     const [newAsunto, setNewAsunto] = useState("");
     const [newContenido, setNewContenido] = useState("");
     const [newExpRaw, setNewExpRaw] = useState("");
@@ -138,8 +145,10 @@ export default function AdminEnviosPage() {
         }
     }
 
+    const contenidoVacio = !newContenido.trim() || newContenido === "<p></p>";
+
     async function crear() {
-        if (!newAsunto.trim() || !newContenido.trim()) return;
+        if (!newAsunto.trim() || contenidoVacio) return;
         if (!enviarATodos && uniqueParsed.length === 0) return;
         setCreando(true);
         const res = await fetch("/api/admin/envios", {
@@ -160,6 +169,7 @@ export default function AdminEnviosPage() {
             setEmailAsunto(""); setEmailCuerpo("");
             setEmailBtnUrl("https://app.sgo-casf.online/"); setEmailBtnTexto("Ir al portal");
             setAdjunto(null);
+            setEditorKey(k => k + 1);
             try { new BroadcastChannel("sgo-updates").postMessage({ type: "new-comunicado" }); } catch {}
             load();
         } else {
@@ -281,7 +291,11 @@ export default function AdminEnviosPage() {
                         )}
                         <div className="p-5">
                             <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-3">Contenido del comunicado</p>
-                            <p className="text-[13px] text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">{selected.contenido}</p>
+                            {esHtml(selected.contenido) ? (
+                                <div className="prose prose-sm max-w-none text-[13px] text-slate-700 dark:text-slate-300" dangerouslySetInnerHTML={{ __html: selected.contenido }} />
+                            ) : (
+                                <p className="text-[13px] text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">{selected.contenido}</p>
+                            )}
                             {selected.adjuntoUrl && (selected.adjuntoTipo === "pdf" || selected.adjuntoTipo === "doc") && (
                                 <a href={selected.adjuntoUrl} target="_blank" rel="noopener noreferrer"
                                     className="mt-4 inline-flex items-center gap-2 px-4 h-9 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-[12px] font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all">
@@ -453,9 +467,8 @@ export default function AdminEnviosPage() {
                             </div>
                             <div className="space-y-1.5">
                                 <label className="text-[12px] font-semibold text-slate-500">Mensaje *</label>
-                                <textarea value={newContenido} onChange={e => setNewContenido(e.target.value)}
-                                    placeholder="Escribí el contenido del comunicado..." rows={5}
-                                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-[13px] focus:outline-none focus:ring-2 focus:ring-sky-300/50 resize-none" />
+                                <RichTextEditor key={editorKey} value={newContenido} onChange={setNewContenido}
+                                    placeholder="Escribí el contenido del comunicado..." uploadUrl="/api/admin/envios/upload" />
                             </div>
                             <div className="space-y-1.5">
                                 <label className="text-[12px] font-semibold text-slate-500">Adjunto (imagen, PDF o Word) — opcional</label>
@@ -579,7 +592,7 @@ export default function AdminEnviosPage() {
                                 Cancelar
                             </button>
                             <button onClick={crear}
-                                disabled={creando || !newAsunto.trim() || !newContenido.trim() || (!enviarATodos && uniqueParsed.length === 0)}
+                                disabled={creando || !newAsunto.trim() || contenidoVacio || (!enviarATodos && uniqueParsed.length === 0)}
                                 className="flex-1 flex items-center justify-center gap-2 h-10 bg-sky-500 text-white rounded-xl text-[13px] font-bold hover:bg-sky-600 disabled:opacity-50 transition-all">
                                 {creando ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
                                 {enviarATodos ? "Enviar a todos" : `Enviar a ${uniqueParsed.length || "0"} usuarios`}
