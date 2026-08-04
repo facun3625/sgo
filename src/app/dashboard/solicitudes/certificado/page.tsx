@@ -21,7 +21,7 @@ interface UserDatos {
 
 function formatFechaMatriculacion(fecha: string | null): string {
     if (!fecha) return "--";
-    return new Date(fecha).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric" });
+    return new Date(fecha).toLocaleDateString("es-AR", { timeZone: "UTC", day: "2-digit", month: "2-digit", year: "numeric" });
 }
 
 function fechaEnLetras(): { dia: string; mes: string; anio: string } {

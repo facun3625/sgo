@@ -244,7 +244,7 @@ export default function EmailMarketingPage() {
                             </div>
                             <div className="space-y-1.5">
                                 <label className="text-[12px] font-semibold text-slate-500">Mensaje *</label>
-                                <RichTextEditor key={editorKey} value={contenido} onChange={setContenido} placeholder="Escribí el contenido del mail..." />
+                                <RichTextEditor key={editorKey} value={contenido} onChange={setContenido} placeholder="Escribí el contenido del mail..." uploadUrl="/api/admin/email-marketing/upload" />
                             </div>
                             <div className="space-y-1.5">
                                 <label className="text-[12px] font-semibold text-slate-500">Destinatarios *</label>

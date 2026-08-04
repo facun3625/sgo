@@ -420,7 +420,7 @@ export default function RehabilitacionPage() {
                                 al Tomo <strong>{ctx.dato?.tomo ?? "......"}</strong>, Folio Nº{" "}
                                 <strong>{ctx.dato?.folio ?? "......"}</strong> Expte.Nº{" "}
                                 <strong>{solicitud.deudaOriginal !== undefined ? ctx.dato?.expediente ?? "" : ""}</strong>{" "}
-                                de fecha <strong>{ctx.dato?.fechaMatriculacion ? new Date(ctx.dato.fechaMatriculacion).toLocaleDateString("es-AR") : "..."}</strong>{" "}
+                                de fecha <strong>{ctx.dato?.fechaMatriculacion ? new Date(ctx.dato.fechaMatriculacion).toLocaleDateString("es-AR", { timeZone: "UTC" }) : "..."}</strong>{" "}
                                 con domicilio legal en:
                             </p>
                             <p className="mt-1">{ctx.dato?.domicilioLegal ?? "......................................................................"}</p>

@@ -21,7 +21,7 @@ export default async function VerificarPage({ params }: { params: Promise<{ expe
     const isActive = !isSuspended && !deuda;
     const fechaMatriculacion = dato?.fechaMatriculacion
         ? new Date(dato.fechaMatriculacion).toLocaleDateString("es-AR", {
-            day: "2-digit", month: "long", year: "numeric"
+            timeZone: "UTC", day: "2-digit", month: "long", year: "numeric"
         })
         : null;
 

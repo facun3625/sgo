@@ -130,6 +130,16 @@ function fmtFull(d: string) {
     return new Date(d).toLocaleDateString("es-AR", { day: "2-digit", month: "long", year: "numeric" });
 }
 
+// Para campos de fecha "pura" (sin hora), guardados como medianoche UTC: se muestran en UTC
+// para no correr un día hacia atrás en usuarios con huso horario negativo (Argentina, UTC-3).
+function fmtDate(d: string) {
+    return new Date(d).toLocaleDateString("es-AR", { timeZone: "UTC", day: "2-digit", month: "2-digit", year: "numeric" });
+}
+
+function fmtDateFull(d: string) {
+    return new Date(d).toLocaleDateString("es-AR", { timeZone: "UTC", day: "2-digit", month: "long", year: "numeric" });
+}
+
 export default function LegajoDetallePage({
     params,
 }: {
@@ -377,7 +387,7 @@ export default function LegajoDetallePage({
                                             if (!val && field !== "apellido" && field !== "nombre") return null;
                                             let display = val != null ? String(val) : "—";
                                             if (field === "fechaMatriculacion" && val) {
-                                                display = fmt(String(val));
+                                                display = fmtDate(String(val));
                                             }
                                             return (
                                                 <div key={field} className="flex items-start gap-3">
@@ -505,10 +515,10 @@ export default function LegajoDetallePage({
                                                             )}
                                                             <div className="flex flex-wrap gap-4 text-[11px] text-slate-400">
                                                                 {h.fechaInicio && (
-                                                                    <span>Desde: <strong className="text-slate-600 dark:text-slate-300">{fmt(h.fechaInicio)}</strong></span>
+                                                                    <span>Desde: <strong className="text-slate-600 dark:text-slate-300">{fmtDate(h.fechaInicio)}</strong></span>
                                                                 )}
                                                                 {h.fechaFin && (
-                                                                    <span>Hasta: <strong className="text-slate-600 dark:text-slate-300">{fmt(h.fechaFin)}</strong></span>
+                                                                    <span>Hasta: <strong className="text-slate-600 dark:text-slate-300">{fmtDate(h.fechaFin)}</strong></span>
                                                                 )}
                                                                 {h.adminNombre && (
                                                                     <span>Admin: <strong className="text-slate-600 dark:text-slate-300">{h.adminNombre}</strong></span>
@@ -537,7 +547,7 @@ export default function LegajoDetallePage({
                                                     <Scale size={11} /> Tribunal de Ética
                                                 </span>
                                                 <span className="text-[11px] text-slate-400">
-                                                    {fmtFull(t.inicio)} — {fmtFull(t.fin)}
+                                                    {fmtDateFull(t.inicio)} — {fmtDateFull(t.fin)}
                                                 </span>
                                                 <span className="ml-auto text-[10px] text-slate-300">Registrado: {fmt(t.createdAt)}</span>
                                                 <button

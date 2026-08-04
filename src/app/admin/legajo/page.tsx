@@ -152,7 +152,7 @@ export default function LegajoPage() {
 
     function cellValue(row: Row, key: ColKey): string {
         if (key === "fechaMatriculacion" && row.fechaMatriculacion) {
-            return new Date(row.fechaMatriculacion).toLocaleDateString("es-AR");
+            return new Date(row.fechaMatriculacion).toLocaleDateString("es-AR", { timeZone: "UTC" });
         }
         const val = row[key as keyof Row];
         return val != null ? String(val) : "—";

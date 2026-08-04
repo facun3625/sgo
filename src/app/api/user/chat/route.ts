@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
     const montoAnual = configAnual ? parseFloat(configAnual.valor) : 48000;
     const montoMensual = configMensual ? parseFloat(configMensual.valor) : 4500;
 
-    const fmt = (d: Date) => new Date(d).toLocaleDateString("es-AR");
+    const fmt = (d: Date) => new Date(d).toLocaleDateString("es-AR", { timeZone: "UTC" });
 
     const systemPrompt = `Sos el asistente virtual del Colegio de Profesionales de la Abogacía de Santa Fe (CPASF).
 Tu nombre es "Asistente CPASF". Respondés en español, de forma amable, clara y concisa.
