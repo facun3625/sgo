@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 import Image from "next/image";
 import Link from "next/link";
-import { Calendar, MapPin, GraduationCap, ArrowRight } from "lucide-react";
+import { Calendar, MapPin, GraduationCap, ArrowRight, LogIn } from "lucide-react";
 import prisma from "@/lib/prisma";
 import CursoFlyerButton from "@/components/cursos-publicos/CursoFlyerButton";
 
@@ -35,6 +35,18 @@ export default async function CursosPublicosPage() {
                         <h1 className="text-white font-bold text-[19px] leading-tight">Cursos abiertos a la comunidad</h1>
                         <p className="text-white/60 text-[12px] font-semibold uppercase tracking-widest">Colegio de la Abogacía · Santa Fe</p>
                     </div>
+                </div>
+            </div>
+
+            <div className="max-w-3xl mx-auto px-6 pt-6">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 bg-[#063f68]/5 border border-[#063f68]/15 rounded-2xl px-5 py-4">
+                    <p className="text-[13px] text-[#063f68] flex-1">
+                        <strong>¿Sos matriculado del CPASF?</strong> Inscribite desde adentro del SGO con tu usuario para acceder a tu precio de matriculado.
+                    </p>
+                    <Link href="/login"
+                        className="inline-flex items-center justify-center gap-1.5 px-4 h-9 bg-[#063f68] text-white rounded-xl text-[12px] font-bold hover:bg-[#0a4d7a] transition-all flex-shrink-0">
+                        <LogIn size={13} /> Ingresar al SGO
+                    </Link>
                 </div>
             </div>
 

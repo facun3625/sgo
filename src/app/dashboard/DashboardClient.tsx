@@ -242,6 +242,7 @@ export default function DashboardClient({ session }: { session: SessionPayload }
                     </h3>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                         {[
+                            { href: "/dashboard/cursos", icon: <GraduationCap size={18} />, label: "Cursos", color: "text-pink-600 bg-pink-600/10 group-hover:bg-pink-600 group-hover:text-white" },
                             { href: "/dashboard/solicitudes/certificado", icon: <FileText size={18} />, label: "Certificado de Matriculación", color: "text-blue-600 bg-blue-600/10 group-hover:bg-blue-600 group-hover:text-white" },
                             { href: "/dashboard/solicitudes/sisfe", icon: <LockKeyhole size={18} />, label: "Clave SISFE", color: "text-violet-600 bg-violet-600/10 group-hover:bg-violet-600 group-hover:text-white" },
                             { href: "/dashboard/solicitudes/catastro", icon: <Search size={18} />, label: "Catastro / SIGIT", color: "text-orange-600 bg-orange-600/10 group-hover:bg-orange-600 group-hover:text-white" },

@@ -116,14 +116,17 @@ export default function NotificacionesBell() {
         <div className="relative" ref={ref}>
             <button
                 onClick={() => setOpen(!open)}
-                className="p-2 text-white/70 hover:bg-white/10 hover:text-white rounded-xl transition-all duration-200 relative"
+                className={`p-2 rounded-xl transition-all duration-200 relative ${visibleUnreadCount > 0 ? "text-white hover:bg-white/10" : "text-white/70 hover:bg-white/10 hover:text-white"}`}
                 aria-label="Notificaciones"
             >
-                <Bell size={20} />
+                <Bell size={20} className={visibleUnreadCount > 0 ? "animate-bell-ring" : ""} />
                 {visibleUnreadCount > 0 && (
-                    <span className="absolute top-1 right-1 min-w-[16px] h-4 px-0.5 bg-red-500 text-white text-[10px] font-black rounded-full border-2 border-[#063f68] flex items-center justify-center leading-none">
-                        {displayCount}
-                    </span>
+                    <>
+                        <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 rounded-full animate-ping" />
+                        <span className="absolute top-1 right-1 min-w-[16px] h-4 px-0.5 bg-red-500 text-white text-[10px] font-black rounded-full border-2 border-[#063f68] flex items-center justify-center leading-none">
+                            {displayCount}
+                        </span>
+                    </>
                 )}
             </button>
 

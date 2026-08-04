@@ -41,6 +41,23 @@ input, textarea, select {
   animation: fadeIn 0.4s ease-out forwards;
 }
 
+@keyframes bellRing {
+  0%, 100% { transform: rotate(0); }
+  10% { transform: rotate(14deg); }
+  20% { transform: rotate(-12deg); }
+  30% { transform: rotate(9deg); }
+  40% { transform: rotate(-7deg); }
+  50% { transform: rotate(5deg); }
+  60% { transform: rotate(-2deg); }
+  70%, 100% { transform: rotate(0); }
+}
+
+.animate-bell-ring {
+  transform-origin: top center;
+  animation: bellRing 1.4s ease-in-out infinite;
+  animation-delay: 1.5s;
+}
+
 /* ===== Dashboard Utilities ===== */
 
 /* Scrollbar Hiding */

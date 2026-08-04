@@ -36,11 +36,22 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
     if (!curso) return NextResponse.json({ error: "No encontrado" }, { status: 404 });
 
     const expedientes = inscripciones.map(i => i.expediente).filter(Boolean);
-    const usuarios = await prisma.user.findMany({
-        where: { expediente: { in: expedientes } },
-        select: { expediente: true, nombre: true, apellido: true },
-    });
+    const [usuarios, datos] = await Promise.all([
+        prisma.user.findMany({
+            where: { expediente: { in: expedientes } },
+            select: { expediente: true, nombre: true, apellido: true },
+        }),
+        prisma.dato.findMany({
+            where: { expediente: { in: expedientes } },
+            select: {
+                expediente: true, documento: true, emailLegal: true, emailReal: true,
+                movilLegal: true, movilReal: true, domicilioLegal: true, domicilioReal: true,
+                localidadLegal: true, localidadReal: true, provinciaReal: true,
+            },
+        }),
+    ]);
     const usuariosMap = new Map(usuarios.map(u => [u.expediente, u]));
+    const datosMap = new Map(datos.map(d => [d.expediente, d]));
 
     const estadoLabel: Record<string, string> = {
         confirmada: "Confirmada",
@@ -54,17 +65,18 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
     ];
     const rows = inscripciones.map(i => {
         const u = usuariosMap.get(i.expediente);
+        const d = datosMap.get(i.expediente);
         return [
             escapeCsv(i.expediente),
             escapeCsv(i.esInvitado ? i.guestApellido : u?.apellido),
             escapeCsv(i.esInvitado ? i.guestNombre : u?.nombre),
             escapeCsv(i.esInvitado ? "Sí" : "No"),
-            escapeCsv(i.guestDni),
-            escapeCsv(i.guestEmail),
-            escapeCsv(i.guestTelefono),
-            escapeCsv(i.guestDireccion),
-            escapeCsv(i.guestLocalidad),
-            escapeCsv(i.guestProvincia),
+            escapeCsv(i.esInvitado ? i.guestDni : d?.documento),
+            escapeCsv(i.esInvitado ? i.guestEmail : (d?.emailLegal || d?.emailReal)),
+            escapeCsv(i.esInvitado ? i.guestTelefono : (d?.movilLegal || d?.movilReal)),
+            escapeCsv(i.esInvitado ? i.guestDireccion : (d?.domicilioLegal || d?.domicilioReal)),
+            escapeCsv(i.esInvitado ? i.guestLocalidad : (d?.localidadLegal || d?.localidadReal)),
+            escapeCsv(i.esInvitado ? i.guestProvincia : d?.provinciaReal),
             escapeCsv(i.opcion?.nombre),
             escapeCsv(estadoLabel[i.estado] ?? i.estado),
             escapeCsv(i.metodoPago),
