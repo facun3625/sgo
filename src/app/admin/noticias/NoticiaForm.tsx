@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Upload, X, Loader2, Newspaper, Star, Trash2, Images, Plus } from "lucide-react";
+import RichTextEditor from "@/components/admin/RichTextEditor";
 
 interface NoticiaFormProps {
     initialData?: {
@@ -86,7 +87,7 @@ export default function NoticiaForm({ initialData }: NoticiaFormProps) {
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         setError("");
-        if (!form.titulo || !form.contenido) {
+        if (!form.titulo || !form.contenido || form.contenido === "<p></p>") {
             setError("Título y contenido son obligatorios.");
             return;
         }
@@ -212,10 +213,9 @@ export default function NoticiaForm({ initialData }: NoticiaFormProps) {
 
                     <div className="space-y-1.5">
                         <label className="text-[12px] font-medium text-slate-500">Contenido *</label>
-                        <textarea value={form.contenido} onChange={e => setField("contenido", e.target.value)}
+                        <RichTextEditor value={form.contenido} onChange={v => setField("contenido", v)}
                             placeholder="Escribí el contenido completo de la noticia..."
-                            rows={10}
-                            className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-[13px] focus:outline-none focus:ring-2 focus:ring-[#063f68]/30 focus:border-[#063f68] resize-y leading-relaxed" />
+                            uploadUrl="/api/admin/noticias/upload" />
                     </div>
                 </div>
 

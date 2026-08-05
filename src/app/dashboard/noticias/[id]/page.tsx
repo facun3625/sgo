@@ -5,6 +5,11 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Loader2, Calendar, Newspaper, X, ChevronLeft, ChevronRight, Images } from "lucide-react";
 
+// Noticias viejas se guardaron como texto plano; las nuevas vienen como HTML del editor
+function esHtml(contenido: string): boolean {
+    return /^\s*<[a-z][\s\S]*>/i.test(contenido);
+}
+
 interface Noticia {
     id: number;
     titulo: string;
@@ -57,6 +62,7 @@ export default function NoticiaDetailPage() {
     );
 
     // Split by double newline for paragraphs; collapse single newlines within a paragraph
+    // (solo se usa para noticias viejas en texto plano; las nuevas se renderizan como HTML)
     const paragraphs = noticia.contenido
         .split(/\n\n+/)
         .map(block => block.replace(/\n/g, " ").trim())
@@ -103,13 +109,18 @@ export default function NoticiaDetailPage() {
                         <div className="w-12 h-1 bg-[#063f68] rounded-full mb-6" />
 
                         {/* Cuerpo */}
-                        <div className="space-y-4">
-                            {paragraphs.map((p, i) => (
-                                <p key={i} className="text-[16px] text-slate-600 dark:text-slate-300 leading-relaxed">
-                                    {p}
-                                </p>
-                            ))}
-                        </div>
+                        {esHtml(noticia.contenido) ? (
+                            <div className="prose prose-sm md:prose-base max-w-none text-[16px] text-slate-600 dark:text-slate-300 leading-relaxed"
+                                dangerouslySetInnerHTML={{ __html: noticia.contenido }} />
+                        ) : (
+                            <div className="space-y-4">
+                                {paragraphs.map((p, i) => (
+                                    <p key={i} className="text-[16px] text-slate-600 dark:text-slate-300 leading-relaxed">
+                                        {p}
+                                    </p>
+                                ))}
+                            </div>
+                        )}
 
                         {/* Volver */}
                         <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800">
