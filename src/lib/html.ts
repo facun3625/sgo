@@ -3,19 +3,25 @@ export function esHtml(contenido: string): boolean {
     return /^\s*<[a-z][\s\S]*>/i.test(contenido);
 }
 
-// Preview en texto plano para listados/popups: saca tags y decodifica entities (&gt;, &amp;, etc.)
+function escapeHtml(s: string): string {
+    return s
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+}
+
+// Preview "enriquecido" para listados/popups: recorta a texto + negrita/cursiva/subrayado
+// (saca imágenes, links, listas, etc. y junta todo en un bloque para usar con line-clamp).
+// El resultado se debe renderizar con dangerouslySetInnerHTML.
 export function htmlPreview(contenido: string): string {
-    if (!esHtml(contenido)) return contenido;
+    if (!esHtml(contenido)) return escapeHtml(contenido);
     return contenido
-        .replace(/<[^>]+>/g, " ")
-        .replace(/&nbsp;/g, " ")
-        .replace(/&lt;/g, "<")
-        .replace(/&gt;/g, ">")
-        .replace(/&quot;/g, '"')
-        .replace(/&#0?39;/g, "'")
-        .replace(/&#(\d+);/g, (_, dec: string) => String.fromCharCode(parseInt(dec, 10)))
-        .replace(/&#x([0-9a-fA-F]+);/g, (_, hex: string) => String.fromCharCode(parseInt(hex, 16)))
-        .replace(/&amp;/g, "&")
+        .replace(/<img[^>]*>/gi, "")
+        .replace(/<\/(p|div|li|ul|ol|h[1-6]|blockquote)>/gi, " ")
+        .replace(/<br\s*\/?>/gi, " ")
+        .replace(/<(?!\/?(strong|b|em|i|u)\b)[^>]+>/gi, "")
         .replace(/\s+/g, " ")
         .trim();
 }

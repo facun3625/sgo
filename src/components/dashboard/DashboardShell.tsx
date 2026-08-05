@@ -132,7 +132,8 @@ export default function DashboardShell({ user, children }: DashboardShellProps) 
                                 </span>
                             </div>
                             <h2 className="text-[18px] font-bold text-slate-800 dark:text-white leading-snug">{popup.titulo}</h2>
-                            <p className="text-[14px] text-slate-700 dark:text-slate-400 leading-relaxed line-clamp-3">{htmlPreview(popup.contenido)}</p>
+                            <p className="text-[14px] text-slate-700 dark:text-slate-400 leading-relaxed line-clamp-3"
+                                dangerouslySetInnerHTML={{ __html: htmlPreview(popup.contenido) }} />
 
                             <div className="flex items-center gap-3 pt-2">
                                 <button onClick={closePopup}
