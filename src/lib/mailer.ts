@@ -141,7 +141,7 @@ const MAIL_DELAY_MS = 5000;
 
 export async function enviarComunicadoMasivo(destinatarios: string[], asunto: string, cuerpo?: string, btnUrl?: string, btnTexto?: string) {
     const { smtp, from } = await getSmtpConfig();
-    const transporter = nodemailer.createTransport(smtp);
+    const transporter = nodemailer.createTransport({ ...smtp, connectionTimeout: 20000, greetingTimeout: 15000, socketTimeout: 30000 });
 
     const cuerpoHtml = cuerpo
         ? cuerpo.replace(/\n/g, "<br>")
@@ -174,9 +174,13 @@ export async function enviarComunicadoMasivo(destinatarios: string[], asunto: st
     })().catch(err => console.error("[mailer] Error general:", err));
 }
 
+// Timeouts cortos: si un envío se cuelga (SMTP no responde), que falle rápido
+// y siga con el resto en vez de dejar la tanda entera esperando.
+const MAIL_TIMEOUTS = { connectionTimeout: 20000, greetingTimeout: 15000, socketTimeout: 30000 };
+
 export async function enviarEmailMarketing(campanaId: number) {
     const { smtp, from } = await getSmtpConfig();
-    const transporter = nodemailer.createTransport(smtp);
+    const transporter = nodemailer.createTransport({ ...smtp, ...MAIL_TIMEOUTS });
 
     const campana = await prisma.emailMarketing.findUnique({ where: { id: campanaId } });
     if (!campana) return;
@@ -206,5 +210,17 @@ export async function enviarEmailMarketing(campanaId: number) {
         if (i + MAIL_CHUNK < destinatarios.length) {
             await new Promise(r => setTimeout(r, MAIL_DELAY_MS));
         }
+    }
+}
+
+// Se llama al arrancar el server (ver src/instrumentation.ts): retoma sola cualquier
+// campaña que haya quedado a mitad de camino por un reinicio/deploy anterior.
+export async function reanudarCampanasPendientes() {
+    const campanas = await prisma.emailMarketing.findMany({
+        where: { destinatarios: { some: { estado: "pendiente" } } },
+        select: { id: true },
+    });
+    for (const c of campanas) {
+        enviarEmailMarketing(c.id).catch(err => console.error(`[mailer] Error reanudando campaña ${c.id}:`, err));
     }
 }
