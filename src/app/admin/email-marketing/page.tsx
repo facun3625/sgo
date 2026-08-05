@@ -184,7 +184,7 @@ export default function EmailMarketingPage() {
                                 <p className="text-xl font-black">{s.value}</p>
                                 <p className="text-[11px] font-medium opacity-70">{s.label}</p>
                                 {s.label === "Pendientes" && s.value > 0 && (
-                                    <p className="text-[10px] font-medium opacity-60 mt-0.5">faltarían {horasEstimadas(s.value)}</p>
+                                    <p className="text-[10px] font-medium opacity-60 mt-0.5">Límite: {LIMITE_POR_HORA}/hora · faltarían {horasEstimadas(s.value)}</p>
                                 )}
                             </div>
                         ))}
@@ -358,7 +358,7 @@ export default function EmailMarketingPage() {
                                                         ? (
                                                             <span className="text-amber-500 font-semibold">
                                                                 Enviando... ({c.enviados}/{c.totalEnvios})
-                                                                <span className="block text-[10px] font-normal text-amber-400">faltarían {horasEstimadas(c.pendientes)}</span>
+                                                                <span className="block text-[10px] font-normal text-amber-400">Tu proveedor de correo permite {LIMITE_POR_HORA} mails/hora — faltarían {horasEstimadas(c.pendientes)}</span>
                                                             </span>
                                                         )
                                                         : c.errores > 0
