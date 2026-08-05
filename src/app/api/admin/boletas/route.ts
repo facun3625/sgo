@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { rm, mkdir, access } from "node:fs/promises";
+import { rm, mkdir, readdir } from "node:fs/promises";
+import path from "node:path";
 
 export async function GET(req: NextRequest) {
     const session = await getSession();
@@ -48,9 +49,15 @@ export async function DELETE(req: NextRequest) {
 
     const uploadDir = `${process.cwd()}/public/uploads/boletas/${tipo}`;
 
-    // Borrar carpeta y recrearla vacía
-    try { await access(uploadDir); await rm(uploadDir, { recursive: true, force: true }); } catch { /* no existe */ }
-    await mkdir(uploadDir, { recursive: true });
+    // Vaciar el contenido sin borrar la carpeta en sí: recrearla (mkdir) la deja
+    // con dueño root (la app corre como root en el VPS), rompiendo los permisos
+    // del usuario FTP que sube los PDF directamente a esta carpeta.
+    try {
+        const entries = await readdir(uploadDir);
+        await Promise.all(entries.map(e => rm(path.join(uploadDir, e), { recursive: true, force: true })));
+    } catch {
+        await mkdir(uploadDir, { recursive: true });
+    }
 
     // Borrar registros DB
     const { count } = await prisma.facturaSantaFe.deleteMany({ where: { tipo } });
