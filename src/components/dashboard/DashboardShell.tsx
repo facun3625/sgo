@@ -9,6 +9,12 @@ import { ToastProvider } from "@/components/ui/Toast";
 import ChatBot from "./ChatBot";
 import { useRouter } from "next/navigation";
 
+// Noticias viejas se guardaron como texto plano; las nuevas vienen como HTML del editor
+function previewTexto(contenido: string): string {
+    if (!/^\s*<[a-z][\s\S]*>/i.test(contenido)) return contenido;
+    return contenido.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+}
+
 interface Noticia {
     id: number;
     titulo: string;
@@ -131,7 +137,7 @@ export default function DashboardShell({ user, children }: DashboardShellProps) 
                                 </span>
                             </div>
                             <h2 className="text-[18px] font-bold text-slate-800 dark:text-white leading-snug">{popup.titulo}</h2>
-                            <p className="text-[14px] text-slate-700 dark:text-slate-400 leading-relaxed line-clamp-3">{popup.contenido}</p>
+                            <p className="text-[14px] text-slate-700 dark:text-slate-400 leading-relaxed line-clamp-3">{previewTexto(popup.contenido)}</p>
 
                             <div className="flex items-center gap-3 pt-2">
                                 <button onClick={closePopup}
