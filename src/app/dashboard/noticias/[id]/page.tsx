@@ -4,11 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Loader2, Calendar, Newspaper, X, ChevronLeft, ChevronRight, Images } from "lucide-react";
-
-// Noticias viejas se guardaron como texto plano; las nuevas vienen como HTML del editor
-function esHtml(contenido: string): boolean {
-    return /^\s*<[a-z][\s\S]*>/i.test(contenido);
-}
+import { esHtml } from "@/lib/html";
 
 interface Noticia {
     id: number;

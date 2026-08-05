@@ -3,12 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Newspaper, Loader2, ChevronRight, Star } from "lucide-react";
-
-// Noticias viejas se guardaron como texto plano; las nuevas vienen como HTML del editor
-function previewTexto(contenido: string): string {
-    if (!/^\s*<[a-z][\s\S]*>/i.test(contenido)) return contenido;
-    return contenido.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
-}
+import { htmlPreview } from "@/lib/html";
 
 interface Noticia {
     id: number;
@@ -74,7 +69,7 @@ export default function NoticiasPage() {
                                 <h3 className="font-bold text-slate-800 dark:text-white text-[15px] leading-snug line-clamp-2 group-hover:text-[#063f68] dark:group-hover:text-blue-400 transition-colors flex-1">
                                     {n.titulo}
                                 </h3>
-                                <p className="text-[13px] text-slate-700 line-clamp-2">{previewTexto(n.contenido)}</p>
+                                <p className="text-[13px] text-slate-700 line-clamp-2">{htmlPreview(n.contenido)}</p>
                                 <div className="pt-2 border-t border-slate-50 dark:border-slate-800 flex items-center gap-1 text-[13px] font-semibold text-[#063f68] dark:text-blue-400 group-hover:underline underline-offset-2 transition-colors">
                                     Leer más <ChevronRight size={13} />
                                 </div>

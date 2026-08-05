@@ -1,12 +1,7 @@
 import prisma from "@/lib/prisma";
 import Link from "next/link";
 import { Newspaper, Plus, Pencil, Star, ToggleLeft, ToggleRight } from "lucide-react";
-
-// Noticias viejas se guardaron como texto plano; las nuevas vienen como HTML del editor
-function previewTexto(contenido: string): string {
-    if (!/^\s*<[a-z][\s\S]*>/i.test(contenido)) return contenido;
-    return contenido.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
-}
+import { htmlPreview } from "@/lib/html";
 
 export default async function AdminNoticiasPage() {
     const noticias = await prisma.noticia.findMany({ orderBy: { createdAt: "desc" } });
@@ -60,7 +55,7 @@ export default async function AdminNoticiasPage() {
                             </div>
                             <div className="p-4 flex flex-col flex-1 gap-3">
                                 <h3 className="font-bold text-slate-800 dark:text-white text-[14px] leading-tight line-clamp-2">{n.titulo}</h3>
-                                <p className="text-[12px] text-slate-400 line-clamp-2 flex-1">{previewTexto(n.contenido)}</p>
+                                <p className="text-[12px] text-slate-400 line-clamp-2 flex-1">{htmlPreview(n.contenido)}</p>
                                 <div className="flex items-center justify-between pt-2 border-t border-slate-50 dark:border-slate-800">
                                     <span className="text-[11px] text-slate-400">
                                         {new Date(n.createdAt).toLocaleDateString("es-AR", { timeZone: "UTC", day: "2-digit", month: "short", year: "numeric" })}
