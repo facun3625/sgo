@@ -178,6 +178,16 @@ export async function enviarComunicadoMasivo(destinatarios: string[], asunto: st
 // y siga con el resto en vez de dejar la tanda entera esperando.
 const MAIL_TIMEOUTS = { connectionTimeout: 20000, greetingTimeout: 15000, socketTimeout: 30000 };
 
+// El proveedor SMTP (dattaweb) corta con "550 Ha alcanzado el limite de 500 por hora"
+// cuando se supera la cuota horaria. Es un rechazo temporal, no un mail inválido:
+// hay que dejar esos destinatarios en "pendiente" para reintentar en la próxima hora,
+// no marcarlos como error.
+function esLimiteDeEnvio(err: unknown): boolean {
+    const texto = String((err as { response?: string })?.response ?? err ?? "").toLowerCase();
+    const codigo = (err as { responseCode?: number })?.responseCode;
+    return texto.includes("limite") || texto.includes("limit") || codigo === 450 || codigo === 451 || codigo === 452;
+}
+
 export async function enviarEmailMarketing(campanaId: number) {
     const { smtp, from } = await getSmtpConfig();
     const transporter = nodemailer.createTransport({ ...smtp, ...MAIL_TIMEOUTS });
@@ -191,7 +201,9 @@ export async function enviarEmailMarketing(campanaId: number) {
 
     const html = marketingLayout(`<div style="color:#1e293b;font-size:15px;line-height:1.6">${campana.contenido}</div>`);
 
-    for (let i = 0; i < destinatarios.length; i += MAIL_CHUNK) {
+    let detenidoPorLimite = false;
+
+    for (let i = 0; i < destinatarios.length && !detenidoPorLimite; i += MAIL_CHUNK) {
         const lote = destinatarios.slice(i, i + MAIL_CHUNK);
         await Promise.allSettled(lote.map(async (d) => {
             try {
@@ -201,12 +213,20 @@ export async function enviarEmailMarketing(campanaId: number) {
                     data: { estado: "enviado", enviadoAt: new Date() },
                 });
             } catch (err) {
+                if (esLimiteDeEnvio(err)) {
+                    detenidoPorLimite = true;
+                    return; // se deja "pendiente" — la reintenta el auto-resume horario
+                }
                 await prisma.emailMarketingDestinatario.update({
                     where: { id: d.id },
                     data: { estado: "error", error: String(err) },
                 });
             }
         }));
+        if (detenidoPorLimite) {
+            console.warn(`[mailer] Campaña ${campanaId} pausada: límite horario del proveedor SMTP. Se reintenta automáticamente.`);
+            break;
+        }
         if (i + MAIL_CHUNK < destinatarios.length) {
             await new Promise(r => setTimeout(r, MAIL_DELAY_MS));
         }
