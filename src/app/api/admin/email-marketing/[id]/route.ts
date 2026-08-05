@@ -2,7 +2,6 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { enviarEmailMarketing } from "@/lib/mailer";
 
 function isAdmin(lvl: string) { return lvl === "superadmin" || lvl === "admin"; }
 
@@ -42,24 +41,6 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
             enviadoAt: d.enviadoAt,
         })),
     });
-}
-
-// Reanuda una campaña que quedó a mitad de camino (ej: el server se reinició en medio del envío en segundo plano).
-// enviarEmailMarketing solo toma destinatarios "pendiente", así que es seguro llamarla de nuevo.
-export async function POST(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-    const session = await getSession();
-    if (!session || !isAdmin(session.accessLevel)) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-
-    const { id } = await params;
-    const campanaId = Number(id);
-    const pendientes = await prisma.emailMarketingDestinatario.count({ where: { campanaId, estado: "pendiente" } });
-    if (pendientes === 0) {
-        return NextResponse.json({ error: "No hay destinatarios pendientes en esta campaña" }, { status: 400 });
-    }
-
-    enviarEmailMarketing(campanaId).catch(err => console.error("[mailer] Error al reanudar campaña de email marketing:", err));
-
-    return NextResponse.json({ pendientes });
 }
 
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {

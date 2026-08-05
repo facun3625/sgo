@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Megaphone, Send, Loader2, ChevronLeft, Users, CheckCircle2, XCircle, Clock, Search, Trash2, RotateCw } from "lucide-react";
+import { Megaphone, Send, Loader2, ChevronLeft, Users, CheckCircle2, XCircle, Clock, Search, Trash2 } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 import RichTextEditor from "@/components/admin/RichTextEditor";
 
@@ -41,6 +41,13 @@ function parseExpedientes(raw: string): string[] {
     return raw.split(/[\n,]+/).map(s => s.trim()).filter(Boolean);
 }
 
+// El proveedor SMTP limita a 500 mails por hora.
+const LIMITE_POR_HORA = 500;
+function horasEstimadas(cantidad: number): string {
+    const horas = Math.ceil(cantidad / LIMITE_POR_HORA);
+    return horas <= 1 ? "menos de 1 hora" : `~${horas} horas`;
+}
+
 function fmtDate(d: string) {
     return new Date(d).toLocaleDateString("es-AR", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
 }
@@ -60,7 +67,6 @@ export default function EmailMarketingPage() {
     const [searchDest, setSearchDest] = useState("");
     const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
     const [deleting, setDeleting] = useState(false);
-    const [reanudando, setReanudando] = useState<number | null>(null);
 
     // Formulario
     const [editorKey, setEditorKey] = useState(0);
@@ -115,23 +121,6 @@ export default function EmailMarketingPage() {
         }
     }
 
-    async function reanudar(id: number) {
-        setReanudando(id);
-        try {
-            const res = await fetch(`/api/admin/email-marketing/${id}`, { method: "POST" });
-            const data = await res.json();
-            if (res.ok) {
-                showToast(`Reanudando envío a ${data.pendientes} destinatarios pendientes`, "success");
-                load();
-                if (selected?.id === id) openDetail(id);
-            } else {
-                showToast(data.error || "Error al reanudar", "error");
-            }
-        } finally {
-            setReanudando(null);
-        }
-    }
-
     async function eliminar(id: number) {
         setDeleting(true);
         try {
@@ -175,20 +164,10 @@ export default function EmailMarketingPage() {
                     </p>
                 </div>
                 {selected && (
-                    <div className="flex items-center gap-2">
-                        {selected.destinatarios.some(d => d.estado === "pendiente") && (
-                            <button onClick={() => reanudar(selected.id)}
-                                disabled={reanudando === selected.id}
-                                className="flex items-center gap-1.5 px-3 h-9 text-[12px] font-semibold text-amber-600 border border-amber-200 dark:border-amber-800 rounded-xl hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-all disabled:opacity-50">
-                                {reanudando === selected.id ? <Loader2 size={13} className="animate-spin" /> : <RotateCw size={13} />}
-                                Reanudar envío
-                            </button>
-                        )}
-                        <button onClick={() => setConfirmDelete(selected.id)}
-                            className="flex items-center gap-1.5 px-3 h-9 text-[12px] font-semibold text-rose-500 border border-rose-200 dark:border-rose-800 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all">
-                            <Trash2 size={13} /> Eliminar
-                        </button>
-                    </div>
+                    <button onClick={() => setConfirmDelete(selected.id)}
+                        className="flex items-center gap-1.5 px-3 h-9 text-[12px] font-semibold text-rose-500 border border-rose-200 dark:border-rose-800 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all">
+                        <Trash2 size={13} /> Eliminar
+                    </button>
                 )}
             </div>
 
@@ -204,6 +183,9 @@ export default function EmailMarketingPage() {
                             <div key={s.label} className={`rounded-2xl p-4 ${s.cls}`}>
                                 <p className="text-xl font-black">{s.value}</p>
                                 <p className="text-[11px] font-medium opacity-70">{s.label}</p>
+                                {s.label === "Pendientes" && s.value > 0 && (
+                                    <p className="text-[10px] font-medium opacity-60 mt-0.5">faltarían {horasEstimadas(s.value)}</p>
+                                )}
                             </div>
                         ))}
                     </div>
@@ -308,6 +290,10 @@ export default function EmailMarketingPage() {
                                 {enviando ? "Creando campaña..." : enviarATodos ? "Enviar a todos" : `Enviar a ${uniqueParsed.length || 0} destinatarios`}
                             </button>
                             <p className="text-[11px] text-slate-400 text-center">El envío corre en segundo plano, en tandas — no vas a quedar esperando acá.</p>
+                            <p className="text-[11px] text-slate-400 text-center">
+                                Tu proveedor de correo permite {LIMITE_POR_HORA} mails por hora
+                                {!enviarATodos && uniqueParsed.length > 0 && <> — a {uniqueParsed.length} destinatarios, tardaría {horasEstimadas(uniqueParsed.length)}</>}.
+                            </p>
                         </div>
 
                         {/* Preview en vivo */}
@@ -369,28 +355,22 @@ export default function EmailMarketingPage() {
                                                 </td>
                                                 <td className="px-5 py-3.5 text-[12px] text-slate-500">
                                                     {c.pendientes > 0
-                                                        ? <span className="text-amber-500 font-semibold">Enviando... ({c.enviados}/{c.totalEnvios})</span>
+                                                        ? (
+                                                            <span className="text-amber-500 font-semibold">
+                                                                Enviando... ({c.enviados}/{c.totalEnvios})
+                                                                <span className="block text-[10px] font-normal text-amber-400">faltarían {horasEstimadas(c.pendientes)}</span>
+                                                            </span>
+                                                        )
                                                         : c.errores > 0
                                                             ? <span className="text-rose-500 font-semibold">{c.enviados} ok · {c.errores} con error</span>
                                                             : <span className="text-emerald-500 font-semibold">Completado</span>}
                                                 </td>
                                                 <td className="px-5 py-3.5">
-                                                    <div className="flex items-center gap-2 justify-end">
-                                                        {c.pendientes > 0 && (
-                                                            <button onClick={() => reanudar(c.id)}
-                                                                disabled={reanudando === c.id}
-                                                                title="Si el envío quedó trabado (ej: por un reinicio del servidor), esto retoma solo los pendientes"
-                                                                className="flex items-center gap-1.5 px-3 h-7 text-[11px] font-semibold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-all disabled:opacity-50">
-                                                                {reanudando === c.id ? <Loader2 size={11} className="animate-spin" /> : <RotateCw size={11} />}
-                                                                Reanudar
-                                                            </button>
-                                                        )}
-                                                        <button onClick={() => openDetail(c.id)}
-                                                            disabled={loadingDetail}
-                                                            className="px-3 h-7 text-[11px] font-semibold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/20 border border-sky-100 dark:border-sky-800 rounded-lg hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-all">
-                                                            Ver registro
-                                                        </button>
-                                                    </div>
+                                                    <button onClick={() => openDetail(c.id)}
+                                                        disabled={loadingDetail}
+                                                        className="px-3 h-7 text-[11px] font-semibold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/20 border border-sky-100 dark:border-sky-800 rounded-lg hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-all">
+                                                        Ver registro
+                                                    </button>
                                                 </td>
                                             </tr>
                                         ))}
