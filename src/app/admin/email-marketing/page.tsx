@@ -138,6 +138,16 @@ export default function EmailMarketingPage() {
         }
     }
 
+    const erroresAgrupados = Object.entries(
+        (selected?.destinatarios ?? [])
+            .filter(d => d.estado === "error")
+            .reduce((acc, d) => {
+                const key = d.error || "Error sin detalle";
+                acc[key] = (acc[key] || 0) + 1;
+                return acc;
+            }, {} as Record<string, number>)
+    ).sort((a, b) => b[1] - a[1]);
+
     const filteredDest = selected?.destinatarios.filter(d => {
         if (!searchDest) return true;
         const q = searchDest.toLowerCase();
@@ -189,6 +199,20 @@ export default function EmailMarketingPage() {
                             </div>
                         ))}
                     </div>
+
+                    {erroresAgrupados.length > 0 && (
+                        <div className="bg-white dark:bg-slate-900 border border-rose-100 dark:border-rose-900/40 rounded-2xl p-5">
+                            <p className="text-[11px] font-black uppercase tracking-widest text-rose-500 mb-3">Resumen de errores</p>
+                            <div className="space-y-2">
+                                {erroresAgrupados.map(([msg, count]) => (
+                                    <div key={msg} className="flex items-start gap-3 text-[12px]">
+                                        <span className="flex-shrink-0 px-2 py-0.5 rounded-lg bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 font-bold">{count}x</span>
+                                        <span className="text-slate-600 dark:text-slate-300 break-words">{msg}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
                     <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5">
                         <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-3">Contenido</p>
