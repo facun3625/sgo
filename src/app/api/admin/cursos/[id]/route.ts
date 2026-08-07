@@ -95,17 +95,30 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     });
 
     if (opciones) {
-        await prisma.cursoOpcion.deleteMany({ where: { cursoId: id } });
-        await prisma.cursoOpcion.createMany({
-            data: opciones.map((o: { nombre: string; precio: number; cupo: number; infoPrivada?: string; precioNoMatriculado?: number | null }) => ({
-                cursoId: id,
+        const incoming = opciones as { id?: number; nombre: string; precio: number; cupo: number; infoPrivada?: string; precioNoMatriculado?: number | null }[];
+        const idsAMantener = incoming.filter(o => o.id).map(o => o.id as number);
+
+        // Borrar solo las opciones que el admin sacó del formulario. Las que se mantienen
+        // conservan su id, así los inscriptos NO pierden su opción/precio (antes se borraba
+        // y recreaba todo, lo que dejaba a los inscriptos "Sin opción").
+        await prisma.cursoOpcion.deleteMany({
+            where: { cursoId: id, id: { notIn: idsAMantener.length > 0 ? idsAMantener : [-1] } },
+        });
+
+        for (const o of incoming) {
+            const data = {
                 nombre: o.nombre,
                 precio: o.precio ?? 0,
                 cupo: o.cupo ?? 0,
                 infoPrivada: o.infoPrivada || null,
                 precioNoMatriculado: o.precioNoMatriculado ?? null,
-            }))
-        });
+            };
+            if (o.id) {
+                await prisma.cursoOpcion.update({ where: { id: o.id }, data });
+            } else {
+                await prisma.cursoOpcion.create({ data: { cursoId: id, ...data } });
+            }
+        }
     }
 
     if (tipoAsis === "por_dia" && dias) {

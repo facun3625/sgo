@@ -240,6 +240,7 @@ export default function EditarCursoPage() {
                     imagen: form.imagen || null,
                     fechaLimiteInscripcion: form.fechaLimiteInscripcion || null,
                     opciones: opciones.map(o => ({
+                        id: o.id,
                         nombre: o.nombre,
                         precio: Number(o.precio),
                         cupo: Number(o.cupo),
