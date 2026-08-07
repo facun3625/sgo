@@ -18,16 +18,32 @@ export async function POST(req: NextRequest) {
         const { payment: mpPayment } = await getMpClients();
         const payment = await mpPayment.get({ id: paymentId });
 
-        if (payment.status !== "approved") {
-            return NextResponse.json({ ok: true });
-        }
-
         const raw = payment.external_reference;
         if (!raw) return NextResponse.json({ ok: true });
 
         const { tipo, expediente, ref, extra } = decodeRef(raw);
         const mpPaymentId = String(paymentId);
         const fechaPago = new Date();
+
+        // Pago rechazado o cancelado: para inscripciones a cursos, marcarlas como
+        // "rechazada" en vez de dejarlas colgadas en "pendiente_pago". (Los estados
+        // "in_process"/"pending" siguen su curso, no se tocan.)
+        if (payment.status === "rejected" || payment.status === "cancelled") {
+            if (tipo === "curso") {
+                const insc = await prisma.inscripcionCurso.findUnique({ where: { id: parseInt(ref) } });
+                if (insc && insc.estado === "pendiente_pago") {
+                    await prisma.inscripcionCurso.update({
+                        where: { id: insc.id },
+                        data: { estado: "rechazada" },
+                    });
+                }
+            }
+            return NextResponse.json({ ok: true });
+        }
+
+        if (payment.status !== "approved") {
+            return NextResponse.json({ ok: true });
+        }
 
         if (tipo === "matricula_mensual") {
             const cuota = await prisma.cuotaMensual.findUnique({ where: { id: parseInt(ref) } });

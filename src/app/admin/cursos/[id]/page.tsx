@@ -340,6 +340,7 @@ export default function EditarCursoPage() {
     const estadoLabel: Record<string, { label: string; color: string }> = {
         pendiente_pago: { label: "Pendiente de pago", color: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" },
         confirmada: { label: "Confirmada", color: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" },
+        rechazada: { label: "Rechazada", color: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" },
         cancelada: { label: "Cancelada", color: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" },
     };
 
@@ -782,7 +783,7 @@ export default function EditarCursoPage() {
                                                     <Eye size={15} />
                                                 </button>
                                             )}
-                                            {insc.estado === "pendiente_pago" && (
+                                            {(insc.estado === "pendiente_pago" || insc.estado === "rechazada") && (
                                                 <button
                                                     onClick={() => handleConfirmarPago(insc.id)}
                                                     disabled={confirmandoId === insc.id}
