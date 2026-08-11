@@ -35,6 +35,10 @@ const YEAR = new Date().getFullYear();
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "https://sgo-casf.online";
 const LOGO_URL = `${BASE_URL}/sgo_nuevo.png`;
 
+// Timeouts cortos: si el SMTP no responde (ej: saturado por el límite horario),
+// que falle rápido en vez de dejar el request colgado varios minutos.
+const MAIL_TIMEOUTS = { connectionTimeout: 20000, greetingTimeout: 15000, socketTimeout: 30000 };
+
 function baseLayout(content: string) {
     return `
     <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;background:#f8fafc;border-radius:16px;">
@@ -69,7 +73,7 @@ function marketingLayout(content: string) {
 
 export async function enviarTokenRecuperacion(destinatario: string, token: string) {
     const { smtp, from } = await getSmtpConfig();
-    const transporter = nodemailer.createTransport(smtp);
+    const transporter = nodemailer.createTransport({ ...smtp, ...MAIL_TIMEOUTS });
     await transporter.sendMail({
         from,
         to: destinatario,
@@ -87,7 +91,7 @@ export async function enviarTokenRecuperacion(destinatario: string, token: strin
 
 export async function enviarNotificacionMensaje(destinatario: string) {
     const { smtp, from } = await getSmtpConfig();
-    const transporter = nodemailer.createTransport(smtp);
+    const transporter = nodemailer.createTransport({ ...smtp, ...MAIL_TIMEOUTS });
     await transporter.sendMail({
         from,
         to: destinatario,
@@ -104,7 +108,7 @@ export async function enviarNotificacionMensaje(destinatario: string) {
 
 export async function enviarInscripcionCursoConfirmada(destinatario: string, nombreCurso: string) {
     const { smtp, from } = await getSmtpConfig();
-    const transporter = nodemailer.createTransport(smtp);
+    const transporter = nodemailer.createTransport({ ...smtp, ...MAIL_TIMEOUTS });
     await transporter.sendMail({
         from,
         to: destinatario,
@@ -119,7 +123,7 @@ export async function enviarInscripcionCursoConfirmada(destinatario: string, nom
 
 export async function enviarCertificadoCursoInvitado(destinatario: string, nombreCurso: string, pdfBuffer: Buffer) {
     const { smtp, from } = await getSmtpConfig();
-    const transporter = nodemailer.createTransport(smtp);
+    const transporter = nodemailer.createTransport({ ...smtp, ...MAIL_TIMEOUTS });
     await transporter.sendMail({
         from,
         to: destinatario,
@@ -141,7 +145,7 @@ const MAIL_DELAY_MS = 5000;
 
 export async function enviarComunicadoMasivo(destinatarios: string[], asunto: string, cuerpo?: string, btnUrl?: string, btnTexto?: string) {
     const { smtp, from } = await getSmtpConfig();
-    const transporter = nodemailer.createTransport({ ...smtp, connectionTimeout: 20000, greetingTimeout: 15000, socketTimeout: 30000 });
+    const transporter = nodemailer.createTransport({ ...smtp, ...MAIL_TIMEOUTS });
 
     const cuerpoHtml = cuerpo
         ? cuerpo.replace(/\n/g, "<br>")
@@ -173,10 +177,6 @@ export async function enviarComunicadoMasivo(destinatarios: string[], asunto: st
         }
     })().catch(err => console.error("[mailer] Error general:", err));
 }
-
-// Timeouts cortos: si un envío se cuelga (SMTP no responde), que falle rápido
-// y siga con el resto en vez de dejar la tanda entera esperando.
-const MAIL_TIMEOUTS = { connectionTimeout: 20000, greetingTimeout: 15000, socketTimeout: 30000 };
 
 // El proveedor SMTP (dattaweb) corta con "550 Ha alcanzado el limite de 500 por hora"
 // cuando se supera la cuota horaria. Es un rechazo temporal, no un mail inválido:
