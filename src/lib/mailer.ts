@@ -1,5 +1,13 @@
 import nodemailer from "nodemailer";
+import { Resend } from "resend";
 import prisma from "@/lib/prisma";
+
+// Resend para mails transaccionales (recuperación, notificaciones, etc.): no dependen
+// del cupo horario del SMTP masivo. Se activa solo si hay RESEND_API_KEY configurada;
+// si no, todo cae al SMTP de siempre.
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const RESEND_FROM = process.env.RESEND_FROM ?? "CPASF · SGO <noreply@sgo-casf.online>";
+const resendClient = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
 
 const FALLBACK_SMTP = {
     host: "vps-1445550-x.dattaweb.com",
@@ -39,6 +47,31 @@ const LOGO_URL = `${BASE_URL}/sgo_nuevo.png`;
 // que falle rápido en vez de dejar el request colgado varios minutos.
 const MAIL_TIMEOUTS = { connectionTimeout: 20000, greetingTimeout: 15000, socketTimeout: 30000 };
 
+type Adjunto = { filename: string; content: Buffer; contentType?: string };
+
+// Envía un mail transaccional (crítico, bajo volumen). Prioriza Resend; si no está
+// configurado o falla, cae al SMTP tradicional.
+async function enviarTransaccional(opts: { to: string; subject: string; html: string; attachments?: Adjunto[] }) {
+    if (resendClient) {
+        try {
+            const res = await resendClient.emails.send({
+                from: RESEND_FROM,
+                to: [opts.to],
+                subject: opts.subject,
+                html: opts.html,
+                attachments: opts.attachments?.map(a => ({ filename: a.filename, content: a.content })),
+            });
+            if (!res.error) return;
+            console.error("[mailer] Resend devolvió error, uso SMTP de respaldo:", res.error);
+        } catch (err) {
+            console.error("[mailer] Resend falló, uso SMTP de respaldo:", err);
+        }
+    }
+    const { smtp, from } = await getSmtpConfig();
+    const transporter = nodemailer.createTransport({ ...smtp, ...MAIL_TIMEOUTS });
+    await transporter.sendMail({ from, to: opts.to, subject: opts.subject, html: opts.html, attachments: opts.attachments });
+}
+
 function baseLayout(content: string) {
     return `
     <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;background:#f8fafc;border-radius:16px;">
@@ -72,10 +105,7 @@ function marketingLayout(content: string) {
 }
 
 export async function enviarTokenRecuperacion(destinatario: string, token: string) {
-    const { smtp, from } = await getSmtpConfig();
-    const transporter = nodemailer.createTransport({ ...smtp, ...MAIL_TIMEOUTS });
-    await transporter.sendMail({
-        from,
+    await enviarTransaccional({
         to: destinatario,
         subject: "Código de recuperación de contraseña",
         html: baseLayout(`
@@ -90,10 +120,7 @@ export async function enviarTokenRecuperacion(destinatario: string, token: strin
 }
 
 export async function enviarNotificacionMensaje(destinatario: string) {
-    const { smtp, from } = await getSmtpConfig();
-    const transporter = nodemailer.createTransport({ ...smtp, ...MAIL_TIMEOUTS });
-    await transporter.sendMail({
-        from,
+    await enviarTransaccional({
         to: destinatario,
         subject: "Nuevo mensaje en el portal SGO",
         html: baseLayout(`
@@ -107,10 +134,7 @@ export async function enviarNotificacionMensaje(destinatario: string) {
 }
 
 export async function enviarInscripcionCursoConfirmada(destinatario: string, nombreCurso: string) {
-    const { smtp, from } = await getSmtpConfig();
-    const transporter = nodemailer.createTransport({ ...smtp, ...MAIL_TIMEOUTS });
-    await transporter.sendMail({
-        from,
+    await enviarTransaccional({
         to: destinatario,
         subject: `Inscripción confirmada — ${nombreCurso}`,
         html: baseLayout(`
@@ -122,10 +146,7 @@ export async function enviarInscripcionCursoConfirmada(destinatario: string, nom
 }
 
 export async function enviarCertificadoCursoInvitado(destinatario: string, nombreCurso: string, pdfBuffer: Buffer) {
-    const { smtp, from } = await getSmtpConfig();
-    const transporter = nodemailer.createTransport({ ...smtp, ...MAIL_TIMEOUTS });
-    await transporter.sendMail({
-        from,
+    await enviarTransaccional({
         to: destinatario,
         subject: `Tu certificado — ${nombreCurso}`,
         html: baseLayout(`
