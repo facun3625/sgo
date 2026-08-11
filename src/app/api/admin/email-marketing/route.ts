@@ -23,6 +23,7 @@ export async function GET() {
         enviados: c.destinatarios.filter(d => d.estado === "enviado").length,
         errores: c.destinatarios.filter(d => d.estado === "error").length,
         pendientes: c.destinatarios.filter(d => d.estado === "pendiente").length,
+        cancelada: c.cancelada,
         adminNombre: c.adminNombre,
         createdAt: c.createdAt,
     }));

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Megaphone, Send, Loader2, ChevronLeft, Users, CheckCircle2, XCircle, Clock, Search, Trash2 } from "lucide-react";
+import { Megaphone, Send, Loader2, ChevronLeft, Users, CheckCircle2, XCircle, Clock, Search, Trash2, OctagonX } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 import RichTextEditor from "@/components/admin/RichTextEditor";
 
@@ -12,6 +12,7 @@ interface CampanaItem {
     enviados: number;
     errores: number;
     pendientes: number;
+    cancelada: boolean;
     adminNombre: string;
     createdAt: string;
 }
@@ -33,6 +34,7 @@ interface CampanaDetalle {
     enviarATodos: boolean;
     adminNombre: string;
     totalEnvios: number;
+    cancelada: boolean;
     createdAt: string;
     destinatarios: DestinatarioDetalle[];
 }
@@ -67,6 +69,7 @@ export default function EmailMarketingPage() {
     const [searchDest, setSearchDest] = useState("");
     const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
     const [deleting, setDeleting] = useState(false);
+    const [deteniendo, setDeteniendo] = useState<number | null>(null);
 
     // Formulario
     const [editorKey, setEditorKey] = useState(0);
@@ -118,6 +121,23 @@ export default function EmailMarketingPage() {
             }
         } finally {
             setEnviando(false);
+        }
+    }
+
+    async function detener(id: number) {
+        if (!confirm("¿Detener el envío de esta campaña? Los destinatarios que faltan no van a recibir el mail.")) return;
+        setDeteniendo(id);
+        try {
+            const res = await fetch(`/api/admin/email-marketing/${id}`, { method: "PATCH" });
+            if (res.ok) {
+                showToast("Campaña detenida", "success");
+                load();
+                if (selected?.id === id) openDetail(id);
+            } else {
+                showToast("Error al detener", "error");
+            }
+        } finally {
+            setDeteniendo(null);
         }
     }
 
@@ -174,10 +194,20 @@ export default function EmailMarketingPage() {
                     </p>
                 </div>
                 {selected && (
-                    <button onClick={() => setConfirmDelete(selected.id)}
-                        className="flex items-center gap-1.5 px-3 h-9 text-[12px] font-semibold text-rose-500 border border-rose-200 dark:border-rose-800 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all">
-                        <Trash2 size={13} /> Eliminar
-                    </button>
+                    <div className="flex items-center gap-2">
+                        {!selected.cancelada && selected.destinatarios.some(d => d.estado === "pendiente") && (
+                            <button onClick={() => detener(selected.id)}
+                                disabled={deteniendo === selected.id}
+                                className="flex items-center gap-1.5 px-3 h-9 text-[12px] font-semibold text-amber-600 border border-amber-200 dark:border-amber-800 rounded-xl hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-all disabled:opacity-50">
+                                {deteniendo === selected.id ? <Loader2 size={13} className="animate-spin" /> : <OctagonX size={13} />}
+                                Detener envío
+                            </button>
+                        )}
+                        <button onClick={() => setConfirmDelete(selected.id)}
+                            className="flex items-center gap-1.5 px-3 h-9 text-[12px] font-semibold text-rose-500 border border-rose-200 dark:border-rose-800 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all">
+                            <Trash2 size={13} /> Eliminar
+                        </button>
+                    </div>
                 )}
             </div>
 
@@ -378,23 +408,36 @@ export default function EmailMarketingPage() {
                                                     </span>
                                                 </td>
                                                 <td className="px-5 py-3.5 text-[12px] text-slate-500">
-                                                    {c.pendientes > 0
-                                                        ? (
-                                                            <span className="text-amber-500 font-semibold">
-                                                                Enviando... ({c.enviados}/{c.totalEnvios})
-                                                                <span className="block text-[10px] font-normal text-amber-400">Tu proveedor de correo permite {LIMITE_POR_HORA} mails/hora — faltarían {horasEstimadas(c.pendientes)}</span>
-                                                            </span>
-                                                        )
-                                                        : c.errores > 0
-                                                            ? <span className="text-rose-500 font-semibold">{c.enviados} ok · {c.errores} con error</span>
-                                                            : <span className="text-emerald-500 font-semibold">Completado</span>}
+                                                    {c.cancelada && c.pendientes > 0
+                                                        ? <span className="text-slate-500 font-semibold">Detenida ({c.enviados}/{c.totalEnvios} enviados)</span>
+                                                        : c.pendientes > 0
+                                                            ? (
+                                                                <span className="text-amber-500 font-semibold">
+                                                                    Enviando... ({c.enviados}/{c.totalEnvios})
+                                                                    <span className="block text-[10px] font-normal text-amber-400">Tu proveedor de correo permite {LIMITE_POR_HORA} mails/hora — faltarían {horasEstimadas(c.pendientes)}</span>
+                                                                </span>
+                                                            )
+                                                            : c.errores > 0
+                                                                ? <span className="text-rose-500 font-semibold">{c.enviados} ok · {c.errores} con error</span>
+                                                                : <span className="text-emerald-500 font-semibold">Completado</span>}
                                                 </td>
                                                 <td className="px-5 py-3.5">
-                                                    <button onClick={() => openDetail(c.id)}
-                                                        disabled={loadingDetail}
-                                                        className="px-3 h-7 text-[11px] font-semibold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/20 border border-sky-100 dark:border-sky-800 rounded-lg hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-all">
-                                                        Ver registro
-                                                    </button>
+                                                    <div className="flex items-center gap-2 justify-end">
+                                                        {!c.cancelada && c.pendientes > 0 && (
+                                                            <button onClick={() => detener(c.id)}
+                                                                disabled={deteniendo === c.id}
+                                                                title="Detener el envío (deja de consumir el cupo del correo)"
+                                                                className="flex items-center gap-1.5 px-3 h-7 text-[11px] font-semibold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-all disabled:opacity-50">
+                                                                {deteniendo === c.id ? <Loader2 size={11} className="animate-spin" /> : <OctagonX size={11} />}
+                                                                Detener
+                                                            </button>
+                                                        )}
+                                                        <button onClick={() => openDetail(c.id)}
+                                                            disabled={loadingDetail}
+                                                            className="px-3 h-7 text-[11px] font-semibold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/20 border border-sky-100 dark:border-sky-800 rounded-lg hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-all">
+                                                            Ver registro
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         ))}

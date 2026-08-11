@@ -193,7 +193,7 @@ export async function enviarEmailMarketing(campanaId: number) {
     const transporter = nodemailer.createTransport({ ...smtp, ...MAIL_TIMEOUTS });
 
     const campana = await prisma.emailMarketing.findUnique({ where: { id: campanaId } });
-    if (!campana) return;
+    if (!campana || campana.cancelada) return;
 
     const destinatarios = await prisma.emailMarketingDestinatario.findMany({
         where: { campanaId, estado: "pendiente" },
@@ -204,6 +204,12 @@ export async function enviarEmailMarketing(campanaId: number) {
     let detenidoPorLimite = false;
 
     for (let i = 0; i < destinatarios.length && !detenidoPorLimite; i += MAIL_CHUNK) {
+        // Chequear si el admin detuvo la campaña desde el panel (se relee en cada tanda)
+        const estado = await prisma.emailMarketing.findUnique({ where: { id: campanaId }, select: { cancelada: true } });
+        if (estado?.cancelada) {
+            console.warn(`[mailer] Campaña ${campanaId} detenida por el admin.`);
+            break;
+        }
         const lote = destinatarios.slice(i, i + MAIL_CHUNK);
         await Promise.allSettled(lote.map(async (d) => {
             try {
@@ -237,7 +243,7 @@ export async function enviarEmailMarketing(campanaId: number) {
 // campaña que haya quedado a mitad de camino por un reinicio/deploy anterior.
 export async function reanudarCampanasPendientes() {
     const campanas = await prisma.emailMarketing.findMany({
-        where: { destinatarios: { some: { estado: "pendiente" } } },
+        where: { cancelada: false, destinatarios: { some: { estado: "pendiente" } } },
         select: { id: true },
     });
     for (const c of campanas) {

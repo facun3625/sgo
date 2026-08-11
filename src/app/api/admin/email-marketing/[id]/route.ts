@@ -30,6 +30,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
         enviarATodos: campana.enviarATodos,
         adminNombre: campana.adminNombre,
         totalEnvios: campana.totalEnvios,
+        cancelada: campana.cancelada,
         createdAt: campana.createdAt,
         destinatarios: campana.destinatarios.map(d => ({
             id: d.id,
@@ -41,6 +42,20 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
             enviadoAt: d.enviadoAt,
         })),
     });
+}
+
+// Detener una campaña en curso: marca cancelada=true. El envío en segundo plano
+// lo relee entre tandas y frena, y el auto-resume horario deja de tomarla.
+export async function PATCH(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+    const session = await getSession();
+    if (!session || !isAdmin(session.accessLevel)) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+
+    const { id } = await params;
+    const campana = await prisma.emailMarketing.findUnique({ where: { id: Number(id) }, select: { id: true } });
+    if (!campana) return NextResponse.json({ error: "No encontrado" }, { status: 404 });
+
+    await prisma.emailMarketing.update({ where: { id: Number(id) }, data: { cancelada: true } });
+    return NextResponse.json({ success: true });
 }
 
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {

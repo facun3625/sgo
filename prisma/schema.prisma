@@ -458,6 +458,7 @@ model EmailMarketing {
   enviarATodos  Boolean                      @default(false) @map("enviar_a_todos")
   adminNombre   String                       @map("admin_nombre")
   totalEnvios   Int                          @default(0)
+  cancelada     Boolean                      @default(false)
   createdAt     DateTime                     @default(now())
   destinatarios EmailMarketingDestinatario[]
 
