@@ -26,6 +26,21 @@ export default function ConfigPagosPage() {
     const [showMpPublicKey, setShowMpPublicKey] = useState(false);
     const [savingMpPublicKey, setSavingMpPublicKey] = useState(false);
     const [mpPublicKeyMsg, setMpPublicKeyMsg] = useState<Msg>(null);
+    // PayWay
+    const [paywaySiteIdConfigurado, setPaywaySiteIdConfigurado] = useState(false);
+    const [paywaySiteId, setPaywaySiteId] = useState("");
+    const [savingPaywaySiteId, setSavingPaywaySiteId] = useState(false);
+    const [paywaySiteIdMsg, setPaywaySiteIdMsg] = useState<Msg>(null);
+    const [paywayPublicKeyConfigurado, setPaywayPublicKeyConfigurado] = useState(false);
+    const [paywayPublicKey, setPaywayPublicKey] = useState("");
+    const [showPaywayPublicKey, setShowPaywayPublicKey] = useState(false);
+    const [savingPaywayPublicKey, setSavingPaywayPublicKey] = useState(false);
+    const [paywayPublicKeyMsg, setPaywayPublicKeyMsg] = useState<Msg>(null);
+    const [paywaySecretKeyConfigurado, setPaywaySecretKeyConfigurado] = useState(false);
+    const [paywaySecretKey, setPaywaySecretKey] = useState("");
+    const [showPaywaySecretKey, setShowPaywaySecretKey] = useState(false);
+    const [savingPaywaySecretKey, setSavingPaywaySecretKey] = useState(false);
+    const [paywaySecretKeyMsg, setPaywaySecretKeyMsg] = useState<Msg>(null);
     // Transferencia
     const [cbu, setCbu] = useState("");
     const [alias, setAlias] = useState("");
@@ -40,6 +55,9 @@ export default function ConfigPagosPage() {
             .then((d) => {
                 setMpTokenConfigurado(!!d.mpTokenConfigurado);
                 setMpPublicKeyConfigurado(!!d.mpPublicKeyConfigurado);
+                setPaywaySiteIdConfigurado(!!d.paywaySiteIdConfigurado);
+                setPaywayPublicKeyConfigurado(!!d.paywayPublicKeyConfigurado);
+                setPaywaySecretKeyConfigurado(!!d.paywaySecretKeyConfigurado);
                 setCbu(d.cbu ?? "");
                 setAlias(d.alias ?? "");
                 const s: Record<string, boolean> = {};
@@ -154,6 +172,94 @@ export default function ConfigPagosPage() {
                         className="flex items-center gap-2 px-5 h-10 bg-[#009ee3] hover:bg-[#007eb5] text-white rounded-xl text-[13px] font-bold disabled:opacity-40 transition-all active:scale-95">
                         {savingMpPublicKey ? <Loader2 size={14} className="animate-spin" /> : <KeyRound size={14} />}
                         {savingMpPublicKey ? "Guardando..." : "Guardar Public Key"}
+                    </button>
+                </div>
+            </div>
+
+            {/* ── PAYWAY ─────────────────────────────────────────────── */}
+            <div className="space-y-4">
+                <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                    <span className="w-4 h-px bg-slate-200 dark:bg-slate-700 flex-1" />
+                    PayWay
+                    <span className="w-4 h-px bg-slate-200 dark:bg-slate-700 flex-1" />
+                </h2>
+                <p className="text-[12px] text-slate-500 dark:text-slate-400 -mt-2">
+                    Alternativa a MercadoPago. Se muestra como opción de pago en todos los flujos (matrícula, deudas, cursos, ventas) apenas estén las tres credenciales configuradas.
+                </p>
+
+                {/* Site ID */}
+                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6 space-y-4">
+                    <div>
+                        <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Site ID</label>
+                        <p className="text-[12px] text-slate-500 dark:text-slate-400 mt-0.5">Identifica tu comercio en Payway.</p>
+                    </div>
+                    <div className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[12px] font-semibold w-fit ${paywaySiteIdConfigurado ? "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400" : "bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400"}`}>
+                        {paywaySiteIdConfigurado ? <CheckCircle2 size={14} /> : <AlertCircle size={14} />}
+                        {paywaySiteIdConfigurado ? "Configurado" : "Sin configurar"}
+                    </div>
+                    <input type="text" value={paywaySiteId} onChange={(e) => setPaywaySiteId(e.target.value)}
+                        placeholder={paywaySiteIdConfigurado ? "Pegá un nuevo Site ID para reemplazar" : "Ej: 00000000000"}
+                        className="w-full h-11 px-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-[13px] font-mono focus:outline-none focus:ring-2 focus:ring-slate-400" />
+                    {paywaySiteIdMsg && <div className={`flex items-center gap-2 text-[12px] font-bold ${paywaySiteIdMsg.tipo === "success" ? "text-emerald-500" : "text-red-500"}`}>{paywaySiteIdMsg.tipo === "success" ? <CheckCircle2 size={14} /> : <AlertCircle size={14} />}{paywaySiteIdMsg.texto}</div>}
+                    <button onClick={() => saveKey("paywaySiteId", paywaySiteId, setSavingPaywaySiteId, setPaywaySiteIdMsg, () => { setPaywaySiteIdConfigurado(true); setPaywaySiteId(""); })}
+                        disabled={savingPaywaySiteId || !paywaySiteId.trim()}
+                        className="flex items-center gap-2 px-5 h-10 bg-slate-700 hover:bg-slate-600 text-white rounded-xl text-[13px] font-bold disabled:opacity-40 transition-all active:scale-95">
+                        {savingPaywaySiteId ? <Loader2 size={14} className="animate-spin" /> : <KeyRound size={14} />}
+                        {savingPaywaySiteId ? "Guardando..." : "Guardar Site ID"}
+                    </button>
+                </div>
+
+                {/* Public Key */}
+                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6 space-y-4">
+                    <div>
+                        <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Public Key</label>
+                        <p className="text-[12px] text-slate-500 dark:text-slate-400 mt-0.5">Se usa en el navegador del usuario para tokenizar la tarjeta.</p>
+                    </div>
+                    <div className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[12px] font-semibold w-fit ${paywayPublicKeyConfigurado ? "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400" : "bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400"}`}>
+                        {paywayPublicKeyConfigurado ? <CheckCircle2 size={14} /> : <AlertCircle size={14} />}
+                        {paywayPublicKeyConfigurado ? "Configurada" : "Sin configurar"}
+                    </div>
+                    <div className="relative">
+                        <input type={showPaywayPublicKey ? "text" : "password"} value={paywayPublicKey} onChange={(e) => setPaywayPublicKey(e.target.value)}
+                            placeholder={paywayPublicKeyConfigurado ? "Pegá una nueva key para reemplazar" : "Public API Key"}
+                            className="w-full h-11 px-4 pr-11 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-[13px] font-mono focus:outline-none focus:ring-2 focus:ring-slate-400" />
+                        <button type="button" onClick={() => setShowPaywayPublicKey((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+                            {showPaywayPublicKey ? <EyeOff size={15} /> : <Eye size={15} />}
+                        </button>
+                    </div>
+                    {paywayPublicKeyMsg && <div className={`flex items-center gap-2 text-[12px] font-bold ${paywayPublicKeyMsg.tipo === "success" ? "text-emerald-500" : "text-red-500"}`}>{paywayPublicKeyMsg.tipo === "success" ? <CheckCircle2 size={14} /> : <AlertCircle size={14} />}{paywayPublicKeyMsg.texto}</div>}
+                    <button onClick={() => saveKey("paywayPublicKey", paywayPublicKey, setSavingPaywayPublicKey, setPaywayPublicKeyMsg, () => { setPaywayPublicKeyConfigurado(true); setPaywayPublicKey(""); })}
+                        disabled={savingPaywayPublicKey || !paywayPublicKey.trim()}
+                        className="flex items-center gap-2 px-5 h-10 bg-slate-700 hover:bg-slate-600 text-white rounded-xl text-[13px] font-bold disabled:opacity-40 transition-all active:scale-95">
+                        {savingPaywayPublicKey ? <Loader2 size={14} className="animate-spin" /> : <KeyRound size={14} />}
+                        {savingPaywayPublicKey ? "Guardando..." : "Guardar Public Key"}
+                    </button>
+                </div>
+
+                {/* Secret Key */}
+                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6 space-y-4">
+                    <div>
+                        <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Secret Key</label>
+                        <p className="text-[12px] text-slate-500 dark:text-slate-400 mt-0.5">Clave privada del servidor para autorizar los pagos. Nunca se expone al navegador.</p>
+                    </div>
+                    <div className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[12px] font-semibold w-fit ${paywaySecretKeyConfigurado ? "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400" : "bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400"}`}>
+                        {paywaySecretKeyConfigurado ? <CheckCircle2 size={14} /> : <AlertCircle size={14} />}
+                        {paywaySecretKeyConfigurado ? "Configurada — pagos habilitados" : "Sin configurar — pagos deshabilitados"}
+                    </div>
+                    <div className="relative">
+                        <input type={showPaywaySecretKey ? "text" : "password"} value={paywaySecretKey} onChange={(e) => setPaywaySecretKey(e.target.value)}
+                            placeholder={paywaySecretKeyConfigurado ? "Pegá una nueva key para reemplazar" : "Secret / Private API Key"}
+                            className="w-full h-11 px-4 pr-11 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-[13px] font-mono focus:outline-none focus:ring-2 focus:ring-slate-400" />
+                        <button type="button" onClick={() => setShowPaywaySecretKey((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+                            {showPaywaySecretKey ? <EyeOff size={15} /> : <Eye size={15} />}
+                        </button>
+                    </div>
+                    {paywaySecretKeyMsg && <div className={`flex items-center gap-2 text-[12px] font-bold ${paywaySecretKeyMsg.tipo === "success" ? "text-emerald-500" : "text-red-500"}`}>{paywaySecretKeyMsg.tipo === "success" ? <CheckCircle2 size={14} /> : <AlertCircle size={14} />}{paywaySecretKeyMsg.texto}</div>}
+                    <button onClick={() => saveKey("paywaySecretKey", paywaySecretKey, setSavingPaywaySecretKey, setPaywaySecretKeyMsg, () => { setPaywaySecretKeyConfigurado(true); setPaywaySecretKey(""); })}
+                        disabled={savingPaywaySecretKey || !paywaySecretKey.trim()}
+                        className="flex items-center gap-2 px-5 h-10 bg-slate-700 hover:bg-slate-600 text-white rounded-xl text-[13px] font-bold disabled:opacity-40 transition-all active:scale-95">
+                        {savingPaywaySecretKey ? <Loader2 size={14} className="animate-spin" /> : <KeyRound size={14} />}
+                        {savingPaywaySecretKey ? "Guardando..." : "Guardar Secret Key"}
                     </button>
                 </div>
             </div>

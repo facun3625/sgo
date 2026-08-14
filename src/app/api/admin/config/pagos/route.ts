@@ -15,6 +15,9 @@ export async function GET() {
     return NextResponse.json({
         mpTokenConfigurado: !!map.mpAccessToken,
         mpPublicKeyConfigurado: !!map.mpPublicKey,
+        paywaySiteIdConfigurado: !!map.paywaySiteId,
+        paywayPublicKeyConfigurado: !!map.paywayPublicKey,
+        paywaySecretKeyConfigurado: !!map.paywaySecretKey,
         cbu: map.cbu ?? "",
         alias: map.alias ?? "",
         transferencia_matricula_mensual: map.transferencia_matricula_mensual === "1",
