@@ -41,6 +41,8 @@ export default function ConfigPagosPage() {
     const [showPaywaySecretKey, setShowPaywaySecretKey] = useState(false);
     const [savingPaywaySecretKey, setSavingPaywaySecretKey] = useState(false);
     const [paywaySecretKeyMsg, setPaywaySecretKeyMsg] = useState<Msg>(null);
+    const [paywayAmbiente, setPaywayAmbiente] = useState<"developer" | "production">("developer");
+    const [savingPaywayAmbiente, setSavingPaywayAmbiente] = useState(false);
     // Transferencia
     const [cbu, setCbu] = useState("");
     const [alias, setAlias] = useState("");
@@ -58,6 +60,7 @@ export default function ConfigPagosPage() {
                 setPaywaySiteIdConfigurado(!!d.paywaySiteIdConfigurado);
                 setPaywayPublicKeyConfigurado(!!d.paywayPublicKeyConfigurado);
                 setPaywaySecretKeyConfigurado(!!d.paywaySecretKeyConfigurado);
+                setPaywayAmbiente(d.paywayAmbiente === "production" ? "production" : "developer");
                 setCbu(d.cbu ?? "");
                 setAlias(d.alias ?? "");
                 const s: Record<string, boolean> = {};
@@ -186,6 +189,36 @@ export default function ConfigPagosPage() {
                 <p className="text-[12px] text-slate-500 dark:text-slate-400 -mt-2">
                     Alternativa a MercadoPago. Se muestra como opción de pago en todos los flujos (matrícula, deudas, cursos, ventas) apenas estén las tres credenciales configuradas.
                 </p>
+
+                {/* Ambiente */}
+                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6 space-y-4">
+                    <div>
+                        <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Ambiente</label>
+                        <p className="text-[12px] text-slate-500 dark:text-slate-400 mt-0.5">
+                            Definí contra qué servidor de Payway se procesan los pagos. Las credenciales de abajo tienen que corresponder al mismo ambiente.
+                        </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <button onClick={async () => {
+                            setSavingPaywayAmbiente(true);
+                            const res = await fetch("/api/admin/config", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ clave: "paywayAmbiente", valor: "developer" }) });
+                            if (res.ok) setPaywayAmbiente("developer");
+                            setSavingPaywayAmbiente(false);
+                        }} disabled={savingPaywayAmbiente}
+                            className={`flex-1 h-11 rounded-xl text-[13px] font-bold transition-all disabled:opacity-50 ${paywayAmbiente === "developer" ? "bg-amber-500 text-white" : "bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700"}`}>
+                            Sandbox (pruebas)
+                        </button>
+                        <button onClick={async () => {
+                            setSavingPaywayAmbiente(true);
+                            const res = await fetch("/api/admin/config", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ clave: "paywayAmbiente", valor: "production" }) });
+                            if (res.ok) setPaywayAmbiente("production");
+                            setSavingPaywayAmbiente(false);
+                        }} disabled={savingPaywayAmbiente}
+                            className={`flex-1 h-11 rounded-xl text-[13px] font-bold transition-all disabled:opacity-50 ${paywayAmbiente === "production" ? "bg-emerald-500 text-white" : "bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700"}`}>
+                            Producción
+                        </button>
+                    </div>
+                </div>
 
                 {/* Site ID */}
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6 space-y-4">

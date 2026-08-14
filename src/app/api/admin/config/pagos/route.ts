@@ -18,6 +18,7 @@ export async function GET() {
         paywaySiteIdConfigurado: !!map.paywaySiteId,
         paywayPublicKeyConfigurado: !!map.paywayPublicKey,
         paywaySecretKeyConfigurado: !!map.paywaySecretKey,
+        paywayAmbiente: map.paywayAmbiente === "production" ? "production" : "developer",
         cbu: map.cbu ?? "",
         alias: map.alias ?? "",
         transferencia_matricula_mensual: map.transferencia_matricula_mensual === "1",

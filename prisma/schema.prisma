@@ -256,6 +256,7 @@ model InscripcionCurso {
   opcionId     Int?         @map("opcion_id")
   fechaPago    DateTime?    @map("fecha_pago")
   mpPaymentId  String?      @map("mp_payment_id")
+  paywayPaymentId String?   @map("payway_payment_id")
   esInvitado   Boolean      @default(false) @map("es_invitado")
   guestNombre  String?      @map("guest_nombre")
   guestApellido String?     @map("guest_apellido")

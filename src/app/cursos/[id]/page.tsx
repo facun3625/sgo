@@ -8,6 +8,7 @@ import { ArrowLeft, Calendar, Clock, MapPin, Loader2, CheckCircle2, AlertCircle,
 import GuestMpPayButton from "@/components/cursos-publicos/GuestMpPayButton";
 import GuestTransferenciaPayButton from "@/components/cursos-publicos/GuestTransferenciaPayButton";
 import CursoFlyerButton from "@/components/cursos-publicos/CursoFlyerButton";
+import PaywayCardForm, { PaywayTokenResult } from "@/components/pagos/PaywayCardForm";
 
 interface Opcion {
     id: number;
@@ -54,6 +55,9 @@ export default function CursoPublicoDetailPage() {
     const [enviando, setEnviando] = useState(false);
     const [error, setError] = useState("");
     const [inscripcion, setInscripcion] = useState<{ id: number; estado: string; monto: number } | null>(null);
+    const [metodoPago, setMetodoPago] = useState<"elegir" | "payway">("elegir");
+    const [paywayProcesando, setPaywayProcesando] = useState(false);
+    const [paywayError, setPaywayError] = useState<string | null>(null);
 
     const [consultaDni, setConsultaDni] = useState("");
     const [consultando, setConsultando] = useState(false);
@@ -91,6 +95,27 @@ export default function CursoPublicoDetailPage() {
             setError("Error de conexión. Intentá de nuevo.");
         } finally {
             setEnviando(false);
+        }
+    }
+
+    async function handlePaywayToken(result: PaywayTokenResult) {
+        if (!inscripcion) return;
+        setPaywayError(null);
+        setPaywayProcesando(true);
+        try {
+            const res = await fetch("/api/cursos/pago/payway", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ inscripcionId: inscripcion.id, ...result }),
+            });
+            const data = await res.json();
+            if (!res.ok) { setPaywayError(data.error || "No se pudo procesar el pago."); return; }
+            if (!data.aprobado) { setPaywayError(data.mensaje || "El pago fue rechazado."); return; }
+            setInscripcion(prev => prev ? { ...prev, estado: "confirmada" } : prev);
+        } catch {
+            setPaywayError("Error de conexión. Intentá de nuevo.");
+        } finally {
+            setPaywayProcesando(false);
         }
     }
 
@@ -218,22 +243,44 @@ export default function CursoPublicoDetailPage() {
                                     <p className="text-[12px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Monto a abonar</p>
                                     <p className="text-2xl font-black text-slate-900">${inscripcion.monto.toLocaleString("es-AR")}</p>
                                 </div>
-                                <div className="flex flex-col gap-2 w-full sm:w-auto items-stretch mt-3 sm:mt-0">
-                                    <GuestMpPayButton
-                                        inscripcionId={inscripcion.id}
-                                        label="Pagar con Mercado Pago"
-                                        className="w-full h-11 px-6 bg-[#063f68] hover:bg-[#0a4d7a] text-white rounded-xl font-bold text-[14px] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-                                    />
-                                    {transferenciaHabilitada && (
-                                        <GuestTransferenciaPayButton
+                                {metodoPago === "elegir" && (
+                                    <div className="flex flex-col gap-2 w-full sm:w-auto items-stretch mt-3 sm:mt-0">
+                                        <GuestMpPayButton
                                             inscripcionId={inscripcion.id}
-                                            monto={inscripcion.monto}
-                                            label="Pagar con transferencia"
-                                            className="w-full h-11 px-6 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-bold text-[14px] transition-all flex items-center justify-center gap-2"
+                                            label="Pagar con Mercado Pago"
+                                            className="w-full h-11 px-6 bg-[#063f68] hover:bg-[#0a4d7a] text-white rounded-xl font-bold text-[14px] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                                         />
-                                    )}
-                                </div>
+                                        <button type="button" onClick={() => setMetodoPago("payway")}
+                                            className="w-full h-11 px-6 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold text-[14px] transition-all flex items-center justify-center gap-2">
+                                            Pagar con tarjeta
+                                        </button>
+                                        {transferenciaHabilitada && (
+                                            <GuestTransferenciaPayButton
+                                                inscripcionId={inscripcion.id}
+                                                monto={inscripcion.monto}
+                                                label="Pagar con transferencia"
+                                                className="w-full h-11 px-6 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-bold text-[14px] transition-all flex items-center justify-center gap-2"
+                                            />
+                                        )}
+                                    </div>
+                                )}
                             </div>
+
+                            {metodoPago === "payway" && (
+                                <div className="space-y-2">
+                                    <button type="button" onClick={() => { setMetodoPago("elegir"); setPaywayError(null); }}
+                                        className="text-[12px] font-semibold text-slate-400 hover:text-slate-600">
+                                        ← Elegir otro medio de pago
+                                    </button>
+                                    <PaywayCardForm
+                                        onToken={handlePaywayToken}
+                                        procesando={paywayProcesando}
+                                        error={paywayError}
+                                        montoLabel={`$${inscripcion.monto.toLocaleString("es-AR")}`}
+                                    />
+                                </div>
+                            )}
+
                             <p className="text-[12px] text-slate-500">Apenas se confirme el pago te avisamos por email.</p>
                         </div>
                     )
