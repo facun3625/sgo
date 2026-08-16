@@ -13,6 +13,14 @@ const SECCIONES = [
     { key: "transferencia_ventas",            label: "Ventas (productos)" },
 ];
 
+const SECCIONES_PAYWAY = [
+    { key: "payway_matricula_mensual", label: "Cuota mensual" },
+    { key: "payway_matricula_anual",   label: "Matrícula anual" },
+    { key: "payway_deuda",             label: "Deudas Vencidas" },
+    { key: "payway_curso",             label: "Cursos" },
+    { key: "payway_ventas",            label: "Ventas (productos)" },
+];
+
 type Tab = "mp" | "payway" | "transferencia";
 
 export default function ConfigPagosPage() {
@@ -46,8 +54,6 @@ export default function ConfigPagosPage() {
     const [paywaySecretKeyMsg, setPaywaySecretKeyMsg] = useState<Msg>(null);
     const [paywayAmbiente, setPaywayAmbiente] = useState<"developer" | "production">("developer");
     const [savingPaywayAmbiente, setSavingPaywayAmbiente] = useState(false);
-    const [paywayHabilitado, setPaywayHabilitado] = useState(false);
-    const [savingPaywayHabilitado, setSavingPaywayHabilitado] = useState(false);
     // Transferencia
     const [cbu, setCbu] = useState("");
     const [alias, setAlias] = useState("");
@@ -66,11 +72,10 @@ export default function ConfigPagosPage() {
                 setPaywayPublicKeyConfigurado(!!d.paywayPublicKeyConfigurado);
                 setPaywaySecretKeyConfigurado(!!d.paywaySecretKeyConfigurado);
                 setPaywayAmbiente(d.paywayAmbiente === "production" ? "production" : "developer");
-                setPaywayHabilitado(!!d.paywayHabilitado);
                 setCbu(d.cbu ?? "");
                 setAlias(d.alias ?? "");
                 const s: Record<string, boolean> = {};
-                SECCIONES.forEach(({ key }) => { s[key] = !!d[key]; });
+                [...SECCIONES, ...SECCIONES_PAYWAY].forEach(({ key }) => { s[key] = !!d[key]; });
                 setSecciones(s);
             })
             .finally(() => setLoading(false));
@@ -99,14 +104,6 @@ export default function ConfigPagosPage() {
         finally { setSavingBanco(false); }
     };
 
-    const togglePaywayHabilitado = async () => {
-        setSavingPaywayHabilitado(true);
-        const nuevo = !paywayHabilitado;
-        const res = await fetch("/api/admin/config", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ clave: "paywayHabilitado", valor: nuevo ? "1" : "0" }) });
-        if (res.ok) setPaywayHabilitado(nuevo);
-        setSavingPaywayHabilitado(false);
-    };
-
     const toggleSeccion = async (key: string, current: boolean) => {
         setTogglingKey(key);
         const nuevo = current ? "0" : "1";
@@ -116,6 +113,7 @@ export default function ConfigPagosPage() {
     };
 
     const paywayCredencialesCompletas = paywaySiteIdConfigurado && paywayPublicKeyConfigurado && paywaySecretKeyConfigurado;
+    const paywayAnySeccionHabilitada = SECCIONES_PAYWAY.some(({ key }) => secciones[key]);
 
     if (loading) return <div className="flex items-center justify-center py-20"><Loader2 size={28} className="animate-spin text-slate-400" /></div>;
 
@@ -135,7 +133,7 @@ export default function ConfigPagosPage() {
             <div className="flex items-center gap-1.5 border-b border-slate-100 dark:border-slate-800 -mt-4">
                 {([
                     { key: "mp" as Tab, label: "Mercado Pago", activo: mpTokenConfigurado },
-                    { key: "payway" as Tab, label: "PayWay", activo: paywayHabilitado },
+                    { key: "payway" as Tab, label: "PayWay", activo: paywayAnySeccionHabilitada },
                     { key: "transferencia" as Tab, label: "Transferencia", activo: Object.values(secciones).some(Boolean) },
                 ]).map((t) => (
                     <button key={t.key} onClick={() => setTab(t.key)}
@@ -226,37 +224,47 @@ export default function ConfigPagosPage() {
                     Alternativa a MercadoPago: aparece junto a MercadoPago como opción de pago para el usuario.
                 </p>
 
-                {/* Estado — interruptor principal, lo primero que se ve */}
-                <div className={`rounded-2xl border p-6 space-y-3 transition-colors ${paywayHabilitado ? "bg-emerald-50/60 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-800" : "bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800"}`}>
-                    <div className="flex items-center justify-between gap-4">
+                {/* Secciones habilitadas — mismo patrón que transferencia bancaria */}
+                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6 space-y-4">
+                    <div className="flex items-center justify-between gap-3">
                         <div>
-                            <p className="text-[15px] font-black text-slate-800 dark:text-white">
-                                {paywayHabilitado ? "PayWay habilitado" : "PayWay deshabilitado"}
-                            </p>
+                            <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Secciones habilitadas</label>
                             <p className="text-[12px] text-slate-500 dark:text-slate-400 mt-0.5">
-                                {!paywayCredencialesCompletas
-                                    ? "Completá las 3 credenciales de abajo para poder habilitarlo."
-                                    : paywayHabilitado
-                                        ? "Los usuarios ya pueden pagar con tarjeta vía PayWay."
-                                        : "Prendé el interruptor para mostrarlo como opción de pago."}
+                                {paywayCredencialesCompletas
+                                    ? "Activá PayWay por sección. Por defecto todo está deshabilitado."
+                                    : "Completá las 3 credenciales de abajo para poder activar alguna sección."}
                             </p>
                         </div>
-                        <button onClick={togglePaywayHabilitado} disabled={savingPaywayHabilitado || (!paywayCredencialesCompletas && !paywayHabilitado)}
-                            title={!paywayCredencialesCompletas ? "Completá las credenciales primero" : undefined}
-                            className="flex-shrink-0 disabled:opacity-30 disabled:cursor-not-allowed transition-opacity">
-                            {savingPaywayHabilitado
-                                ? <Loader2 size={34} className="animate-spin text-slate-400" />
-                                : paywayHabilitado ? <ToggleRight size={38} className="text-emerald-500" /> : <ToggleLeft size={38} className="text-slate-300 dark:text-slate-600" />}
-                        </button>
-                    </div>
-                    {paywayHabilitado && (
-                        <div className="flex items-center gap-2 pt-2 mt-1 border-t border-emerald-100 dark:border-emerald-900/40">
-                            <span className="text-[11px] text-slate-500 dark:text-slate-400">Corriendo en:</span>
-                            <span className={`text-[11px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full ${paywayAmbiente === "production" ? "bg-emerald-500 text-white" : "bg-amber-500 text-white"}`}>
-                                {paywayAmbiente === "production" ? "Producción" : "Sandbox (pruebas)"}
+                        {paywayAnySeccionHabilitada && (
+                            <span className={`flex-shrink-0 text-[11px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full ${paywayAmbiente === "production" ? "bg-emerald-500 text-white" : "bg-amber-500 text-white"}`}>
+                                {paywayAmbiente === "production" ? "Producción" : "Sandbox"}
                             </span>
-                        </div>
-                    )}
+                        )}
+                    </div>
+                    <div className="divide-y divide-slate-50 dark:divide-slate-800">
+                        {SECCIONES_PAYWAY.map(({ key, label }) => {
+                            const enabled = secciones[key] ?? false;
+                            const toggling = togglingKey === key;
+                            const bloqueado = !paywayCredencialesCompletas && !enabled;
+                            return (
+                                <div key={key} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
+                                    <span className="text-[13px] font-semibold text-slate-700 dark:text-slate-300">{label}</span>
+                                    <button onClick={() => toggleSeccion(key, enabled)} disabled={toggling || bloqueado}
+                                        title={bloqueado ? "Completá las credenciales primero" : undefined}
+                                        className="flex items-center gap-2 text-[12px] font-bold transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+                                        {toggling ? <Loader2 size={18} className="animate-spin text-slate-400" /> :
+                                            enabled
+                                                ? <ToggleRight size={28} className="text-emerald-500" />
+                                                : <ToggleLeft size={28} className="text-slate-300 dark:text-slate-600" />
+                                        }
+                                        <span className={enabled ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400"}>
+                                            {enabled ? "Habilitado" : "Deshabilitado"}
+                                        </span>
+                                    </button>
+                                </div>
+                            );
+                        })}
+                    </div>
                 </div>
 
                 {/* Ambiente */}

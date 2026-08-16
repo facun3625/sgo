@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { autorizarPagoPayway, marcaSoportadaPayway } from "@/lib/payway";
+import { autorizarPagoPayway, marcaSoportadaPayway, paywayDisponibleParaSeccion } from "@/lib/payway";
 import { enviarInscripcionCursoConfirmada } from "@/lib/mailer";
 
 // Cobro con tarjeta (Payway) para inscripciones de invitados — sin sesión.
@@ -13,6 +13,9 @@ export async function POST(req: NextRequest) {
     }
     if (!marcaSoportadaPayway(marca)) {
         return NextResponse.json({ error: "Tarjeta no soportada por esta opción de pago" }, { status: 400 });
+    }
+    if (!(await paywayDisponibleParaSeccion("curso"))) {
+        return NextResponse.json({ error: "Esta opción de pago no está disponible" }, { status: 503 });
     }
 
     const inscripcion = await prisma.inscripcionCurso.findUnique({

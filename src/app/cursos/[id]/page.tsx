@@ -273,10 +273,12 @@ export default function CursoPublicoDetailPage() {
                                         ← Elegir otro medio de pago
                                     </button>
                                     <PaywayCardForm
+                                        seccion="curso"
                                         onToken={handlePaywayToken}
                                         procesando={paywayProcesando}
                                         error={paywayError}
                                         montoLabel={`$${inscripcion.monto.toLocaleString("es-AR")}`}
+                                        facturacionInicial={{ direccion: form.direccion, ciudad: form.localidad, provincia: form.provincia }}
                                     />
                                 </div>
                             )}

@@ -32,16 +32,18 @@ export interface PaywayTokenResult {
 }
 
 interface Props {
+    seccion: "matricula_mensual" | "matricula_anual" | "deuda" | "curso" | "ventas";
     onToken: (result: PaywayTokenResult) => void;
     procesando?: boolean;
     error?: string | null;
     montoLabel?: string;
+    facturacionInicial?: Partial<PaywayFacturacion>;
 }
 
 // Marcas soportadas hoy — deben coincidir con PAYWAY_PAYMENT_METHOD_ID en src/lib/payway.ts
 const MARCAS_SOPORTADAS = ["visa", "mastercard"];
 
-export default function PaywayCardForm({ onToken, procesando, error, montoLabel }: Props) {
+export default function PaywayCardForm({ seccion, onToken, procesando, error, montoLabel, facturacionInicial }: Props) {
     const formRef = useRef<HTMLFormElement>(null);
     const decidirRef = useRef<DecidirInstance | null>(null);
     const [scriptListo, setScriptListo] = useState(false);
@@ -50,13 +52,18 @@ export default function PaywayCardForm({ onToken, procesando, error, montoLabel 
     const [marcaDetectada, setMarcaDetectada] = useState<string | null>(null);
     const [tokenizando, setTokenizando] = useState(false);
     const [errorLocal, setErrorLocal] = useState("");
-    const [facturacion, setFacturacion] = useState<PaywayFacturacion>({ direccion: "", ciudad: "", provincia: "", codigoPostal: "" });
+    const [facturacion, setFacturacion] = useState<PaywayFacturacion>({
+        direccion: facturacionInicial?.direccion ?? "",
+        ciudad: facturacionInicial?.ciudad ?? "",
+        provincia: facturacionInicial?.provincia ?? "",
+        codigoPostal: facturacionInicial?.codigoPostal ?? "",
+    });
 
     useEffect(() => {
-        fetch("/api/payway/config")
+        fetch(`/api/payway/config?seccion=${seccion}`)
             .then(r => r.json())
             .then(d => { if (d.disponible) setPublicConfig({ publicKey: d.publicKey, apiUrl: d.apiUrl }); });
-    }, []);
+    }, [seccion]);
 
     const [decidirListo, setDecidirListo] = useState(false);
 

@@ -2,9 +2,20 @@ import prisma from "@/lib/prisma";
 
 type Ambiente = "developer" | "production";
 
+// Igual patrón que las secciones de transferencia bancaria: un toggle por flujo,
+// no un único interruptor global.
+export type PaywaySeccion = "matricula_mensual" | "matricula_anual" | "deuda" | "curso" | "ventas";
+const CLAVE_SECCION: Record<PaywaySeccion, string> = {
+    matricula_mensual: "payway_matricula_mensual",
+    matricula_anual: "payway_matricula_anual",
+    deuda: "payway_deuda",
+    curso: "payway_curso",
+    ventas: "payway_ventas",
+};
+
 async function getPaywayConfig() {
     const configs = await prisma.config.findMany({
-        where: { clave: { in: ["paywaySiteId", "paywayPublicKey", "paywaySecretKey", "paywayAmbiente", "paywayHabilitado"] } },
+        where: { clave: { in: ["paywaySiteId", "paywayPublicKey", "paywaySecretKey", "paywayAmbiente", ...Object.values(CLAVE_SECCION)] } },
     });
     const map = Object.fromEntries(configs.map((c) => [c.clave, c.valor]));
     return {
@@ -12,9 +23,9 @@ async function getPaywayConfig() {
         publicKey: map.paywayPublicKey ?? "",
         secretKey: map.paywaySecretKey ?? "",
         ambiente: (map.paywayAmbiente === "production" ? "production" : "developer") as Ambiente,
-        // Interruptor explícito del admin — independiente de si las credenciales
-        // están cargadas. Apagado por defecto para no exponerlo sin querer.
-        habilitado: map.paywayHabilitado === "1",
+        secciones: Object.fromEntries(
+            (Object.keys(CLAVE_SECCION) as PaywaySeccion[]).map((s) => [s, map[CLAVE_SECCION[s]] === "1"])
+        ) as Record<PaywaySeccion, boolean>,
     };
 }
 
@@ -27,18 +38,18 @@ function baseUrl(ambiente: Ambiente) {
         : "https://developers.decidir.com/api/v2";
 }
 
-// PayWay está realmente disponible para cobrar solo si las 3 credenciales están
-// cargadas Y el admin lo prendió explícitamente con el interruptor.
-export async function paywayDisponible(): Promise<boolean> {
+// PayWay está disponible para una sección solo si las 3 credenciales están
+// cargadas Y el admin prendió esa sección puntual.
+export async function paywayDisponibleParaSeccion(seccion: PaywaySeccion): Promise<boolean> {
     const cfg = await getPaywayConfig();
-    return !!(cfg.siteId && cfg.publicKey && cfg.secretKey && cfg.habilitado);
+    return !!(cfg.siteId && cfg.publicKey && cfg.secretKey && cfg.secciones[seccion]);
 }
 
 // Config pública para que el checkout inicialice decidir.js en el navegador — nunca
-// incluye la secret key. Devuelve null si no está disponible (sin credenciales o apagado).
-export async function getPaywayFrontendConfig(): Promise<{ publicKey: string; apiUrl: string } | null> {
+// incluye la secret key. Devuelve null si esa sección no está disponible.
+export async function getPaywayFrontendConfig(seccion: PaywaySeccion): Promise<{ publicKey: string; apiUrl: string } | null> {
     const cfg = await getPaywayConfig();
-    if (!cfg.publicKey || !cfg.habilitado) return null;
+    if (!cfg.publicKey || !cfg.secciones[seccion]) return null;
     return { publicKey: cfg.publicKey, apiUrl: baseUrl(cfg.ambiente) };
 }
 
@@ -119,7 +130,10 @@ export async function autorizarPagoPayway(params: {
     facturacion: DatosFacturacionPayway;
 }): Promise<PagoPaywayResultado> {
     const cfg = await getPaywayConfig();
-    if (!cfg.secretKey || !cfg.habilitado) throw new Error("PAYWAY_NOT_CONFIGURED");
+    // El chequeo de si la sección puntual está habilitada lo hace el endpoint que
+    // llama a esta función (paywayDisponibleParaSeccion) — acá solo se valida que
+    // las credenciales existan.
+    if (!cfg.secretKey) throw new Error("PAYWAY_NOT_CONFIGURED");
 
     const paymentMethodId = PAYWAY_PAYMENT_METHOD_ID[params.marca.toLowerCase()];
     if (!paymentMethodId) throw new Error(`PAYWAY_MARCA_NO_SOPORTADA:${params.marca}`);

@@ -19,7 +19,6 @@ export async function GET() {
         paywayPublicKeyConfigurado: !!map.paywayPublicKey,
         paywaySecretKeyConfigurado: !!map.paywaySecretKey,
         paywayAmbiente: map.paywayAmbiente === "production" ? "production" : "developer",
-        paywayHabilitado: map.paywayHabilitado === "1",
         cbu: map.cbu ?? "",
         alias: map.alias ?? "",
         transferencia_matricula_mensual: map.transferencia_matricula_mensual === "1",
@@ -27,5 +26,10 @@ export async function GET() {
         transferencia_deuda:             map.transferencia_deuda === "1",
         transferencia_curso:             map.transferencia_curso === "1",
         transferencia_ventas:            map.transferencia_ventas === "1",
+        payway_matricula_mensual: map.payway_matricula_mensual === "1",
+        payway_matricula_anual:   map.payway_matricula_anual === "1",
+        payway_deuda:             map.payway_deuda === "1",
+        payway_curso:             map.payway_curso === "1",
+        payway_ventas:            map.payway_ventas === "1",
     });
 }
