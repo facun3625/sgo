@@ -73,6 +73,7 @@ model DeudaPagada {
   expediente  String
   monto       Float
   mpPaymentId String?  @map("mp_payment_id")
+  paywayPaymentId String? @map("payway_payment_id")
   metodoPago  String   @default("mercadopago")
   fechaPago   DateTime @default(now()) @map("fecha_pago")
   exportado   Boolean  @default(false)
@@ -102,6 +103,7 @@ model CuotaMensual {
   metodoPago  String?
   exportado   Boolean   @default(false)
   mpPaymentId String?   @map("mp_payment_id")
+  paywayPaymentId String? @map("payway_payment_id")
 
   @@unique([expediente, periodo])
   @@map("cuotas_mensuales")
@@ -113,6 +115,7 @@ model PagoAnual {
   exportado   Boolean   @default(false)
   fechaPago   DateTime?
   mpPaymentId String?   @map("mp_payment_id")
+  paywayPaymentId String? @map("payway_payment_id")
 
   @@map("pago_anual")
 }

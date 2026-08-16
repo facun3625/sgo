@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import MpPayButton from "@/components/MpPayButton";
 import TransferenciaPayButton from "@/components/TransferenciaPayButton";
+import PaywayCardForm, { PaywayTokenResult } from "@/components/pagos/PaywayCardForm";
 
 interface Concepto {
     id: number;
@@ -33,7 +34,7 @@ interface CuotaMensualData {
     periodo: string;
     monto: number;
     estado: string;
-    metodo?: "mercadopago" | "transferencia" | "home_banking" | "transferencia_pendiente" | "matriculacion" | null;
+    metodo?: "mercadopago" | "payway" | "transferencia" | "home_banking" | "transferencia_pendiente" | "matriculacion" | null;
     metodoPago?: string | null;
 }
 
@@ -68,6 +69,7 @@ interface PagosData {
 
 function labelMetodoPago(metodo?: string | null): string {
     if (metodo === "mercadopago") return "Mercado Pago";
+    if (metodo === "payway") return "PayWay";
     if (metodo === "banelco" || metodo === "home_banking") return "Banelco / Home Banking";
     if (metodo === "transferencia") return "Transferencia bancaria";
     if (metodo === "matriculacion") return "Incluido en matrícula";
@@ -84,23 +86,46 @@ function formatPeriodo(periodo: string): string {
 export default function MatriculaStatus() {
     const [data, setData] = useState<PagosData | null>(null);
     const [loading, setLoading] = useState(true);
+    const [paywayModo, setPaywayModo] = useState<null | "deuda" | "anual" | "mensual">(null);
+    const [paywayProcesando, setPaywayProcesando] = useState(false);
+    const [paywayError, setPaywayError] = useState<string | null>(null);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const res = await fetch("/api/user/pagos");
-                const result = await res.json();
-                if (res.ok) {
-                    setData(result);
-                }
-            } catch (error) {
-                console.error("Error loading payments data:", error);
-            } finally {
-                setLoading(false);
+    const fetchData = async () => {
+        try {
+            const res = await fetch("/api/user/pagos");
+            const result = await res.json();
+            if (res.ok) {
+                setData(result);
             }
-        };
-        fetchData();
-    }, []);
+        } catch (error) {
+            console.error("Error loading payments data:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => { fetchData(); }, []);
+
+    async function pagarConPayway(tipo: "matricula_mensual" | "matricula_anual" | "deuda", ref: string, resultado: PaywayTokenResult) {
+        setPaywayError(null);
+        setPaywayProcesando(true);
+        try {
+            const res = await fetch("/api/payments/payway", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ tipo, ref, ...resultado }),
+            });
+            const respData = await res.json();
+            if (!res.ok) { setPaywayError(respData.error || "No se pudo procesar el pago."); return; }
+            if (!respData.aprobado) { setPaywayError(respData.mensaje || "El pago fue rechazado."); return; }
+            setPaywayModo(null);
+            await fetchData();
+        } catch {
+            setPaywayError("Error de conexión. Intentá de nuevo.");
+        } finally {
+            setPaywayProcesando(false);
+        }
+    }
 
     if (loading) {
         return (
@@ -205,21 +230,42 @@ export default function MatriculaStatus() {
                                 <p className="text-[11px] font-bold text-red-800/40 dark:text-red-400/40 uppercase tracking-widest mb-1">Total a Pagar</p>
                                 <p className="text-3xl font-black text-red-600 dark:text-red-400">${totalDeuda.toLocaleString()}</p>
                             </div>
-                            <div className="flex flex-col gap-2">
-                                <MpPayButton tipo="deuda" ref={data!.deudas.map((d) => d.id).join(",")} label="Pagar con Mercado Pago"
-                                    className="w-full h-12 px-6 bg-red-600 hover:bg-red-700 text-white rounded-2xl font-bold text-sm transition-all active:scale-95 shadow-lg shadow-red-600/20 flex items-center justify-center gap-2" />
-                                {data?.transferenciaHabilitada?.deuda && (
-                                    <TransferenciaPayButton tipo="deuda" ref={data!.deudas.map((d) => d.id).join(",")} monto={totalDeuda} label="Pagar con transferencia"
-                                        className="w-full h-12 px-6 bg-slate-700 hover:bg-slate-600 text-white rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-2" />
-                                )}
-                                {data?.boletas?.deuda && data?.boletaDescarga?.deuda !== false && (
-                                    <a href={data.boletas.deuda.archivo} target="_blank" rel="noopener noreferrer"
-                                        className="w-full h-10 px-4 bg-white dark:bg-slate-800 border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-2xl font-bold text-[12px] transition-all flex items-center justify-center gap-2">
-                                        <Download size={13} /> Descargar boleta
-                                    </a>
-                                )}
-                            </div>
+                            {paywayModo !== "deuda" && (
+                                <div className="flex flex-col gap-2">
+                                    <MpPayButton tipo="deuda" ref={data!.deudas.map((d) => d.id).join(",")} label="Pagar con Mercado Pago"
+                                        className="w-full h-12 px-6 bg-red-600 hover:bg-red-700 text-white rounded-2xl font-bold text-sm transition-all active:scale-95 shadow-lg shadow-red-600/20 flex items-center justify-center gap-2" />
+                                    <button type="button" onClick={() => { setPaywayModo("deuda"); setPaywayError(null); }}
+                                        className="w-full h-12 px-6 bg-slate-800 hover:bg-slate-700 text-white rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-2">
+                                        Pagar con tarjeta
+                                    </button>
+                                    {data?.transferenciaHabilitada?.deuda && (
+                                        <TransferenciaPayButton tipo="deuda" ref={data!.deudas.map((d) => d.id).join(",")} monto={totalDeuda} label="Pagar con transferencia"
+                                            className="w-full h-12 px-6 bg-slate-700 hover:bg-slate-600 text-white rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-2" />
+                                    )}
+                                    {data?.boletas?.deuda && data?.boletaDescarga?.deuda !== false && (
+                                        <a href={data.boletas.deuda.archivo} target="_blank" rel="noopener noreferrer"
+                                            className="w-full h-10 px-4 bg-white dark:bg-slate-800 border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-2xl font-bold text-[12px] transition-all flex items-center justify-center gap-2">
+                                            <Download size={13} /> Descargar boleta
+                                        </a>
+                                    )}
+                                </div>
+                            )}
                         </div>
+                        {paywayModo === "deuda" && (
+                            <div className="w-full space-y-2">
+                                <button type="button" onClick={() => { setPaywayModo(null); setPaywayError(null); }}
+                                    className="text-[12px] font-semibold text-red-400 hover:text-red-600">
+                                    ← Elegir otro medio de pago
+                                </button>
+                                <PaywayCardForm
+                                    seccion="deuda"
+                                    onToken={(r) => pagarConPayway("deuda", data!.deudas.map((d) => d.id).join(","), r)}
+                                    procesando={paywayProcesando}
+                                    error={paywayError}
+                                    montoLabel={`$${totalDeuda.toLocaleString()}`}
+                                />
+                            </div>
+                        )}
                     </div>
                 </div>
             ) : cuotaPendiente ? (
@@ -329,26 +375,48 @@ export default function MatriculaStatus() {
                                             <p className="text-[11px] font-bold text-slate-700 uppercase tracking-widest mb-1">Monto Final</p>
                                             <p className="text-3xl font-black text-black dark:text-white">${montoAnual.toLocaleString()}</p>
                                         </div>
-                                        <MpPayButton
-                                            tipo="matricula_anual"
-                                            ref="anual"
-                                            label="Pagar con Mercado Pago"
-                                            className="w-full h-12 px-6 bg-[#063f68] dark:bg-blue-600 text-white rounded-xl font-bold text-xs hover:bg-[#0a4d7a] dark:hover:bg-blue-500 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-                                        />
-                                        {data?.transferenciaHabilitada?.matricula_anual && (
-                                            <TransferenciaPayButton
-                                                tipo="matricula_anual"
-                                                ref="anual"
-                                                monto={montoAnual}
-                                                label="Pagar con transferencia"
-                                                className="w-full h-12 px-6 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2"
-                                            />
-                                        )}
-                                        {data?.boletas?.anual && data?.boletaDescarga?.anual !== false && (
-                                            <a href={data.boletas.anual.archivo} target="_blank" rel="noopener noreferrer"
-                                                className="w-full h-10 px-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/50 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-950/40 rounded-xl font-bold text-[12px] transition-all flex items-center justify-center gap-2">
-                                                <Download size={13} /> Descargar boleta
-                                            </a>
+                                        {paywayModo === "anual" ? (
+                                            <div className="space-y-2">
+                                                <button type="button" onClick={() => { setPaywayModo(null); setPaywayError(null); }}
+                                                    className="text-[12px] font-semibold text-slate-400 hover:text-slate-600">
+                                                    ← Elegir otro medio de pago
+                                                </button>
+                                                <PaywayCardForm
+                                                    seccion="matricula_anual"
+                                                    onToken={(r) => pagarConPayway("matricula_anual", "anual", r)}
+                                                    procesando={paywayProcesando}
+                                                    error={paywayError}
+                                                    montoLabel={`$${montoAnual.toLocaleString()}`}
+                                                />
+                                            </div>
+                                        ) : (
+                                            <>
+                                                <MpPayButton
+                                                    tipo="matricula_anual"
+                                                    ref="anual"
+                                                    label="Pagar con Mercado Pago"
+                                                    className="w-full h-12 px-6 bg-[#063f68] dark:bg-blue-600 text-white rounded-xl font-bold text-xs hover:bg-[#0a4d7a] dark:hover:bg-blue-500 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                                                />
+                                                <button type="button" onClick={() => { setPaywayModo("anual"); setPaywayError(null); }}
+                                                    className="w-full h-12 px-6 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2">
+                                                    Pagar con tarjeta
+                                                </button>
+                                                {data?.transferenciaHabilitada?.matricula_anual && (
+                                                    <TransferenciaPayButton
+                                                        tipo="matricula_anual"
+                                                        ref="anual"
+                                                        monto={montoAnual}
+                                                        label="Pagar con transferencia"
+                                                        className="w-full h-12 px-6 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2"
+                                                    />
+                                                )}
+                                                {data?.boletas?.anual && data?.boletaDescarga?.anual !== false && (
+                                                    <a href={data.boletas.anual.archivo} target="_blank" rel="noopener noreferrer"
+                                                        className="w-full h-10 px-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/50 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-950/40 rounded-xl font-bold text-[12px] transition-all flex items-center justify-center gap-2">
+                                                        <Download size={13} /> Descargar boleta
+                                                    </a>
+                                                )}
+                                            </>
                                         )}
                                     </div>
                                 )}
@@ -455,26 +523,48 @@ export default function MatriculaStatus() {
                                         <p className="text-[11px] font-bold text-slate-700 uppercase tracking-widest mb-1">Monto a Pagar</p>
                                         <p className="text-3xl font-black text-black dark:text-white">${data.cuotaActual.monto.toLocaleString()}</p>
                                     </div>
-                                    <MpPayButton
-                                        tipo="matricula_mensual"
-                                        ref={String(data.cuotaActual.id)}
-                                        label="Pagar con Mercado Pago"
-                                        className="w-full h-12 px-6 bg-emerald-600 text-white rounded-xl font-bold text-xs hover:bg-emerald-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-                                    />
-                                    {data?.transferenciaHabilitada?.matricula_mensual && (
-                                        <TransferenciaPayButton
-                                            tipo="matricula_mensual"
-                                            ref={String(data.cuotaActual.id)}
-                                            monto={data.cuotaActual.monto}
-                                            label="Pagar con transferencia"
-                                            className="w-full h-12 px-6 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2"
-                                        />
-                                    )}
-                                    {data?.boletas?.mensual && data?.boletaDescarga?.mensual !== false && (
-                                        <a href={data.boletas.mensual.archivo} target="_blank" rel="noopener noreferrer"
-                                            className="w-full h-10 px-4 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/50 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-950/40 rounded-xl font-bold text-[12px] transition-all flex items-center justify-center gap-2">
-                                            <Download size={13} /> Descargar boleta
-                                        </a>
+                                    {paywayModo === "mensual" ? (
+                                        <div className="space-y-2">
+                                            <button type="button" onClick={() => { setPaywayModo(null); setPaywayError(null); }}
+                                                className="text-[12px] font-semibold text-slate-400 hover:text-slate-600">
+                                                ← Elegir otro medio de pago
+                                            </button>
+                                            <PaywayCardForm
+                                                seccion="matricula_mensual"
+                                                onToken={(r) => pagarConPayway("matricula_mensual", String(data.cuotaActual!.id), r)}
+                                                procesando={paywayProcesando}
+                                                error={paywayError}
+                                                montoLabel={`$${data.cuotaActual.monto.toLocaleString()}`}
+                                            />
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <MpPayButton
+                                                tipo="matricula_mensual"
+                                                ref={String(data.cuotaActual.id)}
+                                                label="Pagar con Mercado Pago"
+                                                className="w-full h-12 px-6 bg-emerald-600 text-white rounded-xl font-bold text-xs hover:bg-emerald-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                                            />
+                                            <button type="button" onClick={() => { setPaywayModo("mensual"); setPaywayError(null); }}
+                                                className="w-full h-12 px-6 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2">
+                                                Pagar con tarjeta
+                                            </button>
+                                            {data?.transferenciaHabilitada?.matricula_mensual && (
+                                                <TransferenciaPayButton
+                                                    tipo="matricula_mensual"
+                                                    ref={String(data.cuotaActual.id)}
+                                                    monto={data.cuotaActual.monto}
+                                                    label="Pagar con transferencia"
+                                                    className="w-full h-12 px-6 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2"
+                                                />
+                                            )}
+                                            {data?.boletas?.mensual && data?.boletaDescarga?.mensual !== false && (
+                                                <a href={data.boletas.mensual.archivo} target="_blank" rel="noopener noreferrer"
+                                                    className="w-full h-10 px-4 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/50 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-950/40 rounded-xl font-bold text-[12px] transition-all flex items-center justify-center gap-2">
+                                                    <Download size={13} /> Descargar boleta
+                                                </a>
+                                            )}
+                                        </>
                                     )}
                                 </div>
                             ) : (
@@ -519,7 +609,7 @@ export default function MatriculaStatus() {
                             label={`Deuda vencida saldada — ${new Date(d.fechaPago).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric" })}`}
                             amount={d.monto.toLocaleString("es-AR")}
                             status="paid"
-                            metodo={d.metodoPago === "banelco" ? "home_banking" : d.metodoPago === "transferencia" ? "transferencia" : "mercadopago"}
+                            metodo={d.metodoPago === "banelco" ? "home_banking" : d.metodoPago === "transferencia" ? "transferencia" : d.metodoPago === "payway" ? "payway" : "mercadopago"}
                             isLast={i === data.deudasPagadas.length - 1}
                         />
                     ))}
@@ -544,7 +634,7 @@ function ConceptItem({ label, amount, status, metodo, isLast }: {
     label: string;
     amount: string;
     status: "paid" | "pending";
-    metodo?: "mercadopago" | "transferencia" | "home_banking" | "transferencia_pendiente" | "matriculacion" | null;
+    metodo?: "mercadopago" | "payway" | "transferencia" | "home_banking" | "transferencia_pendiente" | "matriculacion" | null;
     isLast?: boolean;
 }) {
     const paid = status === "paid";
@@ -563,6 +653,11 @@ function ConceptItem({ label, amount, status, metodo, isLast }: {
         if (metodo === "mercadopago") return (
             <span className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-700 dark:text-slate-400">
                 <CreditCard size={10} /> Mercado Pago
+            </span>
+        );
+        if (metodo === "payway") return (
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-700 dark:text-slate-400">
+                <CreditCard size={10} /> PayWay
             </span>
         );
         if (metodo === "transferencia_pendiente") return (
