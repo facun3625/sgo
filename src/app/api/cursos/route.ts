@@ -1,16 +1,19 @@
 export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { paywayDisponibleParaSeccion } from "@/lib/payway";
 
 // Listado público de cursos abiertos a no matriculados — sin sesión.
 export async function GET() {
-    const [cursos, transferenciaConfig] = await Promise.all([
+    const [cursos, transferenciaConfig, mpConfig, paywayHabilitado] = await Promise.all([
         prisma.curso.findMany({
             where: { activo: true, abiertoNoMatriculados: true },
             include: { opciones: true },
             orderBy: { fecha: "asc" },
         }),
         prisma.config.findUnique({ where: { clave: "transferencia_curso" } }),
+        prisma.config.findUnique({ where: { clave: "mpAccessToken" } }),
+        paywayDisponibleParaSeccion("curso"),
     ]);
 
     const data = cursos
@@ -39,5 +42,5 @@ export async function GET() {
         }))
         .filter(curso => curso.opciones.length > 0);
 
-    return NextResponse.json({ cursos: data, transferenciaHabilitada: transferenciaConfig?.valor === "1" });
+    return NextResponse.json({ cursos: data, transferenciaHabilitada: transferenciaConfig?.valor === "1", mpDisponible: !!mpConfig?.valor, paywayHabilitado });
 }

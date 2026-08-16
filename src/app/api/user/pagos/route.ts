@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { esMatriculadoJoven, esMatriculadoVeterano, esMatriculadoExento, calcularMesesSuspendidos, montoConDescuento } from "@/lib/matricula";
+import { paywayDisponibleParaSeccion } from "@/lib/payway";
 
 export async function GET() {
     try {
@@ -73,7 +74,7 @@ export async function GET() {
 
         const [configTransferenciaArr, cfgVeterano, cfgExento, historialSusp] = await Promise.all([
             prisma.config.findMany({
-                where: { clave: { in: ["transferencia_matricula_mensual", "transferencia_matricula_anual", "transferencia_deuda", "boletaDescargaMensual", "boletaDescargaAnual", "boletaDescargaDeuda"] } },
+                where: { clave: { in: ["transferencia_matricula_mensual", "transferencia_matricula_anual", "transferencia_deuda", "boletaDescargaMensual", "boletaDescargaAnual", "boletaDescargaDeuda", "mpAccessToken"] } },
             }),
             prisma.config.findUnique({ where: { clave: "beneficioVeterano" } }),
             prisma.config.findUnique({ where: { clave: "beneficioExento" } }),
@@ -161,6 +162,12 @@ export async function GET() {
             (boletasRaw as { tipo: string; periodo: string; archivo: string; factura: string | null }[])
                 .find(b => b.tipo === tipo) ?? null;
 
+        const [paywayMensual, paywayAnual, paywayDeuda] = await Promise.all([
+            paywayDisponibleParaSeccion("matricula_mensual"),
+            paywayDisponibleParaSeccion("matricula_anual"),
+            paywayDisponibleParaSeccion("deuda"),
+        ]);
+
         return NextResponse.json({
             deudas,
             cuotaActual,
@@ -179,6 +186,8 @@ export async function GET() {
             esVeterano: veterano,
             esExento: exento,
             totalDeuda: deudas.reduce((acc, curr) => acc + curr.monto, 0),
+            mpDisponible: !!tMap.mpAccessToken,
+            paywayDisponible: { matricula_mensual: paywayMensual, matricula_anual: paywayAnual, deuda: paywayDeuda },
             transferenciaHabilitada: {
                 matricula_mensual: tMap.transferencia_matricula_mensual === "1",
                 matricula_anual:   tMap.transferencia_matricula_anual   === "1",

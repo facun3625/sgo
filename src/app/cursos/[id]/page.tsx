@@ -47,6 +47,8 @@ export default function CursoPublicoDetailPage() {
     const params = useParams();
     const [curso, setCurso] = useState<Curso | null>(null);
     const [transferenciaHabilitada, setTransferenciaHabilitada] = useState(false);
+    const [mpDisponible, setMpDisponible] = useState(false);
+    const [paywayHabilitado, setPaywayHabilitado] = useState(false);
     const [loading, setLoading] = useState(true);
     const [notFound, setNotFound] = useState(false);
 
@@ -67,8 +69,10 @@ export default function CursoPublicoDetailPage() {
     useEffect(() => {
         fetch("/api/cursos")
             .then(r => r.json())
-            .then((data: { cursos: Curso[]; transferenciaHabilitada: boolean }) => {
+            .then((data: { cursos: Curso[]; transferenciaHabilitada: boolean; mpDisponible: boolean; paywayHabilitado: boolean }) => {
                 setTransferenciaHabilitada(!!data.transferenciaHabilitada);
+                setMpDisponible(!!data.mpDisponible);
+                setPaywayHabilitado(!!data.paywayHabilitado);
                 const found = data.cursos.find(c => c.id === Number(params.id));
                 if (!found) { setNotFound(true); return; }
                 setCurso(found);
@@ -245,15 +249,19 @@ export default function CursoPublicoDetailPage() {
                                 </div>
                                 {metodoPago === "elegir" && (
                                     <div className="flex flex-col gap-2 w-full sm:w-auto items-stretch mt-3 sm:mt-0">
-                                        <GuestMpPayButton
-                                            inscripcionId={inscripcion.id}
-                                            label="Pagar con Mercado Pago"
-                                            className="w-full h-11 px-6 bg-[#063f68] hover:bg-[#0a4d7a] text-white rounded-xl font-bold text-[14px] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-                                        />
-                                        <button type="button" onClick={() => setMetodoPago("payway")}
-                                            className="w-full h-11 px-6 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold text-[14px] transition-all flex items-center justify-center gap-2">
-                                            Pagar con tarjeta
-                                        </button>
+                                        {mpDisponible && (
+                                            <GuestMpPayButton
+                                                inscripcionId={inscripcion.id}
+                                                label="Pagar con Mercado Pago"
+                                                className="w-full h-11 px-6 bg-[#063f68] hover:bg-[#0a4d7a] text-white rounded-xl font-bold text-[14px] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                                            />
+                                        )}
+                                        {paywayHabilitado && (
+                                            <button type="button" onClick={() => setMetodoPago("payway")}
+                                                className="w-full h-11 px-6 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold text-[14px] transition-all flex items-center justify-center gap-2">
+                                                Pagar con tarjeta
+                                            </button>
+                                        )}
                                         {transferenciaHabilitada && (
                                             <GuestTransferenciaPayButton
                                                 inscripcionId={inscripcion.id}

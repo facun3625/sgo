@@ -51,6 +51,8 @@ interface PagosData {
     historialCuotas: CuotaMensualData[];
     montoAnual: number;
     showPagoAnual: boolean;
+    mpDisponible: boolean;
+    paywayDisponible: { matricula_mensual: boolean; matricula_anual: boolean; deuda: boolean };
     transferenciaHabilitada: { matricula_mensual: boolean; matricula_anual: boolean; deuda: boolean };
     hasDebitoAutomatico: boolean;
     hasDebitoEnTramite: boolean;
@@ -232,12 +234,16 @@ export default function MatriculaStatus() {
                             </div>
                             {paywayModo !== "deuda" && (
                                 <div className="flex flex-col gap-2">
-                                    <MpPayButton tipo="deuda" ref={data!.deudas.map((d) => d.id).join(",")} label="Pagar con Mercado Pago"
-                                        className="w-full h-12 px-6 bg-red-600 hover:bg-red-700 text-white rounded-2xl font-bold text-sm transition-all active:scale-95 shadow-lg shadow-red-600/20 flex items-center justify-center gap-2" />
-                                    <button type="button" onClick={() => { setPaywayModo("deuda"); setPaywayError(null); }}
-                                        className="w-full h-12 px-6 bg-slate-800 hover:bg-slate-700 text-white rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-2">
-                                        Pagar con tarjeta
-                                    </button>
+                                    {data?.mpDisponible && (
+                                        <MpPayButton tipo="deuda" ref={data!.deudas.map((d) => d.id).join(",")} label="Pagar con Mercado Pago"
+                                            className="w-full h-12 px-6 bg-red-600 hover:bg-red-700 text-white rounded-2xl font-bold text-sm transition-all active:scale-95 shadow-lg shadow-red-600/20 flex items-center justify-center gap-2" />
+                                    )}
+                                    {data?.paywayDisponible?.deuda && (
+                                        <button type="button" onClick={() => { setPaywayModo("deuda"); setPaywayError(null); }}
+                                            className="w-full h-12 px-6 bg-slate-800 hover:bg-slate-700 text-white rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-2">
+                                            Pagar con tarjeta
+                                        </button>
+                                    )}
                                     {data?.transferenciaHabilitada?.deuda && (
                                         <TransferenciaPayButton tipo="deuda" ref={data!.deudas.map((d) => d.id).join(",")} monto={totalDeuda} label="Pagar con transferencia"
                                             className="w-full h-12 px-6 bg-slate-700 hover:bg-slate-600 text-white rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-2" />
@@ -391,16 +397,20 @@ export default function MatriculaStatus() {
                                             </div>
                                         ) : (
                                             <>
-                                                <MpPayButton
-                                                    tipo="matricula_anual"
-                                                    ref="anual"
-                                                    label="Pagar con Mercado Pago"
-                                                    className="w-full h-12 px-6 bg-[#063f68] dark:bg-blue-600 text-white rounded-xl font-bold text-xs hover:bg-[#0a4d7a] dark:hover:bg-blue-500 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-                                                />
-                                                <button type="button" onClick={() => { setPaywayModo("anual"); setPaywayError(null); }}
-                                                    className="w-full h-12 px-6 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2">
-                                                    Pagar con tarjeta
-                                                </button>
+                                                {data?.mpDisponible && (
+                                                    <MpPayButton
+                                                        tipo="matricula_anual"
+                                                        ref="anual"
+                                                        label="Pagar con Mercado Pago"
+                                                        className="w-full h-12 px-6 bg-[#063f68] dark:bg-blue-600 text-white rounded-xl font-bold text-xs hover:bg-[#0a4d7a] dark:hover:bg-blue-500 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                                                    />
+                                                )}
+                                                {data?.paywayDisponible?.matricula_anual && (
+                                                    <button type="button" onClick={() => { setPaywayModo("anual"); setPaywayError(null); }}
+                                                        className="w-full h-12 px-6 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2">
+                                                        Pagar con tarjeta
+                                                    </button>
+                                                )}
                                                 {data?.transferenciaHabilitada?.matricula_anual && (
                                                     <TransferenciaPayButton
                                                         tipo="matricula_anual"
@@ -539,16 +549,20 @@ export default function MatriculaStatus() {
                                         </div>
                                     ) : (
                                         <>
-                                            <MpPayButton
-                                                tipo="matricula_mensual"
-                                                ref={String(data.cuotaActual.id)}
-                                                label="Pagar con Mercado Pago"
-                                                className="w-full h-12 px-6 bg-emerald-600 text-white rounded-xl font-bold text-xs hover:bg-emerald-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-                                            />
-                                            <button type="button" onClick={() => { setPaywayModo("mensual"); setPaywayError(null); }}
-                                                className="w-full h-12 px-6 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2">
-                                                Pagar con tarjeta
-                                            </button>
+                                            {data?.mpDisponible && (
+                                                <MpPayButton
+                                                    tipo="matricula_mensual"
+                                                    ref={String(data.cuotaActual.id)}
+                                                    label="Pagar con Mercado Pago"
+                                                    className="w-full h-12 px-6 bg-emerald-600 text-white rounded-xl font-bold text-xs hover:bg-emerald-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                                                />
+                                            )}
+                                            {data?.paywayDisponible?.matricula_mensual && (
+                                                <button type="button" onClick={() => { setPaywayModo("mensual"); setPaywayError(null); }}
+                                                    className="w-full h-12 px-6 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2">
+                                                    Pagar con tarjeta
+                                                </button>
+                                            )}
                                             {data?.transferenciaHabilitada?.matricula_mensual && (
                                                 <TransferenciaPayButton
                                                     tipo="matricula_mensual"

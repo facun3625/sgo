@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { PROVINCIAS_AR } from "@/lib/provincias-ar";
 
 type Ambiente = "developer" | "production";
 
@@ -66,18 +67,6 @@ export function marcaSoportadaPayway(marca: string): boolean {
     return marca.toLowerCase() in PAYWAY_PAYMENT_METHOD_ID;
 }
 
-// Cybersource exige el código de provincia (no el nombre) en bill_to/ship_to.state.
-// Tabla confirmada contra el README oficial del SDK de Payway.
-const PROVINCIA_CODIGO: Record<string, string> = {
-    "caba": "C", "ciudad autonoma de buenos aires": "C", "ciudad autónoma de buenos aires": "C",
-    "buenos aires": "B", "catamarca": "K", "chaco": "H", "chubut": "U",
-    "cordoba": "X", "córdoba": "X", "corrientes": "W", "entre rios": "R", "entre ríos": "R",
-    "formosa": "P", "jujuy": "Y", "la pampa": "L", "la rioja": "F", "mendoza": "M",
-    "misiones": "N", "neuquen": "Q", "neuquén": "Q", "rio negro": "R", "río negro": "R",
-    "salta": "A", "san juan": "J", "san luis": "D", "santa cruz": "Z", "santa fe": "S",
-    "santiago del estero": "G", "tierra del fuego": "V", "tucuman": "T", "tucumán": "T",
-};
-
 function normalizar(s: string): string {
     return s.trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
 }
@@ -88,13 +77,16 @@ function sinAcentos(s: string): string {
     return s.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/ñ/gi, m => (m === "ñ" ? "n" : "N"));
 }
 
+// Cybersource exige el código de provincia de 1 letra (no el nombre) en
+// bill_to/ship_to.state. El formulario de pago manda uno de los nombres exactos
+// de PROVINCIAS_AR (es un <select>, no texto libre), así que esto siempre matchea
+// — el fallback normalizado queda solo por las dudas de llamadas viejas/directas.
 export function codigoProvincia(provincia: string): string {
+    const exacto = PROVINCIAS_AR.find((p) => p.nombre === provincia);
+    if (exacto) return exacto.codigo;
     const normalizada = normalizar(provincia);
-    for (const [nombre, codigo] of Object.entries(PROVINCIA_CODIGO)) {
-        if (normalizar(nombre) === normalizada) return codigo;
-    }
-    // Si ya vino como código de 1 letra o no matcheó, se manda tal cual (mejor
-    // esfuerzo — Cybersource lo rechazará explícitamente si está mal).
+    const porNormalizado = PROVINCIAS_AR.find((p) => normalizar(p.nombre) === normalizada);
+    if (porNormalizado) return porNormalizado.codigo;
     return provincia.trim().length <= 2 ? provincia.trim().toUpperCase() : provincia.trim();
 }
 
