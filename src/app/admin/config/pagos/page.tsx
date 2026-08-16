@@ -13,7 +13,10 @@ const SECCIONES = [
     { key: "transferencia_ventas",            label: "Ventas (productos)" },
 ];
 
+type Tab = "mp" | "payway" | "transferencia";
+
 export default function ConfigPagosPage() {
+    const [tab, setTab] = useState<Tab>("mp");
     const [loading, setLoading] = useState(true);
     // MP
     const [mpTokenConfigurado, setMpTokenConfigurado] = useState(false);
@@ -124,11 +127,29 @@ export default function ConfigPagosPage() {
                 </div>
                 <div>
                     <h1 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">Métodos de Pago</h1>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">MercadoPago y transferencia bancaria</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">MercadoPago, PayWay y transferencia bancaria</p>
                 </div>
             </div>
 
+            {/* Tabs */}
+            <div className="flex items-center gap-1.5 border-b border-slate-100 dark:border-slate-800 -mt-4">
+                {([
+                    { key: "mp" as Tab, label: "Mercado Pago", activo: mpTokenConfigurado },
+                    { key: "payway" as Tab, label: "PayWay", activo: paywayHabilitado },
+                    { key: "transferencia" as Tab, label: "Transferencia", activo: Object.values(secciones).some(Boolean) },
+                ]).map((t) => (
+                    <button key={t.key} onClick={() => setTab(t.key)}
+                        className={`flex items-center gap-2 px-4 h-11 text-[13px] font-bold border-b-2 transition-all -mb-px ${tab === t.key
+                            ? "border-[#063f68] text-[#063f68] dark:text-blue-400 dark:border-blue-400"
+                            : "border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"}`}>
+                        {t.label}
+                        {t.activo && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="Activo" />}
+                    </button>
+                ))}
+            </div>
+
             {/* ── MERCADO PAGO ─────────────────────────────────────────────── */}
+            {tab === "mp" && (
             <div className="space-y-4">
                 <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                     <span className="w-4 h-px bg-slate-200 dark:bg-slate-700 flex-1" />
@@ -191,8 +212,10 @@ export default function ConfigPagosPage() {
                     </button>
                 </div>
             </div>
+            )}
 
             {/* ── PAYWAY ─────────────────────────────────────────────── */}
+            {tab === "payway" && (
             <div className="space-y-4">
                 <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                     <span className="w-4 h-px bg-slate-200 dark:bg-slate-700 flex-1" />
@@ -347,8 +370,10 @@ export default function ConfigPagosPage() {
                     </div>
                 </div>
             </div>
+            )}
 
             {/* ── TRANSFERENCIA ─────────────────────────────────────────────── */}
+            {tab === "transferencia" && (
             <div className="space-y-4">
                 <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                     <span className="w-4 h-px bg-slate-200 dark:bg-slate-700 flex-1" />
@@ -413,6 +438,7 @@ export default function ConfigPagosPage() {
                     </div>
                 </div>
             </div>
+            )}
         </div>
     );
 }
