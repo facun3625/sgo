@@ -4,7 +4,7 @@ type Ambiente = "developer" | "production";
 
 async function getPaywayConfig() {
     const configs = await prisma.config.findMany({
-        where: { clave: { in: ["paywaySiteId", "paywayPublicKey", "paywaySecretKey", "paywayAmbiente"] } },
+        where: { clave: { in: ["paywaySiteId", "paywayPublicKey", "paywaySecretKey", "paywayAmbiente", "paywayHabilitado"] } },
     });
     const map = Object.fromEntries(configs.map((c) => [c.clave, c.valor]));
     return {
@@ -12,6 +12,9 @@ async function getPaywayConfig() {
         publicKey: map.paywayPublicKey ?? "",
         secretKey: map.paywaySecretKey ?? "",
         ambiente: (map.paywayAmbiente === "production" ? "production" : "developer") as Ambiente,
+        // Interruptor explícito del admin — independiente de si las credenciales
+        // están cargadas. Apagado por defecto para no exponerlo sin querer.
+        habilitado: map.paywayHabilitado === "1",
     };
 }
 
@@ -24,16 +27,18 @@ function baseUrl(ambiente: Ambiente) {
         : "https://developers.decidir.com/api/v2";
 }
 
-export async function paywayHabilitado(): Promise<boolean> {
+// PayWay está realmente disponible para cobrar solo si las 3 credenciales están
+// cargadas Y el admin lo prendió explícitamente con el interruptor.
+export async function paywayDisponible(): Promise<boolean> {
     const cfg = await getPaywayConfig();
-    return !!(cfg.siteId && cfg.publicKey && cfg.secretKey);
+    return !!(cfg.siteId && cfg.publicKey && cfg.secretKey && cfg.habilitado);
 }
 
 // Config pública para que el checkout inicialice decidir.js en el navegador — nunca
-// incluye la secret key.
+// incluye la secret key. Devuelve null si no está disponible (sin credenciales o apagado).
 export async function getPaywayFrontendConfig(): Promise<{ publicKey: string; apiUrl: string } | null> {
     const cfg = await getPaywayConfig();
-    if (!cfg.publicKey) return null;
+    if (!cfg.publicKey || !cfg.habilitado) return null;
     return { publicKey: cfg.publicKey, apiUrl: baseUrl(cfg.ambiente) };
 }
 
@@ -114,7 +119,7 @@ export async function autorizarPagoPayway(params: {
     facturacion: DatosFacturacionPayway;
 }): Promise<PagoPaywayResultado> {
     const cfg = await getPaywayConfig();
-    if (!cfg.secretKey) throw new Error("PAYWAY_NOT_CONFIGURED");
+    if (!cfg.secretKey || !cfg.habilitado) throw new Error("PAYWAY_NOT_CONFIGURED");
 
     const paymentMethodId = PAYWAY_PAYMENT_METHOD_ID[params.marca.toLowerCase()];
     if (!paymentMethodId) throw new Error(`PAYWAY_MARCA_NO_SOPORTADA:${params.marca}`);

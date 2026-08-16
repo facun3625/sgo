@@ -19,6 +19,7 @@ export async function GET() {
         paywayPublicKeyConfigurado: !!map.paywayPublicKey,
         paywaySecretKeyConfigurado: !!map.paywaySecretKey,
         paywayAmbiente: map.paywayAmbiente === "production" ? "production" : "developer",
+        paywayHabilitado: map.paywayHabilitado === "1",
         cbu: map.cbu ?? "",
         alias: map.alias ?? "",
         transferencia_matricula_mensual: map.transferencia_matricula_mensual === "1",
