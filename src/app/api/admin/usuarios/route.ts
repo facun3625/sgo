@@ -11,12 +11,15 @@ export async function GET() {
     const session = await getSession();
     if (!session || !isAdmin(session.accessLevel)) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
-    const [datos, users] = await Promise.all([
+    const [datos, users, deudas] = await Promise.all([
         prisma.dato.findMany({ orderBy: [{ apellido: "asc" }, { nombre: "asc" }] }),
         prisma.user.findMany({ select: { expediente: true, status: true, cod: true } }),
+        prisma.deuda.findMany({ select: { expediente: true, monto: true } }),
     ]);
 
     const userMap = new Map(users.map(u => [u.expediente ?? u.cod, u]));
+    const deudaMap = new Map<string, number>();
+    for (const d of deudas) deudaMap.set(d.expediente, (deudaMap.get(d.expediente) ?? 0) + d.monto);
 
     const result = datos.map(d => {
         const u = userMap.get(d.expediente ?? "") || userMap.get(d.cod);
@@ -31,6 +34,7 @@ export async function GET() {
             emailLegal: d.emailLegal,
             status: u?.status ?? "active",
             tieneUsuario: !!u,
+            deudaTotal: deudaMap.get(d.expediente ?? "") ?? 0,
         };
     });
 

@@ -18,6 +18,7 @@ interface Usuario {
     emailLegal: string | null;
     status: string;
     tieneUsuario: boolean;
+    deudaTotal: number;
 }
 
 interface DatoCompleto {
@@ -168,6 +169,14 @@ export default function UsuariosAdminPage() {
         setEditForm(data);
         if (deudaRes.ok) setEditDeuda(await deudaRes.json());
         setLoadingEdit(false);
+    }
+
+    async function verDeuda(u: Usuario) {
+        const key = u.expediente || u.cod;
+        setEditDeuda(null);
+        setDeudaDetalleAbierto(true);
+        const res = await fetch(`/api/admin/usuarios/${encodeURIComponent(key)}/deuda`);
+        if (res.ok) setEditDeuda(await res.json());
     }
 
     function setF(field: keyof DatoCompleto, value: string) {
@@ -388,19 +397,19 @@ export default function UsuariosAdminPage() {
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden">
                     <div className="overflow-x-auto">
                         {/* Thead */}
-                        <div className="min-w-[780px] grid grid-cols-[100px_90px_70px_70px_1fr_120px_160px] gap-4 px-5 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
-                            {["Expediente", "Nº Cliente", "Tomo", "Folio", "Nombre y Apellido", "Estado", "Acciones"].map(h => (
+                        <div className="min-w-[900px] grid grid-cols-[100px_90px_70px_70px_1fr_120px_110px_160px] gap-4 px-5 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+                            {["Expediente", "Nº Cliente", "Tomo", "Folio", "Nombre y Apellido", "Estado", "Deuda", "Acciones"].map(h => (
                                 <p key={h} className="text-[10px] font-black uppercase tracking-widest text-slate-400">{h}</p>
                             ))}
                         </div>
 
-                        <div className="min-w-[780px] divide-y divide-slate-50 dark:divide-slate-800/60">
+                        <div className="min-w-[900px] divide-y divide-slate-50 dark:divide-slate-800/60">
                             {paginated.map(u => {
                                 const key = u.expediente || u.cod;
                                 const isSuspended = u.status === "suspended";
                                 return (
                                     <div key={u.cod}
-                                        className={`grid grid-cols-[100px_90px_70px_70px_1fr_120px_160px] gap-4 px-5 py-3.5 hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors items-center ${isSuspended ? "opacity-60" : ""}`}>
+                                        className={`grid grid-cols-[100px_90px_70px_70px_1fr_120px_110px_160px] gap-4 px-5 py-3.5 hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors items-center ${isSuspended ? "opacity-60" : ""}`}>
 
                                         <p className="text-[12px] font-bold text-slate-700 dark:text-slate-200 font-mono truncate">
                                             {u.expediente || <span className="text-slate-300 dark:text-slate-600 font-sans font-normal">—</span>}
@@ -426,6 +435,17 @@ export default function UsuariosAdminPage() {
                                                 {isSuspended ? "Suspendido" : "Habilitado"}
                                             </span>
                                             {!u.tieneUsuario && <p className="text-[9px] text-slate-300 dark:text-slate-600 mt-0.5">Sin acceso</p>}
+                                        </div>
+
+                                        <div>
+                                            {u.deudaTotal > 0 ? (
+                                                <button onClick={() => verDeuda(u)} title="Ver detalle de deuda"
+                                                    className="flex items-center gap-1 text-[12px] font-bold text-red-600 dark:text-red-400 hover:underline">
+                                                    <Wallet size={11} /> ${u.deudaTotal.toLocaleString("es-AR")}
+                                                </button>
+                                            ) : (
+                                                <span className="text-[12px] text-slate-300 dark:text-slate-600">—</span>
+                                            )}
                                         </div>
 
                                         <div className="flex items-center gap-1.5">
@@ -590,7 +610,7 @@ export default function UsuariosAdminPage() {
             )}
 
             {/* Modal Detalle de Deuda */}
-            {deudaDetalleAbierto && editDeuda && (
+            {deudaDetalleAbierto && (
                 <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4" onClick={() => setDeudaDetalleAbierto(false)}>
                     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 w-full max-w-md shadow-2xl"
                         onClick={e => e.stopPropagation()}>
@@ -601,20 +621,26 @@ export default function UsuariosAdminPage() {
                                 <X size={15} />
                             </button>
                         </div>
-                        <div className="max-h-[60vh] overflow-y-auto divide-y divide-slate-50 dark:divide-slate-800">
-                            {editDeuda.comprobantes.map((c, i) => (
-                                <div key={i} className="flex items-center justify-between px-5 py-3">
-                                    <p className="text-[13px] text-slate-600 dark:text-slate-400">
-                                        Vencimiento {new Date(c.fechaVencimiento).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "UTC" })}
-                                    </p>
-                                    <p className="text-[13px] font-bold text-slate-800 dark:text-white">${c.monto.toLocaleString("es-AR")}</p>
+                        {!editDeuda ? (
+                            <div className="flex justify-center py-12"><Loader2 size={20} className="animate-spin text-slate-300" /></div>
+                        ) : (
+                            <>
+                                <div className="max-h-[60vh] overflow-y-auto divide-y divide-slate-50 dark:divide-slate-800">
+                                    {editDeuda.comprobantes.map((c, i) => (
+                                        <div key={i} className="flex items-center justify-between px-5 py-3">
+                                            <p className="text-[13px] text-slate-600 dark:text-slate-400">
+                                                Vencimiento {new Date(c.fechaVencimiento).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "UTC" })}
+                                            </p>
+                                            <p className="text-[13px] font-bold text-slate-800 dark:text-white">${c.monto.toLocaleString("es-AR")}</p>
+                                        </div>
+                                    ))}
                                 </div>
-                            ))}
-                        </div>
-                        <div className="flex items-center justify-between px-5 py-4 border-t border-slate-100 dark:border-slate-800">
-                            <p className="text-[12px] font-bold text-slate-400 uppercase tracking-widest">Total</p>
-                            <p className="text-[15px] font-black text-red-600 dark:text-red-400">${editDeuda.total.toLocaleString("es-AR")}</p>
-                        </div>
+                                <div className="flex items-center justify-between px-5 py-4 border-t border-slate-100 dark:border-slate-800">
+                                    <p className="text-[12px] font-bold text-slate-400 uppercase tracking-widest">Total</p>
+                                    <p className="text-[15px] font-black text-red-600 dark:text-red-400">${editDeuda.total.toLocaleString("es-AR")}</p>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
             )}
