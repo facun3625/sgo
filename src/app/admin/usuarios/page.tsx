@@ -440,8 +440,9 @@ export default function UsuariosAdminPage() {
                                         <div>
                                             {u.deudaTotal > 0 ? (
                                                 <button onClick={() => verDeuda(u)} title="Ver detalle de deuda"
-                                                    className="flex items-center gap-1 text-[12px] font-bold text-red-600 dark:text-red-400 hover:underline">
+                                                    className="group flex items-center gap-1.5 pl-2 pr-2.5 py-1 -ml-2 rounded-lg text-[12px] font-bold text-red-600 dark:text-red-400 cursor-pointer hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
                                                     <Wallet size={11} /> ${u.deudaTotal.toLocaleString("es-AR")}
+                                                    <Eye size={12} className="text-red-400 dark:text-red-500/70 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors" />
                                                 </button>
                                             ) : (
                                                 <span className="text-[12px] text-slate-300 dark:text-slate-600">—</span>
