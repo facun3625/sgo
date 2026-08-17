@@ -41,6 +41,7 @@ import {
     ShieldCheck,
     Eye,
     Megaphone,
+    Building2,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { SessionPayload } from "@/lib/auth";
@@ -64,6 +65,7 @@ const navItems = [
     { href: "/admin/usuarios", label: "Usuarios", icon: Users, color: "text-indigo-500" },
     { href: "/admin/legajo", label: "Legajo", icon: BookUser, color: "text-teal-500" },
     { href: "/admin/gestionar-admins", label: "Gestionar Admins", icon: UserCog, color: "text-violet-500" },
+    { href: "/admin/dependencias", label: "Dependencias", icon: Building2, color: "text-emerald-600" },
     { href: "/admin/cuentas", label: "Cuentas Registradas", icon: ShieldCheck, color: "text-violet-400" },
     { href: "/admin/cursos", label: "Cursos", icon: GraduationCap, color: "text-pink-500" },
     { href: "/admin/noticias", label: "Actividades Institucionales", icon: Newspaper, color: "text-amber-500" },
@@ -139,7 +141,7 @@ export default function AdminShell({ session, image, permisos, children }: Admin
         if (item.href === "/admin") return true;
         const key = item.href.split("/")[2];
         if (!key) return true;
-        if (key === "gestionar-admins") return false;
+        if (key === "gestionar-admins" || key === "dependencias") return false;
         if (key === "solicitudes") {
             return permisos.includes("solicitudes") || permisos.some(p => p.startsWith("solicitudes:"));
         }
@@ -174,6 +176,39 @@ export default function AdminShell({ session, image, permisos, children }: Admin
     const isSuperAdmin = permisos === null;
     const roleLabel = isSuperAdmin ? "Superadmin" : "Admin";
     const roleLabelLong = isSuperAdmin ? "Superadministrador" : "Administrador";
+
+    // Cuentas de dependencia (cobradores): interfaz mínima, sin sidebar ni acceso
+    // a ninguna otra sección — el middleware ya las encierra en /admin/dependencias/cobrar.
+    if (session.dependenciaId) {
+        return (
+            <ToastProvider>
+            <div className="min-h-screen bg-[#f8fafc] dark:bg-[#02182b] transition-colors duration-300">
+                <nav className="h-16 bg-green-900 text-white px-4 md:px-8 flex items-center justify-between sticky top-0 z-40">
+                    <div className="flex items-center gap-3">
+                        <Image src="/sgo_nuevo.png" alt="SGO" width={28} height={28} className="object-contain" />
+                        <div>
+                            <p className="text-white font-bold text-[13px] leading-tight">{session.dependenciaNombre}</p>
+                            <p className="text-white/40 text-[9px] uppercase tracking-widest">Dependencia · Cobros</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        {mounted && (
+                            <button onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+                                className="p-2 text-white/70 hover:bg-white/10 hover:text-white rounded-xl transition-all">
+                                {resolvedTheme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+                            </button>
+                        )}
+                        <button onClick={handleLogout}
+                            className="flex items-center gap-2 px-3 h-9 rounded-xl text-white/80 hover:bg-white/10 hover:text-white text-[13px] font-semibold transition-all">
+                            <LogOut size={15} /> Cerrar sesión
+                        </button>
+                    </div>
+                </nav>
+                <main>{children}</main>
+            </div>
+            </ToastProvider>
+        );
+    }
 
     return (
         <ToastProvider>

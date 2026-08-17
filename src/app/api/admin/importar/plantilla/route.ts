@@ -16,7 +16,10 @@ const PLANTILLAS: Record<string, { filename: string; rows: string[][] }> = {
     },
     deudas: {
         filename: "plantilla_deudas.xlsx",
-        rows: [["expediente","monto"],["564","15000"],["792","8500"]],
+        rows: [
+            ["Fecha de vencimiento","Tipo comprobante","Nro. comprobante","Cliente","Importe Pendiente (CTE)","EXPEDIENTE (Adic.)","ESTADO (Adic.)","ZONA (Adic.)","SUBZONA (Adic.)"],
+            ["30/9/19","FAC","B0000200014684","97 - CRISTINI, MARIA VICTORIA","220","5827","ACTIVO","50","0"],
+        ],
     },
     pagoAnual: {
         filename: "plantilla_pago_anual.xlsx",

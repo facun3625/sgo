@@ -9,7 +9,11 @@ type TipoFinanciero = "deudas" | "pagoAnual" | "consultor";
 type Seccion = "matriculados" | "nuevos-matriculados" | "financiero" | "banelco" | "registros" | "fiadores" | "usuarios" | "adhesiones" | "suspensiones" | "tribunal";
 
 const FINANCIERO_CONFIG: Record<TipoFinanciero, { label: string; columnas: string[]; ejemplo: string }> = {
-    deudas: { label: "Deudas Vencidas", columnas: ["expediente", "monto"], ejemplo: "expediente,monto\n564,15000\n792,8500" },
+    deudas: {
+        label: "Deudas Vencidas",
+        columnas: ["Fecha de vencimiento", "Nro. comprobante", "Cliente", "Importe Pendiente (CTE)", "EXPEDIENTE (Adic.)"],
+        ejemplo: "Fecha de vencimiento,Tipo comprobante,Nro. comprobante,Cliente,Importe Pendiente (CTE),EXPEDIENTE (Adic.)\n30/9/19,FAC,B0000200014684,\"97 - CRISTINI, MARIA VICTORIA\",220,5827",
+    },
     pagoAnual: { label: "Pago Anual", columnas: ["expediente"], ejemplo: "expediente\n564\n792" },
     consultor: { label: "Consultores", columnas: ["expediente"], ejemplo: "expediente\n564\n792" },
 };
@@ -22,7 +26,13 @@ const PLANTILLA_CONTENT: Record<string, { filename: string; rows: string[][] }> 
             ["564","564","GARCIA","JUAN","12345678","1","100","AV SAN MARTIN 123","3000","SANTA FE","0342-123456","juan@email.com","","","","","","","","","","",""],
         ],
     },
-    deudas: { filename: "plantilla_deudas.xlsx", rows: [["expediente","monto"],["564","15000"],["792","8500"]] },
+    deudas: {
+        filename: "plantilla_deudas.xlsx",
+        rows: [
+            ["Fecha de vencimiento","Tipo comprobante","Nro. comprobante","Cliente","Importe Pendiente (CTE)","EXPEDIENTE (Adic.)","ESTADO (Adic.)","ZONA (Adic.)","SUBZONA (Adic.)"],
+            ["30/9/19","FAC","B0000200014684","97 - CRISTINI, MARIA VICTORIA","220","5827","ACTIVO","50","0"],
+        ],
+    },
     pagoAnual: { filename: "plantilla_pago_anual.xlsx", rows: [["expediente"],["564"],["792"]] },
     consultor: { filename: "plantilla_consultores.xlsx", rows: [["expediente"],["564"],["792"]] },
 };
@@ -329,7 +339,10 @@ export default function ImportarPage() {
             });
             const data = await res.json();
             if (res.ok) {
-                setFinResultado({ tipo: "success", mensaje: `${data.actualizados} registro${data.actualizados !== 1 ? "s" : ""} actualizado${data.actualizados !== 1 ? "s" : ""} en ${FINANCIERO_CONFIG[finTipo].label}.` });
+                const detalleComprobantes = finTipo === "deudas" && typeof data.comprobantes === "number"
+                    ? ` (${data.comprobantes} comprobante${data.comprobantes !== 1 ? "s" : ""})`
+                    : "";
+                setFinResultado({ tipo: "success", mensaje: `${data.actualizados} registro${data.actualizados !== 1 ? "s" : ""} actualizado${data.actualizados !== 1 ? "s" : ""} en ${FINANCIERO_CONFIG[finTipo].label}${detalleComprobantes}.` });
                 setFinRegistros([]); if (finFileRef.current) finFileRef.current.value = "";
             } else {
                 setFinResultado({ tipo: "error", mensaje: data.error ?? "Error al importar" });

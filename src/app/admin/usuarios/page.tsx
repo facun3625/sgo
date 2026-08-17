@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import {
     Users, Search, Loader2,
-    Send, X, CheckCircle2, XCircle, Pencil, Trash2, ShieldAlert, UserPlus, Eye, EyeOff
+    Send, X, CheckCircle2, XCircle, Pencil, Trash2, ShieldAlert, UserPlus, Eye, EyeOff, Wallet
 } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 
@@ -34,6 +34,8 @@ interface DatoCompleto {
 }
 
 interface MensajeModal { expediente: string; nombre: string; apellido: string; }
+
+interface DeudaInfo { total: number; comprobantes: { fechaVencimiento: string; monto: number }[]; }
 
 const Field = ({ label, value, onChange, type = "text", placeholder = "" }: {
     label: string; value: string; onChange: (v: string) => void;
@@ -83,6 +85,8 @@ export default function UsuariosAdminPage() {
     const [editForm, setEditForm] = useState<DatoCompleto | null>(null);
     const [loadingEdit, setLoadingEdit] = useState(false);
     const [savingEdit, setSavingEdit] = useState(false);
+    const [editDeuda, setEditDeuda] = useState<DeudaInfo | null>(null);
+    const [deudaDetalleAbierto, setDeudaDetalleAbierto] = useState(false);
 
     useEffect(() => {
         fetch("/api/admin/usuarios")
@@ -154,10 +158,15 @@ export default function UsuariosAdminPage() {
         const key = u.expediente || u.cod;
         setLoadingEdit(true);
         setEditModal(null);
-        const res = await fetch(`/api/admin/usuarios/${encodeURIComponent(key)}/datos`);
+        setEditDeuda(null);
+        const [res, deudaRes] = await Promise.all([
+            fetch(`/api/admin/usuarios/${encodeURIComponent(key)}/datos`),
+            fetch(`/api/admin/usuarios/${encodeURIComponent(key)}/deuda`),
+        ]);
         const data = await res.json();
         setEditModal(data);
         setEditForm(data);
+        if (deudaRes.ok) setEditDeuda(await deudaRes.json());
         setLoadingEdit(false);
     }
 
@@ -476,7 +485,7 @@ export default function UsuariosAdminPage() {
 
             {/* Modal Editar Datos */}
             {(editModal || loadingEdit) && editForm && (
-                <div className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center p-4 overflow-y-auto" onClick={() => { setEditModal(null); setEditForm(null); }}>
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center p-4 overflow-y-auto" onClick={() => { setEditModal(null); setEditForm(null); setEditDeuda(null); setDeudaDetalleAbierto(false); }}>
                     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 w-full max-w-2xl shadow-2xl my-8"
                         onClick={e => e.stopPropagation()}>
 
@@ -489,7 +498,7 @@ export default function UsuariosAdminPage() {
                                     {editForm.apellido}, {editForm.nombre}
                                 </p>
                             </div>
-                            <button onClick={() => { setEditModal(null); setEditForm(null); }}
+                            <button onClick={() => { setEditModal(null); setEditForm(null); setEditDeuda(null); setDeudaDetalleAbierto(false); }}
                                 className="w-8 h-8 flex items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
                                 <X size={15} />
                             </button>
@@ -511,6 +520,23 @@ export default function UsuariosAdminPage() {
                                         onChange={v => setF("fechaMatriculacion", v)} />
                                 </div>
                             </Section>
+
+                            {editDeuda && editDeuda.total > 0 && (
+                                <Section title="Deuda">
+                                    <div className="flex items-center justify-between p-3 rounded-xl bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30">
+                                        <div>
+                                            <p className="text-[11px] text-red-700/60 dark:text-red-400/50 font-semibold uppercase tracking-wide">Total pendiente</p>
+                                            <p className="text-lg font-black text-red-600 dark:text-red-400">${editDeuda.total.toLocaleString("es-AR")}</p>
+                                        </div>
+                                        {editDeuda.comprobantes.length > 0 && (
+                                            <button type="button" onClick={() => setDeudaDetalleAbierto(true)}
+                                                className="flex items-center gap-1.5 h-8 px-3 rounded-lg bg-white dark:bg-slate-800 border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-400 text-[12px] font-semibold hover:bg-red-50 dark:hover:bg-red-950/30 transition-all">
+                                                <Wallet size={13} /> Ver detalle
+                                            </button>
+                                        )}
+                                    </div>
+                                </Section>
+                            )}
 
                             <Section title="Identificación">
                                 <div className="grid grid-cols-2 gap-3">
@@ -550,7 +576,7 @@ export default function UsuariosAdminPage() {
                         </div>
 
                         <div className="flex gap-3 px-6 py-4 border-t border-slate-100 dark:border-slate-800">
-                            <button onClick={() => { setEditModal(null); setEditForm(null); }}
+                            <button onClick={() => { setEditModal(null); setEditForm(null); setEditDeuda(null); setDeudaDetalleAbierto(false); }}
                                 className="flex-1 h-10 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-[13px] font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
                                 Cancelar
                             </button>
@@ -558,6 +584,36 @@ export default function UsuariosAdminPage() {
                                 className="flex-1 flex items-center justify-center gap-2 h-10 bg-indigo-600 text-white rounded-xl text-[13px] font-bold hover:bg-indigo-700 disabled:opacity-50 transition-all">
                                 {savingEdit ? <><Loader2 size={14} className="animate-spin" /> Guardando...</> : "Guardar cambios"}
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal Detalle de Deuda */}
+            {deudaDetalleAbierto && editDeuda && (
+                <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4" onClick={() => setDeudaDetalleAbierto(false)}>
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 w-full max-w-md shadow-2xl"
+                        onClick={e => e.stopPropagation()}>
+                        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800">
+                            <p className="text-[14px] font-bold text-slate-800 dark:text-white">Detalle de la deuda</p>
+                            <button onClick={() => setDeudaDetalleAbierto(false)}
+                                className="w-8 h-8 flex items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
+                                <X size={15} />
+                            </button>
+                        </div>
+                        <div className="max-h-[60vh] overflow-y-auto divide-y divide-slate-50 dark:divide-slate-800">
+                            {editDeuda.comprobantes.map((c, i) => (
+                                <div key={i} className="flex items-center justify-between px-5 py-3">
+                                    <p className="text-[13px] text-slate-600 dark:text-slate-400">
+                                        Vencimiento {new Date(c.fechaVencimiento).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "UTC" })}
+                                    </p>
+                                    <p className="text-[13px] font-bold text-slate-800 dark:text-white">${c.monto.toLocaleString("es-AR")}</p>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="flex items-center justify-between px-5 py-4 border-t border-slate-100 dark:border-slate-800">
+                            <p className="text-[12px] font-bold text-slate-400 uppercase tracking-widest">Total</p>
+                            <p className="text-[15px] font-black text-red-600 dark:text-red-400">${editDeuda.total.toLocaleString("es-AR")}</p>
                         </div>
                     </div>
                 </div>

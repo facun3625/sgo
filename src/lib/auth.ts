@@ -14,6 +14,8 @@ export interface SessionPayload {
     apellido: string;
     accessLevel: string;
     permisos?: string[];
+    dependenciaId?: number;
+    dependenciaNombre?: string;
     _impersonando?: boolean;
     _impersonadoPor?: string;
 }

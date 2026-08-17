@@ -62,7 +62,7 @@ export async function GET() {
                 where: { expediente },
                 orderBy: { fechaPago: "desc" },
                 take: 10,
-                select: { id: true, monto: true, metodoPago: true, fechaPago: true },
+                select: { id: true, monto: true, metodoPago: true, fechaPago: true, dependenciaId: true },
             }),
             (prisma as any).facturaSantaFe.findMany({
                 where: { expediente },
@@ -107,10 +107,21 @@ export async function GET() {
         });
         const mapPPHistorial = new Map(pagosPendientesHistorial.map((pp) => [pp.ref, pp.estado]));
 
-        type MetodoCuota = "mercadopago" | "payway" | "transferencia" | "home_banking" | "banelco" | "transferencia_pendiente" | "matriculacion" | null;
+        type MetodoCuota = "mercadopago" | "payway" | "transferencia" | "home_banking" | "banelco" | "efectivo" | "transferencia_pendiente" | "matriculacion" | null;
+
+        const dependenciaIds = [
+            ...historialCuotasRaw.map((c) => (c as { dependenciaId?: number | null }).dependenciaId),
+            ...deudasPagadas.map((d) => d.dependenciaId),
+            (cuotaActual as { dependenciaId?: number | null } | null)?.dependenciaId,
+        ].filter((id): id is number => id != null);
+        const dependenciasMap = dependenciaIds.length > 0
+            ? new Map((await prisma.dependencia.findMany({ where: { id: { in: [...new Set(dependenciaIds)] } }, select: { id: true, nombre: true } })).map((d) => [d.id, d.nombre]))
+            : new Map<number, string>();
+
         const historialCuotas = historialCuotasRaw.map((c) => {
             const ppEstado = mapPPHistorial.get(String(c.id));
             const mp = (c as { metodoPago?: string }).metodoPago;
+            const depId = (c as { dependenciaId?: number | null }).dependenciaId;
             let metodo: MetodoCuota = null;
             if (c.estado === "pagado") {
                 if (mp === "banelco") metodo = "banelco";
@@ -118,12 +129,13 @@ export async function GET() {
                 else if (mp === "transferencia") metodo = "transferencia";
                 else if (mp === "mercadopago") metodo = "mercadopago";
                 else if (mp === "payway") metodo = "payway";
+                else if (mp === "efectivo") metodo = "efectivo";
                 else if (mp === "matriculacion") metodo = "matriculacion";
                 else metodo = ppEstado === "aprobado" ? "transferencia" : "mercadopago";
             } else if (ppEstado === "pendiente") {
                 metodo = "transferencia_pendiente";
             }
-            return { ...c, metodo };
+            return { ...c, metodo, dependenciaNombre: depId ? (dependenciasMap.get(depId) ?? null) : null };
         });
 
         // Débito activo solo si hay adhesión aprobada y no hay cancelación aprobada
@@ -162,15 +174,22 @@ export async function GET() {
             (boletasRaw as { tipo: string; periodo: string; archivo: string; factura: string | null }[])
                 .find(b => b.tipo === tipo) ?? null;
 
-        const [paywayMensual, paywayAnual, paywayDeuda] = await Promise.all([
+        const [paywayMensual, paywayAnual, paywayDeuda, deudaComprobantes] = await Promise.all([
             paywayDisponibleParaSeccion("matricula_mensual"),
             paywayDisponibleParaSeccion("matricula_anual"),
             paywayDisponibleParaSeccion("deuda"),
+            prisma.deudaComprobante.findMany({
+                where: { expediente },
+                orderBy: { fechaVencimiento: "asc" },
+                select: { fechaVencimiento: true, monto: true },
+            }),
         ]);
+
+        const cuotaActualDepId = (cuotaActual as { dependenciaId?: number | null } | null)?.dependenciaId;
 
         return NextResponse.json({
             deudas,
-            cuotaActual,
+            cuotaActual: cuotaActual ? { ...cuotaActual, dependenciaNombre: cuotaActualDepId ? (dependenciasMap.get(cuotaActualDepId) ?? null) : null } : null,
             historialCuotas,
             montoAnual,
             showPagoAnual,
@@ -180,12 +199,13 @@ export async function GET() {
             hasDebitoRechazado: !debitoActivo && !debitoPendiente && !!debitoRechazado,
             motivoRechazoDebito: debitoRechazado?.motivo ?? null,
             hasPagoAnualActivo: !!pagoAnual,
-            deudasPagadas,
+            deudasPagadas: deudasPagadas.map((d) => ({ ...d, dependenciaNombre: d.dependenciaId ? (dependenciasMap.get(d.dependenciaId) ?? null) : null })),
             esConsultor,
             esJoven: joven,
             esVeterano: veterano,
             esExento: exento,
             totalDeuda: deudas.reduce((acc, curr) => acc + curr.monto, 0),
+            deudaComprobantes,
             mpDisponible: !!tMap.mpAccessToken,
             paywayDisponible: { matricula_mensual: paywayMensual, matricula_anual: paywayAnual, deuda: paywayDeuda },
             transferenciaHabilitada: {

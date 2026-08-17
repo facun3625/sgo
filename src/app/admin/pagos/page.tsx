@@ -5,7 +5,7 @@ import {
     Loader2, Search, CreditCard, Landmark, Clock,
     CheckCircle2, AlertTriangle, XCircle, ChevronUp, ChevronDown,
     ExternalLink, TrendingUp, Users, CircleDollarSign, FileX,
-    Wifi, Calendar, Download, FileSpreadsheet,
+    Wifi, Calendar, Download, FileSpreadsheet, Wallet,
 } from "lucide-react";
 import Link from "next/link";
 import * as XLSX from "xlsx";
@@ -16,7 +16,8 @@ interface CuotaInfo {
     monto: number;
     estado: string;
     fechaPago: string | null;
-    metodo: "mercadopago" | "transferencia" | "home_banking" | "banelco" | "transferencia_pendiente" | null;
+    metodo: "mercadopago" | "transferencia" | "home_banking" | "banelco" | "efectivo" | "payway" | "transferencia_pendiente" | null;
+    dependenciaNombre?: string | null;
 }
 
 interface UsuarioPago {
@@ -42,6 +43,8 @@ interface Stats {
     pagadasPorTransferencia: number;
     pagadasPorHomeBanking: number;
     pagadasPorBanelco: number;
+    pagadasPorEfectivo: number;
+    pagadasPorPayway: number;
     totalRecaudado: number;
     totalRecaudadoDeudas: number;
     totalRecaudadoGeneral: number;
@@ -51,7 +54,7 @@ interface Stats {
 
 interface FilaContable {
     id: number;
-    tipo: "deuda" | "cuota_mp";
+    tipo: "deuda" | "cuota_mp" | "anual";
     metodoPago: string;
     exportado: boolean;
     nroRecibo: string;
@@ -62,13 +65,14 @@ interface FilaContable {
     fechaCobro: string | null;
     importe: number;
     nroComprobante: string;
+    dependencia: string;
 }
 
 type Filtro = "todos" | "deuda" | "cuota_pendiente" | "al_dia" | "sin_cuota";
 type SortKey = "nombre" | "cuota" | "deuda";
 type SortDir = "asc" | "desc";
-type TipoContable = "todos" | "deudas" | "cuotas";
-type MetodoPago = "" | "mercadopago" | "banelco" | "transferencia" | "home_banking";
+type TipoContable = "todos" | "deudas" | "cuotas" | "anual";
+type MetodoPago = "" | "mercadopago" | "banelco" | "transferencia" | "home_banking" | "efectivo";
 type Vista = "matriculados" | "contabilidad";
 
 function mesActual() {
@@ -111,6 +115,8 @@ function CuotaBadge({ cuota, cobertura }: { cuota: CuotaInfo | null; cobertura: 
                 {cuota.metodo === "transferencia" ? <><Landmark size={11} /> Transferencia</> :
                  cuota.metodo === "home_banking" ? <><Landmark size={11} /> Home Banking</> :
                  cuota.metodo === "banelco" ? <><Landmark size={11} /> Banelco</> :
+                 cuota.metodo === "efectivo" ? <><Wallet size={11} /> Efectivo{cuota.dependenciaNombre ? ` — ${cuota.dependenciaNombre}` : ""}</> :
+                 cuota.metodo === "payway" ? <><CreditCard size={11} /> PayWay</> :
                  <><CreditCard size={11} /> Mercado Pago</>}
             </span>
         );
@@ -184,13 +190,14 @@ function ContabilidadView({ stats, pctPagado }: { stats: Stats | null; pctPagado
             "Tipo Comprobante": "FAC",
             "Número comprobante": f.nroComprobante,
             "Fecha vencimiento": fechaVencimiento,
+            "Dependencia": f.dependencia || "",
         }));
 
         const wb = XLSX.utils.book_new();
         const ws = XLSX.utils.json_to_sheet(filasDatos);
-        ws["!cols"] = [{ wch: 16 }, { wch: 12 }, { wch: 14 }, { wch: 14 }, { wch: 18 }, { wch: 20 }, { wch: 18 }];
+        ws["!cols"] = [{ wch: 16 }, { wch: 12 }, { wch: 14 }, { wch: 14 }, { wch: 18 }, { wch: 20 }, { wch: 18 }, { wch: 18 }];
         XLSX.utils.book_append_sheet(wb, ws, "Registros");
-        const tipoLabel = tipo === "deudas" ? "Deuda" : tipo === "cuotas" ? "Cuotas" : "Todos";
+        const tipoLabel = tipo === "deudas" ? "Deuda" : tipo === "cuotas" ? "Cuotas" : tipo === "anual" ? "Anual" : "Todos";
         const hoy = new Date();
         const fechaHoy = `${hoy.getFullYear()}${String(hoy.getMonth() + 1).padStart(2, "0")}${String(hoy.getDate()).padStart(2, "0")}`;
         XLSX.writeFile(wb, `MPAgoSGO_${tipoLabel}_${y}_${m}_${fechaHoy}.xlsx`);
@@ -215,6 +222,7 @@ function ContabilidadView({ stats, pctPagado }: { stats: Stats | null; pctPagado
         { key: "todos", label: "Todos" },
         { key: "deudas", label: "Deudas Vencidas" },
         { key: "cuotas", label: "Cuotas mensuales" },
+        { key: "anual", label: "Matrícula Anual" },
     ];
 
     const METODOS: { key: MetodoPago; label: string }[] = [
@@ -223,6 +231,7 @@ function ContabilidadView({ stats, pctPagado }: { stats: Stats | null; pctPagado
         { key: "banelco", label: "Banelco" },
         { key: "transferencia", label: "Transferencia" },
         { key: "home_banking", label: "Home Banking" },
+        { key: "efectivo", label: "Efectivo (Dependencias)" },
     ];
 
     return (
@@ -240,7 +249,7 @@ function ContabilidadView({ stats, pctPagado }: { stats: Stats | null; pctPagado
                     <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                         <div className="h-full bg-emerald-500 rounded-full transition-all duration-500" style={{ width: `${pctPagado}%` }} />
                     </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
                         <div>
                             <p className="text-[11px] text-slate-400 uppercase tracking-wide font-semibold mb-0.5">Total recaudado</p>
                             <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
@@ -256,10 +265,10 @@ function ContabilidadView({ stats, pctPagado }: { stats: Stats | null; pctPagado
                             </p>
                         </div>
                         <div>
-                            <p className="text-[11px] text-slate-400 uppercase tracking-wide font-semibold mb-0.5">Mercado Pago</p>
+                            <p className="text-[11px] text-slate-400 uppercase tracking-wide font-semibold mb-0.5">Tarjeta (MP / PayWay)</p>
                             <div className="flex items-center gap-2">
                                 <CreditCard size={14} className="text-[#009ee3]" />
-                                <p className="text-2xl font-black text-slate-800 dark:text-white">{stats.pagadasPorMP}</p>
+                                <p className="text-2xl font-black text-slate-800 dark:text-white">{stats.pagadasPorMP + (stats.pagadasPorPayway ?? 0)}</p>
                             </div>
                         </div>
                         <div>
@@ -274,6 +283,13 @@ function ContabilidadView({ stats, pctPagado }: { stats: Stats | null; pctPagado
                             <div className="flex items-center gap-2">
                                 <Landmark size={14} className="text-violet-500" />
                                 <p className="text-2xl font-black text-slate-800 dark:text-white">{(stats.pagadasPorBanelco ?? 0) + (stats.pagadasPorHomeBanking ?? 0)}</p>
+                            </div>
+                        </div>
+                        <div>
+                            <p className="text-[11px] text-slate-400 uppercase tracking-wide font-semibold mb-0.5">Efectivo (Dependencias)</p>
+                            <div className="flex items-center gap-2">
+                                <Wallet size={14} className="text-emerald-500" />
+                                <p className="text-2xl font-black text-slate-800 dark:text-white">{stats.pagadasPorEfectivo ?? 0}</p>
                             </div>
                         </div>
                     </div>
@@ -395,7 +411,7 @@ function ContabilidadView({ stats, pctPagado }: { stats: Stats | null; pctPagado
                                                 className="w-4 h-4 rounded accent-[#063f68]"
                                             />
                                         </th>
-                                        {["Nro. Recibo", "Expediente", "Apellido y Nombre", "Cliente", "Tipo", "Fecha cobro", "Importe en $", "Estado"].map((h) => (
+                                        {["Nro. Recibo", "Expediente", "Apellido y Nombre", "Cliente", "Tipo", "Dependencia", "Fecha cobro", "Importe en $", "Estado"].map((h) => (
                                             <th key={h} className="px-4 py-3 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wide whitespace-nowrap">{h}</th>
                                         ))}
                                     </tr>
@@ -434,17 +450,23 @@ function ContabilidadView({ stats, pctPagado }: { stats: Stats | null; pctPagado
                                                         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold w-fit
                                                             ${f.tipo === "deuda"
                                                                 ? "bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400"
+                                                                : f.tipo === "anual"
+                                                                ? "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
                                                                 : "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400"}`}>
-                                                            {f.tipo === "deuda" ? "Deuda" : "Cuota mensual"}
+                                                            {f.tipo === "deuda" ? "Deuda" : f.tipo === "anual" ? "Matrícula anual" : "Cuota mensual"}
                                                         </span>
                                                         <span className="text-[10px] text-slate-400 font-medium pl-0.5">
                                                             {f.metodoPago === "mercadopago" ? "MercadoPago" :
                                                              f.metodoPago === "banelco" ? "Banelco" :
                                                              f.metodoPago === "transferencia" ? "Transferencia" :
                                                              f.metodoPago === "home_banking" ? "Home Banking" :
+                                                             f.metodoPago === "efectivo" ? "Efectivo" :
                                                              f.metodoPago || "—"}
                                                         </span>
                                                     </div>
+                                                </td>
+                                                <td className="px-4 py-3 text-[12px] text-slate-500">
+                                                    {f.dependencia || "—"}
                                                 </td>
                                                 <td className="px-4 py-3 text-[12px] text-slate-500">
                                                     {fmtFecha(f.fechaCobro)}
@@ -649,7 +671,7 @@ export default function PagosAdminPage() {
                                 />
                             </div>
 
-                            <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
                                 <div>
                                     <p className="text-[11px] text-slate-400 uppercase tracking-wide font-semibold mb-0.5">Total recaudado</p>
                                     <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
@@ -665,10 +687,10 @@ export default function PagosAdminPage() {
                                     </p>
                                 </div>
                                 <div>
-                                    <p className="text-[11px] text-slate-400 uppercase tracking-wide font-semibold mb-0.5">Mercado Pago</p>
+                                    <p className="text-[11px] text-slate-400 uppercase tracking-wide font-semibold mb-0.5">Tarjeta (MP / PayWay)</p>
                                     <div className="flex items-center gap-2">
                                         <CreditCard size={14} className="text-[#009ee3]" />
-                                        <p className="text-2xl font-black text-slate-800 dark:text-white">{stats.pagadasPorMP}</p>
+                                        <p className="text-2xl font-black text-slate-800 dark:text-white">{stats.pagadasPorMP + (stats.pagadasPorPayway ?? 0)}</p>
                                     </div>
                                 </div>
                                 <div>
@@ -683,6 +705,13 @@ export default function PagosAdminPage() {
                                     <div className="flex items-center gap-2">
                                         <Landmark size={14} className="text-violet-500" />
                                         <p className="text-2xl font-black text-slate-800 dark:text-white">{(stats.pagadasPorBanelco ?? 0) + (stats.pagadasPorHomeBanking ?? 0)}</p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p className="text-[11px] text-slate-400 uppercase tracking-wide font-semibold mb-0.5">Efectivo (Dependencias)</p>
+                                    <div className="flex items-center gap-2">
+                                        <Wallet size={14} className="text-emerald-500" />
+                                        <p className="text-2xl font-black text-slate-800 dark:text-white">{stats.pagadasPorEfectivo ?? 0}</p>
                                     </div>
                                 </div>
                             </div>

@@ -114,13 +114,15 @@ export async function GET() {
     const totalRecaudado = cuotasPagadas.reduce((acc, c) => acc + c.monto, 0);
     const pagadasPorBanelco = cuotasPagadas.filter((c) => c.metodoPago === "banelco").length;
     const pagadasPorHomeBanking = cuotasPagadas.filter((c) => c.metodoPago === "home_banking").length;
+    const pagadasPorEfectivo = cuotasPagadas.filter((c) => c.metodoPago === "efectivo").length;
+    const pagadasPorPayway = cuotasPagadas.filter((c) => c.metodoPago === "payway").length;
     const pagadasPorTransferencia = cuotasPagadas.filter((c) => {
         if (c.metodoPago === "transferencia") return true;
-        if (c.metodoPago === "mercadopago" || c.metodoPago === "home_banking" || c.metodoPago === "banelco") return false;
+        if (c.metodoPago === "mercadopago" || c.metodoPago === "home_banking" || c.metodoPago === "banelco" || c.metodoPago === "efectivo" || c.metodoPago === "payway") return false;
         const ppEstado = mapMetodoByCuotaId.get(String(c.id));
         return ppEstado === "aprobado";
     }).length;
-    const pagadasPorMP = cuotasPagadas.length - pagadasPorTransferencia - pagadasPorHomeBanking - pagadasPorBanelco;
+    const pagadasPorMP = cuotasPagadas.length - pagadasPorTransferencia - pagadasPorHomeBanking - pagadasPorBanelco - pagadasPorEfectivo - pagadasPorPayway;
     const totalDeudaAcumulada = [...mapDeudas.values()].reduce((acc, d) => acc + d.total, 0);
 
     const stats = {
@@ -135,6 +137,8 @@ export async function GET() {
         pagadasPorTransferencia,
         pagadasPorHomeBanking,
         pagadasPorBanelco,
+        pagadasPorEfectivo,
+        pagadasPorPayway,
         totalRecaudado,
         totalRecaudadoDeudas,
         totalRecaudadoGeneral: totalRecaudado + totalRecaudadoDeudas,
@@ -144,7 +148,12 @@ export async function GET() {
     };
 
     type Cobertura = "mensual" | "debito" | "anual";
-    type MetodoCuota = "mercadopago" | "transferencia" | "home_banking" | "banelco" | "transferencia_pendiente" | null;
+    type MetodoCuota = "mercadopago" | "transferencia" | "home_banking" | "banelco" | "efectivo" | "payway" | "transferencia_pendiente" | null;
+
+    const dependenciaIds = [...new Set(cuotas.map((c) => c.dependenciaId).filter((id): id is number => id != null))];
+    const dependenciasMap = dependenciaIds.length > 0
+        ? new Map((await prisma.dependencia.findMany({ where: { id: { in: dependenciaIds } }, select: { id: true, nombre: true } })).map((dep) => [dep.id, dep.nombre]))
+        : new Map<number, string>();
 
     const resultado = datos.map((d) => {
         const exp = d.expediente;
@@ -163,6 +172,10 @@ export async function GET() {
                     metodoCuota = "transferencia";
                 } else if (cuota.metodoPago === "mercadopago") {
                     metodoCuota = "mercadopago";
+                } else if (cuota.metodoPago === "efectivo") {
+                    metodoCuota = "efectivo";
+                } else if (cuota.metodoPago === "payway") {
+                    metodoCuota = "payway";
                 } else {
                     // Fallback para cuotas históricas sin metodoPago
                     const ppEstado = mapMetodoByCuotaId.get(String(cuota.id));
@@ -186,6 +199,7 @@ export async function GET() {
                 estado: cuota.estado,
                 fechaPago: cuota.fechaPago,
                 metodo: metodoCuota,
+                dependenciaNombre: cuota.dependenciaId ? (dependenciasMap.get(cuota.dependenciaId) ?? null) : null,
             } : null,
             deudaTotal: deuda?.total ?? 0,
             deudaCount: deuda?.count ?? 0,

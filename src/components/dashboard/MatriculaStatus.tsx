@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import {
     AlertTriangle,
     Calendar,
@@ -17,6 +18,9 @@ import {
     Briefcase,
     Award,
     Star,
+    Eye,
+    X,
+    Banknote,
 } from "lucide-react";
 import MpPayButton from "@/components/MpPayButton";
 import TransferenciaPayButton from "@/components/TransferenciaPayButton";
@@ -34,8 +38,9 @@ interface CuotaMensualData {
     periodo: string;
     monto: number;
     estado: string;
-    metodo?: "mercadopago" | "payway" | "transferencia" | "home_banking" | "transferencia_pendiente" | "matriculacion" | null;
+    metodo?: "mercadopago" | "payway" | "transferencia" | "home_banking" | "banelco" | "efectivo" | "transferencia_pendiente" | "matriculacion" | null;
     metodoPago?: string | null;
+    dependenciaNombre?: string | null;
 }
 
 interface Boleta {
@@ -59,21 +64,23 @@ interface PagosData {
     hasPagoAnualActivo: boolean;
     hasCancelacionPendiente: boolean;
     totalDeuda: number;
+    deudaComprobantes: { fechaVencimiento: string; monto: number }[];
     userStatus: string;
     esJoven: boolean;
     esVeterano: boolean;
     esExento: boolean;
     esConsultor: boolean;
-    deudasPagadas: { id: number; monto: number; metodoPago: string; fechaPago: string }[];
+    deudasPagadas: { id: number; monto: number; metodoPago: string; fechaPago: string; dependenciaNombre?: string | null }[];
     boletas: { mensual: Boleta | null; anual: Boleta | null; deuda: Boleta | null };
     boletaDescarga?: { mensual: boolean; anual: boolean; deuda: boolean };
 }
 
-function labelMetodoPago(metodo?: string | null): string {
+function labelMetodoPago(metodo?: string | null, dependenciaNombre?: string | null): string {
     if (metodo === "mercadopago") return "Mercado Pago";
     if (metodo === "payway") return "PayWay";
     if (metodo === "banelco" || metodo === "home_banking") return "Banelco / Home Banking";
     if (metodo === "transferencia") return "Transferencia bancaria";
+    if (metodo === "efectivo") return dependenciaNombre ? `Efectivo — Dependencia ${dependenciaNombre}` : "Efectivo";
     if (metodo === "matriculacion") return "Incluido en matrícula";
     return "";
 }
@@ -89,6 +96,7 @@ export default function MatriculaStatus() {
     const [data, setData] = useState<PagosData | null>(null);
     const [loading, setLoading] = useState(true);
     const [paywayModo, setPaywayModo] = useState<null | "deuda" | "anual" | "mensual">(null);
+    const [deudaDetalleAbierto, setDeudaDetalleAbierto] = useState(false);
     const [paywayProcesando, setPaywayProcesando] = useState(false);
     const [paywayError, setPaywayError] = useState<string | null>(null);
 
@@ -231,6 +239,12 @@ export default function MatriculaStatus() {
                             <div className="text-left md:text-right">
                                 <p className="text-[11px] font-bold text-red-800/40 dark:text-red-400/40 uppercase tracking-widest mb-1">Total a Pagar</p>
                                 <p className="text-3xl font-black text-red-600 dark:text-red-400">${totalDeuda.toLocaleString()}</p>
+                                {data?.deudaComprobantes && data.deudaComprobantes.length > 0 && (
+                                    <button type="button" onClick={() => setDeudaDetalleAbierto(true)}
+                                        className="mt-1 inline-flex items-center gap-1 text-[12px] font-semibold text-red-600/70 dark:text-red-400/70 hover:text-red-700 dark:hover:text-red-300 hover:underline">
+                                        <Eye size={12} /> Ver detalle
+                                    </button>
+                                )}
                             </div>
                             {paywayModo !== "deuda" && (
                                 <div className="flex flex-col gap-2">
@@ -505,9 +519,9 @@ export default function MatriculaStatus() {
                                             <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
                                                 Abonado — {formatPeriodo(data.cuotaActual.periodo)}
                                             </p>
-                                            {labelMetodoPago(data.cuotaActual.metodoPago) && (
+                                            {labelMetodoPago(data.cuotaActual.metodoPago, data.cuotaActual.dependenciaNombre) && (
                                                 <p className="text-[12px] text-slate-700 mt-0.5">
-                                                    vía {labelMetodoPago(data.cuotaActual.metodoPago)}
+                                                    vía {labelMetodoPago(data.cuotaActual.metodoPago, data.cuotaActual.dependenciaNombre)}
                                                 </p>
                                             )}
                                         </div>
@@ -611,6 +625,7 @@ export default function MatriculaStatus() {
                                 amount={c.monto.toLocaleString("es-AR")}
                                 status={c.estado === "pagado" ? "paid" : "pending"}
                                 metodo={c.metodo}
+                                dependenciaNombre={c.dependenciaNombre}
                                 isLast={i === cuotasVisibles.length - 1 && (!data?.deudasPagadas || data.deudasPagadas.length === 0)}
                             />
                         ))
@@ -623,7 +638,8 @@ export default function MatriculaStatus() {
                             label={`Deuda vencida saldada — ${new Date(d.fechaPago).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric" })}`}
                             amount={d.monto.toLocaleString("es-AR")}
                             status="paid"
-                            metodo={d.metodoPago === "banelco" ? "home_banking" : d.metodoPago === "transferencia" ? "transferencia" : d.metodoPago === "payway" ? "payway" : "mercadopago"}
+                            metodo={d.metodoPago === "efectivo" ? "efectivo" : d.metodoPago === "banelco" ? "home_banking" : d.metodoPago === "transferencia" ? "transferencia" : d.metodoPago === "payway" ? "payway" : "mercadopago"}
+                            dependenciaNombre={d.dependenciaNombre}
                             isLast={i === data.deudasPagadas.length - 1}
                         />
                     ))}
@@ -640,20 +656,64 @@ export default function MatriculaStatus() {
                 </p>
             </div>
 
+            {/* MODAL DETALLE DE DEUDA — via portal: el div raíz tiene animate-fade-in,
+                cuyo transform final (forwards) crea containing block para fixed y
+                rompe el centrado si el modal queda anidado adentro. */}
+            {deudaDetalleAbierto && createPortal(
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setDeudaDetalleAbierto(false)}>
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 w-full max-w-md shadow-2xl"
+                        onClick={e => e.stopPropagation()}>
+                        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800">
+                            <p className="text-[14px] font-bold text-slate-800 dark:text-white">Detalle de la deuda</p>
+                            <button onClick={() => setDeudaDetalleAbierto(false)}
+                                className="w-8 h-8 flex items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
+                                <X size={15} />
+                            </button>
+                        </div>
+                        <div className="max-h-[60vh] overflow-y-auto divide-y divide-slate-50 dark:divide-slate-800">
+                            {data?.deudaComprobantes?.map((c, i) => (
+                                <div key={i} className="flex items-center justify-between px-5 py-3">
+                                    <p className="text-[13px] text-slate-600 dark:text-slate-400">
+                                        Vencimiento {new Date(c.fechaVencimiento).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "UTC" })}
+                                    </p>
+                                    <p className="text-[13px] font-bold text-slate-800 dark:text-white">${c.monto.toLocaleString("es-AR")}</p>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="flex items-center justify-between px-5 py-4 border-t border-slate-100 dark:border-slate-800">
+                            <p className="text-[12px] font-bold text-slate-400 uppercase tracking-widest">Total</p>
+                            <p className="text-[15px] font-black text-red-600 dark:text-red-400">${totalDeuda.toLocaleString()}</p>
+                        </div>
+                    </div>
+                </div>,
+                document.body
+            )}
+
         </div>
     );
 }
 
-function ConceptItem({ label, amount, status, metodo, isLast }: {
+function ConceptItem({ label, amount, status, metodo, dependenciaNombre, isLast }: {
     label: string;
     amount: string;
     status: "paid" | "pending";
-    metodo?: "mercadopago" | "payway" | "transferencia" | "home_banking" | "transferencia_pendiente" | "matriculacion" | null;
+    metodo?: "mercadopago" | "payway" | "transferencia" | "home_banking" | "banelco" | "efectivo" | "transferencia_pendiente" | "matriculacion" | null;
+    dependenciaNombre?: string | null;
     isLast?: boolean;
 }) {
     const paid = status === "paid";
 
     function MetodoTag() {
+        if (metodo === "efectivo") return (
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-700 dark:text-slate-400">
+                <Banknote size={10} /> Efectivo{dependenciaNombre ? ` — Dependencia ${dependenciaNombre}` : ""}
+            </span>
+        );
+        if (metodo === "banelco") return (
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-700 dark:text-slate-400">
+                <Landmark size={10} /> Banelco
+            </span>
+        );
         if (metodo === "transferencia") return (
             <span className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-700 dark:text-slate-400">
                 <Landmark size={10} /> Transferencia

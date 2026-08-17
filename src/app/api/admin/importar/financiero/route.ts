@@ -22,8 +22,35 @@ function getExpediente(row: Record<string, string>): string {
 
 function getMonto(row: Record<string, string>): number {
     const r = Object.fromEntries(Object.entries(row).map(([k, v]) => [normalizeKey(k), v]));
-    const raw = r["monto"] || r["importe"] || r["deuda"] || r["valor"] || r["total"] || r["saldo"] || "";
-    return parseFloat(String(raw).replace(",", "."));
+    const exacta = r["monto"] || r["importe"] || r["deuda"] || r["valor"] || r["total"] || r["saldo"] || "";
+    if (exacta.trim()) return parseFloat(String(exacta).replace(",", "."));
+    // Fallback: cualquier clave que contenga "importe" o "monto" (ej. "Importe Pendiente (CTE)")
+    const partial = Object.entries(r).find(([k]) => k.includes("importe") || k.includes("monto"));
+    return parseFloat(String(partial?.[1] ?? "").replace(",", "."));
+}
+
+// Excel de "Cuenta Corriente - Deudas vencidas": trae una fila por comprobante impago
+// (fecha de vencimiento, tipo, nro, cliente, importe, expediente...) — llegan como
+// strings "dd/mm/yyyy" porque el cliente (parseExcel) ya convirtió los seriales de
+// Excel a fecha real antes de mandar los registros acá.
+function getFechaVencimiento(row: Record<string, string>): Date | null {
+    const r = Object.fromEntries(Object.entries(row).map(([k, v]) => [normalizeKey(k), v]));
+    const raw = r["fecha de vencimiento"] || r["fecha_vencimiento"] || r["vencimiento"] || "";
+    const partial = raw.trim() ? raw : (Object.entries(r).find(([k]) => k.includes("vencimiento"))?.[1] ?? "");
+    const m = String(partial).trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (!m) return null;
+    const [, d, mo, y] = m;
+    const fecha = new Date(Date.UTC(+y, +mo - 1, +d));
+    return isNaN(fecha.getTime()) ? null : fecha;
+}
+
+// La columna "Cliente" viene como "12009 - APELLIDO, NOMBRE" — el número inicial es
+// el código de cliente interno de ellos, distinto del expediente. Se guarda por si
+// hace falta cruzar con algo más adelante, no se usa todavía para nada funcional.
+function getClienteNumero(row: Record<string, string>): string | null {
+    const cliente = row["cliente"] ?? "";
+    const m = String(cliente).match(/^(\d+)\s*-\s*/);
+    return m ? m[1] : null;
 }
 
 export async function POST(req: NextRequest) {
@@ -41,13 +68,28 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "Tipo inválido" }, { status: 400 });
 
     if (tipo === "deudas") {
-        const data = registros
-            .map(r => ({ expediente: getExpediente(r), monto: getMonto(r) }))
-            .filter(r => r.expediente && !isNaN(r.monto) && r.monto > 0);
-        if (data.length === 0) return NextResponse.json({ error: "Sin registros válidos" }, { status: 400 });
-        await prisma.deuda.deleteMany({});
-        await prisma.deuda.createMany({ data });
-        return NextResponse.json({ actualizados: data.length });
+        const comprobantes = registros
+            .map(r => ({
+                expediente: getExpediente(r),
+                monto: getMonto(r),
+                fechaVencimiento: getFechaVencimiento(r),
+                clienteNumero: getClienteNumero(r),
+            }))
+            .filter((c): c is { expediente: string; monto: number; fechaVencimiento: Date; clienteNumero: string | null } =>
+                !!c.expediente && !isNaN(c.monto) && c.monto > 0 && c.fechaVencimiento !== null);
+        if (comprobantes.length === 0) return NextResponse.json({ error: "Sin registros válidos" }, { status: 400 });
+
+        const totales = new Map<string, number>();
+        for (const c of comprobantes) totales.set(c.expediente, (totales.get(c.expediente) ?? 0) + c.monto);
+        const data = [...totales.entries()].map(([expediente, monto]) => ({ expediente, monto }));
+
+        await prisma.$transaction([
+            prisma.deuda.deleteMany({}),
+            prisma.deuda.createMany({ data }),
+            prisma.deudaComprobante.deleteMany({}),
+            prisma.deudaComprobante.createMany({ data: comprobantes }),
+        ]);
+        return NextResponse.json({ actualizados: data.length, comprobantes: comprobantes.length });
     }
 
     if (tipo === "pagoAnual") {
