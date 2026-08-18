@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Building2, Plus, Check, X, Eye, EyeOff, Loader2, Shield, ChevronRight, Key, Power, History } from "lucide-react";
+import { Building2, Plus, Check, X, Eye, EyeOff, Loader2, Shield, ChevronRight, Key, Power, History, Trash2 } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 
 interface Delegacion {
@@ -34,6 +34,8 @@ export default function DelegacionesPage() {
     const [editZona, setEditZona] = useState("");
     const [showEditPassword, setShowEditPassword] = useState(false);
     const [guardando, setGuardando] = useState(false);
+    const [confirmandoBorrado, setConfirmandoBorrado] = useState(false);
+    const [borrando, setBorrando] = useState(false);
 
     const cargar = async () => {
         setLoading(true);
@@ -73,6 +75,24 @@ export default function DelegacionesPage() {
         setEditNombre(d.nombre);
         setEditZona(d.zona || "");
         setEditPassword("");
+        setConfirmandoBorrado(false);
+    };
+
+    const handleBorrar = async () => {
+        if (!editando) return;
+        setBorrando(true);
+        try {
+            const res = await fetch(`/api/admin/delegaciones/${editando.id}`, { method: "DELETE" });
+            const data = await res.json();
+            if (res.ok) {
+                showToast("Delegación eliminada", "success");
+                setDelegaciones(prev => prev.filter(d => d.id !== editando.id));
+                setEditando(null);
+                setConfirmandoBorrado(false);
+            } else {
+                showToast(data.error || "Error al eliminar", "error");
+            }
+        } finally { setBorrando(false); }
     };
 
     const handleGuardar = async () => {
@@ -237,6 +257,32 @@ export default function DelegacionesPage() {
                                         className="flex items-center justify-center gap-2 h-10 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-[13px] font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
                                         <History size={14} /> Ver historial de cobros
                                     </Link>
+
+                                    <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+                                        {!confirmandoBorrado ? (
+                                            <button onClick={() => setConfirmandoBorrado(true)}
+                                                className="w-full flex items-center justify-center gap-2 h-9 rounded-xl text-[12px] font-bold text-red-500/70 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all">
+                                                <Trash2 size={13} /> Eliminar delegación
+                                            </button>
+                                        ) : (
+                                            <div className="space-y-2">
+                                                <p className="text-[11px] text-red-600 dark:text-red-400 text-center font-semibold">
+                                                    ¿Eliminar &quot;{editando.nombre}&quot; definitivamente? Solo se puede si nunca registró cobros.
+                                                </p>
+                                                <div className="flex gap-2">
+                                                    <button onClick={() => setConfirmandoBorrado(false)}
+                                                        className="flex-1 h-9 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-[12px] font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                                                        Cancelar
+                                                    </button>
+                                                    <button onClick={handleBorrar} disabled={borrando}
+                                                        className="flex-1 h-9 rounded-xl bg-red-600 hover:bg-red-700 text-white text-[12px] font-bold disabled:opacity-50 transition-all flex items-center justify-center gap-1.5">
+                                                        {borrando ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />}
+                                                        {borrando ? "Eliminando..." : "Sí, eliminar"}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             )}
                         </div>

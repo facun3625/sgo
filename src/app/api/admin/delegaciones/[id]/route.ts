@@ -57,3 +57,33 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
     return NextResponse.json({ ok: true });
 }
+
+// DELETE: borrado definitivo — solo si nunca registró cobros (si tiene
+// historial, hay que desactivarla en vez de borrarla para no perder el rastro
+// de esos pagos).
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+    const session = await getSession();
+    if (!isSuperAdmin(session)) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+
+    const { id: idStr } = await params;
+    const id = parseInt(idStr);
+
+    const delegacion = await prisma.delegacion.findUnique({ where: { id }, include: { usuarios: true } });
+    if (!delegacion) return NextResponse.json({ error: "No encontrada" }, { status: 404 });
+
+    const [cuotas, deudas, pagosAnuales] = await Promise.all([
+        prisma.cuotaMensual.count({ where: { delegacionId: id } }),
+        prisma.deudaPagada.count({ where: { delegacionId: id } }),
+        prisma.pagoAnual.count({ where: { delegacionId: id } }),
+    ]);
+    if (cuotas + deudas + pagosAnuales > 0) {
+        return NextResponse.json({ error: "Esta delegación ya registró cobros — desactivala en vez de borrarla, para no perder ese historial." }, { status: 409 });
+    }
+
+    await prisma.$transaction([
+        ...delegacion.usuarios.map(u => prisma.user.delete({ where: { id: u.id } })),
+        prisma.delegacion.delete({ where: { id } }),
+    ]);
+
+    return NextResponse.json({ ok: true });
+}
