@@ -53,6 +53,21 @@ function getClienteNumero(row: Record<string, string>): string | null {
     return m ? m[1] : null;
 }
 
+// "ZONA (Adic.)" / "SUBZONA (Adic.)" — determinan qué Dependencia ve a cada
+// matriculado. Match exacto nada más (no fuzzy) para no confundir zona con
+// subzona, ya que "subzona" también contiene la palabra "zona".
+function getZona(row: Record<string, string>): string | null {
+    const r = Object.fromEntries(Object.entries(row).map(([k, v]) => [normalizeKey(k), v]));
+    const v = r["zona (adic.)"] || r["zona"] || "";
+    return v.trim() || null;
+}
+
+function getSubzona(row: Record<string, string>): string | null {
+    const r = Object.fromEntries(Object.entries(row).map(([k, v]) => [normalizeKey(k), v]));
+    const v = r["subzona (adic.)"] || r["subzona"] || "";
+    return v.trim() || null;
+}
+
 export async function POST(req: NextRequest) {
     const session = await getSession();
     if (!session || !isAdmin(session.accessLevel))
@@ -74,8 +89,10 @@ export async function POST(req: NextRequest) {
                 monto: getMonto(r),
                 fechaVencimiento: getFechaVencimiento(r),
                 clienteNumero: getClienteNumero(r),
+                zona: getZona(r),
+                subzona: getSubzona(r),
             }))
-            .filter((c): c is { expediente: string; monto: number; fechaVencimiento: Date; clienteNumero: string | null } =>
+            .filter((c): c is { expediente: string; monto: number; fechaVencimiento: Date; clienteNumero: string | null; zona: string | null; subzona: string | null } =>
                 !!c.expediente && !isNaN(c.monto) && c.monto > 0 && c.fechaVencimiento !== null);
         if (comprobantes.length === 0) return NextResponse.json({ error: "Sin registros válidos" }, { status: 400 });
 
@@ -83,12 +100,27 @@ export async function POST(req: NextRequest) {
         for (const c of comprobantes) totales.set(c.expediente, (totales.get(c.expediente) ?? 0) + c.monto);
         const data = [...totales.entries()].map(([expediente, monto]) => ({ expediente, monto }));
 
+        // Zona/subzona por expediente (última fila vista gana) — se guarda en
+        // Dato para que sobreviva aunque el expediente salde su deuda y
+        // desaparezca del próximo import.
+        const zonaPorExpediente = new Map<string, { zona: string | null; subzona: string | null }>();
+        for (const c of comprobantes) {
+            if (c.zona || c.subzona) zonaPorExpediente.set(c.expediente, { zona: c.zona, subzona: c.subzona });
+        }
+
         await prisma.$transaction([
             prisma.deuda.deleteMany({}),
             prisma.deuda.createMany({ data }),
             prisma.deudaComprobante.deleteMany({}),
             prisma.deudaComprobante.createMany({ data: comprobantes }),
         ]);
+
+        await Promise.all(
+            [...zonaPorExpediente.entries()].map(([expediente, z]) =>
+                prisma.dato.updateMany({ where: { expediente }, data: { zona: z.zona, subzona: z.subzona } })
+            )
+        );
+
         return NextResponse.json({ actualizados: data.length, comprobantes: comprobantes.length });
     }
 

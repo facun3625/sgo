@@ -41,6 +41,9 @@ model Dependencia {
   // requerir --accept-data-loss al agregar la columna); el "1 usuario por
   // dependencia" se garantiza en la API al crear (POST /api/admin/dependencias).
   usuarios  User[]
+  // Número de zona (columna "ZONA (Adic.)" del Excel de deudas) que le
+  // corresponde a esta oficina — determina qué matriculados ve el cobrador.
+  zona      String?
 
   @@map("dependencias")
 }
@@ -74,6 +77,13 @@ model Dato {
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
   cuil               String?
+  // Zona/subzona del expediente (columnas "ZONA"/"SUBZONA (Adic.)" del Excel
+  // de deudas) — se actualiza en cada import de deudas, pero queda guardado
+  // acá (a diferencia de DeudaComprobante) para no perderse si el expediente
+  // salda su deuda y desaparece del próximo import. Determina qué Dependencia
+  // ve a este matriculado.
+  zona               String?
+  subzona            String?
 
   @@map("datos")
 }
@@ -96,6 +106,8 @@ model DeudaComprobante {
   fechaVencimiento DateTime @map("fecha_vencimiento")
   monto            Float
   clienteNumero    String?  @map("cliente_numero")
+  zona             String?
+  subzona          String?
 
   @@index([expediente])
   @@map("deuda_comprobantes")

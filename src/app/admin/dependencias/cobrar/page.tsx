@@ -9,7 +9,11 @@ interface UsuarioLista {
     expediente: string | null;
     nombre: string;
     apellido: string;
+    deudaTotal: number;
 }
+
+type FiltroDeuda = "todos" | "con_deuda" | "sin_deuda";
+const PAGE_SIZE = 50;
 
 interface DatoCompleto {
     nombre: string; apellido: string; expediente: string | null; cod: string;
@@ -76,7 +80,10 @@ export default function CobrarDependenciaPage() {
     const [tab, setTab] = useState<"cobrar" | "historial">("cobrar");
     const [usuarios, setUsuarios] = useState<UsuarioLista[]>([]);
     const [loadingLista, setLoadingLista] = useState(true);
+    const [sinZonaConfigurada, setSinZonaConfigurada] = useState(false);
     const [search, setSearch] = useState("");
+    const [filtroDeuda, setFiltroDeuda] = useState<FiltroDeuda>("todos");
+    const [page, setPage] = useState(0);
 
     const [mesHistorial, setMesHistorial] = useState(mesActual());
     const [historial, setHistorial] = useState<CobroFila[]>([]);
@@ -94,9 +101,12 @@ export default function CobrarDependenciaPage() {
     const [cobrando, setCobrando] = useState(false);
 
     useEffect(() => {
-        fetch("/api/admin/usuarios")
+        fetch("/api/dependencias/buscar")
             .then(r => r.json())
-            .then(data => { if (data.usuarios) setUsuarios(data.usuarios); })
+            .then(data => {
+                if (data.usuarios) setUsuarios(data.usuarios);
+                setSinZonaConfigurada(!!data.sinZonaConfigurada);
+            })
             .finally(() => setLoadingLista(false));
     }, []);
 
@@ -109,14 +119,22 @@ export default function CobrarDependenciaPage() {
             .finally(() => setLoadingHistorial(false));
     }, [tab, mesHistorial]);
 
-    const resultados = useMemo(() => {
+    const filtrados = useMemo(() => {
         const q = search.toLowerCase().trim();
-        if (!q) return [];
-        return usuarios.filter(u =>
-            `${u.apellido}, ${u.nombre}`.toLowerCase().includes(q) ||
-            (u.expediente || "").includes(q)
-        ).slice(0, 20);
-    }, [usuarios, search]);
+        return usuarios.filter(u => {
+            if (filtroDeuda === "con_deuda" && u.deudaTotal <= 0) return false;
+            if (filtroDeuda === "sin_deuda" && u.deudaTotal > 0) return false;
+            if (!q) return true;
+            return `${u.apellido}, ${u.nombre}`.toLowerCase().includes(q) || (u.expediente || "").includes(q);
+        });
+    }, [usuarios, search, filtroDeuda]);
+
+    const conDeudaCount = useMemo(() => usuarios.filter(u => u.deudaTotal > 0).length, [usuarios]);
+
+    useEffect(() => { setPage(0); }, [search, filtroDeuda]);
+
+    const totalPages = Math.ceil(filtrados.length / PAGE_SIZE);
+    const resultados = filtrados.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
     const cargarDetalle = async (expediente: string) => {
         setSeleccionado(expediente);
@@ -234,21 +252,81 @@ export default function CobrarDependenciaPage() {
                 {loadingLista && <Loader2 size={15} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 animate-spin" />}
             </div>
 
-            {!seleccionado && resultados.length > 0 && (
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 divide-y divide-slate-50 dark:divide-slate-800 overflow-hidden">
-                    {resultados.map(u => (
-                        <button key={u.cod} onClick={() => u.expediente && cargarDetalle(u.expediente)} disabled={!u.expediente}
-                            className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all disabled:opacity-40">
-                            <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 text-[11px] font-bold">
-                                {u.nombre[0]}{u.apellido[0]}
-                            </div>
-                            <div>
-                                <p className="text-[13px] font-bold text-slate-800 dark:text-white">{u.apellido}, {u.nombre}</p>
-                                <p className="text-[11px] text-slate-400">{u.expediente ? `Expediente ${u.expediente}` : "Sin expediente"}</p>
-                            </div>
-                        </button>
-                    ))}
+            {!loadingLista && sinZonaConfigurada && (
+                <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 flex items-start gap-3">
+                    <AlertTriangle size={16} className="text-amber-500 mt-0.5 flex-shrink-0" />
+                    <p className="text-[13px] text-amber-700 dark:text-amber-400">
+                        Esta dependencia todavía no tiene una zona asignada — pedile al Colegio que la configure para poder ver matriculados.
+                    </p>
                 </div>
+            )}
+
+            {!seleccionado && !sinZonaConfigurada && (
+                <>
+                    {/* Filtro por deuda */}
+                    <div className="flex gap-1.5">
+                        {([
+                            { key: "todos", label: `Todos (${usuarios.length})` },
+                            { key: "con_deuda", label: `Con deuda (${conDeudaCount})` },
+                            { key: "sin_deuda", label: `Sin deuda (${usuarios.length - conDeudaCount})` },
+                        ] as { key: FiltroDeuda; label: string }[]).map(f => (
+                            <button key={f.key} onClick={() => setFiltroDeuda(f.key)}
+                                className={`px-3 py-1.5 rounded-lg text-[12px] font-semibold transition-all border
+                                    ${filtroDeuda === f.key
+                                        ? "bg-emerald-600 text-white border-emerald-600"
+                                        : "bg-white dark:bg-slate-900 text-slate-500 border-slate-200 dark:border-slate-700 hover:border-slate-300"}`}>
+                                {f.label}
+                            </button>
+                        ))}
+                    </div>
+
+                    {resultados.length > 0 ? (
+                        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 divide-y divide-slate-50 dark:divide-slate-800 overflow-hidden">
+                            {resultados.map(u => (
+                                <button key={u.cod} onClick={() => u.expediente && cargarDetalle(u.expediente)} disabled={!u.expediente}
+                                    className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all disabled:opacity-40">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 text-[11px] font-bold">
+                                            {u.nombre[0]}{u.apellido[0]}
+                                        </div>
+                                        <div>
+                                            <p className="text-[13px] font-bold text-slate-800 dark:text-white">{u.apellido}, {u.nombre}</p>
+                                            <p className="text-[11px] text-slate-400">{u.expediente ? `Expediente ${u.expediente}` : "Sin expediente"}</p>
+                                        </div>
+                                    </div>
+                                    {u.deudaTotal > 0 && (
+                                        <span className="flex items-center gap-1 text-[12px] font-bold text-red-600 dark:text-red-400 whitespace-nowrap">
+                                            <Wallet size={11} /> ${u.deudaTotal.toLocaleString("es-AR")}
+                                        </span>
+                                    )}
+                                </button>
+                            ))}
+                        </div>
+                    ) : !loadingLista && (
+                        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-10 text-center">
+                            <p className="text-[13px] text-slate-400">No hay matriculados que coincidan.</p>
+                        </div>
+                    )}
+
+                    {totalPages > 1 && (
+                        <div className="flex items-center justify-between">
+                            <p className="text-[11px] text-slate-400">
+                                {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, filtrados.length)} de {filtrados.length}
+                            </p>
+                            <div className="flex items-center gap-1.5">
+                                <button onClick={() => setPage(p => p - 1)} disabled={page === 0}
+                                    className="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-30 transition-all">
+                                    ‹
+                                </button>
+                                <span className="text-[11px] text-slate-500 px-1">{page + 1} / {totalPages}</span>
+                                <button onClick={() => setPage(p => p + 1)} disabled={page >= totalPages - 1}
+                                    className="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-30 transition-all">
+                                    ›
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </>
             )}
 
             {loadingDetalle && (

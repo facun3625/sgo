@@ -34,14 +34,15 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
     const { id: idStr } = await params;
     const id = parseInt(idStr);
-    const { nombre, activo, password } = await req.json();
+    const { nombre, activo, password, zona } = await req.json();
 
     const dependencia = await prisma.dependencia.findUnique({ where: { id }, include: { usuarios: true } });
     if (!dependencia) return NextResponse.json({ error: "No encontrada" }, { status: 404 });
 
-    const dependenciaData: { nombre?: string; activo?: boolean } = {};
+    const dependenciaData: { nombre?: string; activo?: boolean; zona?: string | null } = {};
     if (nombre !== undefined) dependenciaData.nombre = String(nombre).trim();
     if (activo !== undefined) dependenciaData.activo = !!activo;
+    if (zona !== undefined) dependenciaData.zona = String(zona).trim() || null;
 
     const usuarioData: { nombre?: string; password?: string } = {};
     if (nombre !== undefined) usuarioData.nombre = String(nombre).trim();

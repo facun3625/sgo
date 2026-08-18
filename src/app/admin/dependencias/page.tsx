@@ -8,6 +8,7 @@ interface Dependencia {
     id: number;
     nombre: string;
     activo: boolean;
+    zona: string | null;
     createdAt: string;
     usuario: { id: number; login: string | null; status: string } | null;
 }
@@ -23,12 +24,14 @@ export default function DependenciasPage() {
     const [nombre, setNombre] = useState("");
     const [login, setLogin] = useState("");
     const [password, setPassword] = useState("");
+    const [zona, setZona] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [creando, setCreando] = useState(false);
 
     // Edición
     const [editNombre, setEditNombre] = useState("");
     const [editPassword, setEditPassword] = useState("");
+    const [editZona, setEditZona] = useState("");
     const [showEditPassword, setShowEditPassword] = useState(false);
     const [guardando, setGuardando] = useState(false);
 
@@ -51,13 +54,13 @@ export default function DependenciasPage() {
             const res = await fetch("/api/admin/dependencias", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ nombre, login, password }),
+                body: JSON.stringify({ nombre, login, password, zona }),
             });
             const data = await res.json();
             if (res.ok) {
                 showToast("Dependencia creada", "success");
                 setDependencias(prev => [data, ...prev]);
-                setNombre(""); setLogin(""); setPassword("");
+                setNombre(""); setLogin(""); setPassword(""); setZona("");
                 setTab("lista");
             } else {
                 showToast(data.error || "Error al crear", "error");
@@ -68,6 +71,7 @@ export default function DependenciasPage() {
     const abrirEdicion = (d: Dependencia) => {
         setEditando(d);
         setEditNombre(d.nombre);
+        setEditZona(d.zona || "");
         setEditPassword("");
     };
 
@@ -75,7 +79,7 @@ export default function DependenciasPage() {
         if (!editando) return;
         setGuardando(true);
         try {
-            const body: Record<string, unknown> = { nombre: editNombre };
+            const body: Record<string, unknown> = { nombre: editNombre, zona: editZona };
             if (editPassword) body.password = editPassword;
             const res = await fetch(`/api/admin/dependencias/${editando.id}`, {
                 method: "PATCH",
@@ -84,7 +88,7 @@ export default function DependenciasPage() {
             });
             if (res.ok) {
                 showToast("Cambios guardados", "success");
-                setDependencias(prev => prev.map(d => d.id === editando.id ? { ...d, nombre: editNombre } : d));
+                setDependencias(prev => prev.map(d => d.id === editando.id ? { ...d, nombre: editNombre, zona: editZona || null } : d));
                 setEditando(null);
                 setEditPassword("");
             } else {
@@ -157,6 +161,15 @@ export default function DependenciasPage() {
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-2">
+                                                {d.zona ? (
+                                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
+                                                        Zona {d.zona}
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400">
+                                                        Sin zona
+                                                    </span>
+                                                )}
                                                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${d.activo ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400" : "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400"}`}>
                                                     {d.activo ? "Activa" : "Desactivada"}
                                                 </span>
@@ -186,6 +199,13 @@ export default function DependenciasPage() {
                                         <input type="text" value={editNombre} onChange={e => setEditNombre(e.target.value)}
                                             className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[13px] text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-400" />
                                         <p className="text-[10px] text-slate-400">Aparece en los pagos como &quot;Pagó en dependencia {editNombre || "..."}&quot;</p>
+                                    </div>
+
+                                    <div className="space-y-1.5">
+                                        <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Zona</label>
+                                        <input type="text" value={editZona} onChange={e => setEditZona(e.target.value)} placeholder="Ej: 50"
+                                            className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[13px] text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-400" />
+                                        <p className="text-[10px] text-slate-400">Determina qué matriculados ve esta dependencia (según la columna Zona del Excel de deudas)</p>
                                     </div>
 
                                     <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
@@ -238,6 +258,12 @@ export default function DependenciasPage() {
                             <input type="text" value={login} onChange={e => setLogin(e.target.value)} placeholder="reconquista"
                                 className="w-full h-11 px-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[13px] text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-400" />
                             <p className="text-[10px] text-slate-400">Se usa para iniciar sesión — puede ser distinto del nombre</p>
+                        </div>
+                        <div className="space-y-1.5">
+                            <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Zona</label>
+                            <input type="text" value={zona} onChange={e => setZona(e.target.value)} placeholder="Ej: 50"
+                                className="w-full h-11 px-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[13px] text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-400" />
+                            <p className="text-[10px] text-slate-400">Determina qué matriculados va a ver esta dependencia (columna Zona del Excel de deudas). Se puede dejar vacío y completar después.</p>
                         </div>
                         <div className="space-y-1.5">
                             <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5"><Key size={11} /> Contraseña *</label>

@@ -21,6 +21,7 @@ export async function GET() {
         id: d.id,
         nombre: d.nombre,
         activo: d.activo,
+        zona: d.zona,
         createdAt: d.createdAt,
         usuario: d.usuarios[0] ? { id: d.usuarios[0].id, login: d.usuarios[0].expediente, status: d.usuarios[0].status } : null,
     })));
@@ -31,7 +32,7 @@ export async function POST(req: NextRequest) {
     const session = await getSession();
     if (!isSuperAdmin(session)) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
-    const { nombre, login, password } = await req.json();
+    const { nombre, login, password, zona } = await req.json();
     if (!nombre?.trim() || !login?.trim() || !password?.trim()) {
         return NextResponse.json({ error: "Faltan campos obligatorios" }, { status: 400 });
     }
@@ -44,6 +45,7 @@ export async function POST(req: NextRequest) {
     const dependencia = await prisma.dependencia.create({
         data: {
             nombre: nombre.trim(),
+            zona: zona?.trim() || null,
             usuarios: {
                 create: {
                     nombre: nombre.trim(),
@@ -64,6 +66,7 @@ export async function POST(req: NextRequest) {
         id: dependencia.id,
         nombre: dependencia.nombre,
         activo: dependencia.activo,
+        zona: dependencia.zona,
         createdAt: dependencia.createdAt,
         usuario: { id: dependencia.usuarios[0].id, login: dependencia.usuarios[0].expediente, status: dependencia.usuarios[0].status },
     });
