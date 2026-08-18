@@ -4,15 +4,15 @@ import prisma from "@/lib/prisma";
 import { esMatriculadoJoven, montoConDescuento } from "@/lib/matricula";
 import { crearNotificacion } from "@/lib/notificaciones";
 
-// Cobro en efectivo registrado por una cuenta de Dependencia (mismo cálculo de
+// Cobro en efectivo registrado por una cuenta de Delegación (mismo cálculo de
 // precio que /api/payments/payway, pero acá el "pago" es la palabra del cobrador
-// — no hay pasarela. Cada movimiento queda atado a la dependencia que lo cobró.
+// — no hay pasarela. Cada movimiento queda atado a la delegación que lo cobró.
 export async function POST(req: NextRequest) {
     const session = await getSession();
-    if (!session || !session.dependenciaId) {
+    if (!session || !session.delegacionId) {
         return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
-    const dependenciaId = session.dependenciaId;
+    const delegacionId = session.delegacionId;
 
     const { expediente, tipo, comprobante } = await req.json();
     if (!expediente || !tipo) return NextResponse.json({ error: "Faltan datos" }, { status: 400 });
@@ -31,9 +31,9 @@ export async function POST(req: NextRequest) {
 
         await prisma.cuotaMensual.update({
             where: { id: cuota.id },
-            data: { estado: "pagado", metodoPago: "efectivo", fechaPago, dependenciaId, comprobanteEfectivo },
+            data: { estado: "pagado", metodoPago: "efectivo", fechaPago, delegacionId, comprobanteEfectivo },
         });
-        await crearNotificacion(expediente, "Pago de cuota confirmado", "Tu pago de la cuota fue registrado en dependencia.", "pago");
+        await crearNotificacion(expediente, "Pago de cuota confirmado", "Tu pago de la cuota fue registrado en delegación.", "pago");
         return NextResponse.json({ ok: true, monto: cuota.monto });
 
     } else if (tipo === "matricula_anual") {
@@ -47,9 +47,9 @@ export async function POST(req: NextRequest) {
         const monto = montoConDescuento(montoBase, esMatriculadoJoven(dato.fechaMatriculacion));
 
         await prisma.pagoAnual.create({
-            data: { expediente, monto, metodoPago: "efectivo", fechaPago, dependenciaId, comprobanteEfectivo },
+            data: { expediente, monto, metodoPago: "efectivo", fechaPago, delegacionId, comprobanteEfectivo },
         });
-        await crearNotificacion(expediente, "Matrícula anual confirmada", "Tu pago de matrícula anual fue registrado en dependencia. ¡Gracias!", "pago");
+        await crearNotificacion(expediente, "Matrícula anual confirmada", "Tu pago de matrícula anual fue registrado en delegación. ¡Gracias!", "pago");
         return NextResponse.json({ ok: true, monto });
 
     } else if (tipo === "deuda") {
@@ -59,11 +59,11 @@ export async function POST(req: NextRequest) {
 
         await prisma.$transaction([
             prisma.deudaPagada.create({
-                data: { expediente, monto, metodoPago: "efectivo", fechaPago, dependenciaId, comprobanteEfectivo },
+                data: { expediente, monto, metodoPago: "efectivo", fechaPago, delegacionId, comprobanteEfectivo },
             }),
             prisma.deuda.deleteMany({ where: { expediente } }),
         ]);
-        await crearNotificacion(expediente, "Deuda regularizada", "Tu pago de deuda vencida fue registrado en dependencia.", "pago");
+        await crearNotificacion(expediente, "Deuda regularizada", "Tu pago de deuda vencida fue registrado en delegación.", "pago");
         return NextResponse.json({ ok: true, monto });
     }
 

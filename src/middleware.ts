@@ -6,10 +6,10 @@ const secret = new TextEncoder().encode(
 );
 
 // Routes that only superadmin can access
-const SUPERADMIN_ONLY = ["/admin/config", "/admin/gestionar-admins", "/admin/config/sistema", "/admin/dependencias"];
+const SUPERADMIN_ONLY = ["/admin/config", "/admin/gestionar-admins", "/admin/config/sistema", "/admin/delegaciones"];
 
-// Pantalla única a la que quedan encerradas las cuentas de dependencia (cobradores)
-const DEPENDENCIA_HOME = "/admin/dependencias/cobrar";
+// Pantalla única a la que quedan encerradas las cuentas de delegación (cobradores)
+const DELEGACION_HOME = "/admin/delegaciones/cobrar";
 
 export async function middleware(req: NextRequest) {
     const { pathname } = req.nextUrl;
@@ -25,17 +25,17 @@ export async function middleware(req: NextRequest) {
             const { payload } = await jwtVerify(token, secret);
             const accessLevel = (payload as any).accessLevel as string;
             const permisos: string[] = (payload as any).permisos || [];
-            const dependenciaId = (payload as any).dependenciaId as number | undefined;
+            const delegacionId = (payload as any).delegacionId as number | undefined;
 
             if (accessLevel !== "superadmin" && accessLevel !== "admin") {
                 return NextResponse.redirect(new URL("/dashboard", req.url));
             }
 
-            // Cuentas de dependencia (cobradores): quedan encerradas en su propia
+            // Cuentas de delegación (cobradores): quedan encerradas en su propia
             // pantalla, sin pasar por los chequeos de permisos genéricos de abajo.
-            if (dependenciaId) {
-                if (!pathname.startsWith(DEPENDENCIA_HOME)) {
-                    return NextResponse.redirect(new URL(DEPENDENCIA_HOME, req.url));
+            if (delegacionId) {
+                if (!pathname.startsWith(DELEGACION_HOME)) {
+                    return NextResponse.redirect(new URL(DELEGACION_HOME, req.url));
                 }
                 return NextResponse.next();
             }

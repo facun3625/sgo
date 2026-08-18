@@ -7,17 +7,17 @@ function isSuperAdmin(session: SessionPayload | null) {
     return session?.accessLevel === "superadmin";
 }
 
-// GET: listar dependencias con su cuenta de acceso
+// GET: listar delegaciones con su cuenta de acceso
 export async function GET() {
     const session = await getSession();
     if (!isSuperAdmin(session)) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
-    const dependencias = await prisma.dependencia.findMany({
+    const delegaciones = await prisma.delegacion.findMany({
         include: { usuarios: { select: { id: true, expediente: true, status: true } } },
         orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json(dependencias.map(d => ({
+    return NextResponse.json(delegaciones.map(d => ({
         id: d.id,
         nombre: d.nombre,
         activo: d.activo,
@@ -27,7 +27,7 @@ export async function GET() {
     })));
 }
 
-// POST: crear dependencia + cuenta de acceso en un solo paso
+// POST: crear delegación + cuenta de acceso en un solo paso
 export async function POST(req: NextRequest) {
     const session = await getSession();
     if (!isSuperAdmin(session)) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
@@ -42,14 +42,14 @@ export async function POST(req: NextRequest) {
 
     const hashed = await bcrypt.hash(password, 10);
 
-    const dependencia = await prisma.dependencia.create({
+    const delegacion = await prisma.delegacion.create({
         data: {
             nombre: nombre.trim(),
             zona: zona?.trim() || null,
             usuarios: {
                 create: {
                     nombre: nombre.trim(),
-                    apellido: "Dependencia",
+                    apellido: "Delegación",
                     expediente: login.trim(),
                     password: hashed,
                     accessLevel: "admin",
@@ -63,11 +63,11 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({
-        id: dependencia.id,
-        nombre: dependencia.nombre,
-        activo: dependencia.activo,
-        zona: dependencia.zona,
-        createdAt: dependencia.createdAt,
-        usuario: { id: dependencia.usuarios[0].id, login: dependencia.usuarios[0].expediente, status: dependencia.usuarios[0].status },
+        id: delegacion.id,
+        nombre: delegacion.nombre,
+        activo: delegacion.activo,
+        zona: delegacion.zona,
+        createdAt: delegacion.createdAt,
+        usuario: { id: delegacion.usuarios[0].id, login: delegacion.usuarios[0].expediente, status: delegacion.usuarios[0].status },
     });
 }

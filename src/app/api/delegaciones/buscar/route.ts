@@ -2,19 +2,19 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 
-// Matriculados visibles para la cuenta de dependencia logueada — acotado a
-// su zona (Dependencia.zona / Dato.zona, tomados del último import de
-// deudas). Si la dependencia no tiene zona configurada, no ve a nadie:
+// Matriculados visibles para la cuenta de delegación logueada — acotado a
+// su zona (Delegacion.zona / Dato.zona, tomados del último import de
+// deudas). Si la delegación no tiene zona configurada, no ve a nadie:
 // falla cerrado en vez de mostrar todo por defecto.
 export async function GET() {
     const session = await getSession();
-    if (!session || !session.dependenciaId) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    if (!session || !session.delegacionId) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
-    const dependencia = await prisma.dependencia.findUnique({ where: { id: session.dependenciaId }, select: { zona: true } });
-    if (!dependencia?.zona) return NextResponse.json({ usuarios: [], sinZonaConfigurada: true });
+    const delegacion = await prisma.delegacion.findUnique({ where: { id: session.delegacionId }, select: { zona: true } });
+    if (!delegacion?.zona) return NextResponse.json({ usuarios: [], sinZonaConfigurada: true });
 
     const datos = await prisma.dato.findMany({
-        where: { zona: dependencia.zona },
+        where: { zona: delegacion.zona },
         select: { cod: true, expediente: true, nombre: true, apellido: true },
         orderBy: [{ apellido: "asc" }, { nombre: "asc" }],
     });

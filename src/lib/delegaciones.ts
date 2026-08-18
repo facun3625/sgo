@@ -18,19 +18,19 @@ export type CobroFila = {
     comprobante: string | null;
 };
 
-// Historial de cobros en efectivo de una dependencia — usado tanto por la ficha
+// Historial de cobros en efectivo de una delegación — usado tanto por la ficha
 // de administración (todo el historial) como por la pantalla propia del
 // cobrador (filtrado por mes).
-export async function obtenerCobrosDependencia(
-    dependenciaId: number,
+export async function obtenerCobrosDelegacion(
+    delegacionId: number,
     rango?: { desde: Date; hasta: Date }
 ): Promise<{ cobros: CobroFila[]; totalCobrado: number }> {
     const fechaPagoFilter = rango ? { fechaPago: { gte: rango.desde, lt: rango.hasta } } : {};
 
     const [cuotas, deudas, anuales] = await Promise.all([
-        prisma.cuotaMensual.findMany({ where: { dependenciaId, ...fechaPagoFilter }, orderBy: { fechaPago: "desc" } }),
-        prisma.deudaPagada.findMany({ where: { dependenciaId, ...fechaPagoFilter }, orderBy: { fechaPago: "desc" } }),
-        prisma.pagoAnual.findMany({ where: { dependenciaId, ...fechaPagoFilter }, orderBy: { fechaPago: "desc" } }),
+        prisma.cuotaMensual.findMany({ where: { delegacionId, ...fechaPagoFilter }, orderBy: { fechaPago: "desc" } }),
+        prisma.deudaPagada.findMany({ where: { delegacionId, ...fechaPagoFilter }, orderBy: { fechaPago: "desc" } }),
+        prisma.pagoAnual.findMany({ where: { delegacionId, ...fechaPagoFilter }, orderBy: { fechaPago: "desc" } }),
     ]);
 
     const expedientes = [...new Set([...cuotas, ...deudas, ...anuales].map((r) => r.expediente))];

@@ -53,13 +53,13 @@ export async function POST(req: NextRequest) {
         let permisos: string[] = [];
         try { permisos = JSON.parse(user.permisos || "[]"); } catch { permisos = []; }
 
-        let dependenciaNombre: string | undefined;
-        if (user.dependenciaId) {
-            const dependencia = await prisma.dependencia.findUnique({ where: { id: user.dependenciaId } });
-            if (!dependencia || !dependencia.activo) {
-                return NextResponse.json({ error: "Esta dependencia está desactivada. Contactá al Colegio." }, { status: 403 });
+        let delegacionNombre: string | undefined;
+        if (user.delegacionId) {
+            const delegacion = await prisma.delegacion.findUnique({ where: { id: user.delegacionId } });
+            if (!delegacion || !delegacion.activo) {
+                return NextResponse.json({ error: "Esta delegación está desactivada. Contactá al Colegio." }, { status: 403 });
             }
-            dependenciaNombre = dependencia.nombre;
+            delegacionNombre = delegacion.nombre;
         }
 
         await createSession({
@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
             apellido: user.apellido,
             accessLevel: user.accessLevel,
             permisos,
-            ...(user.dependenciaId ? { dependenciaId: user.dependenciaId, dependenciaNombre } : {}),
+            ...(user.delegacionId ? { delegacionId: user.delegacionId, delegacionNombre } : {}),
         });
 
         return NextResponse.json({

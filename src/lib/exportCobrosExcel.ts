@@ -16,7 +16,7 @@ const LABEL_TIPO: Record<CobroExportable["tipo"], string> = {
     deuda: "Deuda vencida",
 };
 
-// Export simple para uso propio de la dependencia/admin — no es el formato de
+// Export simple para uso propio de la delegación/admin — no es el formato de
 // Tango (ese vive en /admin/pagos → Contabilidad → Descargar).
 export function exportarCobrosExcel(cobros: CobroExportable[], filename: string) {
     const filas = cobros.map((c) => ({

@@ -53,7 +53,7 @@ function getClienteNumero(row: Record<string, string>): string | null {
     return m ? m[1] : null;
 }
 
-// "ZONA (Adic.)" / "SUBZONA (Adic.)" — determinan qué Dependencia ve a cada
+// "ZONA (Adic.)" / "SUBZONA (Adic.)" — determinan qué Delegación ve a cada
 // matriculado. Match exacto nada más (no fuzzy) para no confundir zona con
 // subzona, ya que "subzona" también contiene la palabra "zona".
 function getZona(row: Record<string, string>): string | null {

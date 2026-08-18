@@ -84,13 +84,13 @@ export async function GET(req: NextRequest) {
     ];
     const datosMap = await getDatosMap([...new Set(allExpedientes)]);
 
-    const allDependenciaIds = [...new Set(
-        [...deudas, ...cuotas, ...anuales].map((r) => r.dependenciaId).filter((id): id is number => id != null)
+    const allDelegacionIds = [...new Set(
+        [...deudas, ...cuotas, ...anuales].map((r) => r.delegacionId).filter((id): id is number => id != null)
     )];
-    const dependencias = allDependenciaIds.length > 0
-        ? await prisma.dependencia.findMany({ where: { id: { in: allDependenciaIds } }, select: { id: true, nombre: true } })
+    const delegaciones = allDelegacionIds.length > 0
+        ? await prisma.delegacion.findMany({ where: { id: { in: allDelegacionIds } }, select: { id: true, nombre: true } })
         : [];
-    const dependenciaMap = new Map(dependencias.map((d) => [d.id, d.nombre]));
+    const delegacionMap = new Map(delegaciones.map((d) => [d.id, d.nombre]));
 
     // Construir map de comprobantes: "cod:tipo" → factura
     const allCods = [...new Set(
@@ -125,7 +125,7 @@ export async function GET(req: NextRequest) {
             fechaCobro: r.fechaPago,
             importe: r.monto,
             nroComprobante: boletaMap.get(`${cod}:deuda`) ?? "",
-            dependencia: r.dependenciaId ? (dependenciaMap.get(r.dependenciaId) ?? "") : "",
+            delegacion: r.delegacionId ? (delegacionMap.get(r.delegacionId) ?? "") : "",
         };
     });
 
@@ -145,7 +145,7 @@ export async function GET(req: NextRequest) {
             fechaCobro: r.fechaPago,
             importe: r.monto,
             nroComprobante: boletaMap.get(`${cod}:mensual`) ?? "",
-            dependencia: r.dependenciaId ? (dependenciaMap.get(r.dependenciaId) ?? "") : "",
+            delegacion: r.delegacionId ? (delegacionMap.get(r.delegacionId) ?? "") : "",
         };
     });
 
@@ -165,7 +165,7 @@ export async function GET(req: NextRequest) {
             fechaCobro: r.fechaPago,
             importe: r.monto ?? 0,
             nroComprobante: boletaMap.get(`${cod}:anual`) ?? "",
-            dependencia: r.dependenciaId ? (dependenciaMap.get(r.dependenciaId) ?? "") : "",
+            delegacion: r.delegacionId ? (delegacionMap.get(r.delegacionId) ?? "") : "",
         };
     });
 

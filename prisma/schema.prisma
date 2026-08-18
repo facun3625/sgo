@@ -23,29 +23,29 @@ model User {
   signature      String?
   permisos       String    @default("[]")
   suspendedUntil DateTime? @map("suspended_until")
-  dependenciaId  Int?         @map("dependencia_id")
-  dependencia    Dependencia? @relation(fields: [dependenciaId], references: [id])
+  delegacionId   Int?         @map("delegacion_id")
+  delegacion     Delegacion?  @relation(fields: [delegacionId], references: [id])
 
   @@map("users")
 }
 
 // Oficina/sucursal regional del colegio que actúa como cobrador en efectivo
-// (cuota mensual, matrícula anual y deudas). Cada Dependencia tiene un único
-// User asociado (login) — el superadmin la crea desde /admin/dependencias.
-model Dependencia {
+// (cuota mensual, matrícula anual y deudas). Cada Delegación tiene un único
+// User asociado (login) — el superadmin la crea desde /admin/delegaciones.
+model Delegacion {
   id        Int      @id @default(autoincrement())
   nombre    String
   activo    Boolean  @default(true)
   createdAt DateTime @default(now())
-  // Modelada como 1:N a nivel de Prisma (sin @unique en dependenciaId para no
+  // Modelada como 1:N a nivel de Prisma (sin @unique en delegacionId para no
   // requerir --accept-data-loss al agregar la columna); el "1 usuario por
-  // dependencia" se garantiza en la API al crear (POST /api/admin/dependencias).
+  // delegación" se garantiza en la API al crear (POST /api/admin/delegaciones).
   usuarios  User[]
   // Número de zona (columna "ZONA (Adic.)" del Excel de deudas) que le
   // corresponde a esta oficina — determina qué matriculados ve el cobrador.
   zona      String?
 
-  @@map("dependencias")
+  @@map("delegaciones")
 }
 
 model Dato {
@@ -80,7 +80,7 @@ model Dato {
   // Zona/subzona del expediente (columnas "ZONA"/"SUBZONA (Adic.)" del Excel
   // de deudas) — se actualiza en cada import de deudas, pero queda guardado
   // acá (a diferencia de DeudaComprobante) para no perderse si el expediente
-  // salda su deuda y desaparece del próximo import. Determina qué Dependencia
+  // salda su deuda y desaparece del próximo import. Determina qué Delegación
   // ve a este matriculado.
   zona               String?
   subzona            String?
@@ -123,7 +123,7 @@ model DeudaPagada {
   fechaPago   DateTime @default(now()) @map("fecha_pago")
   exportado   Boolean  @default(false)
   createdAt   DateTime @default(now())
-  dependenciaId       Int?    @map("dependencia_id")
+  delegacionId        Int?    @map("delegacion_id")
   comprobanteEfectivo String? @map("comprobante_efectivo")
 
   @@index([expediente])
@@ -151,7 +151,7 @@ model CuotaMensual {
   exportado   Boolean   @default(false)
   mpPaymentId String?   @map("mp_payment_id")
   paywayPaymentId String? @map("payway_payment_id")
-  dependenciaId       Int?    @map("dependencia_id")
+  delegacionId        Int?    @map("delegacion_id")
   comprobanteEfectivo String? @map("comprobante_efectivo")
 
   @@unique([expediente, periodo])
@@ -167,7 +167,7 @@ model PagoAnual {
   paywayPaymentId String? @map("payway_payment_id")
   monto               Float?
   metodoPago          String? @map("metodo_pago")
-  dependenciaId       Int?    @map("dependencia_id")
+  delegacionId        Int?    @map("delegacion_id")
   comprobanteEfectivo String? @map("comprobante_efectivo")
 
   @@map("pago_anual")

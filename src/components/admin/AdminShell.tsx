@@ -65,7 +65,7 @@ const navItems = [
     { href: "/admin/usuarios", label: "Usuarios", icon: Users, color: "text-indigo-500" },
     { href: "/admin/legajo", label: "Legajo", icon: BookUser, color: "text-teal-500" },
     { href: "/admin/gestionar-admins", label: "Gestionar Admins", icon: UserCog, color: "text-violet-500" },
-    { href: "/admin/dependencias", label: "Dependencias", icon: Building2, color: "text-emerald-600" },
+    { href: "/admin/delegaciones", label: "Delegaciones", icon: Building2, color: "text-emerald-600" },
     { href: "/admin/cuentas", label: "Cuentas Registradas", icon: ShieldCheck, color: "text-violet-400" },
     { href: "/admin/cursos", label: "Cursos", icon: GraduationCap, color: "text-pink-500" },
     { href: "/admin/noticias", label: "Actividades Institucionales", icon: Newspaper, color: "text-amber-500" },
@@ -141,7 +141,7 @@ export default function AdminShell({ session, image, permisos, children }: Admin
         if (item.href === "/admin") return true;
         const key = item.href.split("/")[2];
         if (!key) return true;
-        if (key === "gestionar-admins" || key === "dependencias") return false;
+        if (key === "gestionar-admins" || key === "delegaciones") return false;
         if (key === "solicitudes") {
             return permisos.includes("solicitudes") || permisos.some(p => p.startsWith("solicitudes:"));
         }
@@ -177,9 +177,9 @@ export default function AdminShell({ session, image, permisos, children }: Admin
     const roleLabel = isSuperAdmin ? "Superadmin" : "Admin";
     const roleLabelLong = isSuperAdmin ? "Superadministrador" : "Administrador";
 
-    // Cuentas de dependencia (cobradores): interfaz mínima, sin sidebar ni acceso
-    // a ninguna otra sección — el middleware ya las encierra en /admin/dependencias/cobrar.
-    if (session.dependenciaId) {
+    // Cuentas de delegación (cobradores): interfaz mínima, sin sidebar ni acceso
+    // a ninguna otra sección — el middleware ya las encierra en /admin/delegaciones/cobrar.
+    if (session.delegacionId) {
         return (
             <ToastProvider>
             <div className="min-h-screen bg-[#f8fafc] dark:bg-[#02182b] transition-colors duration-300">
@@ -187,8 +187,8 @@ export default function AdminShell({ session, image, permisos, children }: Admin
                     <div className="flex items-center gap-3">
                         <Image src="/sgo_nuevo.png" alt="SGO" width={28} height={28} className="object-contain" />
                         <div>
-                            <p className="text-white font-bold text-[13px] leading-tight">{session.dependenciaNombre}</p>
-                            <p className="text-white/40 text-[9px] uppercase tracking-widest">Dependencia · Cobros</p>
+                            <p className="text-white font-bold text-[13px] leading-tight">{session.delegacionNombre}</p>
+                            <p className="text-white/40 text-[9px] uppercase tracking-widest">Delegación · Cobros</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-3">

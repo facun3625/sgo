@@ -40,7 +40,7 @@ interface CuotaMensualData {
     estado: string;
     metodo?: "mercadopago" | "payway" | "transferencia" | "home_banking" | "banelco" | "efectivo" | "transferencia_pendiente" | "matriculacion" | null;
     metodoPago?: string | null;
-    dependenciaNombre?: string | null;
+    delegacionNombre?: string | null;
 }
 
 interface Boleta {
@@ -70,17 +70,17 @@ interface PagosData {
     esVeterano: boolean;
     esExento: boolean;
     esConsultor: boolean;
-    deudasPagadas: { id: number; monto: number; metodoPago: string; fechaPago: string; dependenciaNombre?: string | null }[];
+    deudasPagadas: { id: number; monto: number; metodoPago: string; fechaPago: string; delegacionNombre?: string | null }[];
     boletas: { mensual: Boleta | null; anual: Boleta | null; deuda: Boleta | null };
     boletaDescarga?: { mensual: boolean; anual: boolean; deuda: boolean };
 }
 
-function labelMetodoPago(metodo?: string | null, dependenciaNombre?: string | null): string {
+function labelMetodoPago(metodo?: string | null, delegacionNombre?: string | null): string {
     if (metodo === "mercadopago") return "Mercado Pago";
     if (metodo === "payway") return "PayWay";
     if (metodo === "banelco" || metodo === "home_banking") return "Banelco / Home Banking";
     if (metodo === "transferencia") return "Transferencia bancaria";
-    if (metodo === "efectivo") return dependenciaNombre ? `Efectivo — Dependencia ${dependenciaNombre}` : "Efectivo";
+    if (metodo === "efectivo") return delegacionNombre ? `Efectivo — Delegación ${delegacionNombre}` : "Efectivo";
     if (metodo === "matriculacion") return "Incluido en matrícula";
     return "";
 }
@@ -519,9 +519,9 @@ export default function MatriculaStatus() {
                                             <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
                                                 Abonado — {formatPeriodo(data.cuotaActual.periodo)}
                                             </p>
-                                            {labelMetodoPago(data.cuotaActual.metodoPago, data.cuotaActual.dependenciaNombre) && (
+                                            {labelMetodoPago(data.cuotaActual.metodoPago, data.cuotaActual.delegacionNombre) && (
                                                 <p className="text-[12px] text-slate-700 mt-0.5">
-                                                    vía {labelMetodoPago(data.cuotaActual.metodoPago, data.cuotaActual.dependenciaNombre)}
+                                                    vía {labelMetodoPago(data.cuotaActual.metodoPago, data.cuotaActual.delegacionNombre)}
                                                 </p>
                                             )}
                                         </div>
@@ -625,7 +625,7 @@ export default function MatriculaStatus() {
                                 amount={c.monto.toLocaleString("es-AR")}
                                 status={c.estado === "pagado" ? "paid" : "pending"}
                                 metodo={c.metodo}
-                                dependenciaNombre={c.dependenciaNombre}
+                                delegacionNombre={c.delegacionNombre}
                                 isLast={i === cuotasVisibles.length - 1 && (!data?.deudasPagadas || data.deudasPagadas.length === 0)}
                             />
                         ))
@@ -639,7 +639,7 @@ export default function MatriculaStatus() {
                             amount={d.monto.toLocaleString("es-AR")}
                             status="paid"
                             metodo={d.metodoPago === "efectivo" ? "efectivo" : d.metodoPago === "banelco" ? "home_banking" : d.metodoPago === "transferencia" ? "transferencia" : d.metodoPago === "payway" ? "payway" : "mercadopago"}
-                            dependenciaNombre={d.dependenciaNombre}
+                            delegacionNombre={d.delegacionNombre}
                             isLast={i === data.deudasPagadas.length - 1}
                         />
                     ))}
@@ -693,12 +693,12 @@ export default function MatriculaStatus() {
     );
 }
 
-function ConceptItem({ label, amount, status, metodo, dependenciaNombre, isLast }: {
+function ConceptItem({ label, amount, status, metodo, delegacionNombre, isLast }: {
     label: string;
     amount: string;
     status: "paid" | "pending";
     metodo?: "mercadopago" | "payway" | "transferencia" | "home_banking" | "banelco" | "efectivo" | "transferencia_pendiente" | "matriculacion" | null;
-    dependenciaNombre?: string | null;
+    delegacionNombre?: string | null;
     isLast?: boolean;
 }) {
     const paid = status === "paid";
@@ -706,7 +706,7 @@ function ConceptItem({ label, amount, status, metodo, dependenciaNombre, isLast 
     function MetodoTag() {
         if (metodo === "efectivo") return (
             <span className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-700 dark:text-slate-400">
-                <Banknote size={10} /> Efectivo{dependenciaNombre ? ` — Dependencia ${dependenciaNombre}` : ""}
+                <Banknote size={10} /> Efectivo{delegacionNombre ? ` — Delegación ${delegacionNombre}` : ""}
             </span>
         );
         if (metodo === "banelco") return (

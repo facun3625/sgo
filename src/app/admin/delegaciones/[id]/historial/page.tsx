@@ -25,7 +25,7 @@ function mesActual() {
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 }
 
-export default function HistorialDependenciaPage() {
+export default function HistorialDelegacionPage() {
     const { id } = useParams<{ id: string }>();
     const router = useRouter();
     const [nombre, setNombre] = useState("");
@@ -39,10 +39,10 @@ export default function HistorialDependenciaPage() {
         setLoading(true);
         try {
             const params = mes ? `?mes=${mes}` : "";
-            const res = await fetch(`/api/admin/dependencias/${id}${params}`);
+            const res = await fetch(`/api/admin/delegaciones/${id}${params}`);
             if (!res.ok) { setNotFound(true); return; }
             const data = await res.json();
-            setNombre(data.dependencia.nombre);
+            setNombre(data.delegacion.nombre);
             setCobros(data.cobros ?? []);
             setTotalCobrado(data.totalCobrado ?? 0);
         } finally { setLoading(false); }
@@ -53,9 +53,9 @@ export default function HistorialDependenciaPage() {
     if (notFound) {
         return (
             <div className="p-6 md:p-8">
-                <p className="text-[14px] text-slate-400">Dependencia no encontrada.</p>
-                <button onClick={() => router.push("/admin/dependencias")} className="mt-3 text-[13px] font-semibold text-emerald-600 hover:underline">
-                    ← Volver a Dependencias
+                <p className="text-[14px] text-slate-400">Delegación no encontrada.</p>
+                <button onClick={() => router.push("/admin/delegaciones")} className="mt-3 text-[13px] font-semibold text-emerald-600 hover:underline">
+                    ← Volver a Delegaciones
                 </button>
             </div>
         );
@@ -63,9 +63,9 @@ export default function HistorialDependenciaPage() {
 
     return (
         <div className="p-6 md:p-8 space-y-6 animate-fade-in">
-            <button onClick={() => router.push("/admin/dependencias")}
+            <button onClick={() => router.push("/admin/delegaciones")}
                 className="flex items-center gap-1.5 text-[13px] font-semibold text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-all">
-                <ArrowLeft size={15} /> Dependencias
+                <ArrowLeft size={15} /> Delegaciones
             </button>
 
             <div className="flex items-center gap-3">
@@ -76,7 +76,7 @@ export default function HistorialDependenciaPage() {
                     <h1 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
                         {loading && !nombre ? "Cargando..." : `Historial — ${nombre}`}
                     </h1>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">Todos los cobros en efectivo registrados por esta dependencia</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Todos los cobros en efectivo registrados por esta delegación</p>
                 </div>
             </div>
 
@@ -108,7 +108,7 @@ export default function HistorialDependenciaPage() {
                                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Total</p>
                                     <p className="text-xl font-black text-emerald-600 dark:text-emerald-400 leading-tight">${totalCobrado.toLocaleString("es-AR")}</p>
                                 </div>
-                                <button onClick={() => exportarCobrosExcel(cobros, `Cobros_${nombre || "dependencia"}_${mesFiltro || "todos"}.xlsx`)}
+                                <button onClick={() => exportarCobrosExcel(cobros, `Cobros_${nombre || "delegacion"}_${mesFiltro || "todos"}.xlsx`)}
                                     className="flex items-center gap-2 h-10 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[12px] font-bold transition-all whitespace-nowrap">
                                     <Download size={14} /> Exportar Excel
                                 </button>
@@ -121,7 +121,7 @@ export default function HistorialDependenciaPage() {
                     <div className="flex justify-center py-16"><Loader2 size={24} className="animate-spin text-emerald-400" /></div>
                 ) : cobros.length === 0 ? (
                     <p className="text-[13px] text-slate-400 py-12 text-center">
-                        {mesFiltro ? "Sin cobros registrados en ese mes." : "Esta dependencia todavía no registró cobros."}
+                        {mesFiltro ? "Sin cobros registrados en ese mes." : "Esta delegación todavía no registró cobros."}
                     </p>
                 ) : (
                     <div className="overflow-x-auto rounded-xl border border-slate-100 dark:border-slate-800">

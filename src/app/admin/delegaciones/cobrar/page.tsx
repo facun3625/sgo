@@ -75,7 +75,7 @@ function DisplayField({ label, value }: { label: string; value: string | null })
     );
 }
 
-export default function CobrarDependenciaPage() {
+export default function CobrarDelegacionPage() {
     const { showToast } = useToast();
     const [tab, setTab] = useState<"cobrar" | "historial">("cobrar");
     const [usuarios, setUsuarios] = useState<UsuarioLista[]>([]);
@@ -101,7 +101,7 @@ export default function CobrarDependenciaPage() {
     const [cobrando, setCobrando] = useState(false);
 
     useEffect(() => {
-        fetch("/api/dependencias/buscar")
+        fetch("/api/delegaciones/buscar")
             .then(r => r.json())
             .then(data => {
                 if (data.usuarios) setUsuarios(data.usuarios);
@@ -113,7 +113,7 @@ export default function CobrarDependenciaPage() {
     useEffect(() => {
         if (tab !== "historial") return;
         setLoadingHistorial(true);
-        fetch(`/api/dependencias/historial?mes=${mesHistorial}`)
+        fetch(`/api/delegaciones/historial?mes=${mesHistorial}`)
             .then(r => r.json())
             .then(data => { setHistorial(data.cobros ?? []); setTotalHistorial(data.totalCobrado ?? 0); })
             .finally(() => setLoadingHistorial(false));
@@ -142,7 +142,7 @@ export default function CobrarDependenciaPage() {
         setDatosAbiertos(false);
         setLoadingDetalle(true);
         try {
-            const res = await fetch(`/api/dependencias/matriculado/${encodeURIComponent(expediente)}`);
+            const res = await fetch(`/api/delegaciones/matriculado/${encodeURIComponent(expediente)}`);
             if (res.ok) setDetalle(await res.json());
             else showToast("No se pudo cargar el matriculado", "error");
         } finally { setLoadingDetalle(false); }
@@ -152,7 +152,7 @@ export default function CobrarDependenciaPage() {
         if (!cobroModal || !seleccionado) return;
         setCobrando(true);
         try {
-            const res = await fetch("/api/dependencias/cobrar", {
+            const res = await fetch("/api/delegaciones/cobrar", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ expediente: seleccionado, tipo: cobroModal.tipo, comprobante }),
@@ -176,7 +176,7 @@ export default function CobrarDependenciaPage() {
                     <Banknote size={20} className="text-emerald-600" />
                 </div>
                 <div>
-                    <h1 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">Cobro en Dependencia</h1>
+                    <h1 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">Cobro en Delegación</h1>
                     <p className="text-sm text-slate-500 dark:text-slate-400">Buscá un matriculado para ver sus datos, su deuda y registrar cobros en efectivo</p>
                 </div>
             </div>
@@ -256,7 +256,7 @@ export default function CobrarDependenciaPage() {
                 <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 flex items-start gap-3">
                     <AlertTriangle size={16} className="text-amber-500 mt-0.5 flex-shrink-0" />
                     <p className="text-[13px] text-amber-700 dark:text-amber-400">
-                        Esta dependencia todavía no tiene una zona asignada — pedile al Colegio que la configure para poder ver matriculados.
+                        Esta delegación todavía no tiene una zona asignada — pedile al Colegio que la configure para poder ver matriculados.
                     </p>
                 </div>
             )}

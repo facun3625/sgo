@@ -150,9 +150,9 @@ export async function GET() {
     type Cobertura = "mensual" | "debito" | "anual";
     type MetodoCuota = "mercadopago" | "transferencia" | "home_banking" | "banelco" | "efectivo" | "payway" | "transferencia_pendiente" | null;
 
-    const dependenciaIds = [...new Set(cuotas.map((c) => c.dependenciaId).filter((id): id is number => id != null))];
-    const dependenciasMap = dependenciaIds.length > 0
-        ? new Map((await prisma.dependencia.findMany({ where: { id: { in: dependenciaIds } }, select: { id: true, nombre: true } })).map((dep) => [dep.id, dep.nombre]))
+    const delegacionIds = [...new Set(cuotas.map((c) => c.delegacionId).filter((id): id is number => id != null))];
+    const delegacionesMap = delegacionIds.length > 0
+        ? new Map((await prisma.delegacion.findMany({ where: { id: { in: delegacionIds } }, select: { id: true, nombre: true } })).map((dep) => [dep.id, dep.nombre]))
         : new Map<number, string>();
 
     const resultado = datos.map((d) => {
@@ -199,7 +199,7 @@ export async function GET() {
                 estado: cuota.estado,
                 fechaPago: cuota.fechaPago,
                 metodo: metodoCuota,
-                dependenciaNombre: cuota.dependenciaId ? (dependenciasMap.get(cuota.dependenciaId) ?? null) : null,
+                delegacionNombre: cuota.delegacionId ? (delegacionesMap.get(cuota.delegacionId) ?? null) : null,
             } : null,
             deudaTotal: deuda?.total ?? 0,
             deudaCount: deuda?.count ?? 0,

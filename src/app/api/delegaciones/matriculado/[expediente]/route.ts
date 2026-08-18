@@ -6,7 +6,7 @@ import { esMatriculadoJoven, montoConDescuento } from "@/lib/matricula";
 function isAdmin(lvl: string) { return lvl === "superadmin" || lvl === "admin"; }
 
 // Vista de solo lectura (datos + deuda + estado de cuotas) para la pantalla de
-// cobro en efectivo de Dependencias. No expone ningún endpoint de edición.
+// cobro en efectivo de Delegaciones. No expone ningún endpoint de edición.
 export async function GET(_: NextRequest, { params }: { params: Promise<{ expediente: string }> }) {
     const session = await getSession();
     if (!session || !isAdmin(session.accessLevel)) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
