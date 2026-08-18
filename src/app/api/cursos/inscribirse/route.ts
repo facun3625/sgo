@@ -32,6 +32,9 @@ export async function GET(req: NextRequest) {
         opcion: inscripcion.opcion?.nombre ?? null,
         nombre: inscripcion.guestNombre,
         apellido: inscripcion.guestApellido,
+        email: inscripcion.guestEmail,
+        id: inscripcion.id,
+        monto: inscripcion.opcion?.precioNoMatriculado ?? null,
     });
 }
 

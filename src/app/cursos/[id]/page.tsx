@@ -57,13 +57,14 @@ export default function CursoPublicoDetailPage() {
     const [enviando, setEnviando] = useState(false);
     const [error, setError] = useState("");
     const [inscripcion, setInscripcion] = useState<{ id: number; estado: string; monto: number } | null>(null);
+    const [guestInfo, setGuestInfo] = useState<{ nombre: string; apellido: string; email: string; opcion?: string | null }>({ nombre: "", apellido: "", email: "" });
     const [metodoPago, setMetodoPago] = useState<"elegir" | "payway">("elegir");
     const [paywayProcesando, setPaywayProcesando] = useState(false);
     const [paywayError, setPaywayError] = useState<string | null>(null);
 
     const [consultaDni, setConsultaDni] = useState("");
     const [consultando, setConsultando] = useState(false);
-    const [consultaResult, setConsultaResult] = useState<{ inscripto: boolean; estado?: string; opcion?: string | null; comprobanteEnviado?: boolean } | null>(null);
+    const [consultaResult, setConsultaResult] = useState<{ inscripto: boolean; estado?: string; opcion?: string | null; comprobanteEnviado?: boolean; id?: number; monto?: number | null; email?: string } | null>(null);
     const [consultaError, setConsultaError] = useState("");
 
     useEffect(() => {
@@ -94,6 +95,7 @@ export default function CursoPublicoDetailPage() {
             });
             const data = await res.json();
             if (!res.ok) { setError(data.error || "Error al inscribirse"); return; }
+            setGuestInfo({ nombre: form.nombre, apellido: form.apellido, email: form.email, opcion: opcionActual?.nombre ?? null });
             setInscripcion(data);
         } catch {
             setError("Error de conexión. Intentá de nuevo.");
@@ -134,6 +136,13 @@ export default function CursoPublicoDetailPage() {
             const data = await res.json();
             if (!res.ok) { setConsultaError(data.error || "Error al consultar"); return; }
             setConsultaResult(data);
+            // Si le falta pagar (y no mandó comprobante de transferencia pendiente de
+            // revisión), la enganchamos al mismo bloque de pago que usa la inscripción
+            // recién creada, para que pueda retomar el pago sin cargar todo de nuevo.
+            if (data.inscripto && data.estado !== "confirmada" && !data.comprobanteEnviado && data.id && typeof data.monto === "number") {
+                setGuestInfo({ nombre: data.nombre || "", apellido: data.apellido || "", email: data.email || "", opcion: data.opcion ?? null });
+                setInscripcion({ id: data.id, estado: data.estado, monto: data.monto });
+            }
         } catch {
             setConsultaError("Error de conexión. Intentá de nuevo.");
         } finally {
@@ -238,10 +247,16 @@ export default function CursoPublicoDetailPage() {
                         <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-6 text-center space-y-2">
                             <CheckCircle2 size={32} className="text-emerald-600 mx-auto" />
                             <p className="text-[16px] font-black text-emerald-800">¡Listo, ya sos parte del curso! 🎉</p>
-                            <p className="text-[13px] text-emerald-700">Te enviamos la confirmación a {form.email}. ¡Nos vemos ahí!</p>
+                            <p className="text-[13px] text-emerald-700">Te enviamos la confirmación a {guestInfo.email}. ¡Nos vemos ahí!</p>
                         </div>
                     ) : (
                         <div className="bg-white rounded-2xl border border-slate-100 p-5 space-y-3">
+                            {(guestInfo.nombre || guestInfo.apellido) && (
+                                <div className="pb-3 border-b border-slate-100">
+                                    <p className="text-[14px] font-bold text-slate-800">{guestInfo.nombre} {guestInfo.apellido}</p>
+                                    {guestInfo.opcion && <p className="text-[12px] text-slate-500">{guestInfo.opcion}</p>}
+                                </div>
+                            )}
                             <div className="flex items-center justify-between gap-4">
                                 <div>
                                     <p className="text-[12px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Monto a abonar</p>
