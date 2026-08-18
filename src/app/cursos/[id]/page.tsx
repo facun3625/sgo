@@ -57,7 +57,10 @@ export default function CursoPublicoDetailPage() {
     const [enviando, setEnviando] = useState(false);
     const [error, setError] = useState("");
     const [inscripcion, setInscripcion] = useState<{ id: number; estado: string; monto: number } | null>(null);
-    const [guestInfo, setGuestInfo] = useState<{ nombre: string; apellido: string; email: string; opcion?: string | null }>({ nombre: "", apellido: "", email: "" });
+    const [guestInfo, setGuestInfo] = useState<{
+        nombre: string; apellido: string; email: string; opcion?: string | null; fecha?: string;
+        dni?: string; telefono?: string; direccion?: string; localidad?: string; provincia?: string;
+    }>({ nombre: "", apellido: "", email: "" });
     const [metodoPago, setMetodoPago] = useState<"elegir" | "payway">("elegir");
     const [paywayProcesando, setPaywayProcesando] = useState(false);
     const [paywayError, setPaywayError] = useState<string | null>(null);
@@ -95,7 +98,10 @@ export default function CursoPublicoDetailPage() {
             });
             const data = await res.json();
             if (!res.ok) { setError(data.error || "Error al inscribirse"); return; }
-            setGuestInfo({ nombre: form.nombre, apellido: form.apellido, email: form.email, opcion: opcionActual?.nombre ?? null });
+            setGuestInfo({
+                nombre: form.nombre, apellido: form.apellido, email: form.email, opcion: opcionActual?.nombre ?? null, fecha: data.fecha,
+                dni: form.dni, telefono: form.telefono, direccion: form.direccion, localidad: form.localidad, provincia: form.provincia,
+            });
             setInscripcion(data);
         } catch {
             setError("Error de conexión. Intentá de nuevo.");
@@ -140,7 +146,10 @@ export default function CursoPublicoDetailPage() {
             // revisión), la enganchamos al mismo bloque de pago que usa la inscripción
             // recién creada, para que pueda retomar el pago sin cargar todo de nuevo.
             if (data.inscripto && data.estado !== "confirmada" && !data.comprobanteEnviado && data.id && typeof data.monto === "number") {
-                setGuestInfo({ nombre: data.nombre || "", apellido: data.apellido || "", email: data.email || "", opcion: data.opcion ?? null });
+                setGuestInfo({
+                    nombre: data.nombre || "", apellido: data.apellido || "", email: data.email || "", opcion: data.opcion ?? null, fecha: data.fecha,
+                    dni: data.dni, telefono: data.telefono, direccion: data.direccion, localidad: data.localidad, provincia: data.provincia,
+                });
                 setInscripcion({ id: data.id, estado: data.estado, monto: data.monto });
             }
         } catch {
@@ -251,10 +260,22 @@ export default function CursoPublicoDetailPage() {
                         </div>
                     ) : (
                         <div className="bg-white rounded-2xl border border-slate-100 p-5 space-y-3">
+                            <div className="flex items-center gap-2 px-3 py-2.5 bg-emerald-50 border border-emerald-100 rounded-xl text-[13px] text-emerald-700">
+                                <CheckCircle2 size={14} className="flex-shrink-0" />
+                                Estás inscripto, pero todavía falta que completes el pago{guestInfo.fecha ? ` (inscripción del ${new Date(guestInfo.fecha).toLocaleDateString("es-AR")})` : ""}.
+                            </div>
                             {(guestInfo.nombre || guestInfo.apellido) && (
-                                <div className="pb-3 border-b border-slate-100">
+                                <div className="pb-3 border-b border-slate-100 space-y-1">
                                     <p className="text-[14px] font-bold text-slate-800">{guestInfo.nombre} {guestInfo.apellido}</p>
                                     {guestInfo.opcion && <p className="text-[12px] text-slate-500">{guestInfo.opcion}</p>}
+                                    <div className="text-[12px] text-slate-400 space-y-0.5 pt-1">
+                                        {guestInfo.dni && <p>DNI {guestInfo.dni}</p>}
+                                        {guestInfo.email && <p>{guestInfo.email}</p>}
+                                        {guestInfo.telefono && <p>Tel. {guestInfo.telefono}</p>}
+                                        {(guestInfo.direccion || guestInfo.localidad || guestInfo.provincia) && (
+                                            <p>{[guestInfo.direccion, guestInfo.localidad, guestInfo.provincia].filter(Boolean).join(", ")}</p>
+                                        )}
+                                    </div>
                                 </div>
                             )}
                             <div className="flex items-center justify-between gap-4">
@@ -307,6 +328,7 @@ export default function CursoPublicoDetailPage() {
                             )}
 
                             <p className="text-[12px] text-slate-500">Apenas se confirme el pago te avisamos por email.</p>
+                            <p className="text-[12px] text-slate-400">¿Ya hiciste el pago y seguís viendo esto? Tranqui, escribinos al 0342-4592700 y lo resolvemos al toque.</p>
                         </div>
                     )
                 ) : vencida ? (

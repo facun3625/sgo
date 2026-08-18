@@ -33,8 +33,14 @@ export async function GET(req: NextRequest) {
         nombre: inscripcion.guestNombre,
         apellido: inscripcion.guestApellido,
         email: inscripcion.guestEmail,
+        dni: inscripcion.guestDni,
+        telefono: inscripcion.guestTelefono,
+        direccion: inscripcion.guestDireccion,
+        localidad: inscripcion.guestLocalidad,
+        provincia: inscripcion.guestProvincia,
         id: inscripcion.id,
         monto: inscripcion.opcion?.precioNoMatriculado ?? null,
+        fecha: inscripcion.fecha,
     });
 }
 
@@ -98,5 +104,5 @@ export async function POST(req: NextRequest) {
         }),
     ]);
 
-    return NextResponse.json({ id: inscripcion.id, estado: inscripcion.estado, monto: precio });
+    return NextResponse.json({ id: inscripcion.id, estado: inscripcion.estado, monto: precio, fecha: inscripcion.fecha });
 }
