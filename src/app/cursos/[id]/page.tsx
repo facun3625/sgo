@@ -328,7 +328,7 @@ export default function CursoPublicoDetailPage() {
                             )}
 
                             <p className="text-[12px] text-slate-500">Apenas se confirme el pago te avisamos por email.</p>
-                            <p className="text-[12px] text-slate-400">¿Ya hiciste el pago y seguís viendo esto? Tranqui, escribinos al 0342-4592700 y lo resolvemos al toque.</p>
+                            <p className="text-[12px] text-slate-400">¿Ya hiciste el pago y seguís viendo esto? Escribinos al 0342-4592700 y lo resolvemos.</p>
                         </div>
                     )
                 ) : vencida ? (
