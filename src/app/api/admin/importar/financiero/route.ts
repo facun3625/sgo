@@ -37,10 +37,14 @@ function getFechaVencimiento(row: Record<string, string>): Date | null {
     const r = Object.fromEntries(Object.entries(row).map(([k, v]) => [normalizeKey(k), v]));
     const raw = r["fecha de vencimiento"] || r["fecha_vencimiento"] || r["vencimiento"] || "";
     const partial = raw.trim() ? raw : (Object.entries(r).find(([k]) => k.includes("vencimiento"))?.[1] ?? "");
-    const m = String(partial).trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    // Algunos exports de "Cuenta Corriente" traen la fecha como texto plano con
+    // año de 2 dígitos (ej. "30/9/19") en vez de fecha tipada de Excel — se
+    // completa el siglo con el mismo pivot que usa Excel/COBOL: 00-68 → 20xx, 69-99 → 19xx.
+    const m = String(partial).trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{2}|\d{4})$/);
     if (!m) return null;
-    const [, d, mo, y] = m;
-    const fecha = new Date(Date.UTC(+y, +mo - 1, +d));
+    const [, d, mo, yRaw] = m;
+    const y = yRaw.length === 2 ? (+yRaw <= 68 ? 2000 + +yRaw : 1900 + +yRaw) : +yRaw;
+    const fecha = new Date(Date.UTC(y, +mo - 1, +d));
     return isNaN(fecha.getTime()) ? null : fecha;
 }
 

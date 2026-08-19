@@ -140,6 +140,7 @@ function ContabilidadView({ stats, pctPagado }: { stats: Stats | null; pctPagado
     const [mes, setMes] = useState(mesActual());
     const [soloNoExportados, setSoloNoExportados] = useState(false);
     const [filas, setFilas] = useState<FilaContable[]>([]);
+    const [delegacionFiltro, setDelegacionFiltro] = useState("");
     const [cargando, setCargando] = useState(false);
     const [seleccionados, setSeleccionados] = useState<Set<string>>(new Set());
     const [descargando, setDescargando] = useState(false);
@@ -147,6 +148,7 @@ function ContabilidadView({ stats, pctPagado }: { stats: Stats | null; pctPagado
     const cargar = useCallback(async () => {
         setCargando(true);
         setSeleccionados(new Set());
+        setDelegacionFiltro("");
         const params = new URLSearchParams({ tipo, mes, soloNoExportados: String(soloNoExportados) });
         if (metodoPago) params.set("metodoPago", metodoPago);
         const res = await fetch(`/api/admin/pagos/exportar?${params}`);
@@ -156,6 +158,16 @@ function ContabilidadView({ stats, pctPagado }: { stats: Stats | null; pctPagado
     }, [tipo, metodoPago, mes, soloNoExportados]);
 
     useEffect(() => { cargar(); }, [cargar]);
+
+    const delegacionesDisponibles = useMemo(
+        () => [...new Set(filas.map((f) => f.delegacion).filter(Boolean))].sort(),
+        [filas]
+    );
+
+    const filasFiltradas = useMemo(
+        () => delegacionFiltro ? filas.filter((f) => f.delegacion === delegacionFiltro) : filas,
+        [filas, delegacionFiltro]
+    );
 
     function rowKey(f: FilaContable) { return `${f.tipo}:${f.id}`; }
 
@@ -168,10 +180,10 @@ function ContabilidadView({ stats, pctPagado }: { stats: Stats | null; pctPagado
         });
     }
 
-    const todosSeleccionados = filas.length > 0 && filas.every((f) => seleccionados.has(rowKey(f)));
+    const todosSeleccionados = filasFiltradas.length > 0 && filasFiltradas.every((f) => seleccionados.has(rowKey(f)));
     function toggleTodos() {
         if (todosSeleccionados) setSeleccionados(new Set());
-        else setSeleccionados(new Set(filas.map(rowKey)));
+        else setSeleccionados(new Set(filasFiltradas.map(rowKey)));
     }
 
     async function descargar(filasAExportar: FilaContable[]) {
@@ -182,25 +194,46 @@ function ContabilidadView({ stats, pctPagado }: { stats: Stats | null; pctPagado
         const ultimoDiaMes = new Date(parseInt(y), parseInt(m), 0);
         const fechaVencimiento = `${String(ultimoDiaMes.getDate()).padStart(2, "0")}/${m.padStart(2, "0")}/${y}`;
 
-        const filasDatos = filasAExportar.map((f) => ({
-            "Número recibo": f.nroRecibo,
-            "Cliente": f.cliente,
-            "Fecha cobro": fmtFecha(f.fechaCobro),
-            "Importe en $": f.importe,
-            "Tipo Comprobante": "FAC",
-            "Número comprobante": f.nroComprobante,
-            "Fecha vencimiento": fechaVencimiento,
-            "Delegación": f.delegacion || "",
-        }));
+        // Deudas Vencidas nunca llevan Número comprobante ni Fecha vencimiento
+        // completos (sin importar el método de pago). Cobradas en efectivo
+        // (Delegaciones) además van sin Número recibo, sin Tipo Comprobante y
+        // sin columna Delegación — plantilla reducida a Cliente/Fecha/Importe.
+        const esDeuda = tipo === "deudas";
+        const esDeudaEfectivo = esDeuda && metodoPago === "efectivo";
+        const filasDatos = esDeudaEfectivo
+            ? filasAExportar.map((f) => ({
+                "Número recibo": "",
+                "Cliente": f.cliente,
+                "Fecha cobro": fmtFecha(f.fechaCobro),
+                "Importe en $": f.importe,
+                "Tipo Comprobante": "",
+                "Número comprobante": "",
+                "Fecha vencimiento": "",
+            }))
+            : filasAExportar.map((f) => ({
+                "Número recibo": f.nroRecibo,
+                "Cliente": f.cliente,
+                "Fecha cobro": fmtFecha(f.fechaCobro),
+                "Importe en $": f.importe,
+                "Tipo Comprobante": "FAC",
+                "Número comprobante": esDeuda ? "" : f.nroComprobante,
+                "Fecha vencimiento": esDeuda ? "" : fechaVencimiento,
+                "Delegación": f.delegacion || "",
+            }));
 
         const wb = XLSX.utils.book_new();
         const ws = XLSX.utils.json_to_sheet(filasDatos);
-        ws["!cols"] = [{ wch: 16 }, { wch: 12 }, { wch: 14 }, { wch: 14 }, { wch: 18 }, { wch: 20 }, { wch: 18 }, { wch: 18 }];
+        ws["!cols"] = esDeudaEfectivo
+            ? [{ wch: 16 }, { wch: 12 }, { wch: 14 }, { wch: 14 }, { wch: 18 }, { wch: 20 }, { wch: 18 }]
+            : [{ wch: 16 }, { wch: 12 }, { wch: 14 }, { wch: 14 }, { wch: 18 }, { wch: 20 }, { wch: 18 }, { wch: 18 }];
         XLSX.utils.book_append_sheet(wb, ws, "Registros");
         const tipoLabel = tipo === "deudas" ? "Deuda" : tipo === "cuotas" ? "Cuotas" : tipo === "anual" ? "Anual" : "Todos";
         const hoy = new Date();
         const fechaHoy = `${hoy.getFullYear()}${String(hoy.getMonth() + 1).padStart(2, "0")}${String(hoy.getDate()).padStart(2, "0")}`;
-        XLSX.writeFile(wb, `MPAgoSGO_${tipoLabel}_${y}_${m}_${fechaHoy}.xlsx`);
+        const prefijo = tipo === "deudas" ? "deudasSGO" : tipo === "cuotas" ? "cuotas_SGO" : tipo === "anual" ? "cuota_anual_SGO" : "MPAgoSGO";
+        const delegacionSegmento = delegacionFiltro ? `${delegacionFiltro.trim().replace(/\s+/g, "_")}_` : "";
+        const tipoSegmento = (tipo === "deudas" || tipo === "cuotas" || tipo === "anual") ? "" : `${tipoLabel}_`;
+        XLSX.writeFile(wb, `${prefijo}_${delegacionSegmento}${tipoSegmento}${y}_${m}_${fechaHoy}.xlsx`);
 
         const items = filasAExportar.map((f) => ({ tipo: f.tipo, id: f.id }));
         await fetch("/api/admin/pagos/exportar", {
@@ -215,8 +248,8 @@ function ContabilidadView({ stats, pctPagado }: { stats: Stats | null; pctPagado
         setDescargando(false);
     }
 
-    const filasSeleccionadas = filas.filter((f) => seleccionados.has(rowKey(f)));
-    const nuevas = filas.filter((f) => !f.exportado);
+    const filasSeleccionadas = filasFiltradas.filter((f) => seleccionados.has(rowKey(f)));
+    const nuevas = filasFiltradas.filter((f) => !f.exportado);
 
     const TIPOS: { key: TipoContable; label: string }[] = [
         { key: "todos", label: "Todos" },
@@ -353,6 +386,31 @@ function ContabilidadView({ stats, pctPagado }: { stats: Stats | null; pctPagado
                         ))}
                     </div>
                 </div>
+
+                {/* Delegación (solo cuando el método filtrado es efectivo) */}
+                {metodoPago === "efectivo" && delegacionesDisponibles.length > 0 && (
+                    <div className="space-y-1.5">
+                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Delegación</p>
+                        <div className="flex flex-wrap gap-1.5">
+                            <button onClick={() => setDelegacionFiltro("")}
+                                className={`px-3 py-1.5 rounded-lg text-[12px] font-semibold transition-all border
+                                    ${delegacionFiltro === ""
+                                        ? "bg-emerald-600 text-white border-emerald-600"
+                                        : "bg-white dark:bg-slate-900 text-slate-500 border-slate-200 dark:border-slate-700 hover:border-slate-300"}`}>
+                                Todas
+                            </button>
+                            {delegacionesDisponibles.map((d) => (
+                                <button key={d} onClick={() => setDelegacionFiltro(d)}
+                                    className={`px-3 py-1.5 rounded-lg text-[12px] font-semibold transition-all border
+                                        ${delegacionFiltro === d
+                                            ? "bg-emerald-600 text-white border-emerald-600"
+                                            : "bg-white dark:bg-slate-900 text-slate-500 border-slate-200 dark:border-slate-700 hover:border-slate-300"}`}>
+                                    {d}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Barra de acciones */}
@@ -361,7 +419,7 @@ function ContabilidadView({ stats, pctPagado }: { stats: Stats | null; pctPagado
                     {cargando
                         ? <span className="flex items-center gap-2 text-[12px] text-slate-400"><Loader2 size={13} className="animate-spin" /> Cargando...</span>
                         : <span className="text-[12px] text-slate-500">
-                            <span className="font-bold text-slate-700 dark:text-slate-200">{filas.length}</span> registros
+                            <span className="font-bold text-slate-700 dark:text-slate-200">{filasFiltradas.length}</span> registros
                             {nuevas.length > 0 && (
                                 <span className="ml-2 text-emerald-500 font-semibold">· {nuevas.length} nuevos</span>
                             )}
@@ -380,8 +438,8 @@ function ContabilidadView({ stats, pctPagado }: { stats: Stats | null; pctPagado
                         </button>
                     )}
                     <button
-                        onClick={() => descargar(filas)}
-                        disabled={descargando || filas.length === 0}
+                        onClick={() => descargar(filasFiltradas)}
+                        disabled={descargando || filasFiltradas.length === 0}
                         className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[12px] font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {descargando ? <Loader2 size={13} className="animate-spin" /> : <Download size={13} />}
@@ -393,7 +451,7 @@ function ContabilidadView({ stats, pctPagado }: { stats: Stats | null; pctPagado
             {/* Tabla */}
             {!cargando && (
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden">
-                    {filas.length === 0 ? (
+                    {filasFiltradas.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-16 gap-3">
                             <FileSpreadsheet size={28} className="text-slate-200 dark:text-slate-700" />
                             <p className="text-[13px] text-slate-400">Sin registros para los filtros seleccionados</p>
@@ -417,7 +475,7 @@ function ContabilidadView({ stats, pctPagado }: { stats: Stats | null; pctPagado
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
-                                    {filas.map((f) => {
+                                    {filasFiltradas.map((f) => {
                                         const sel = seleccionados.has(rowKey(f));
                                         return (
                                             <tr
@@ -487,8 +545,8 @@ function ContabilidadView({ stats, pctPagado }: { stats: Stats | null; pctPagado
                             <div className="px-5 py-3 border-t border-slate-50 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
                                 <p className="text-[11px] text-slate-400">
                                     {seleccionados.size > 0
-                                        ? `${seleccionados.size} seleccionados de ${filas.length}`
-                                        : `${filas.length} registros`}
+                                        ? `${seleccionados.size} seleccionados de ${filasFiltradas.length}`
+                                        : `${filasFiltradas.length} registros`}
                                 </p>
                             </div>
                         </div>

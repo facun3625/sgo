@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useMemo } from "react";
-import { Search, Loader2, User, AlertTriangle, CheckCircle2, Wallet, X, Eye, Banknote, ShieldAlert, Home, ChevronDown, History, Download } from "lucide-react";
+import { Search, Loader2, User, AlertTriangle, CheckCircle2, Wallet, X, Eye, Banknote, ShieldAlert, Home, ChevronDown, History, Download, ArrowLeft } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 import { exportarCobrosExcel } from "@/lib/exportCobrosExcel";
 
@@ -256,7 +256,7 @@ export default function CobrarDelegacionPage() {
                 <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 flex items-start gap-3">
                     <AlertTriangle size={16} className="text-amber-500 mt-0.5 flex-shrink-0" />
                     <p className="text-[13px] text-amber-700 dark:text-amber-400">
-                        Esta delegación todavía no tiene una zona asignada — pedile al Colegio que la configure para poder ver matriculados.
+                        Esta delegación todavía no tiene una subzona asignada — pedile al Colegio que la configure para poder ver matriculados.
                     </p>
                 </div>
             )}
@@ -335,6 +335,11 @@ export default function CobrarDelegacionPage() {
 
             {detalle && (
                 <div className="space-y-4">
+                    <button type="button" onClick={() => { setSeleccionado(null); setDetalle(null); setDatosAbiertos(false); }}
+                        className="flex items-center gap-1.5 text-[12px] font-bold text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
+                        <ArrowLeft size={14} /> Volver al listado
+                    </button>
+
                     {/* Datos — acordeón solo lectura, cerrado por defecto */}
                     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden">
                         <button type="button" onClick={() => setDatosAbiertos(v => !v)}

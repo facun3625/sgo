@@ -183,11 +183,11 @@ export default function DelegacionesPage() {
                                             <div className="flex items-center gap-2">
                                                 {d.zona ? (
                                                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
-                                                        Zona {d.zona}
+                                                        Subzona {d.zona}
                                                     </span>
                                                 ) : (
                                                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400">
-                                                        Sin zona
+                                                        Sin subzona
                                                     </span>
                                                 )}
                                                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${d.activo ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400" : "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400"}`}>
@@ -222,10 +222,10 @@ export default function DelegacionesPage() {
                                     </div>
 
                                     <div className="space-y-1.5">
-                                        <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Zona</label>
-                                        <input type="text" value={editZona} onChange={e => setEditZona(e.target.value)} placeholder="Ej: 50"
+                                        <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Subzona</label>
+                                        <input type="text" value={editZona} onChange={e => setEditZona(e.target.value)} placeholder="Ej: 10"
                                             className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[13px] text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-400" />
-                                        <p className="text-[10px] text-slate-400">Determina qué matriculados ve esta delegación (según la columna Zona del Excel de deudas)</p>
+                                        <p className="text-[10px] text-slate-400">Determina qué matriculados ve esta delegación (según la columna Subzona del Excel de deudas)</p>
                                     </div>
 
                                     <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
@@ -306,10 +306,10 @@ export default function DelegacionesPage() {
                             <p className="text-[10px] text-slate-400">Se usa para iniciar sesión — puede ser distinto del nombre</p>
                         </div>
                         <div className="space-y-1.5">
-                            <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Zona</label>
-                            <input type="text" value={zona} onChange={e => setZona(e.target.value)} placeholder="Ej: 50"
+                            <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Subzona</label>
+                            <input type="text" value={zona} onChange={e => setZona(e.target.value)} placeholder="Ej: 10"
                                 className="w-full h-11 px-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[13px] text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-400" />
-                            <p className="text-[10px] text-slate-400">Determina qué matriculados va a ver esta delegación (columna Zona del Excel de deudas). Se puede dejar vacío y completar después.</p>
+                            <p className="text-[10px] text-slate-400">Determina qué matriculados va a ver esta delegación (columna Subzona del Excel de deudas). Se puede dejar vacío y completar después.</p>
                         </div>
                         <div className="space-y-1.5">
                             <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5"><Key size={11} /> Contraseña *</label>

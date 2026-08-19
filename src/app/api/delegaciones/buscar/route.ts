@@ -3,9 +3,11 @@ import { getSession } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 
 // Matriculados visibles para la cuenta de delegación logueada — acotado a
-// su zona (Delegacion.zona / Dato.zona, tomados del último import de
-// deudas). Si la delegación no tiene zona configurada, no ve a nadie:
-// falla cerrado en vez de mostrar todo por defecto.
+// su zona (Delegacion.zona comparado contra Dato.subzona, tomados del
+// último import de deudas — cada Delegación representa una localidad
+// puntual, que en el Excel de deudas es la SUBZONA, no la zona general).
+// Si la delegación no tiene zona configurada, no ve a nadie: falla
+// cerrado en vez de mostrar todo por defecto.
 export async function GET() {
     const session = await getSession();
     if (!session || !session.delegacionId) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
@@ -14,7 +16,7 @@ export async function GET() {
     if (!delegacion?.zona) return NextResponse.json({ usuarios: [], sinZonaConfigurada: true });
 
     const datos = await prisma.dato.findMany({
-        where: { zona: delegacion.zona },
+        where: { subzona: delegacion.zona },
         select: { cod: true, expediente: true, nombre: true, apellido: true },
         orderBy: [{ apellido: "asc" }, { nombre: "asc" }],
     });
