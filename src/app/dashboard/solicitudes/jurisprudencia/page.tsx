@@ -22,7 +22,7 @@ interface UserDatos {
     nombre: string;
     expediente: string | null;
     emailLegal: string | null;
-    telefono: string | null;
+    movilReal: string | null;
 }
 
 export default function SolicitudJurisprudenciaPage() {
@@ -43,7 +43,7 @@ export default function SolicitudJurisprudenciaPage() {
                 if (res.ok) {
                     const data = await res.json();
                     setDatos(data);
-                    setTelefono(data.telefono || "");
+                    setTelefono(data.movilReal || "");
                 }
             } catch (error) {
                 console.error("Error fetching user data:", error);
@@ -80,11 +80,11 @@ export default function SolicitudJurisprudenciaPage() {
                 window.scrollTo({ top: 0, behavior: "smooth" });
 
                 // Si el teléfono cambió, lo actualizamos también en sus datos personales de forma silenciosa
-                if (telefono !== datos?.telefono) {
+                if (telefono !== datos?.movilReal) {
                     fetch("/api/user/datos", {
                         method: "PATCH",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ telefono })
+                        body: JSON.stringify({ movilReal: telefono })
                     });
                 }
             } else {
