@@ -100,6 +100,26 @@ export default function CobrarDelegacionPage() {
     const [comprobante, setComprobante] = useState("");
     const [cobrando, setCobrando] = useState(false);
 
+    const [deudaRapida, setDeudaRapida] = useState<{ nombre: string; apellido: string; total: number; comprobantes: { fechaVencimiento: string; monto: number }[] } | null>(null);
+    const [cargandoDeudaRapida, setCargandoDeudaRapida] = useState<string | null>(null);
+
+    const verDeudaRapida = async (u: UsuarioLista, e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!u.expediente) return;
+        setCargandoDeudaRapida(u.cod);
+        try {
+            const res = await fetch(`/api/delegaciones/matriculado/${encodeURIComponent(u.expediente)}`);
+            if (res.ok) {
+                const data: MatriculadoDetalle = await res.json();
+                setDeudaRapida({ nombre: u.nombre, apellido: u.apellido, total: data.deuda.total, comprobantes: data.deuda.comprobantes });
+            } else {
+                showToast("No se pudo cargar el detalle de la deuda", "error");
+            }
+        } finally {
+            setCargandoDeudaRapida(null);
+        }
+    };
+
     useEffect(() => {
         fetch("/api/delegaciones/buscar")
             .then(r => r.json())
@@ -295,8 +315,14 @@ export default function CobrarDelegacionPage() {
                                         </div>
                                     </div>
                                     {u.deudaTotal > 0 && (
-                                        <span className="flex items-center gap-1 text-[12px] font-bold text-red-600 dark:text-red-400 whitespace-nowrap">
-                                            <Wallet size={11} /> ${u.deudaTotal.toLocaleString("es-AR")}
+                                        <span className="flex items-center gap-2 whitespace-nowrap">
+                                            <span className="flex items-center gap-1 text-[12px] font-bold text-red-600 dark:text-red-400">
+                                                <Wallet size={11} /> ${u.deudaTotal.toLocaleString("es-AR")}
+                                            </span>
+                                            <span role="button" title="Ver detalle de la deuda" onClick={(e) => verDeudaRapida(u, e)}
+                                                className="p-1 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 cursor-pointer transition-all">
+                                                {cargandoDeudaRapida === u.cod ? <Loader2 size={13} className="animate-spin" /> : <Eye size={13} />}
+                                            </span>
                                         </span>
                                     )}
                                 </button>
@@ -476,6 +502,37 @@ export default function CobrarDelegacionPage() {
                 </div>
             )}
             </>
+            )}
+
+            {/* Modal detalle de deuda — desde el listado, sin entrar al matriculado */}
+            {deudaRapida && (
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setDeudaRapida(null)}>
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 w-full max-w-md shadow-2xl" onClick={e => e.stopPropagation()}>
+                        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800">
+                            <div>
+                                <p className="text-[14px] font-bold text-slate-800 dark:text-white">Detalle de la deuda</p>
+                                <p className="text-[12px] text-slate-400">{deudaRapida.apellido}, {deudaRapida.nombre}</p>
+                            </div>
+                            <button onClick={() => setDeudaRapida(null)} className="w-8 h-8 flex items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
+                                <X size={15} />
+                            </button>
+                        </div>
+                        <div className="max-h-[60vh] overflow-y-auto divide-y divide-slate-50 dark:divide-slate-800">
+                            {deudaRapida.comprobantes.map((c, i) => (
+                                <div key={i} className="flex items-center justify-between px-5 py-3">
+                                    <p className="text-[13px] text-slate-600 dark:text-slate-400">
+                                        Vencimiento {new Date(c.fechaVencimiento).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "UTC" })}
+                                    </p>
+                                    <p className="text-[13px] font-bold text-slate-800 dark:text-white">${c.monto.toLocaleString("es-AR")}</p>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="flex items-center justify-between px-5 py-4 border-t border-slate-100 dark:border-slate-800">
+                            <p className="text-[12px] font-bold text-slate-400 uppercase tracking-widest">Total</p>
+                            <p className="text-[15px] font-black text-red-600 dark:text-red-400">${deudaRapida.total.toLocaleString("es-AR")}</p>
+                        </div>
+                    </div>
+                </div>
             )}
 
             {/* Modal detalle de deuda */}
