@@ -23,6 +23,57 @@ const SECCIONES_PAYWAY = [
 
 type Tab = "mp" | "payway" | "transferencia";
 
+// Un campo de credencial de PayWay con su propio guardado — se usa dos veces
+// (sandbox y producción) por cada uno de los 3 campos (Site ID/Public/Secret).
+function PaywayCredencialField({ clave, label, hint, configurado, secreto, onSaved }: {
+    clave: string; label: string; hint?: string; configurado: boolean; secreto?: boolean; onSaved: () => void;
+}) {
+    const [valor, setValor] = useState("");
+    const [show, setShow] = useState(false);
+    const [saving, setSaving] = useState(false);
+    const [msg, setMsg] = useState<Msg>(null);
+
+    const guardar = async () => {
+        setSaving(true); setMsg(null);
+        try {
+            const res = await fetch("/api/admin/config", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ clave, valor: valor.trim() }) });
+            if (res.ok) { setValor(""); setMsg({ tipo: "success", texto: "Guardado." }); onSaved(); }
+            else setMsg({ tipo: "error", texto: "Error al guardar." });
+        } catch { setMsg({ tipo: "error", texto: "Error de conexión." }); }
+        finally { setSaving(false); }
+    };
+
+    return (
+        <div className="space-y-2">
+            <div className="flex items-center justify-between">
+                <span className="text-[12px] font-bold text-slate-600 dark:text-slate-300">
+                    {label} {hint && <span className="font-normal text-slate-400">— {hint}</span>}
+                </span>
+                <span className={`flex items-center gap-1 text-[11px] font-semibold ${configurado ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
+                    {configurado ? <CheckCircle2 size={12} /> : <AlertCircle size={12} />}
+                    {configurado ? "Configurada" : "Falta"}
+                </span>
+            </div>
+            <div className="relative">
+                <input type={secreto && !show ? "password" : "text"} value={valor} onChange={(e) => setValor(e.target.value)}
+                    placeholder={configurado ? "Pegá un valor nuevo para reemplazar" : label}
+                    className="w-full h-10 px-3 pr-10 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-[13px] font-mono focus:outline-none focus:ring-2 focus:ring-slate-400" />
+                {secreto && (
+                    <button type="button" onClick={() => setShow((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+                        {show ? <EyeOff size={14} /> : <Eye size={14} />}
+                    </button>
+                )}
+            </div>
+            {msg && <div className={`flex items-center gap-2 text-[11px] font-bold ${msg.tipo === "success" ? "text-emerald-500" : "text-red-500"}`}>{msg.tipo === "success" ? <CheckCircle2 size={12} /> : <AlertCircle size={12} />}{msg.texto}</div>}
+            <button onClick={guardar} disabled={saving || !valor.trim()}
+                className="flex items-center gap-2 px-4 h-8 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-[12px] font-bold disabled:opacity-40 transition-all active:scale-95">
+                {saving ? <Loader2 size={12} className="animate-spin" /> : <KeyRound size={12} />}
+                {saving ? "Guardando..." : "Guardar"}
+            </button>
+        </div>
+    );
+}
+
 export default function ConfigPagosPage() {
     const [tab, setTab] = useState<Tab>("mp");
     const [loading, setLoading] = useState(true);
@@ -37,21 +88,12 @@ export default function ConfigPagosPage() {
     const [showMpPublicKey, setShowMpPublicKey] = useState(false);
     const [savingMpPublicKey, setSavingMpPublicKey] = useState(false);
     const [mpPublicKeyMsg, setMpPublicKeyMsg] = useState<Msg>(null);
-    // PayWay
-    const [paywaySiteIdConfigurado, setPaywaySiteIdConfigurado] = useState(false);
-    const [paywaySiteId, setPaywaySiteId] = useState("");
-    const [savingPaywaySiteId, setSavingPaywaySiteId] = useState(false);
-    const [paywaySiteIdMsg, setPaywaySiteIdMsg] = useState<Msg>(null);
-    const [paywayPublicKeyConfigurado, setPaywayPublicKeyConfigurado] = useState(false);
-    const [paywayPublicKey, setPaywayPublicKey] = useState("");
-    const [showPaywayPublicKey, setShowPaywayPublicKey] = useState(false);
-    const [savingPaywayPublicKey, setSavingPaywayPublicKey] = useState(false);
-    const [paywayPublicKeyMsg, setPaywayPublicKeyMsg] = useState<Msg>(null);
-    const [paywaySecretKeyConfigurado, setPaywaySecretKeyConfigurado] = useState(false);
-    const [paywaySecretKey, setPaywaySecretKey] = useState("");
-    const [showPaywaySecretKey, setShowPaywaySecretKey] = useState(false);
-    const [savingPaywaySecretKey, setSavingPaywaySecretKey] = useState(false);
-    const [paywaySecretKeyMsg, setPaywaySecretKeyMsg] = useState<Msg>(null);
+    // PayWay — credenciales separadas por ambiente (antes había una sola clave
+    // compartida sin importar sandbox/producción, lo que generaba confusión).
+    const [paywayConfigurado, setPaywayConfigurado] = useState({
+        siteIdSandbox: false, publicKeySandbox: false, secretKeySandbox: false,
+        siteIdProduccion: false, publicKeyProduccion: false, secretKeyProduccion: false,
+    });
     const [paywayAmbiente, setPaywayAmbiente] = useState<"developer" | "production">("developer");
     const [savingPaywayAmbiente, setSavingPaywayAmbiente] = useState(false);
     // Transferencia
@@ -62,24 +104,29 @@ export default function ConfigPagosPage() {
     const [secciones, setSecciones] = useState<Record<string, boolean>>({});
     const [togglingKey, setTogglingKey] = useState<string | null>(null);
 
-    useEffect(() => {
+    const cargarConfig = () =>
         fetch("/api/admin/config/pagos")
             .then((r) => r.json())
             .then((d) => {
                 setMpTokenConfigurado(!!d.mpTokenConfigurado);
                 setMpPublicKeyConfigurado(!!d.mpPublicKeyConfigurado);
-                setPaywaySiteIdConfigurado(!!d.paywaySiteIdConfigurado);
-                setPaywayPublicKeyConfigurado(!!d.paywayPublicKeyConfigurado);
-                setPaywaySecretKeyConfigurado(!!d.paywaySecretKeyConfigurado);
+                setPaywayConfigurado({
+                    siteIdSandbox: !!d.paywaySiteIdConfiguradoSandbox,
+                    publicKeySandbox: !!d.paywayPublicKeyConfiguradoSandbox,
+                    secretKeySandbox: !!d.paywaySecretKeyConfiguradoSandbox,
+                    siteIdProduccion: !!d.paywaySiteIdConfiguradoProduccion,
+                    publicKeyProduccion: !!d.paywayPublicKeyConfiguradoProduccion,
+                    secretKeyProduccion: !!d.paywaySecretKeyConfiguradoProduccion,
+                });
                 setPaywayAmbiente(d.paywayAmbiente === "production" ? "production" : "developer");
                 setCbu(d.cbu ?? "");
                 setAlias(d.alias ?? "");
                 const s: Record<string, boolean> = {};
                 [...SECCIONES, ...SECCIONES_PAYWAY].forEach(({ key }) => { s[key] = !!d[key]; });
                 setSecciones(s);
-            })
-            .finally(() => setLoading(false));
-    }, []);
+            });
+
+    useEffect(() => { cargarConfig().finally(() => setLoading(false)); }, []);
 
     const saveKey = async (clave: string, valor: string, setSaving: (v: boolean) => void, setMsg: (m: Msg) => void, onSuccess?: () => void) => {
         setSaving(true); setMsg(null);
@@ -112,7 +159,9 @@ export default function ConfigPagosPage() {
         setTogglingKey(null);
     };
 
-    const paywayCredencialesCompletas = paywaySiteIdConfigurado && paywayPublicKeyConfigurado && paywaySecretKeyConfigurado;
+    const paywayCredencialesCompletas = paywayAmbiente === "production"
+        ? paywayConfigurado.siteIdProduccion && paywayConfigurado.publicKeyProduccion && paywayConfigurado.secretKeyProduccion
+        : paywayConfigurado.siteIdSandbox && paywayConfigurado.publicKeySandbox && paywayConfigurado.secretKeySandbox;
     const paywayAnySeccionHabilitada = SECCIONES_PAYWAY.some(({ key }) => secciones[key]);
 
     if (loading) return <div className="flex items-center justify-center py-20"><Loader2 size={28} className="animate-spin text-slate-400" /></div>;
@@ -224,22 +273,86 @@ export default function ConfigPagosPage() {
                     Alternativa a MercadoPago: aparece junto a MercadoPago como opción de pago para el usuario.
                 </p>
 
-                {/* Secciones habilitadas — mismo patrón que transferencia bancaria */}
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6 space-y-4">
+                {/* Ambiente — bien arriba y bien visible, es lo primero que hay que mirar */}
+                <div className={`rounded-2xl border p-6 space-y-4 ${paywayAmbiente === "production" ? "bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900/40" : "bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900/40"}`}>
                     <div className="flex items-center justify-between gap-3">
                         <div>
-                            <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Secciones habilitadas</label>
+                            <label className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Ambiente activo ahora mismo</label>
                             <p className="text-[12px] text-slate-500 dark:text-slate-400 mt-0.5">
-                                {paywayCredencialesCompletas
-                                    ? "Activá PayWay por sección. Por defecto todo está deshabilitado."
-                                    : "Completá las 3 credenciales de abajo para poder activar alguna sección."}
+                                Define contra qué servidor de Payway se procesan los pagos reales, y cuál de las dos credenciales de abajo se usa.
                             </p>
                         </div>
-                        {paywayAnySeccionHabilitada && (
-                            <span className={`flex-shrink-0 text-[11px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full ${paywayAmbiente === "production" ? "bg-emerald-500 text-white" : "bg-amber-500 text-white"}`}>
-                                {paywayAmbiente === "production" ? "Producción" : "Sandbox"}
-                            </span>
-                        )}
+                        <span className={`flex-shrink-0 text-[12px] font-black uppercase tracking-wide px-3 py-1 rounded-full ${paywayAmbiente === "production" ? "bg-emerald-600 text-white" : "bg-amber-500 text-white"}`}>
+                            {paywayAmbiente === "production" ? "Producción" : "Sandbox"}
+                        </span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <button onClick={async () => {
+                            setSavingPaywayAmbiente(true);
+                            const res = await fetch("/api/admin/config", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ clave: "paywayAmbiente", valor: "developer" }) });
+                            if (res.ok) setPaywayAmbiente("developer");
+                            setSavingPaywayAmbiente(false);
+                        }} disabled={savingPaywayAmbiente}
+                            className={`flex-1 h-11 rounded-xl text-[13px] font-bold transition-all disabled:opacity-50 ${paywayAmbiente === "developer" ? "bg-amber-500 text-white" : "bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700"}`}>
+                            Sandbox (pruebas)
+                        </button>
+                        <button onClick={async () => {
+                            setSavingPaywayAmbiente(true);
+                            const res = await fetch("/api/admin/config", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ clave: "paywayAmbiente", valor: "production" }) });
+                            if (res.ok) setPaywayAmbiente("production");
+                            setSavingPaywayAmbiente(false);
+                        }} disabled={savingPaywayAmbiente}
+                            className={`flex-1 h-11 rounded-xl text-[13px] font-bold transition-all disabled:opacity-50 ${paywayAmbiente === "production" ? "bg-emerald-600 text-white" : "bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700"}`}>
+                            Producción
+                        </button>
+                    </div>
+                    {!paywayCredencialesCompletas && (
+                        <p className="text-[12px] font-semibold text-red-600 dark:text-red-400 flex items-center gap-1.5">
+                            <AlertCircle size={13} /> Faltan credenciales de {paywayAmbiente === "production" ? "producción" : "sandbox"} — completalas abajo antes de habilitar secciones.
+                        </p>
+                    )}
+                </div>
+
+                {/* Credenciales — sandbox y producción por separado, cada una con lo suyo */}
+                {([
+                    { amb: "developer" as const, titulo: "Credenciales Sandbox", sufijo: "developer", color: "amber" as const,
+                      config: { siteId: paywayConfigurado.siteIdSandbox, publicKey: paywayConfigurado.publicKeySandbox, secretKey: paywayConfigurado.secretKeySandbox } },
+                    { amb: "production" as const, titulo: "Credenciales Producción", sufijo: "production", color: "emerald" as const,
+                      config: { siteId: paywayConfigurado.siteIdProduccion, publicKey: paywayConfigurado.publicKeyProduccion, secretKey: paywayConfigurado.secretKeyProduccion } },
+                ]).map(({ amb, titulo, sufijo, color, config }) => {
+                    const activa = paywayAmbiente === amb;
+                    return (
+                        <div key={amb} className={`bg-white dark:bg-slate-900 rounded-2xl border p-6 space-y-5 ${activa ? (color === "emerald" ? "border-emerald-200 dark:border-emerald-900/50" : "border-amber-200 dark:border-amber-900/50") : "border-slate-100 dark:border-slate-800 opacity-70"}`}>
+                            <div className="flex items-center justify-between gap-3">
+                                <div>
+                                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">{titulo}</label>
+                                    <p className="text-[12px] text-slate-500 dark:text-slate-400 mt-0.5">Te las da Payway al adherirte a venta online.</p>
+                                </div>
+                                <span className={`flex-shrink-0 text-[11px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full ${activa ? (color === "emerald" ? "bg-emerald-500 text-white" : "bg-amber-500 text-white") : "bg-slate-100 dark:bg-slate-800 text-slate-400"}`}>
+                                    {activa ? "● En uso ahora" : "Inactiva"}
+                                </span>
+                            </div>
+
+                            <div className="pb-5 border-b border-slate-50 dark:border-slate-800">
+                                <PaywayCredencialField clave={`paywaySiteId_${sufijo}`} label="Site ID" configurado={config.siteId} onSaved={cargarConfig} />
+                            </div>
+                            <div className="pb-5 border-b border-slate-50 dark:border-slate-800">
+                                <PaywayCredencialField clave={`paywayPublicKey_${sufijo}`} label="Public Key" hint="tokeniza la tarjeta en el navegador" configurado={config.publicKey} secreto onSaved={cargarConfig} />
+                            </div>
+                            <PaywayCredencialField clave={`paywaySecretKey_${sufijo}`} label="Secret Key" hint="autoriza el pago desde el servidor" configurado={config.secretKey} secreto onSaved={cargarConfig} />
+                        </div>
+                    );
+                })}
+
+                {/* Secciones habilitadas — mismo patrón que transferencia bancaria */}
+                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6 space-y-4">
+                    <div>
+                        <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Secciones habilitadas</label>
+                        <p className="text-[12px] text-slate-500 dark:text-slate-400 mt-0.5">
+                            {paywayCredencialesCompletas
+                                ? "Activá PayWay por sección. Por defecto todo está deshabilitado."
+                                : `Completá las credenciales de ${paywayAmbiente === "production" ? "producción" : "sandbox"} de arriba para poder activar alguna sección.`}
+                        </p>
                     </div>
                     <div className="divide-y divide-slate-50 dark:divide-slate-800">
                         {SECCIONES_PAYWAY.map(({ key, label }) => {
@@ -264,117 +377,6 @@ export default function ConfigPagosPage() {
                                 </div>
                             );
                         })}
-                    </div>
-                </div>
-
-                {/* Ambiente */}
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6 space-y-4">
-                    <div>
-                        <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Ambiente</label>
-                        <p className="text-[12px] text-slate-500 dark:text-slate-400 mt-0.5">
-                            Definí contra qué servidor de Payway se procesan los pagos. Las credenciales de abajo tienen que corresponder al mismo ambiente.
-                        </p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        <button onClick={async () => {
-                            setSavingPaywayAmbiente(true);
-                            const res = await fetch("/api/admin/config", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ clave: "paywayAmbiente", valor: "developer" }) });
-                            if (res.ok) setPaywayAmbiente("developer");
-                            setSavingPaywayAmbiente(false);
-                        }} disabled={savingPaywayAmbiente}
-                            className={`flex-1 h-11 rounded-xl text-[13px] font-bold transition-all disabled:opacity-50 ${paywayAmbiente === "developer" ? "bg-amber-500 text-white" : "bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700"}`}>
-                            Sandbox (pruebas)
-                        </button>
-                        <button onClick={async () => {
-                            setSavingPaywayAmbiente(true);
-                            const res = await fetch("/api/admin/config", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ clave: "paywayAmbiente", valor: "production" }) });
-                            if (res.ok) setPaywayAmbiente("production");
-                            setSavingPaywayAmbiente(false);
-                        }} disabled={savingPaywayAmbiente}
-                            className={`flex-1 h-11 rounded-xl text-[13px] font-bold transition-all disabled:opacity-50 ${paywayAmbiente === "production" ? "bg-emerald-500 text-white" : "bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700"}`}>
-                            Producción
-                        </button>
-                    </div>
-                </div>
-
-                {/* Credenciales — las 3 juntas en una sola tarjeta */}
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6 space-y-5">
-                    <div>
-                        <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Credenciales</label>
-                        <p className="text-[12px] text-slate-500 dark:text-slate-400 mt-0.5">Te las da Payway al adherirte a venta online. Las tres son necesarias para poder habilitarlo arriba.</p>
-                    </div>
-
-                    {/* Site ID */}
-                    <div className="space-y-2 pb-5 border-b border-slate-50 dark:border-slate-800">
-                        <div className="flex items-center justify-between">
-                            <span className="text-[12px] font-bold text-slate-600 dark:text-slate-300">Site ID</span>
-                            <span className={`flex items-center gap-1 text-[11px] font-semibold ${paywaySiteIdConfigurado ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
-                                {paywaySiteIdConfigurado ? <CheckCircle2 size={12} /> : <AlertCircle size={12} />}
-                                {paywaySiteIdConfigurado ? "Configurado" : "Falta"}
-                            </span>
-                        </div>
-                        <input type="text" value={paywaySiteId} onChange={(e) => setPaywaySiteId(e.target.value)}
-                            placeholder={paywaySiteIdConfigurado ? "Pegá un nuevo Site ID para reemplazar" : "Ej: 00000000000"}
-                            className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-[13px] font-mono focus:outline-none focus:ring-2 focus:ring-slate-400" />
-                        {paywaySiteIdMsg && <div className={`flex items-center gap-2 text-[11px] font-bold ${paywaySiteIdMsg.tipo === "success" ? "text-emerald-500" : "text-red-500"}`}>{paywaySiteIdMsg.tipo === "success" ? <CheckCircle2 size={12} /> : <AlertCircle size={12} />}{paywaySiteIdMsg.texto}</div>}
-                        <button onClick={() => saveKey("paywaySiteId", paywaySiteId, setSavingPaywaySiteId, setPaywaySiteIdMsg, () => { setPaywaySiteIdConfigurado(true); setPaywaySiteId(""); })}
-                            disabled={savingPaywaySiteId || !paywaySiteId.trim()}
-                            className="flex items-center gap-2 px-4 h-8 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-[12px] font-bold disabled:opacity-40 transition-all active:scale-95">
-                            {savingPaywaySiteId ? <Loader2 size={12} className="animate-spin" /> : <KeyRound size={12} />}
-                            {savingPaywaySiteId ? "Guardando..." : "Guardar"}
-                        </button>
-                    </div>
-
-                    {/* Public Key */}
-                    <div className="space-y-2 pb-5 border-b border-slate-50 dark:border-slate-800">
-                        <div className="flex items-center justify-between">
-                            <span className="text-[12px] font-bold text-slate-600 dark:text-slate-300">Public Key <span className="font-normal text-slate-400">— tokeniza la tarjeta en el navegador</span></span>
-                            <span className={`flex items-center gap-1 text-[11px] font-semibold ${paywayPublicKeyConfigurado ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
-                                {paywayPublicKeyConfigurado ? <CheckCircle2 size={12} /> : <AlertCircle size={12} />}
-                                {paywayPublicKeyConfigurado ? "Configurada" : "Falta"}
-                            </span>
-                        </div>
-                        <div className="relative">
-                            <input type={showPaywayPublicKey ? "text" : "password"} value={paywayPublicKey} onChange={(e) => setPaywayPublicKey(e.target.value)}
-                                placeholder={paywayPublicKeyConfigurado ? "Pegá una nueva key para reemplazar" : "Public API Key"}
-                                className="w-full h-10 px-3 pr-10 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-[13px] font-mono focus:outline-none focus:ring-2 focus:ring-slate-400" />
-                            <button type="button" onClick={() => setShowPaywayPublicKey((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
-                                {showPaywayPublicKey ? <EyeOff size={14} /> : <Eye size={14} />}
-                            </button>
-                        </div>
-                        {paywayPublicKeyMsg && <div className={`flex items-center gap-2 text-[11px] font-bold ${paywayPublicKeyMsg.tipo === "success" ? "text-emerald-500" : "text-red-500"}`}>{paywayPublicKeyMsg.tipo === "success" ? <CheckCircle2 size={12} /> : <AlertCircle size={12} />}{paywayPublicKeyMsg.texto}</div>}
-                        <button onClick={() => saveKey("paywayPublicKey", paywayPublicKey, setSavingPaywayPublicKey, setPaywayPublicKeyMsg, () => { setPaywayPublicKeyConfigurado(true); setPaywayPublicKey(""); })}
-                            disabled={savingPaywayPublicKey || !paywayPublicKey.trim()}
-                            className="flex items-center gap-2 px-4 h-8 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-[12px] font-bold disabled:opacity-40 transition-all active:scale-95">
-                            {savingPaywayPublicKey ? <Loader2 size={12} className="animate-spin" /> : <KeyRound size={12} />}
-                            {savingPaywayPublicKey ? "Guardando..." : "Guardar"}
-                        </button>
-                    </div>
-
-                    {/* Secret Key */}
-                    <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                            <span className="text-[12px] font-bold text-slate-600 dark:text-slate-300">Secret Key <span className="font-normal text-slate-400">— autoriza el pago desde el servidor</span></span>
-                            <span className={`flex items-center gap-1 text-[11px] font-semibold ${paywaySecretKeyConfigurado ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
-                                {paywaySecretKeyConfigurado ? <CheckCircle2 size={12} /> : <AlertCircle size={12} />}
-                                {paywaySecretKeyConfigurado ? "Configurada" : "Falta"}
-                            </span>
-                        </div>
-                        <div className="relative">
-                            <input type={showPaywaySecretKey ? "text" : "password"} value={paywaySecretKey} onChange={(e) => setPaywaySecretKey(e.target.value)}
-                                placeholder={paywaySecretKeyConfigurado ? "Pegá una nueva key para reemplazar" : "Secret / Private API Key"}
-                                className="w-full h-10 px-3 pr-10 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-[13px] font-mono focus:outline-none focus:ring-2 focus:ring-slate-400" />
-                            <button type="button" onClick={() => setShowPaywaySecretKey((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
-                                {showPaywaySecretKey ? <EyeOff size={14} /> : <Eye size={14} />}
-                            </button>
-                        </div>
-                        {paywaySecretKeyMsg && <div className={`flex items-center gap-2 text-[11px] font-bold ${paywaySecretKeyMsg.tipo === "success" ? "text-emerald-500" : "text-red-500"}`}>{paywaySecretKeyMsg.tipo === "success" ? <CheckCircle2 size={12} /> : <AlertCircle size={12} />}{paywaySecretKeyMsg.texto}</div>}
-                        <button onClick={() => saveKey("paywaySecretKey", paywaySecretKey, setSavingPaywaySecretKey, setPaywaySecretKeyMsg, () => { setPaywaySecretKeyConfigurado(true); setPaywaySecretKey(""); })}
-                            disabled={savingPaywaySecretKey || !paywaySecretKey.trim()}
-                            className="flex items-center gap-2 px-4 h-8 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-[12px] font-bold disabled:opacity-40 transition-all active:scale-95">
-                            {savingPaywaySecretKey ? <Loader2 size={12} className="animate-spin" /> : <KeyRound size={12} />}
-                            {savingPaywaySecretKey ? "Guardando..." : "Guardar"}
-                        </button>
                     </div>
                 </div>
             </div>

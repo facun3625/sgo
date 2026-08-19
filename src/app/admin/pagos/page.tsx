@@ -72,7 +72,7 @@ type Filtro = "todos" | "deuda" | "cuota_pendiente" | "al_dia" | "sin_cuota";
 type SortKey = "nombre" | "cuota" | "deuda";
 type SortDir = "asc" | "desc";
 type TipoContable = "todos" | "deudas" | "cuotas" | "anual";
-type MetodoPago = "" | "mercadopago" | "banelco" | "transferencia" | "home_banking" | "efectivo";
+type MetodoPago = "" | "mercadopago" | "banelco" | "transferencia" | "home_banking" | "efectivo" | "payway";
 type Vista = "matriculados" | "contabilidad";
 
 function mesActual() {
@@ -261,6 +261,7 @@ function ContabilidadView({ stats, pctPagado }: { stats: Stats | null; pctPagado
     const METODOS: { key: MetodoPago; label: string }[] = [
         { key: "", label: "Todos los métodos" },
         { key: "mercadopago", label: "MercadoPago" },
+        { key: "payway", label: "PayWay" },
         { key: "banelco", label: "Banelco" },
         { key: "transferencia", label: "Transferencia" },
         { key: "home_banking", label: "Home Banking" },
@@ -519,6 +520,7 @@ function ContabilidadView({ stats, pctPagado }: { stats: Stats | null; pctPagado
                                                              f.metodoPago === "transferencia" ? "Transferencia" :
                                                              f.metodoPago === "home_banking" ? "Home Banking" :
                                                              f.metodoPago === "efectivo" ? "Efectivo" :
+                                                             f.metodoPago === "payway" ? "PayWay" :
                                                              f.metodoPago || "—"}
                                                         </span>
                                                     </div>

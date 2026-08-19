@@ -57,8 +57,15 @@ producto de la misma empresa. Confirmado leyendo `lib/utils/constants.js` del SD
 oficial (`ENDPOINT_PRD_V2 = "https://ventasonline.payway.com.ar/api/v2"`).
 
 En este proyecto las credenciales se guardan en la tabla `Config` (mismo patrón que
-MercadoPago), configurables desde Admin → Métodos de Pago — no en `.env`. Claves:
-`paywaySiteId`, `paywayPublicKey`, `paywaySecretKey`, `paywayAmbiente` (`developer`|`production`).
+MercadoPago), configurables desde Admin → Métodos de Pago — no en `.env`. Sandbox y
+producción tienen credenciales **separadas** (Payway las emite distintas para cada
+ambiente — ver el pedido de producción más abajo), guardadas en claves con sufijo:
+`paywaySiteId_developer`/`paywaySiteId_production`, `paywayPublicKey_developer`/`_production`,
+`paywaySecretKey_developer`/`_production`, más `paywayAmbiente` (`developer`|`production`)
+que define cuál de las dos se usa en cada momento. Las claves viejas sin sufijo
+(`paywaySiteId`, `paywayPublicKey`, `paywaySecretKey`) quedan como fallback de
+migración en `getPaywayConfig()` — si todavía no se cargó nada en la clave nueva
+del ambiente activo, se usa el valor viejo tal cual.
 
 ## Flujo técnico (implementado en SGO)
 
@@ -99,9 +106,16 @@ validación):
 
 | Marca | payment_method_id confirmado |
 |---|---|
-| Visa | **1** |
-| Mastercard | **104** (¡no 15! — el genérico "15 MasterCard" da inválido en esta cuenta, hay que usar el específico "MasterCard Payway") |
+| Visa (crédito) | **1** |
+| Visa Débito | **31** — código totalmente distinto al de crédito. Mandar el de crédito (1) para una tarjeta de débito real no da "marca no soportada", da **"invalid_param: bin"** (el bin no corresponde a ese medio de pago) — así se detectó este caso. |
+| Mastercard (crédito) | **104** (¡no 15! — el genérico "15 MasterCard" da inválido en esta cuenta, hay que usar el específico "MasterCard Payway") |
+| Mastercard Débito | **105** ("MC Debit Payway" — no confundir con "133 MC Debit Fiserv", otro proveedor) |
 | Cabal | ⚠️ **pendiente** — se probaron 27, 63, 67, 97, 107, 120, 134 y ninguno cerró completo (63 fue el más cercano, pasó la validación de `payment_method_id` pero falló en `bin`) |
+
+El frontend (`PaywayCardForm.tsx`) detecta débito vs. crédito a partir de lo que
+devuelve `decidir.cardType()` (busca "debit"/"débito" en el string) y manda la
+marca ya distinguida (`visa_debito`, `mastercard_debito`, etc.) — el backend no
+adivina nada, solo mapea esa marca a su `payment_method_id` en `PAYWAY_PAYMENT_METHOD_ID`.
 
 Para ver el listado completo de códigos de esta cuenta: `GET /payment-methods/all`
 con la public key (endpoint no documentado en el README, se encontró probando).

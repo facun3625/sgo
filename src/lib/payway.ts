@@ -14,16 +14,33 @@ const CLAVE_SECCION: Record<PaywaySeccion, string> = {
     ventas: "payway_ventas",
 };
 
+// Credenciales guardadas por-ambiente (paywaySiteId_developer / _production, etc.)
+// — antes había una sola clave compartida sin importar el ambiente elegido, lo
+// que llevaba a mezclar credenciales de sandbox con producción sin darse cuenta.
+// Las claves viejas (paywaySiteId/paywayPublicKey/paywaySecretKey, sin sufijo)
+// quedan como fallback de migración: si todavía no se guardó nada bajo la
+// clave nueva del ambiente activo, se usa el valor viejo tal cual.
 async function getPaywayConfig() {
     const configs = await prisma.config.findMany({
-        where: { clave: { in: ["paywaySiteId", "paywayPublicKey", "paywaySecretKey", "paywayAmbiente", ...Object.values(CLAVE_SECCION)] } },
+        where: {
+            clave: {
+                in: [
+                    "paywayAmbiente",
+                    "paywaySiteId", "paywayPublicKey", "paywaySecretKey",
+                    "paywaySiteId_developer", "paywayPublicKey_developer", "paywaySecretKey_developer",
+                    "paywaySiteId_production", "paywayPublicKey_production", "paywaySecretKey_production",
+                    ...Object.values(CLAVE_SECCION),
+                ],
+            },
+        },
     });
     const map = Object.fromEntries(configs.map((c) => [c.clave, c.valor]));
+    const ambiente = (map.paywayAmbiente === "production" ? "production" : "developer") as Ambiente;
     return {
-        siteId: map.paywaySiteId ?? "",
-        publicKey: map.paywayPublicKey ?? "",
-        secretKey: map.paywaySecretKey ?? "",
-        ambiente: (map.paywayAmbiente === "production" ? "production" : "developer") as Ambiente,
+        siteId: map[`paywaySiteId_${ambiente}`] ?? map.paywaySiteId ?? "",
+        publicKey: map[`paywayPublicKey_${ambiente}`] ?? map.paywayPublicKey ?? "",
+        secretKey: map[`paywaySecretKey_${ambiente}`] ?? map.paywaySecretKey ?? "",
+        ambiente,
         secciones: Object.fromEntries(
             (Object.keys(CLAVE_SECCION) as PaywaySeccion[]).map((s) => [s, map[CLAVE_SECCION[s]] === "1"])
         ) as Record<PaywaySeccion, boolean>,
@@ -54,13 +71,18 @@ export async function getPaywayFrontendConfig(seccion: PaywaySeccion): Promise<{
     return { publicKey: cfg.publicKey, apiUrl: baseUrl(cfg.ambiente) };
 }
 
-// payment_method_id confirmados a mano contra la sandbox real de esta cuenta
-// (14/08/2026) — Payway asigna estos códigos por comercio, no son universales.
+// payment_method_id confirmados a mano contra la cuenta real (GET /payment-methods/all
+// con la public key) — Payway asigna estos códigos por comercio, no son universales,
+// y además distingue crédito de débito con IDs completamente distintos: mandar el
+// de crédito para una tarjeta de débito lo rechaza como "invalid_param: bin" (el
+// bin no corresponde a ese medio de pago), no como marca no soportada.
 // Cabal quedó pendiente: se probaron 27, 63, 67, 97, 107, 120, 134 y ninguno
 // autorizó completo (63 fue el más cercano, rechazado por "bin" inválido).
 export const PAYWAY_PAYMENT_METHOD_ID: Record<string, number> = {
     visa: 1,
+    visa_debito: 31,
     mastercard: 104,
+    mastercard_debito: 105,
 };
 
 export function marcaSoportadaPayway(marca: string): boolean {

@@ -41,8 +41,22 @@ interface Props {
     facturacionInicial?: Partial<PaywayFacturacion>;
 }
 
-// Marcas soportadas hoy — deben coincidir con PAYWAY_PAYMENT_METHOD_ID en src/lib/payway.ts
-const MARCAS_SOPORTADAS = ["visa", "mastercard"];
+// Marcas soportadas hoy — deben coincidir con las claves de PAYWAY_PAYMENT_METHOD_ID
+// en src/lib/payway.ts (crédito y débito son códigos distintos para Payway).
+const MARCAS_SOPORTADAS = ["visa", "visa_debito", "mastercard", "mastercard_debito"];
+
+// decidir.cardType() puede devolver variantes como "Visa Débito" o "Visa
+// Electron" — hay que preservar si es débito (Payway usa un payment_method_id
+// totalmente distinto al de crédito; mandar el de crédito para una tarjeta de
+// débito la rechaza con "invalid_param: bin", no como marca no soportada).
+function normalizarMarca(raw: string | null): string | null {
+    if (!raw) return null;
+    const s = raw.toLowerCase();
+    const esDebito = s.includes("debit") || s.includes("débit");
+    if (s.includes("visa")) return esDebito ? "visa_debito" : "visa";
+    if (s.includes("master")) return esDebito ? "mastercard_debito" : "mastercard";
+    return null;
+}
 
 export default function PaywayCardForm({ seccion, onToken, procesando, error, montoLabel, facturacionInicial }: Props) {
     const formRef = useRef<HTMLFormElement>(null);
@@ -85,7 +99,7 @@ export default function PaywayCardForm({ seccion, onToken, procesando, error, mo
     useEffect(() => {
         const clean = cardNumber.replace(/\s/g, "");
         if (clean.length < 6) { setMarcaDetectada(null); return; }
-        const detectada = decidirRef.current?.cardType?.(clean)?.toLowerCase() ?? null;
+        const detectada = normalizarMarca(decidirRef.current?.cardType?.(clean) ?? null);
         setMarcaDetectada(detectada);
     }, [cardNumber, decidirListo]);
 
@@ -137,7 +151,7 @@ export default function PaywayCardForm({ seccion, onToken, procesando, error, mo
                     <input data-decidir="card_number" required inputMode="numeric" placeholder="XXXX XXXX XXXX XXXX"
                         value={cardNumber} onChange={e => setCardNumber(e.target.value)}
                         className="w-full h-11 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-[14px] text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-2 focus:ring-[#063f68] outline-none" />
-                    {marcaDetectada && <p className="text-[11px] text-slate-400 dark:text-slate-500 capitalize">Detectada: {marcaDetectada}</p>}
+                    {marcaDetectada && <p className="text-[11px] text-slate-400 dark:text-slate-500">Detectada: {marcaDetectada.replace("_debito", " Débito").replace(/^\w/, c => c.toUpperCase())}</p>}
                 </div>
 
                 <div className="space-y-1">

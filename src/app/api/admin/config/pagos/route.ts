@@ -11,14 +11,27 @@ export async function GET() {
 
     const configs = await prisma.config.findMany();
     const map = Object.fromEntries(configs.map((c) => [c.clave, c.valor]));
+    const ambiente = map.paywayAmbiente === "production" ? "production" : "developer";
+
+    // Migración: si todavía no se guardó nada bajo la clave nueva por-ambiente,
+    // se toma el valor viejo (único, sin sufijo) como perteneciente al ambiente
+    // que esté activo en este momento — coincide con lo que usa lib/payway.ts.
+    const configuradoPara = (campo: "paywaySiteId" | "paywayPublicKey" | "paywaySecretKey", amb: "developer" | "production") => {
+        const especifico = map[`${campo}_${amb}`];
+        if (especifico !== undefined) return !!especifico;
+        return amb === ambiente && !!map[campo];
+    };
 
     return NextResponse.json({
         mpTokenConfigurado: !!map.mpAccessToken,
         mpPublicKeyConfigurado: !!map.mpPublicKey,
-        paywaySiteIdConfigurado: !!map.paywaySiteId,
-        paywayPublicKeyConfigurado: !!map.paywayPublicKey,
-        paywaySecretKeyConfigurado: !!map.paywaySecretKey,
-        paywayAmbiente: map.paywayAmbiente === "production" ? "production" : "developer",
+        paywayAmbiente: ambiente,
+        paywaySiteIdConfiguradoSandbox: configuradoPara("paywaySiteId", "developer"),
+        paywayPublicKeyConfiguradoSandbox: configuradoPara("paywayPublicKey", "developer"),
+        paywaySecretKeyConfiguradoSandbox: configuradoPara("paywaySecretKey", "developer"),
+        paywaySiteIdConfiguradoProduccion: configuradoPara("paywaySiteId", "production"),
+        paywayPublicKeyConfiguradoProduccion: configuradoPara("paywayPublicKey", "production"),
+        paywaySecretKeyConfiguradoProduccion: configuradoPara("paywaySecretKey", "production"),
         cbu: map.cbu ?? "",
         alias: map.alias ?? "",
         transferencia_matricula_mensual: map.transferencia_matricula_mensual === "1",
