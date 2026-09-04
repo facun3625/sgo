@@ -21,7 +21,16 @@ function extraerExpedientes(rows: Record<string, string>[]): string[] {
     return rows
         .map(row => {
             const normalizado = Object.fromEntries(Object.entries(row).map(([k, v]) => [normalizeKey(k), v]));
-            const val = normalizado["expedientes"] ?? normalizado["expediente"] ?? normalizado["exp"] ?? "";
+            let val =
+                normalizado["expedientes"] ?? normalizado["expediente"] ?? normalizado["exp"] ??
+                normalizado["nroexpediente"] ?? normalizado["numeroexpediente"] ?? normalizado["nºexpediente"] ??
+                normalizado["matricula"] ?? normalizado["nro"] ?? normalizado["numero"] ?? "";
+            // Fallback: cualquier columna cuyo nombre contenga "exp" (cubre variantes
+            // como "N° Expediente", "Expte.", etc. que no matchean exacto arriba)
+            if (!val) {
+                const entry = Object.entries(normalizado).find(([k]) => k.includes("exp"));
+                val = entry?.[1] ?? "";
+            }
             return String(val).trim();
         })
         .filter(Boolean);
@@ -58,10 +67,21 @@ export default function CertificadosManualesPage() {
             const wb = XLSX.read(buffer, { type: "array" });
             const ws = wb.Sheets[wb.SheetNames[0]];
             const rows = XLSX.utils.sheet_to_json<Record<string, string>>(ws, { defval: "" });
-            const expedientes = extraerExpedientes(rows);
+            let expedientes = extraerExpedientes(rows);
+
+            // Respaldo: Excel de una sola columna sin encabezado reconocible (o sin
+            // encabezado directamente) — se toma cada celda de la primera columna,
+            // descartando la primera fila si parece un título en vez de un dato.
+            if (expedientes.length === 0) {
+                const raw = XLSX.utils.sheet_to_json<unknown[]>(ws, { header: 1, defval: "" });
+                expedientes = raw
+                    .map(r => String(r[0] ?? "").trim())
+                    .filter(Boolean)
+                    .filter(v => !normalizeKey(v).includes("exp"));
+            }
 
             if (expedientes.length === 0) {
-                showToast("No se encontró ninguna columna 'Expedientes' con datos", "error");
+                showToast("No se encontraron expedientes en el archivo — revisá que la primera columna tenga los números cargados", "error");
                 return;
             }
 
