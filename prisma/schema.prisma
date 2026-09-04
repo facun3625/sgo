@@ -666,6 +666,18 @@ model MotivoSuspension {
   @@map("motivos_suspension")
 }
 
+// Expedientes a los que se les bloquea la generación automática del
+// Certificado de Matriculación — se cargan por Excel desde el admin. El
+// mensaje que ve el matriculado bloqueado se guarda en Config
+// (clave "certificadoManualMensaje"), no acá, para que sea uno solo y editable.
+model CertificadoManual {
+  id         Int      @id @default(autoincrement())
+  expediente String   @unique
+  createdAt  DateTime @default(now())
+
+  @@map("certificados_manuales")
+}
+
 model SolicitudRehabilitacion {
   id            Int      @id @default(autoincrement())
   expediente    String

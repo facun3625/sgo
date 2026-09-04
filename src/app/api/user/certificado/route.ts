@@ -4,21 +4,37 @@ import prisma from "@/lib/prisma";
 import { writeFile, mkdir } from "fs/promises";
 import { join } from "path";
 
+const MENSAJE_DEFAULT =
+    "Tu Certificado de Matriculación se genera de forma manual. Debe ser retirado personalmente en la sede del Colegio.";
+
+async function mensajeSiEstaBloqueado(expediente: string): Promise<string | null> {
+    if (!expediente) return null;
+    const bloqueado = await prisma.certificadoManual.findUnique({ where: { expediente } });
+    if (!bloqueado) return null;
+    const config = await prisma.config.findUnique({ where: { clave: "certificadoManualMensaje" } });
+    return config?.valor ?? MENSAJE_DEFAULT;
+}
+
 export async function GET() {
     const session = await getSession();
     if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-    return NextResponse.json({ blocked: false });
+    const mensaje = await mensajeSiEstaBloqueado(session.expediente || "");
+    return NextResponse.json({ blocked: !!mensaje, mensaje });
 }
 
 export async function POST(req: NextRequest) {
     const session = await getSession();
     if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
+    const expediente = session.expediente || "";
+
+    const mensajeBloqueo = await mensajeSiEstaBloqueado(expediente);
+    if (mensajeBloqueo) return NextResponse.json({ error: mensajeBloqueo }, { status: 403 });
+
     const body = await req.json();
     const { presentarAnte, emailLegal, detalles } = body;
 
     const today = new Date();
-    const expediente = session.expediente || "";
 
     // Verificar estado del usuario
     const dbUser = await prisma.user.findFirst({

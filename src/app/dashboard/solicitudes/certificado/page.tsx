@@ -203,7 +203,10 @@ export default function SolicitudCertificadoPage() {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
     useEffect(() => {
-        fetch("/api/user/datos").then(r => r.json()).then(setDatos).finally(() => setLoading(false));
+        Promise.all([
+            fetch("/api/user/datos").then(r => r.json()).then(setDatos),
+            fetch("/api/user/certificado").then(r => r.json()).then(d => { if (d.blocked) setBlocked(d.mensaje); }),
+        ]).finally(() => setLoading(false));
     }, []);
 
     // Cuando tenemos el solicitudId, el QR ya se actualizó en el DOM → generamos el PDF
@@ -333,6 +336,8 @@ export default function SolicitudCertificadoPage() {
                     </div>
                 )}
 
+                {!blocked && (
+                <>
                 {/* Aviso */}
                 <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 flex gap-3 items-start">
                     <div className="p-2 rounded-lg bg-white dark:bg-slate-800 text-amber-500 shadow-sm shrink-0">
@@ -389,6 +394,8 @@ export default function SolicitudCertificadoPage() {
                         )}
                     </button>
                 </form>
+                </>
+                )}
             </div>
         </div>
     );

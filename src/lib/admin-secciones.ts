@@ -26,6 +26,7 @@ export const ADMIN_SECCIONES = [
     { key: "firmas",         label: "Firmas de Autoridades",        group: "" },
     { key: "adhesiones",     label: "Débito Automático",            group: "" },
     { key: "suspensiones",   label: "Suspensiones",                 group: "" },
+    { key: "certificados-manuales", label: "Certificados Manuales", group: "" },
     { key: "cambios-datos",  label: "Modificaciones de Datos",      group: "" },
     { key: "pagos",          label: "Estado de Pagos",              group: "" },
     { key: "transferencias", label: "Transferencias",               group: "" },
