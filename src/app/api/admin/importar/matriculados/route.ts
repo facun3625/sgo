@@ -68,14 +68,15 @@ export async function POST(req: NextRequest) {
         // Actualizar en lotes de BATCH — solo completa la fecha si el registro
         // no tiene una cargada todavía; si ya tiene, se deja como está.
         const updates: { id: number; fecha: Date }[] = [];
+        const motivos = { sinExpediente: 0, noEncontrado: 0, yaTeniaFecha: 0, fechaInvalida: 0 };
         for (const r of registros) {
             const expediente = String(r.expediente ?? "").trim();
-            if (!expediente) { omitidos++; continue; }
+            if (!expediente) { omitidos++; motivos.sinExpediente++; continue; }
             const id = mapaExistentes.get(expediente);
-            if (!id) { omitidos++; continue; }
-            if (mapaFechaActual.get(expediente)) { omitidos++; continue; }
+            if (!id) { omitidos++; motivos.noEncontrado++; continue; }
+            if (mapaFechaActual.get(expediente)) { omitidos++; motivos.yaTeniaFecha++; continue; }
             const fecha = getFecha(r);
-            if (!fecha) { omitidos++; continue; }
+            if (!fecha) { omitidos++; motivos.fechaInvalida++; continue; }
             updates.push({ id, fecha });
         }
 
@@ -89,7 +90,7 @@ export async function POST(req: NextRequest) {
             actualizados += lote.length;
         }
 
-        return NextResponse.json({ creados: 0, actualizados, omitidos, errores });
+        return NextResponse.json({ creados: 0, actualizados, omitidos, errores, motivos });
     }
 
     // Modo crear: filtrar los que no existen y hacer createMany en lotes

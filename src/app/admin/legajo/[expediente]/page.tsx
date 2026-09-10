@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 
 const FIELD_LABELS: Record<string, string> = {
+    expediente: "Expediente",
     apellido: "Apellido",
     nombre: "Nombre",
     documento: "DNI",
@@ -44,7 +45,7 @@ const FIELD_LABELS: Record<string, string> = {
 };
 
 const DATO_FIELDS = [
-    "apellido", "nombre", "documento", "cuil", "folio", "tomo", "tipo", "fechaMatriculacion",
+    "expediente", "apellido", "nombre", "documento", "cuil", "folio", "tomo", "tipo", "fechaMatriculacion",
     "domicilioLegal", "postalLegal", "localidadLegal", "telefonosLegal", "codMovilLegal", "movilLegal", "emailLegal",
     "domicilioReal", "postalReal", "localidadReal", "provinciaReal", "telefonosReal", "codMovilReal", "movilReal", "emailReal",
 ];

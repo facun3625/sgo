@@ -280,10 +280,17 @@ export default function ImportarPage() {
             const data = await res.json();
             if (res.ok) {
                 if (matModo === "actualizar_fecha") {
+                    const m = data.motivos ?? {};
+                    const detallesMotivos = [
+                        m.sinExpediente > 0 && `${m.sinExpediente} fila${m.sinExpediente !== 1 ? "s" : ""} sin expediente en el Excel`,
+                        m.noEncontrado > 0 && `${m.noEncontrado} expediente${m.noEncontrado !== 1 ? "s" : ""} no encontrado${m.noEncontrado !== 1 ? "s" : ""} en el sistema`,
+                        m.yaTeniaFecha > 0 && `${m.yaTeniaFecha} ya tenía${m.yaTeniaFecha !== 1 ? "n" : ""} fecha cargada (no se tocaron)`,
+                        m.fechaInvalida > 0 && `${m.fechaInvalida} con fecha inválida o sin poder leerla en el Excel`,
+                    ].filter(Boolean) as string[];
                     setMatResultado({
                         tipo: data.errores?.length > 0 ? "warning" : "success",
                         mensaje: `${data.actualizados} fecha${data.actualizados !== 1 ? "s" : ""} actualizada${data.actualizados !== 1 ? "s" : ""}. ${data.omitidos} sin fecha o sin registro.`,
-                        detalles: data.errores,
+                        detalles: [...detallesMotivos, ...(data.errores ?? [])],
                     });
                 } else {
                     setMatResultado({
