@@ -54,9 +54,10 @@ export async function POST(req: NextRequest) {
 
     const existentes = await prisma.dato.findMany({
         where: { expediente: { in: expedientesEnArchivo } },
-        select: { id: true, expediente: true },
+        select: { id: true, expediente: true, fechaMatriculacion: true },
     });
     const mapaExistentes = new Map(existentes.map(d => [d.expediente, d.id]));
+    const mapaFechaActual = new Map(existentes.map(d => [d.expediente, d.fechaMatriculacion]));
 
     let creados = 0;
     let actualizados = 0;
@@ -64,13 +65,15 @@ export async function POST(req: NextRequest) {
     const errores: string[] = [];
 
     if (actualizarFecha) {
-        // Actualizar en lotes de BATCH
+        // Actualizar en lotes de BATCH — solo completa la fecha si el registro
+        // no tiene una cargada todavía; si ya tiene, se deja como está.
         const updates: { id: number; fecha: Date }[] = [];
         for (const r of registros) {
             const expediente = String(r.expediente ?? "").trim();
             if (!expediente) { omitidos++; continue; }
             const id = mapaExistentes.get(expediente);
             if (!id) { omitidos++; continue; }
+            if (mapaFechaActual.get(expediente)) { omitidos++; continue; }
             const fecha = getFecha(r);
             if (!fecha) { omitidos++; continue; }
             updates.push({ id, fecha });

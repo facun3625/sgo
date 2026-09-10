@@ -571,7 +571,7 @@ export default function ImportarPage() {
                     <div className="grid grid-cols-2 gap-3">
                         {[
                             { key: "crear", label: "Crear nuevos", desc: "Agrega registros que no existen. Omite los que ya están." },
-                            { key: "actualizar_fecha", label: "Actualizar fecha de matriculación", desc: "Solo pisa la fecha (fechaInscripcion / fechaMatriculacion) en registros existentes." },
+                            { key: "actualizar_fecha", label: "Actualizar fecha de matriculación", desc: "Completa la fecha solo en registros existentes que todavía no la tienen cargada — no pisa la que ya está." },
                         ].map(opt => (
                             <button key={opt.key} onClick={() => { setMatModo(opt.key as typeof matModo); setMatRegistros([]); setMatResultado(null); if (matFileRef.current) matFileRef.current.value = ""; }}
                                 className={`p-3 rounded-xl border-2 text-left transition-all ${matModo === opt.key ? "border-cyan-500 bg-cyan-50/50 dark:bg-cyan-900/10" : "border-slate-100 dark:border-slate-800 hover:border-slate-200"}`}>
