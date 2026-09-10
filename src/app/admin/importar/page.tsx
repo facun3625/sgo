@@ -86,6 +86,29 @@ function parseExcel(buffer: ArrayBuffer): Record<string, string>[] {
     });
 }
 
+// Lectura dedicada para "Actualizar fecha de matriculación": exactamente 2
+// columnas por posición (A=expediente, B=fecha), sin depender del nombre del
+// encabezado — funciona igual si el Excel no tiene fila de título (algo muy
+// común en estos archivos) sin perder la primera fila de datos.
+function parseExcelExpedienteFecha(buffer: ArrayBuffer): Record<string, string>[] {
+    const wb = XLSX.read(buffer, { type: "array", cellDates: true });
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    const raw = XLSX.utils.sheet_to_json<unknown[]>(ws, { header: 1, defval: "" });
+    const filas = raw.filter(r => r.some(c => String(c ?? "").trim() !== ""));
+    if (filas.length === 0) return [];
+
+    const primeraEsTitulo = filas[0].some(c => {
+        const t = String(c ?? "").toLowerCase().trim();
+        return t.includes("exp") || t.includes("fecha") || t.includes("matric") || t.includes("inscrip");
+    });
+    const datos = primeraEsTitulo ? filas.slice(1) : filas;
+
+    return datos.map(r => ({
+        expediente: String(r[0] ?? "").trim(),
+        fechamatriculacion: excelValToString(r[1]),
+    }));
+}
+
 function getCurrentPeriodo() {
     return new Date().toISOString().slice(0, 7);
 }
@@ -594,8 +617,24 @@ export default function ImportarPage() {
                             onChange={e => {
                                 const file = e.target.files?.[0];
                                 if (!file) return;
-                                if (file.name.match(/\.xlsx?$/i)) handleExcelChange(e, setMatRegistros, setMatResultado);
-                                else handleCSVChange(e, setMatRegistros, setMatResultado);
+                                if (matModo === "actualizar_fecha" && file.name.match(/\.xlsx?$/i)) {
+                                    setMatResultado(null);
+                                    const reader = new FileReader();
+                                    reader.onload = (ev) => {
+                                        try {
+                                            const rows = parseExcelExpedienteFecha(ev.target?.result as ArrayBuffer);
+                                            if (rows.length === 0) { setMatResultado({ tipo: "error", mensaje: "El archivo no tiene datos válidos." }); return; }
+                                            setMatRegistros(rows);
+                                        } catch {
+                                            setMatResultado({ tipo: "error", mensaje: "No se pudo leer el archivo Excel." });
+                                        }
+                                    };
+                                    reader.readAsArrayBuffer(file);
+                                } else if (file.name.match(/\.xlsx?$/i)) {
+                                    handleExcelChange(e, setMatRegistros, setMatResultado);
+                                } else {
+                                    handleCSVChange(e, setMatRegistros, setMatResultado);
+                                }
                             }}
                             accept=".csv,.xlsx,.xls" color="cyan" label="Hacé clic o arrastrá el CSV o Excel" />
                         <PreviewTable rows={matRegistros} />
