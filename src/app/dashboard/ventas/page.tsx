@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Cpu, Loader2, Upload, X, CheckCircle2, ShoppingCart } from "lucide-react";
+import PaywayCardForm, { PaywayTokenResult } from "@/components/pagos/PaywayCardForm";
 
 interface Producto {
     id: number;
@@ -41,6 +42,9 @@ const ESTADO_LABELS: Record<string, string> = {
 const METODO_LABELS: Record<string, string> = {
     mercadopago: "Mercado Pago",
     transferencia: "Transferencia",
+    payway: "Tarjeta",
+    // Ya no es seleccionable (se sacó la opción de retirar en efectivo), pero se
+    // mantiene el label para mostrar correctamente pedidos viejos con este método.
     efectivo: "Efectivo al retirar",
 };
 
@@ -50,11 +54,12 @@ export default function VentasPage() {
     const [pedidosMesPorProducto, setPedidosMesPorProducto] = useState<Record<number, number>>({});
     const [loading, setLoading] = useState(true);
     const [transferenciaHabilitada, setTransferenciaHabilitada] = useState(false);
+    const [paywayHabilitado, setPaywayHabilitado] = useState(false);
 
     // Formulario de compra
     const [selectedProducto, setSelectedProducto] = useState<Producto | null>(null);
     const [cantidad, setCantidad] = useState(1);
-    const [metodoPago, setMetodoPago] = useState<"mercadopago" | "transferencia" | "efectivo">("mercadopago");
+    const [metodoPago, setMetodoPago] = useState<"mercadopago" | "transferencia" | "payway">("mercadopago");
     const [comprobante, setComprobante] = useState<string | null>(null);
     const [comprobanteFileName, setComprobanteFileName] = useState("");
     const [uploadingFile, setUploadingFile] = useState(false);
@@ -62,21 +67,18 @@ export default function VentasPage() {
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState("");
     const [cancelingId, setCancelingId] = useState<number | null>(null);
+    const [paywayProcesando, setPaywayProcesando] = useState(false);
+    const [paywayError, setPaywayError] = useState<string | null>(null);
 
     const fetchData = useCallback(async () => {
-        const [ventasRes, configRes] = await Promise.all([
-            fetch("/api/user/ventas"),
-            fetch("/api/admin/config/pagos"),
-        ]);
+        const ventasRes = await fetch("/api/user/ventas");
         if (ventasRes.ok) {
             const data = await ventasRes.json();
             setProductos(data.productos ?? []);
             setPedidos(data.pedidos ?? []);
             setPedidosMesPorProducto(data.pedidosMesPorProducto ?? {});
-        }
-        if (configRes.ok) {
-            const cfg = await configRes.json();
-            setTransferenciaHabilitada(!!cfg.transferencia_ventas);
+            setTransferenciaHabilitada(!!data.transferenciaHabilitada);
+            setPaywayHabilitado(!!data.paywayHabilitado);
         }
         setLoading(false);
     }, []);
@@ -90,6 +92,7 @@ export default function VentasPage() {
         setComprobante(null);
         setComprobanteFileName("");
         setError("");
+        setPaywayError(null);
         setSuccess(false);
     }
 
@@ -162,6 +165,30 @@ export default function VentasPage() {
             setError(data.error ?? "Error al procesar el pedido.");
         }
         setSubmitting(false);
+    }
+
+    async function handlePaywayToken(result: PaywayTokenResult) {
+        if (!selectedProducto) return;
+        setPaywayError(null);
+        setPaywayProcesando(true);
+        try {
+            const res = await fetch("/api/payments/payway", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ tipo: "producto", ref: String(selectedProducto.id), extra: String(cantidad), ...result }),
+            });
+            const data = await res.json();
+            if (!res.ok) { setPaywayError(data.error ?? "No se pudo procesar el pago."); return; }
+            if (!data.aprobado) { setPaywayError(data.mensaje ?? "El pago fue rechazado."); return; }
+            setSuccess(true);
+            setSelectedProducto(null);
+            await fetchData();
+            setTimeout(() => setSuccess(false), 4000);
+        } catch {
+            setPaywayError("Error de conexión. Intentá de nuevo.");
+        } finally {
+            setPaywayProcesando(false);
+        }
     }
 
     async function cancelarPedido(id: number) {
@@ -256,7 +283,7 @@ export default function VentasPage() {
                                         {isSelected && (
                                             <div className="border-t border-slate-100 dark:border-slate-800 p-5">
                                                 <p className="text-[14px] font-bold text-slate-800 dark:text-white mb-4">Realizar pedido</p>
-                                                <form onSubmit={handleSubmit} className="space-y-4">
+                                                <div className="space-y-4">
                                                     {/* Cantidad */}
                                                     {p.limiteMensual !== 1 && (
                                                         <div>
@@ -282,9 +309,9 @@ export default function VentasPage() {
                                                     <div>
                                                         <label className="text-[12px] text-slate-700 uppercase tracking-wide font-semibold block mb-1.5">Método de pago</label>
                                                         <div className="grid grid-cols-3 gap-2">
-                                                            {(["mercadopago", ...(transferenciaHabilitada ? (["transferencia"] as const) : []), "efectivo"] as const).map((m) => (
+                                                            {(["mercadopago", ...(transferenciaHabilitada ? (["transferencia"] as const) : []), ...(paywayHabilitado ? (["payway"] as const) : [])] as const).map((m) => (
                                                                 <button key={m} type="button"
-                                                                    onClick={() => { setMetodoPago(m); setComprobante(null); setComprobanteFileName(""); }}
+                                                                    onClick={() => { setMetodoPago(m); setComprobante(null); setComprobanteFileName(""); setPaywayError(null); }}
                                                                     className={`px-3 py-2.5 rounded-xl text-[13px] font-semibold transition-all border
                                                                         ${metodoPago === m
                                                                             ? "bg-[#063f68] border-[#063f68] text-white"
@@ -318,26 +345,38 @@ export default function VentasPage() {
                                                         </div>
                                                     )}
 
-                                                    {/* Total */}
-                                                    <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
-                                                        <span className="text-[13px] text-slate-700">Total</span>
-                                                        <span className="text-[18px] font-black text-slate-800 dark:text-white">
-                                                            ${(p.precio * cantidad).toLocaleString("es-AR")}
-                                                        </span>
-                                                    </div>
+                                                    {metodoPago === "payway" ? (
+                                                        <PaywayCardForm
+                                                            seccion="ventas"
+                                                            onToken={handlePaywayToken}
+                                                            procesando={paywayProcesando}
+                                                            error={paywayError}
+                                                            montoLabel={`$${(p.precio * cantidad).toLocaleString("es-AR")}`}
+                                                        />
+                                                    ) : (
+                                                        <form onSubmit={handleSubmit} className="space-y-4">
+                                                            {/* Total */}
+                                                            <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
+                                                                <span className="text-[13px] text-slate-700">Total</span>
+                                                                <span className="text-[18px] font-black text-slate-800 dark:text-white">
+                                                                    ${(p.precio * cantidad).toLocaleString("es-AR")}
+                                                                </span>
+                                                            </div>
 
-                                                    {error && (
-                                                        <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-700/30 text-[13px] text-rose-600 dark:text-rose-400">
-                                                            {error}
-                                                        </div>
+                                                            {error && (
+                                                                <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-700/30 text-[13px] text-rose-600 dark:text-rose-400">
+                                                                    {error}
+                                                                </div>
+                                                            )}
+
+                                                            <button type="submit" disabled={submitting || uploadingFile}
+                                                                className="w-full h-11 rounded-xl bg-[#063f68] text-white text-[14px] font-bold hover:bg-[#0a4d7a] disabled:opacity-50 transition-all flex items-center justify-center gap-2">
+                                                                {submitting ? <Loader2 size={15} className="animate-spin" /> : <ShoppingCart size={15} />}
+                                                                {submitting ? "Procesando..." : "Confirmar pedido"}
+                                                            </button>
+                                                        </form>
                                                     )}
-
-                                                    <button type="submit" disabled={submitting || uploadingFile}
-                                                        className="w-full h-11 rounded-xl bg-[#063f68] text-white text-[14px] font-bold hover:bg-[#0a4d7a] disabled:opacity-50 transition-all flex items-center justify-center gap-2">
-                                                        {submitting ? <Loader2 size={15} className="animate-spin" /> : <ShoppingCart size={15} />}
-                                                        {submitting ? "Procesando..." : "Confirmar pedido"}
-                                                    </button>
-                                                </form>
+                                                </div>
                                             </div>
                                         )}
                                     </div>

@@ -6,8 +6,9 @@ import { esMatriculadoJoven, montoConDescuento } from "@/lib/matricula";
 import { crearNotificacion } from "@/lib/notificaciones";
 
 // Cobro con tarjeta (Payway) para matriculados logueados: cuota mensual, matrícula
-// anual y deudas vencidas. Mismo cálculo de precio que /api/payments/create-preference
-// (Mercado Pago), pero acá el pago se autoriza en la misma request — sin webhook.
+// anual, deudas vencidas y compra de productos (ventas). Mismo cálculo de precio que
+// /api/payments/create-preference (Mercado Pago), pero acá el pago se autoriza en la
+// misma request — sin webhook.
 export async function POST(req: NextRequest) {
     const session = await getSession();
     if (!session?.expediente) {
@@ -15,7 +16,7 @@ export async function POST(req: NextRequest) {
     }
     const expediente = session.expediente;
 
-    const { tipo, ref, token, marca, bin, facturacion } = await req.json();
+    const { tipo, ref, extra, token, marca, bin, facturacion } = await req.json();
     if (!tipo || !ref || !token || !marca || !bin || !facturacion) {
         return NextResponse.json({ error: "Faltan datos" }, { status: 400 });
     }
@@ -26,7 +27,8 @@ export async function POST(req: NextRequest) {
     const seccion: PaywaySeccion | null =
         tipo === "matricula_mensual" ? "matricula_mensual" :
         tipo === "matricula_anual" ? "matricula_anual" :
-        tipo === "deuda" ? "deuda" : null;
+        tipo === "deuda" ? "deuda" :
+        tipo === "producto" ? "ventas" : null;
     if (!seccion) return NextResponse.json({ error: "Tipo de pago inválido" }, { status: 400 });
     if (!(await paywayDisponibleParaSeccion(seccion))) {
         return NextResponse.json({ error: "Esta opción de pago no está disponible" }, { status: 503 });
@@ -34,6 +36,7 @@ export async function POST(req: NextRequest) {
 
     let descripcion = "";
     let monto = 0;
+    let cantidad = 1;
 
     // ── Validar y obtener precio según tipo (mismo cálculo que create-preference) ──
     if (tipo === "matricula_mensual") {
@@ -60,14 +63,40 @@ export async function POST(req: NextRequest) {
         descripcion = "Matrícula anual";
         monto = montoConDescuento(montoBase, esMatriculadoJoven(dato?.fechaMatriculacion));
 
-    } else {
-        // deuda: ref = ids separados por coma
+    } else if (tipo === "deuda") {
         const ids = String(ref).split(",").map((id: string) => parseInt(id)).filter((id: number) => !isNaN(id));
         if (ids.length === 0) return NextResponse.json({ error: "Sin deudas especificadas" }, { status: 400 });
         const deudas = await prisma.deuda.findMany({ where: { id: { in: ids }, expediente } });
         if (deudas.length === 0) return NextResponse.json({ error: "Deudas no encontradas" }, { status: 404 });
         descripcion = `Deuda pendiente — ${deudas.length} concepto${deudas.length > 1 ? "s" : ""}`;
         monto = deudas.reduce((acc, d) => acc + d.monto, 0);
+
+    } else {
+        // producto: ref = productoId, extra = cantidad (mismo contrato que create-preference)
+        const productoId = parseInt(ref);
+        cantidad = parseInt(extra ?? "1");
+        if (isNaN(productoId) || isNaN(cantidad) || cantidad < 1) {
+            return NextResponse.json({ error: "Datos inválidos" }, { status: 400 });
+        }
+        const producto = await prisma.producto.findUnique({ where: { id: productoId } });
+        if (!producto || !producto.habilitado) {
+            return NextResponse.json({ error: "Producto no disponible" }, { status: 400 });
+        }
+        if (producto.stock < cantidad) {
+            return NextResponse.json({ error: "Stock insuficiente" }, { status: 400 });
+        }
+        if (producto.limiteMensual !== null) {
+            const now = new Date();
+            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+            const pedidosMes = await prisma.pedido.count({
+                where: { expediente, productoId, estado: { not: "cancelado" }, createdAt: { gte: startOfMonth } },
+            });
+            if (pedidosMes + cantidad > producto.limiteMensual) {
+                return NextResponse.json({ error: `Superás el límite mensual de ${producto.limiteMensual} para este producto` }, { status: 400 });
+            }
+        }
+        descripcion = `Compra: ${producto.nombre}${cantidad > 1 ? ` x${cantidad}` : ""}`;
+        monto = producto.precio * cantidad;
     }
 
     if (monto <= 0) return NextResponse.json({ error: "Monto inválido" }, { status: 400 });
@@ -116,7 +145,7 @@ export async function POST(req: NextRequest) {
             await prisma.pagoAnual.create({ data: { expediente, paywayPaymentId, fechaPago } });
             await crearNotificacion(expediente, "Matrícula anual confirmada", "Tu pago de matrícula anual fue acreditado. ¡Gracias!", "pago");
 
-        } else {
+        } else if (tipo === "deuda") {
             const ids = String(ref).split(",").map((id: string) => parseInt(id)).filter((id: number) => !isNaN(id));
             await prisma.$transaction([
                 prisma.deudaPagada.create({
@@ -125,6 +154,19 @@ export async function POST(req: NextRequest) {
                 prisma.deuda.deleteMany({ where: { id: { in: ids }, expediente } }),
             ]);
             await crearNotificacion(expediente, "Deuda regularizada", "Tu pago de deuda vencida fue acreditado correctamente.", "pago");
+
+        } else {
+            const productoId = parseInt(ref);
+            const producto = await prisma.producto.findUnique({ where: { id: productoId } });
+            await prisma.$transaction([
+                prisma.pedido.create({
+                    data: { expediente, productoId, cantidad, metodoPago: "payway", estado: "aprobado", paywayPaymentId },
+                }),
+                prisma.producto.update({ where: { id: productoId }, data: { stock: { decrement: cantidad } } }),
+            ]);
+            if (producto) {
+                await crearNotificacion(expediente, "Pedido confirmado", `Tu compra de "${producto.nombre}" (x${cantidad}) fue confirmada. Ya podés retirarlo.`, "pedido");
+            }
         }
 
         return NextResponse.json({ aprobado: true });

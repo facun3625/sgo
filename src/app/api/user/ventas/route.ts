@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { paywayDisponibleParaSeccion } from "@/lib/payway";
 
 export async function GET() {
     const session = await getSession();
@@ -8,16 +9,19 @@ export async function GET() {
         return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    const productos = await prisma.producto.findMany({
-        where: { habilitado: true },
-        orderBy: { createdAt: "asc" },
-    });
-
-    const pedidos = await prisma.pedido.findMany({
-        where: { expediente: session.expediente },
-        orderBy: { createdAt: "desc" },
-        include: { producto: { select: { nombre: true } } },
-    });
+    const [productos, pedidos, transferenciaConfig, paywayHabilitado] = await Promise.all([
+        prisma.producto.findMany({
+            where: { habilitado: true },
+            orderBy: { createdAt: "asc" },
+        }),
+        prisma.pedido.findMany({
+            where: { expediente: session.expediente },
+            orderBy: { createdAt: "desc" },
+            include: { producto: { select: { nombre: true } } },
+        }),
+        prisma.config.findUnique({ where: { clave: "transferencia_ventas" } }),
+        paywayDisponibleParaSeccion("ventas"),
+    ]);
 
     // Para cada producto, contar pedidos del mes del usuario
     const now = new Date();
@@ -35,7 +39,13 @@ export async function GET() {
         });
     }
 
-    return NextResponse.json({ productos, pedidos, pedidosMesPorProducto });
+    return NextResponse.json({
+        productos,
+        pedidos,
+        pedidosMesPorProducto,
+        transferenciaHabilitada: transferenciaConfig?.valor === "1",
+        paywayHabilitado,
+    });
 }
 
 export async function POST(req: NextRequest) {

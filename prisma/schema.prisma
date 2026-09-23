@@ -419,6 +419,7 @@ model Pedido {
   updatedAt   DateTime @updatedAt
   exportado   Boolean  @default(false)
   mpPaymentId String?  @map("mp_payment_id")
+  paywayPaymentId String? @map("payway_payment_id")
   producto    Producto @relation(fields: [productoId], references: [id])
 
   @@map("pedidos")
