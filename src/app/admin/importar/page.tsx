@@ -1263,6 +1263,13 @@ function parseFechaLocal(val: string): string | null {
 
 function getFechaMatriculacionPreview(row: Record<string, string>): { fecha: string; esHoy: boolean } {
     const raw =
+        row["fecha de matriculación"] ||
+        row["fecha de matriculacion"] ||
+        row["fecha matriculación"] ||
+        row["fecha matriculacion"] ||
+        row["fechamatriculacion"] ||
+        row["fecha_matriculacion"] ||
+        row["fechamatric"] ||
         row["fecha de inscripción"] ||
         row["fecha de inscripcion"] ||
         row["inscripción"] ||
@@ -1303,7 +1310,7 @@ function NMPreviewTable({ rows }: { rows: Record<string, string>[] }) {
             </div>
             {rows.some(r => getFechaMatriculacionPreview(r).esHoy) && (
                 <p className="text-[11px] text-amber-600 dark:text-amber-400 font-semibold">
-                    ⚠ Filas en amarillo no tienen "Fecha de Inscripción" en el archivo — la fecha de matriculación quedará vacía.
+                    ⚠ Filas en amarillo no tienen una columna de fecha de matriculación/inscripción reconocible en el archivo — la fecha quedará vacía.
                 </p>
             )}
         </div>

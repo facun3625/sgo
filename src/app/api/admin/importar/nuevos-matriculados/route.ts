@@ -99,10 +99,10 @@ export async function POST(req: NextRequest) {
             localidadReal: get(r, "localidad real", "localidadreal") || null,
             provinciaReal: get(r, "provincia real", "provinciareal") || null,
             telefonosReal: get(r, "teléfono real", "telefono real", "telefonoreal") || null,
-            fechaMatriculacion: parseFecha(get(r, "fecha de inscripción", "fecha de inscripcion", "inscripción", "inscripcion", "fecha inscripcion")),
+            fechaMatriculacion: parseFecha(get(r, "fecha de matriculación", "fecha de matriculacion", "fecha matriculación", "fecha matriculacion", "fechamatriculacion", "fecha_matriculacion", "fechamatric", "fecha de inscripción", "fecha de inscripcion", "inscripción", "inscripcion", "fecha inscripcion")),
         });
 
-        if (!parseFecha(get(r, "fecha de inscripción", "fecha de inscripcion", "inscripción", "inscripcion", "fecha inscripcion"))) {
+        if (!parseFecha(get(r, "fecha de matriculación", "fecha de matriculacion", "fecha matriculación", "fecha matriculacion", "fechamatriculacion", "fecha_matriculacion", "fechamatric", "fecha de inscripción", "fecha de inscripcion", "inscripción", "inscripcion", "fecha inscripcion"))) {
             sinFecha.push(expediente);
         }
 
