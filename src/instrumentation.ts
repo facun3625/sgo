@@ -12,4 +12,14 @@ export async function register() {
         );
     tick();
     setInterval(tick, 60 * 60 * 1000);
+
+    // Importación automática de deudas vencidas: revisa cada 45 min si llegó un
+    // archivo nuevo a la carpeta de FTP (ver src/lib/ftpImportDeudas.ts).
+    const { chequearFtpDeudas } = await import("@/lib/ftpImportDeudas");
+    const tickFtpDeudas = () =>
+        chequearFtpDeudas().catch(err =>
+            console.error("[startup] Error chequeando FTP de deudas:", err)
+        );
+    tickFtpDeudas();
+    setInterval(tickFtpDeudas, 45 * 60 * 1000);
 }

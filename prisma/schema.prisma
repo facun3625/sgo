@@ -425,6 +425,20 @@ model Pedido {
   @@map("pedidos")
 }
 
+// Historial de corridas del watcher de importación automática por FTP (ver
+// src/lib/ftpImportDeudas.ts) — un registro por archivo procesado (éxito o error).
+model ImportacionAutomatica {
+  id        Int      @id @default(autoincrement())
+  tipo      String
+  archivo   String
+  estado    String
+  filas     Int      @default(0)
+  mensaje   String?
+  createdAt DateTime @default(now())
+
+  @@map("importaciones_automaticas")
+}
+
 model Notificacion {
   id         Int      @id @default(autoincrement())
   expediente String

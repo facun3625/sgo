@@ -29,6 +29,7 @@ function timeAgo(dateStr: string): string {
 const ADMIN_TIPO_PERMISO: Record<string, string> = {
     admin_debito: "adhesiones",
     admin_cambios: "cambios-datos",
+    admin_import: "importar",
 };
 
 export default function NotificacionesBell() {
@@ -203,6 +204,7 @@ export default function NotificacionesBell() {
                                     n.tipo === "debito" ? "/dashboard/solicitudes/adhesion-debito" :
                                     n.tipo === "admin_debito" ? "/admin/adhesiones" :
                                     n.tipo === "admin_cambios" ? "/admin/cambios-datos" :
+                                    n.tipo === "admin_import" ? "/admin/importar" :
                                     n.tipo === "evento" ? "/dashboard/calendario" :
                                     null;
                                 return linkHref ? (

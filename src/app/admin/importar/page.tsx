@@ -209,6 +209,13 @@ export default function ImportarPage() {
     const [finResultado, setFinResultado] = useState<ResultadoImport | null>(null);
     const finFileRef = useRef<HTMLInputElement>(null);
 
+    // Historial de importaciones automáticas por FTP (solo "Deudas Vencidas" por ahora)
+    const [finAutoLog, setFinAutoLog] = useState<{ id: number; archivo: string; estado: string; filas: number; mensaje: string | null; createdAt: string }[]>([]);
+    useEffect(() => {
+        if (seccion !== "financiero" || finTipo !== "deudas") return;
+        fetch("/api/admin/importar/financiero/log").then(r => r.ok ? r.json() : null).then(d => { if (d) setFinAutoLog(d.registros ?? []); }).catch(() => {});
+    }, [seccion, finTipo]);
+
     // Banelco
     const [banTipo, setBanTipo] = useState<"cuota" | "deuda">("cuota");
     const [banRegistros, setBanRegistros] = useState<Record<string, string>[]>([]);
@@ -706,6 +713,38 @@ export default function ImportarPage() {
                             Seleccioná el tipo de dato y subí el archivo. La tabla completa se reemplaza con los datos del archivo — los registros anteriores se borran y se cargan los nuevos.
                         </p>
                     </div>
+
+                    {finTipo === "deudas" && (
+                        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-5 space-y-3">
+                            <p className="text-[12px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                                <Clock size={13} /> Importaciones automáticas por FTP
+                            </p>
+                            <p className="text-[11px] text-slate-400 -mt-2">
+                                El sistema revisa la carpeta de FTP cada 45 minutos. Si sube un archivo nuevo, lo procesa solo — exactamente igual que si lo importaras acá arriba.
+                            </p>
+                            {finAutoLog.length === 0 ? (
+                                <p className="text-[12px] text-slate-400 py-2">Todavía no se procesó ningún archivo por esta vía.</p>
+                            ) : (
+                                <div className="space-y-1.5">
+                                    {finAutoLog.map(r => (
+                                        <div key={r.id} className={`flex items-start gap-2.5 p-2.5 rounded-xl text-[12px] ${r.estado === "exitoso" ? "bg-emerald-50/50 dark:bg-emerald-900/10" : "bg-rose-50/50 dark:bg-rose-900/10"}`}>
+                                            {r.estado === "exitoso"
+                                                ? <CheckCircle2 size={14} className="text-emerald-500 flex-shrink-0 mt-0.5" />
+                                                : <AlertCircle size={14} className="text-rose-500 flex-shrink-0 mt-0.5" />}
+                                            <div className="min-w-0 flex-1">
+                                                <p className="font-bold text-slate-700 dark:text-slate-200 truncate">{r.archivo}</p>
+                                                <p className="text-slate-500 dark:text-slate-400">{r.mensaje}</p>
+                                                <p className="text-slate-300 dark:text-slate-600 text-[11px] mt-0.5">
+                                                    {new Date(r.createdAt).toLocaleString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
                     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6 space-y-5">
                         <div className="space-y-2">
                             <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Tipo de dato</label>
