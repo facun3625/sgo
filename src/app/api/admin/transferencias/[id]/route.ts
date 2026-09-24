@@ -69,7 +69,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
                 await prisma.cursoOpcion.update({ where: { id: inscripcion.opcionId }, data: { inscritos: { increment: 1 } } });
             }
             if (inscripcion.esInvitado && inscripcion.guestEmail) {
-                enviarInscripcionCursoConfirmada(inscripcion.guestEmail, inscripcion.curso.titulo).catch(err => console.error("[mailer] error enviando confirmación a invitado:", err));
+                enviarInscripcionCursoConfirmada(inscripcion.guestEmail, inscripcion.curso.titulo, inscripcion.opcion?.infoPrivada).catch(err => console.error("[mailer] error enviando confirmación a invitado:", err));
             } else {
                 await crearNotificacion(expediente, "Inscripción confirmada",
                     `Tu transferencia para el curso "${inscripcion.curso.titulo}" fue aprobada.`, "curso");

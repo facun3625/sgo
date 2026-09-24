@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
         });
 
         if (inscripcion.guestEmail) {
-            enviarInscripcionCursoConfirmada(inscripcion.guestEmail, inscripcion.curso.titulo).catch(err => console.error("[mailer] error enviando confirmación a invitado:", err));
+            enviarInscripcionCursoConfirmada(inscripcion.guestEmail, inscripcion.curso.titulo, inscripcion.opcion?.infoPrivada).catch(err => console.error("[mailer] error enviando confirmación a invitado:", err));
         }
 
         return NextResponse.json({ aprobado: true });

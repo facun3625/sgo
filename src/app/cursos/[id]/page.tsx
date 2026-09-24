@@ -67,7 +67,7 @@ export default function CursoPublicoDetailPage() {
 
     const [consultaDni, setConsultaDni] = useState("");
     const [consultando, setConsultando] = useState(false);
-    const [consultaResult, setConsultaResult] = useState<{ inscripto: boolean; estado?: string; opcion?: string | null; comprobanteEnviado?: boolean; id?: number; monto?: number | null; email?: string } | null>(null);
+    const [consultaResult, setConsultaResult] = useState<{ inscripto: boolean; estado?: string; opcion?: string | null; comprobanteEnviado?: boolean; id?: number; monto?: number | null; email?: string; infoPrivada?: string | null } | null>(null);
     const [consultaError, setConsultaError] = useState("");
 
     useEffect(() => {
@@ -232,15 +232,23 @@ export default function CursoPublicoDetailPage() {
                         )}
                         {consultaResult && (
                             consultaResult.inscripto ? (
-                                <div className="flex items-center gap-2 px-3 py-2.5 bg-emerald-50 border border-emerald-100 rounded-xl text-[13px] text-emerald-700">
-                                    <CheckCircle2 size={14} className="flex-shrink-0" />
-                                    Sí, estás inscripto ({consultaResult.opcion}) — {
-                                        consultaResult.estado === "confirmada"
-                                            ? "tu inscripción está confirmada."
-                                            : consultaResult.comprobanteEnviado
-                                                ? "recibimos tu comprobante y está pendiente de confirmación por el Colegio."
-                                                : "todavía falta que completes el pago."
-                                    }
+                                <div className="space-y-2">
+                                    <div className="flex items-center gap-2 px-3 py-2.5 bg-emerald-50 border border-emerald-100 rounded-xl text-[13px] text-emerald-700">
+                                        <CheckCircle2 size={14} className="flex-shrink-0" />
+                                        Sí, estás inscripto ({consultaResult.opcion}) — {
+                                            consultaResult.estado === "confirmada"
+                                                ? "tu inscripción está confirmada."
+                                                : consultaResult.comprobanteEnviado
+                                                    ? "recibimos tu comprobante y está pendiente de confirmación por el Colegio."
+                                                    : "todavía falta que completes el pago."
+                                        }
+                                    </div>
+                                    {consultaResult.infoPrivada && (
+                                        <div className="bg-slate-50 border border-slate-100 rounded-xl p-4">
+                                            <p className="text-[11px] font-bold text-[#063f68] uppercase tracking-wider mb-1.5">Información de acceso</p>
+                                            <p className="text-[13px] text-slate-600 whitespace-pre-wrap">{consultaResult.infoPrivada}</p>
+                                        </div>
+                                    )}
                                 </div>
                             ) : (
                                 <div className="flex items-center gap-2 px-3 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-[13px] text-slate-500">

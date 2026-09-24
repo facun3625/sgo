@@ -41,6 +41,8 @@ export async function GET(req: NextRequest) {
         id: inscripcion.id,
         monto: inscripcion.opcion?.precioNoMatriculado ?? null,
         fecha: inscripcion.fecha,
+        // Solo una vez confirmada — mismo criterio que el dashboard de matriculados.
+        infoPrivada: inscripcion.estado === "confirmada" ? (inscripcion.opcion?.infoPrivada ?? null) : null,
     });
 }
 

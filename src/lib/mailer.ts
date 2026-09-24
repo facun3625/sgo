@@ -133,13 +133,21 @@ export async function enviarNotificacionMensaje(destinatario: string) {
     });
 }
 
-export async function enviarInscripcionCursoConfirmada(destinatario: string, nombreCurso: string) {
+export async function enviarInscripcionCursoConfirmada(destinatario: string, nombreCurso: string, infoPrivada?: string | null) {
+    const bloqueInfoPrivada = infoPrivada
+        ? `
+            <div style="background:#f1f5f9;border-radius:12px;padding:20px;margin:0 0 12px;">
+                <p style="font-size:12px;font-weight:800;letter-spacing:0.05em;color:#063f68;text-transform:uppercase;margin:0 0 8px">Información de acceso</p>
+                <p style="color:#334155;font-size:14px;line-height:1.6;margin:0;white-space:pre-wrap">${infoPrivada}</p>
+            </div>`
+        : "";
     await enviarTransaccional({
         to: destinatario,
         subject: `Inscripción confirmada — ${nombreCurso}`,
         html: baseLayout(`
             <h2 style="font-size:20px;font-weight:800;color:#0f172a;margin:0 0 12px">¡Inscripción confirmada!</h2>
             <p style="color:#475569;font-size:15px;line-height:1.6;margin:0 0 12px">Tu inscripción al curso <strong>${nombreCurso}</strong> quedó confirmada.</p>
+            ${bloqueInfoPrivada}
             <p style="color:#64748b;font-size:13px;margin:0">El día del curso, el organizador va a registrar tu asistencia con tu nombre y DNI — no necesitás presentar nada más.</p>
         `),
     });

@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
                     });
                 }
                 if (inscripcion.esInvitado && inscripcion.guestEmail) {
-                    await enviarInscripcionCursoConfirmada(inscripcion.guestEmail, inscripcion.curso.titulo).catch(err => console.error("[mailer] error enviando confirmación a invitado:", err));
+                    await enviarInscripcionCursoConfirmada(inscripcion.guestEmail, inscripcion.curso.titulo, inscripcion.opcion?.infoPrivada).catch(err => console.error("[mailer] error enviando confirmación a invitado:", err));
                 } else {
                     await crearNotificacion(
                         expediente,

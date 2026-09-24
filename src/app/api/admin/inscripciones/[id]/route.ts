@@ -19,7 +19,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
     const previa = await prisma.inscripcionCurso.findUnique({
         where: { id: parseInt(id) },
-        include: { curso: true },
+        include: { curso: true, opcion: true },
     });
 
     const updated = await prisma.inscripcionCurso.update({
@@ -35,7 +35,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         });
 
         if (previa?.esInvitado && previa.guestEmail) {
-            enviarInscripcionCursoConfirmada(previa.guestEmail, previa.curso.titulo).catch(err => console.error("[mailer] error enviando confirmación a invitado:", err));
+            enviarInscripcionCursoConfirmada(previa.guestEmail, previa.curso.titulo, previa.opcion?.infoPrivada).catch(err => console.error("[mailer] error enviando confirmación a invitado:", err));
         } else if (previa) {
             await crearNotificacion(previa.expediente, "Inscripción confirmada",
                 `Tu inscripción al curso "${previa.curso.titulo}" fue confirmada.`, "curso");
