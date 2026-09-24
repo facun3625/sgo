@@ -52,6 +52,15 @@ import NotificacionesBell from "@/components/dashboard/NotificacionesBell";
 import AdminMensajesIcon from "@/components/admin/AdminMensajesIcon";
 import AdminSolicitudesIcon from "@/components/admin/AdminSolicitudesIcon";
 import { ToastProvider } from "@/components/ui/Toast";
+import SidebarSearch from "@/components/ui/SidebarSearch";
+
+const CONFIG_SUBITEMS = [
+    { href: "/admin/config/matricula", label: "Matrícula" },
+    { href: "/admin/config/pagos", label: "Métodos de Pago" },
+    { href: "/admin/config/jus", label: "Valor JUS" },
+    { href: "/admin/config/smtp", label: "Correo SMTP" },
+    { href: "/admin/config/sistema", label: "Sistema" },
+];
 
 interface AdminShellProps {
     session: SessionPayload;
@@ -151,6 +160,17 @@ export default function AdminShell({ session, image, permisos, children }: Admin
         return permisos.includes(key);
     });
 
+    // Ítems buscables del menú: los visibles + los condicionales de superadmin
+    // (que no están en navItems porque se renderizan aparte más abajo).
+    const searchItems = [
+        ...visibleNavItems.map(item => ({ label: item.label, href: item.href })),
+        ...(permisos === null ? [
+            { label: "Ver como usuario", href: "/admin/impersonar" },
+            { label: "Backups BD", href: "/admin/backup" },
+            ...CONFIG_SUBITEMS.map(sub => ({ label: sub.label, href: sub.href, group: "Configuración" })),
+        ] : []),
+    ];
+
     const [rehabPendientes, setRehabPendientes] = useState(0);
     const [adhesionesPendientes, setAdhesionesPendientes] = useState(0);
     useEffect(() => {
@@ -235,6 +255,8 @@ export default function AdminShell({ session, image, permisos, children }: Admin
                 </div>
 
                 <nav ref={navRef} className="flex-1 p-3 space-y-1 overflow-y-auto">
+                    <SidebarSearch items={searchItems} onNavigate={() => setSidebarOpen(false)} />
+
                     {visibleNavItems.map((item) => {
                         const active = isActive(item);
                         const showRehabBadge = item.href === "/admin/suspensiones" && rehabPendientes > 0 && (isSuperAdmin || (permisos ?? []).includes("suspensiones"));

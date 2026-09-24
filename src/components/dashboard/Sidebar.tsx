@@ -10,6 +10,7 @@ import {
     Home, CheckCircle2, Clock, Newspaper, Library, Cpu, Mail, Megaphone,
     ShieldCheck, Scale, BookUser, PlayCircle, HandshakeIcon, Globe, Calculator,
 } from "lucide-react";
+import SidebarSearch from "@/components/ui/SidebarSearch";
 
 interface SidebarProps {
     user: { nombre: string; apellido: string; expediente: string; image: string | null; status?: string; isSuspended?: boolean; };
@@ -240,6 +241,20 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
 
     const groups = isCancelled ? groupsCancelled : isSuspended ? groupsSuspended : groupsNormal;
 
+    // Ítems buscables: aplana los grupos, incluyendo los que tienen submenú
+    // (sus "children" cuentan como resultados propios, ej: "Certificado de
+    // matriculación" dentro de "Trámites"), y filtra los links externos.
+    const searchItems = groups.flatMap(group =>
+        group.items.flatMap(item => {
+            if (item.children) {
+                return item.children
+                    .filter(c => !c.external)
+                    .map(c => ({ label: c.label, href: c.href, group: item.label }));
+            }
+            return item.href ? [{ label: item.label, href: item.href, group: group.label }] : [];
+        })
+    );
+
     return (
         <aside className="w-72 bg-white dark:bg-[#02182b] flex flex-col h-screen sticky top-0 overflow-y-auto border-0">
             <div className="px-6 py-5 bg-[#063f68] flex items-center h-16 border-0">
@@ -253,6 +268,8 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
             </div>
 
             <div className="px-3 py-3 overflow-y-auto flex-1">
+                <SidebarSearch items={searchItems} onNavigate={onClose} />
+
                 {groups.map((group, gi) => (
                     <div key={gi}>
                         {group.label && <SectionLabel label={group.label} />}
