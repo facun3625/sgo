@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { parseImporte } from "@/lib/parseImporte";
 
 // Extraído de src/app/api/admin/importar/financiero/route.ts (tipo "deudas") para
 // que el import manual (desde /admin/importar) y el automático por FTP (ver
@@ -20,9 +21,9 @@ function getExpediente(row: Record<string, string>): string {
 function getMonto(row: Record<string, string>): number {
     const r = Object.fromEntries(Object.entries(row).map(([k, v]) => [normalizeKey(k), v]));
     const exacta = r["monto"] || r["importe"] || r["deuda"] || r["valor"] || r["total"] || r["saldo"] || "";
-    if (exacta.trim()) return parseFloat(String(exacta).replace(",", "."));
+    if (exacta.trim()) return parseImporte(exacta);
     const partial = Object.entries(r).find(([k]) => k.includes("importe") || k.includes("monto"));
-    return parseFloat(String(partial?.[1] ?? "").replace(",", "."));
+    return parseImporte(partial?.[1] ?? "");
 }
 
 // Excel de "Cuenta Corriente - Deudas vencidas": trae una fila por comprobante impago.
@@ -40,14 +41,17 @@ function getFechaVencimiento(row: Record<string, string>): Date | null {
     const [, d, mo, yRaw] = m;
     const y = yRaw.length === 2 ? (+yRaw <= 68 ? 2000 + +yRaw : 1900 + +yRaw) : +yRaw;
     const fecha = new Date(Date.UTC(y, +mo - 1, +d));
-    return isNaN(fecha.getTime()) ? null : fecha;
+    if (isNaN(fecha.getTime()) || fecha.getUTCFullYear() !== y || fecha.getUTCMonth() !== +mo - 1 || fecha.getUTCDate() !== +d)
+        return null;
+    return fecha;
 }
 
 // La columna "Cliente" viene como "12009 - APELLIDO, NOMBRE" — el número inicial es
 // el código de cliente interno, distinto del expediente. Se guarda por si hace falta
 // cruzar con algo más adelante, no se usa todavía para nada funcional.
 function getClienteNumero(row: Record<string, string>): string | null {
-    const cliente = row["cliente"] ?? "";
+    const r = Object.fromEntries(Object.entries(row).map(([k, v]) => [normalizeKey(k), v]));
+    const cliente = r["cliente"] ?? "";
     const m = String(cliente).match(/^(\d+)\s*-\s*/);
     return m ? m[1] : null;
 }
@@ -74,17 +78,35 @@ export type ResultadoImportDeudas =
 // cargar desde el archivo — mismo comportamiento sea manual o automático, a propósito
 // (así lo pidió el Colegio: el archivo del mes es la fuente de verdad completa).
 export async function procesarRegistrosDeudas(registros: Record<string, string>[]): Promise<ResultadoImportDeudas> {
-    const comprobantes = registros
-        .map(r => ({
+    const filas = registros.map((r, index) => {
+        const comprobante = {
             expediente: getExpediente(r),
             monto: getMonto(r),
             fechaVencimiento: getFechaVencimiento(r),
             clienteNumero: getClienteNumero(r),
             zona: getZona(r),
             subzona: getSubzona(r),
-        }))
-        .filter((c): c is { expediente: string; monto: number; fechaVencimiento: Date; clienteNumero: string | null; zona: string | null; subzona: string | null } =>
-            !!c.expediente && !isNaN(c.monto) && c.monto > 0 && c.fechaVencimiento !== null);
+        };
+        const errores: string[] = [];
+        if (!comprobante.expediente) errores.push("sin expediente");
+        if (!Number.isFinite(comprobante.monto) || comprobante.monto <= 0) errores.push("importe inválido");
+        if (!comprobante.fechaVencimiento) errores.push("fecha de vencimiento inválida");
+        return { index: index + 2, comprobante, errores };
+    });
+
+    const invalidas = filas.filter(f => f.errores.length > 0);
+    if (invalidas.length > 0) {
+        const muestra = invalidas.slice(0, 5).map(f => `fila ${f.index}: ${f.errores.join(", ")}`).join("; ");
+        return {
+            ok: false,
+            error: `${invalidas.length} de ${registros.length} filas son inválidas (${muestra}${invalidas.length > 5 ? "; ..." : ""}). No se modificó ninguna deuda.`,
+        };
+    }
+
+    const comprobantes = filas.map(f => f.comprobante).filter(
+        (c): c is { expediente: string; monto: number; fechaVencimiento: Date; clienteNumero: string | null; zona: string | null; subzona: string | null } =>
+            c.fechaVencimiento !== null
+    );
 
     if (comprobantes.length === 0) return { ok: false, error: "Sin registros válidos" };
 
@@ -99,18 +121,18 @@ export async function procesarRegistrosDeudas(registros: Record<string, string>[
         if (c.zona || c.subzona) zonaPorExpediente.set(c.expediente, { zona: c.zona, subzona: c.subzona });
     }
 
-    await prisma.$transaction([
-        prisma.deuda.deleteMany({}),
-        prisma.deuda.createMany({ data }),
-        prisma.deudaComprobante.deleteMany({}),
-        prisma.deudaComprobante.createMany({ data: comprobantes }),
-    ]);
-
-    await Promise.all(
-        [...zonaPorExpediente.entries()].map(([expediente, z]) =>
-            prisma.dato.updateMany({ where: { expediente }, data: { zona: z.zona, subzona: z.subzona } })
-        )
-    );
+    // El advisory lock serializa tanto el watcher FTP como la importación manual.
+    // Zona/subzona quedan dentro de la misma transacción que el reemplazo financiero.
+    await prisma.$transaction(async tx => {
+        await tx.$queryRaw`SELECT pg_advisory_xact_lock(7346, 20260924)`;
+        await tx.deuda.deleteMany({});
+        await tx.deuda.createMany({ data });
+        await tx.deudaComprobante.deleteMany({});
+        await tx.deudaComprobante.createMany({ data: comprobantes });
+        for (const [expediente, z] of zonaPorExpediente) {
+            await tx.dato.updateMany({ where: { expediente }, data: { zona: z.zona, subzona: z.subzona } });
+        }
+    }, { maxWait: 30_000, timeout: 120_000 });
 
     return { ok: true, actualizados: data.length, comprobantes: comprobantes.length };
 }

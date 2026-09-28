@@ -1,20 +1,30 @@
 import fs from "fs/promises";
 import path from "path";
+import { randomUUID } from "crypto";
 import * as XLSX from "xlsx";
 import prisma from "@/lib/prisma";
 import { procesarRegistrosDeudas } from "@/lib/importarDeudas";
 import { notificarAdmins } from "@/lib/notificaciones";
+import { parseCsv } from "@/lib/parseCsv";
 
-// Carpeta que matriculación sube por SFTP (mismo usuario/chroot ya usado para
-// boletas, ver docs/troubleshooting-ftp-boletas.md) — se agrega como carpeta
-// hermana de /boletas/ dentro de /root/sgo/public/uploads/, con dueño
-// boletas:boletas. La app (corre como root) NUNCA crea ni recrea esta carpeta
-// padre: si no existe, es porque falta el paso de setup por SSH — recrearla
-// desde acá la dejaría root:root y rompería la escritura por FTP (mismo bug
-// documentado para /boletas/<tipo>).
+// Carpeta que matriculación sube por SFTP. El directorio padre debe crearse por
+// SSH con dueño boletas:boletas; la aplicación solo crea sus subdirectorios.
 const DIR = path.join(process.cwd(), "public/uploads/importar/deudas");
+const PROCESANDO_DIR = path.join(DIR, "procesando");
 const PROCESADOS_DIR = path.join(DIR, "procesados");
+const ERRORES_DIR = path.join(DIR, "errores");
+const LOCK_DIR = path.join(DIR, ".watcher.lock");
 const EXTENSIONES_VALIDAS = [".xlsx", ".xls", ".csv"];
+const EDAD_MINIMA_MS = 60_000;
+const LOCK_OBSOLETO_MS = 2 * 60 * 60 * 1000;
+
+type ArchivoPendiente = {
+    ruta: string;
+    nombreOriginal: string;
+    fechaMs: number;
+    size: number;
+    yaReclamado: boolean;
+};
 
 function excelValToString(val: unknown): string {
     if (val instanceof Date) {
@@ -26,35 +36,20 @@ function excelValToString(val: unknown): string {
     return String(val ?? "").trim();
 }
 
-function parseCsvBuffer(buffer: Buffer): Record<string, string>[] {
-    const text = buffer.toString("utf-8");
-    const lines = text.trim().split(/\r?\n/).filter(l => l.trim());
-    if (lines.length < 2) return [];
-    const sep = lines[0].includes(";") ? ";" : ",";
-    const headers = lines[0].split(sep).map(h => h.trim().replace(/^"|"$/g, "").toLowerCase());
-    return lines.slice(1).map(line => {
-        const values = line.split(sep).map(v => v.trim().replace(/^"|"$/g, ""));
-        const row: Record<string, string> = {};
-        headers.forEach((h, i) => { row[h] = values[i] ?? ""; });
-        return row;
-    });
-}
-
 function parseExcelBuffer(buffer: Buffer): Record<string, string>[] {
     const wb = XLSX.read(buffer, { type: "buffer", cellDates: true });
     const ws = wb.Sheets[wb.SheetNames[0]];
+    if (!ws) return [];
     const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws, { defval: "" });
     return rows.map(row => {
         const normalized: Record<string, string> = {};
-        for (const key of Object.keys(row)) {
-            normalized[key.toLowerCase().trim()] = excelValToString(row[key]);
-        }
+        for (const key of Object.keys(row)) normalized[key.toLowerCase().trim()] = excelValToString(row[key]);
         return normalized;
     });
 }
 
 function parseArchivo(buffer: Buffer, nombre: string): Record<string, string>[] {
-    return nombre.toLowerCase().endsWith(".csv") ? parseCsvBuffer(buffer) : parseExcelBuffer(buffer);
+    return nombre.toLowerCase().endsWith(".csv") ? parseCsv(buffer.toString("utf-8")) : parseExcelBuffer(buffer);
 }
 
 async function registrarLog(archivo: string, estado: "exitoso" | "error", filas: number, mensaje: string) {
@@ -63,57 +58,145 @@ async function registrarLog(archivo: string, estado: "exitoso" | "error", filas:
     }).catch(err => console.error("[ftp-import] No se pudo guardar el log:", err));
 }
 
-async function procesarArchivo(nombre: string) {
-    const rutaOrigen = path.join(DIR, nombre);
+function nombreArchivado(nombreOriginal: string) {
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+    return `${timestamp}__${randomUUID()}__${nombreOriginal}`;
+}
+
+function nombreOriginalDeReclamado(nombre: string) {
+    const partes = nombre.split("__");
+    return partes.length >= 3 ? partes.slice(2).join("__") : nombre;
+}
+
+async function procesarArchivo(rutaReclamada: string, nombreOriginal: string) {
+    let filasLeidas = 0;
+    let datosAplicados = false;
     try {
-        const buffer = await fs.readFile(rutaOrigen);
-        const registros = parseArchivo(buffer, nombre);
+        const buffer = await fs.readFile(rutaReclamada);
+        const registros = parseArchivo(buffer, nombreOriginal);
+        filasLeidas = registros.length;
         if (registros.length === 0) throw new Error("El archivo no tiene filas de datos legibles.");
 
         const resultado = await procesarRegistrosDeudas(registros);
         if (!resultado.ok) throw new Error(resultado.error);
+        datosAplicados = true;
 
-        const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-        await fs.rename(rutaOrigen, path.join(PROCESADOS_DIR, `${timestamp}__${nombre}`));
-
+        await fs.rename(rutaReclamada, path.join(PROCESADOS_DIR, nombreArchivado(nombreOriginal)));
         await registrarLog(
-            nombre, "exitoso", resultado.actualizados,
+            nombreOriginal, "exitoso", resultado.actualizados,
             `${resultado.actualizados} expedientes actualizados (${resultado.comprobantes} comprobantes).`
         );
-        console.log(`[ftp-import] "${nombre}" procesado: ${resultado.actualizados} expedientes.`);
+        console.log(`[ftp-import] "${nombreOriginal}" procesado: ${resultado.actualizados} expedientes.`);
     } catch (err) {
-        const mensaje = err instanceof Error ? err.message : "Error desconocido";
-        console.error(`[ftp-import] Error procesando "${nombre}":`, err);
-        await registrarLog(nombre, "error", 0, mensaje);
+        const detalle = err instanceof Error ? err.message : "Error desconocido";
+        const mensaje = datosAplicados
+            ? `Los datos se aplicaron, pero no se pudo archivar el archivo: ${detalle}`
+            : detalle;
+        console.error(`[ftp-import] Error procesando "${nombreOriginal}":`, err);
+        let movidoAErrores = true;
+        await fs.rename(rutaReclamada, path.join(ERRORES_DIR, nombreArchivado(nombreOriginal))).catch(errMover => {
+            movidoAErrores = false;
+            console.error(`[ftp-import] No se pudo mover "${nombreOriginal}" a errores:`, errMover);
+        });
+        await registrarLog(nombreOriginal, "error", filasLeidas, mensaje);
         await notificarAdmins(
             "Error en importación automática de deudas",
-            `No se pudo procesar "${nombre}" desde la carpeta FTP: ${mensaje}. El archivo quedó en la carpeta para revisión — podés importarlo a mano desde Importar Datos.`,
+            `No se pudo completar "${nombreOriginal}" desde la carpeta FTP: ${mensaje}. ${movidoAErrores ? "El archivo se movió a la carpeta errores para revisión; corregilo y volvé a subirlo." : "Además, no se pudo mover el archivo a la carpeta errores; revisá los permisos de las carpetas."}`,
             "admin_import"
         ).catch(err2 => console.error("[ftp-import] No se pudo notificar a los admins:", err2));
-        // El archivo se deja donde está (no se mueve a procesados) para poder
-        // inspeccionarlo o reintentar a mano.
     }
 }
 
-// Se llama cada 45 min desde src/instrumentation.ts. Revisa la carpeta de FTP y
-// procesa cualquier archivo nuevo encontrado, uno por uno, en orden alfabético.
+async function adquirirLock(): Promise<boolean> {
+    try {
+        await fs.mkdir(LOCK_DIR);
+        return true;
+    } catch (err) {
+        if ((err as NodeJS.ErrnoException).code !== "EEXIST") throw err;
+        const stat = await fs.stat(LOCK_DIR).catch(() => null);
+        if (!stat || Date.now() - stat.mtimeMs <= LOCK_OBSOLETO_MS) return false;
+        await fs.rm(LOCK_DIR, { recursive: true, force: true });
+        try {
+            await fs.mkdir(LOCK_DIR);
+            return true;
+        } catch (retryErr) {
+            if ((retryErr as NodeJS.ErrnoException).code === "EEXIST") return false;
+            throw retryErr;
+        }
+    }
+}
+
+async function listarPendientes(): Promise<ArchivoPendiente[]> {
+    const ahora = Date.now();
+    const pendientes: ArchivoPendiente[] = [];
+
+    // Si el proceso cayó después de reclamar un archivo, se retoma antes de los nuevos.
+    const reclamados = await fs.readdir(PROCESANDO_DIR, { withFileTypes: true });
+    for (const entry of reclamados) {
+        if (!entry.isFile()) continue;
+        const ruta = path.join(PROCESANDO_DIR, entry.name);
+        const stat = await fs.stat(ruta);
+        pendientes.push({
+            ruta,
+            nombreOriginal: nombreOriginalDeReclamado(entry.name),
+            fechaMs: stat.mtimeMs,
+            size: stat.size,
+            yaReclamado: true,
+        });
+    }
+
+    const entries = await fs.readdir(DIR, { withFileTypes: true });
+    for (const entry of entries) {
+        if (!entry.isFile() || entry.name.startsWith(".") || !EXTENSIONES_VALIDAS.includes(path.extname(entry.name).toLowerCase())) continue;
+        const ruta = path.join(DIR, entry.name);
+        const stat = await fs.stat(ruta);
+        // Evita tomar un archivo que SFTP todavía está escribiendo.
+        if (ahora - stat.mtimeMs < EDAD_MINIMA_MS) continue;
+        pendientes.push({ ruta, nombreOriginal: entry.name, fechaMs: stat.mtimeMs, size: stat.size, yaReclamado: false });
+    }
+
+    // Se procesa del más viejo al más nuevo. Como cada archivo es un reemplazo
+    // total, el archivo subido/modificado más recientemente queda vigente.
+    return pendientes.sort((a, b) => a.fechaMs - b.fechaMs || a.nombreOriginal.localeCompare(b.nombreOriginal));
+}
+
+// Se llama cada 45 min desde instrumentation. Un lock de filesystem evita que
+// dos workers recorran la carpeta al mismo tiempo; el lock de PostgreSQL en la
+// importación también la serializa frente al import manual.
 export async function chequearFtpDeudas() {
     try {
         await fs.access(DIR);
     } catch {
-        // No existe todavía — falta el paso de setup por SSH (mkdir + chown
-        // boletas:boletas). No es un error del watcher, solo no hay nada que hacer.
         return;
     }
-    await fs.mkdir(PROCESADOS_DIR, { recursive: true }).catch(() => {});
 
-    const entries = await fs.readdir(DIR, { withFileTypes: true });
-    const archivos = entries
-        .filter(e => e.isFile() && !e.name.startsWith(".") && EXTENSIONES_VALIDAS.includes(path.extname(e.name).toLowerCase()))
-        .map(e => e.name)
-        .sort();
+    await Promise.all([
+        fs.mkdir(PROCESANDO_DIR, { recursive: true }),
+        fs.mkdir(PROCESADOS_DIR, { recursive: true }),
+        fs.mkdir(ERRORES_DIR, { recursive: true }),
+    ]);
 
-    for (const nombre of archivos) {
-        await procesarArchivo(nombre);
+    if (!await adquirirLock()) return;
+    try {
+        const archivos = await listarPendientes();
+        for (const archivo of archivos) {
+            let rutaReclamada = archivo.ruta;
+            if (!archivo.yaReclamado) {
+                // Segunda comprobación justo antes del rename: además de tener un
+                // minuto de antigüedad, tamaño y mtime deben seguir sin cambios.
+                const statActual = await fs.stat(archivo.ruta).catch(() => null);
+                if (!statActual || statActual.size !== archivo.size || statActual.mtimeMs !== archivo.fechaMs) continue;
+                rutaReclamada = path.join(PROCESANDO_DIR, `${Date.now()}__${randomUUID()}__${archivo.nombreOriginal}`);
+                try {
+                    await fs.rename(archivo.ruta, rutaReclamada);
+                } catch (err) {
+                    if ((err as NodeJS.ErrnoException).code === "ENOENT") continue;
+                    throw err;
+                }
+            }
+            await procesarArchivo(rutaReclamada, archivo.nombreOriginal);
+        }
+    } finally {
+        await fs.rm(LOCK_DIR, { recursive: true, force: true });
     }
 }

@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Upload, UserPlus, DollarSign, FileText, CheckCircle2, AlertCircle, X, Loader2, List, Search, CreditCard, Ban, Clock, Landmark, HandshakeIcon, KeyRound, Banknote, ShieldOff, Trash2, ChevronDown } from "lucide-react";
 import { usePermisos } from "@/lib/permisos-context";
+import { parseCsv } from "@/lib/parseCsv";
 import * as XLSX from "xlsx";
 
 type TipoFinanciero = "deudas" | "pagoAnual" | "consultor";
@@ -47,19 +48,6 @@ interface RegistrosData {
     deudas: { id: number; expediente: string; monto: number }[];
     pagosAnuales: { id: number; expediente: string }[];
     adhesiones: { id: number; expediente: string; tipoAdhesion: string; estado: string; createdAt: string }[];
-}
-
-function parseCSV(text: string): Record<string, string>[] {
-    const lines = text.trim().split(/\r?\n/).filter(l => l.trim());
-    if (lines.length < 2) return [];
-    const sep = lines[0].includes(";") ? ";" : ",";
-    const headers = lines[0].split(sep).map(h => h.trim().replace(/^"|"$/g, "").toLowerCase());
-    return lines.slice(1).map(line => {
-        const values = line.split(sep).map(v => v.trim().replace(/^"|"$/g, ""));
-        const row: Record<string, string> = {};
-        headers.forEach((h, i) => { row[h] = values[i] ?? ""; });
-        return row;
-    });
 }
 
 function excelValToString(val: unknown): string {
@@ -272,9 +260,16 @@ export default function ImportarPage() {
         setRes(null);
         const reader = new FileReader();
         reader.onload = (ev) => {
-            const rows = parseCSV(ev.target?.result as string);
-            if (rows.length === 0) { setRes({ tipo: "error", mensaje: "El archivo no tiene datos válidos." }); return; }
-            setReg(rows);
+            try {
+                const rows = parseCsv(ev.target?.result as string);
+                if (rows.length === 0) { setRes({ tipo: "error", mensaje: "El archivo no tiene datos válidos." }); return; }
+                setReg(rows);
+            } catch (err) {
+                setRes({
+                    tipo: "error",
+                    mensaje: err instanceof Error ? err.message : "No se pudo leer el archivo CSV.",
+                });
+            }
         };
         reader.readAsText(file);
     };
