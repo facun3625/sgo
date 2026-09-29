@@ -124,7 +124,7 @@ export async function procesarRegistrosDeudas(registros: Record<string, string>[
     // El advisory lock serializa tanto el watcher FTP como la importación manual.
     // Zona/subzona quedan dentro de la misma transacción que el reemplazo financiero.
     await prisma.$transaction(async tx => {
-        await tx.$queryRaw`SELECT pg_advisory_xact_lock(7346, 20260924)`;
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(7346, 20260924)`;
         await tx.deuda.deleteMany({});
         await tx.deuda.createMany({ data });
         await tx.deudaComprobante.deleteMany({});
