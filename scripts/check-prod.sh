@@ -61,7 +61,7 @@ echo
 echo "========================================"
 echo " Base de datos"
 echo "========================================"
-npx tsx scripts/check-prod-db.ts
+npx --yes tsx scripts/check-prod-db.ts
 
 echo
 echo "========================================"
