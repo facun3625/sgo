@@ -32,6 +32,14 @@ export async function calcularMontoComprobantes(expediente: string, ids: number[
     return { comprobantes, monto: comprobantes.reduce((acc, c) => acc + c.monto, 0) };
 }
 
+// Para los caminos que siempre cobran el 100% de la deuda sin seleccionar
+// subconjunto (cobro en efectivo en delegación, conciliación total de
+// Banelco) — trae todos los ids de comprobantes vigentes del expediente.
+export async function obtenerTodosLosIdsDeuda(expediente: string): Promise<number[]> {
+    const comprobantes = await prisma.deudaComprobante.findMany({ where: { expediente }, select: { id: true } });
+    return comprobantes.map(c => c.id);
+}
+
 // Confirma el pago de los comprobantes elegidos: crea el DeudaPagada por el
 // monto exacto recalculado server-side (nunca se confía en lo que mandó el
 // cliente), borra esos comprobantes (ya están saldados) y descuenta el total
@@ -40,7 +48,10 @@ export async function calcularMontoComprobantes(expediente: string, ids: number[
 export async function confirmarPagoComprobantes(
     expediente: string,
     ids: number[],
-    datosPago: { metodoPago: string; mpPaymentId?: string; paywayPaymentId?: string },
+    datosPago: {
+        metodoPago: string; mpPaymentId?: string; paywayPaymentId?: string;
+        delegacionId?: number; comprobanteEfectivo?: string;
+    },
 ): Promise<{ monto: number; cantidad: number } | null> {
     const comprobantes = await obtenerComprobantesDeuda(expediente, ids);
     if (comprobantes.length === 0) return null;
@@ -51,6 +62,7 @@ export async function confirmarPagoComprobantes(
             data: {
                 expediente, monto, metodoPago: datosPago.metodoPago,
                 mpPaymentId: datosPago.mpPaymentId, paywayPaymentId: datosPago.paywayPaymentId,
+                delegacionId: datosPago.delegacionId, comprobanteEfectivo: datosPago.comprobanteEfectivo,
                 fechaPago: new Date(),
             },
         });
@@ -68,4 +80,41 @@ export async function confirmarPagoComprobantes(
     });
 
     return { monto, cantidad: comprobantes.length };
+}
+
+// Para conciliación externa (Banelco/Home Banking) que reporta un monto
+// pagado por expediente sin indicar a qué comprobante corresponde: se imputa
+// a los comprobantes más antiguos primero (FIFO por fecha de vencimiento).
+// Los que quedan cubiertos del todo se borran; si el pago no alcanza a cubrir
+// el siguiente, ese comprobante se achica por el remanente — es la única vía
+// del sistema donde un comprobante queda con saldo parcial en vez de pagarse
+// entero, porque acá no hay forma de preguntarle al banco a qué factura
+// puntual corresponde. No toca Deuda — eso lo maneja el caller.
+export async function aplicarPagoFifoComprobantes(expediente: string, montoPagado: number): Promise<void> {
+    const comprobantes = await prisma.deudaComprobante.findMany({
+        where: { expediente },
+        orderBy: { fechaVencimiento: "asc" },
+    });
+
+    let restante = montoPagado;
+    const aBorrar: number[] = [];
+    let actualizar: { id: number; monto: number } | null = null;
+
+    for (const c of comprobantes) {
+        if (restante <= 0) break;
+        if (restante >= c.monto) {
+            aBorrar.push(c.id);
+            restante -= c.monto;
+        } else {
+            actualizar = { id: c.id, monto: c.monto - restante };
+            restante = 0;
+        }
+    }
+
+    if (aBorrar.length === 0 && !actualizar) return;
+
+    await prisma.$transaction([
+        ...(aBorrar.length > 0 ? [prisma.deudaComprobante.deleteMany({ where: { id: { in: aBorrar } } })] : []),
+        ...(actualizar ? [prisma.deudaComprobante.update({ where: { id: actualizar.id }, data: { monto: actualizar.monto } })] : []),
+    ]);
 }

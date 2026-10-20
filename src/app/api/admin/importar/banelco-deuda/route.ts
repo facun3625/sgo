@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { crearNotificacion } from "@/lib/notificaciones";
+import { aplicarPagoFifoComprobantes, confirmarPagoComprobantes, obtenerTodosLosIdsDeuda } from "@/lib/pagoDeuda";
 
 function isAdmin(lvl: string) { return lvl === "superadmin" || lvl === "admin"; }
 
@@ -107,24 +108,24 @@ export async function POST(req: NextRequest) {
         }
     }
 
-    // 3. Batch pagos totales (delete deuda + create deudaPagada)
+    // 3. Batch pagos totales (vía módulo compartido: limpia también DeudaComprobante)
     for (let i = 0; i < pagosTotal.length; i += BATCH) {
         const lote = pagosTotal.slice(i, i + BATCH);
-        await Promise.all(lote.map(({ deuda, fechaPago, nroComprobante }) =>
-            Promise.all([
-                prisma.deuda.delete({ where: { id: deuda.id } }),
-                prisma.deudaPagada.create({
-                    data: { expediente: deuda.expediente, monto: deuda.monto, metodoPago: "banelco", fechaPago, mpPaymentId: nroComprobante || null },
-                }),
-            ])
-        ));
+        await Promise.all(lote.map(async ({ deuda, nroComprobante }) => {
+            const ids = await obtenerTodosLosIdsDeuda(deuda.expediente);
+            await confirmarPagoComprobantes(deuda.expediente, ids, {
+                metodoPago: "banelco", mpPaymentId: nroComprobante || undefined,
+            });
+        }));
         await Promise.all(lote.map(({ deuda, nroComprobante }) =>
             crearNotificacion(deuda.expediente, "Deuda saldada",
                 `Tu pago vía Banelco/Home Banking fue registrado y la deuda ha sido cancelada. Comprobante: ${nroComprobante || "N/D"}.`, "pago")
         ));
     }
 
-    // 4. Batch pagos parciales (update deuda + create deudaPagada)
+    // 4. Batch pagos parciales (update deuda + create deudaPagada, igual que
+    // antes; se suma la imputación FIFO del pago a los comprobantes del
+    // expediente, ver lib/pagoDeuda.ts)
     for (let i = 0; i < pagosParciales.length; i += BATCH) {
         const lote = pagosParciales.slice(i, i + BATCH);
         await Promise.all(lote.map(({ deuda, montoPagado, fechaPago, nroComprobante }) =>
@@ -133,6 +134,7 @@ export async function POST(req: NextRequest) {
                 prisma.deudaPagada.create({
                     data: { expediente: deuda.expediente, monto: montoPagado, metodoPago: "banelco", fechaPago, mpPaymentId: nroComprobante || null },
                 }),
+                aplicarPagoFifoComprobantes(deuda.expediente, montoPagado),
             ])
         ));
         await Promise.all(lote.map(({ deuda, montoPagado, nroComprobante }) =>

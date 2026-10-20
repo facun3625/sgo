@@ -3,6 +3,7 @@ import { getSession } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { esMatriculadoJoven, montoConDescuento } from "@/lib/matricula";
 import { crearNotificacion } from "@/lib/notificaciones";
+import { confirmarPagoComprobantes, obtenerTodosLosIdsDeuda } from "@/lib/pagoDeuda";
 
 // Cobro en efectivo registrado por una cuenta de Delegación (mismo cálculo de
 // precio que /api/payments/payway, pero acá el "pago" es la palabra del cobrador
@@ -53,18 +54,13 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ ok: true, monto });
 
     } else if (tipo === "deuda") {
-        const deudas = await prisma.deuda.findMany({ where: { expediente } });
-        if (deudas.length === 0) return NextResponse.json({ error: "No tiene deuda registrada" }, { status: 404 });
-        const monto = deudas.reduce((acc, d) => acc + d.monto, 0);
-
-        await prisma.$transaction([
-            prisma.deudaPagada.create({
-                data: { expediente, monto, metodoPago: "efectivo", fechaPago, delegacionId, comprobanteEfectivo },
-            }),
-            prisma.deuda.deleteMany({ where: { expediente } }),
-        ]);
+        const ids = await obtenerTodosLosIdsDeuda(expediente);
+        const resultado = await confirmarPagoComprobantes(expediente, ids, {
+            metodoPago: "efectivo", delegacionId, comprobanteEfectivo,
+        });
+        if (!resultado) return NextResponse.json({ error: "No tiene deuda registrada" }, { status: 404 });
         await crearNotificacion(expediente, "Deuda regularizada", "Tu pago de deuda vencida fue registrado en delegación.", "pago");
-        return NextResponse.json({ ok: true, monto });
+        return NextResponse.json({ ok: true, monto: resultado.monto });
     }
 
     return NextResponse.json({ error: "Tipo de pago inválido" }, { status: 400 });

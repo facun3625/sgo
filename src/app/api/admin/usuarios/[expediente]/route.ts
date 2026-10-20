@@ -32,6 +32,7 @@ export async function DELETE(
         prisma.fiador.deleteMany({ where: { OR: [{ expediente: exp }, { fiadorExpediente: exp }] } }),
         // Deudas
         prisma.deuda.deleteMany({ where: { expediente: exp } }),
+        prisma.deudaComprobante.deleteMany({ where: { expediente: exp } }),
         // Cuotas
         prisma.cuotaMensual.deleteMany({ where: { expediente: exp } }),
         // Pagos pendientes
