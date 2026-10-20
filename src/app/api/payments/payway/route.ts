@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import { autorizarPagoPayway, construirSiteTransactionId, marcaSoportadaPayway, paywayDisponibleParaSeccion, PaywaySeccion } from "@/lib/payway";
 import { esMatriculadoJoven, montoConDescuento } from "@/lib/matricula";
 import { crearNotificacion } from "@/lib/notificaciones";
+import { calcularMontoComprobantes, confirmarPagoComprobantes, parseIdsDeuda } from "@/lib/pagoDeuda";
 
 // Cobro con tarjeta (Payway) para matriculados logueados: cuota mensual, matrícula
 // anual, deudas vencidas y compra de productos (ventas). Mismo cálculo de precio que
@@ -64,12 +65,12 @@ export async function POST(req: NextRequest) {
         monto = montoConDescuento(montoBase, esMatriculadoJoven(dato?.fechaMatriculacion));
 
     } else if (tipo === "deuda") {
-        const ids = String(ref).split(",").map((id: string) => parseInt(id)).filter((id: number) => !isNaN(id));
-        if (ids.length === 0) return NextResponse.json({ error: "Sin deudas especificadas" }, { status: 400 });
-        const deudas = await prisma.deuda.findMany({ where: { id: { in: ids }, expediente } });
-        if (deudas.length === 0) return NextResponse.json({ error: "Deudas no encontradas" }, { status: 404 });
-        descripcion = `Deuda pendiente — ${deudas.length} concepto${deudas.length > 1 ? "s" : ""}`;
-        monto = deudas.reduce((acc, d) => acc + d.monto, 0);
+        const ids = parseIdsDeuda(ref);
+        if (ids.length === 0) return NextResponse.json({ error: "Sin comprobantes especificados" }, { status: 400 });
+        const { comprobantes, monto: montoComprobantes } = await calcularMontoComprobantes(expediente, ids);
+        if (comprobantes.length === 0) return NextResponse.json({ error: "Comprobantes no encontrados" }, { status: 404 });
+        descripcion = `Deuda pendiente — ${comprobantes.length} comprobante${comprobantes.length > 1 ? "s" : ""}`;
+        monto = montoComprobantes;
 
     } else {
         // producto: ref = productoId, extra = cantidad (mismo contrato que create-preference)
@@ -146,14 +147,9 @@ export async function POST(req: NextRequest) {
             await crearNotificacion(expediente, "Matrícula anual confirmada", "Tu pago de matrícula anual fue acreditado. ¡Gracias!", "pago");
 
         } else if (tipo === "deuda") {
-            const ids = String(ref).split(",").map((id: string) => parseInt(id)).filter((id: number) => !isNaN(id));
-            await prisma.$transaction([
-                prisma.deudaPagada.create({
-                    data: { expediente, monto, paywayPaymentId, metodoPago: "payway", fechaPago },
-                }),
-                prisma.deuda.deleteMany({ where: { id: { in: ids }, expediente } }),
-            ]);
-            await crearNotificacion(expediente, "Deuda regularizada", "Tu pago de deuda vencida fue acreditado correctamente.", "pago");
+            const ids = parseIdsDeuda(ref);
+            await confirmarPagoComprobantes(expediente, ids, { metodoPago: "payway", paywayPaymentId });
+            await crearNotificacion(expediente, "Deuda regularizada", `Tu pago de $${monto.toLocaleString("es-AR")} fue acreditado correctamente.`, "pago");
 
         } else {
             const productoId = parseInt(ref);

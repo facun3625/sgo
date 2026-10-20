@@ -64,7 +64,7 @@ interface PagosData {
     hasPagoAnualActivo: boolean;
     hasCancelacionPendiente: boolean;
     totalDeuda: number;
-    deudaComprobantes: { fechaVencimiento: string; monto: number }[];
+    deudaComprobantes: { id: number; fechaVencimiento: string; monto: number }[];
     userStatus: string;
     esJoven: boolean;
     esVeterano: boolean;
@@ -99,6 +99,9 @@ export default function MatriculaStatus() {
     const [deudaDetalleAbierto, setDeudaDetalleAbierto] = useState(false);
     const [paywayProcesando, setPaywayProcesando] = useState(false);
     const [paywayError, setPaywayError] = useState<string | null>(null);
+    // null = todavía no se tocó nada → por defecto se consideran todos los
+    // comprobantes seleccionados (mismo comportamiento de "pagar todo" de antes).
+    const [comprobantesSeleccionados, setComprobantesSeleccionados] = useState<Set<number> | null>(null);
 
     const fetchData = async () => {
         try {
@@ -129,6 +132,7 @@ export default function MatriculaStatus() {
             if (!res.ok) { setPaywayError(respData.error || "No se pudo procesar el pago."); return; }
             if (!respData.aprobado) { setPaywayError(respData.mensaje || "El pago fue rechazado."); return; }
             setPaywayModo(null);
+            setComprobantesSeleccionados(null);
             await fetchData();
         } catch {
             setPaywayError("Error de conexión. Intentá de nuevo.");
@@ -158,6 +162,21 @@ export default function MatriculaStatus() {
         && !data?.esConsultor
         && !data?.esExento;
     const totalDeuda = data?.totalDeuda || 0;
+    const deudaComprobantes = data?.deudaComprobantes ?? [];
+    const comprobantesSeleccionadosSet = comprobantesSeleccionados ?? new Set(deudaComprobantes.map(c => c.id));
+    const totalSeleccionado = deudaComprobantes
+        .filter(c => comprobantesSeleccionadosSet.has(c.id))
+        .reduce((acc, c) => acc + c.monto, 0);
+    const refSeleccionado = [...comprobantesSeleccionadosSet].join(",");
+    const haySeleccion = comprobantesSeleccionadosSet.size > 0;
+    const esSeleccionParcial = comprobantesSeleccionadosSet.size < deudaComprobantes.length;
+
+    function toggleComprobante(id: number) {
+        const next = new Set(comprobantesSeleccionadosSet);
+        if (next.has(id)) next.delete(id); else next.add(id);
+        setComprobantesSeleccionados(next);
+    }
+
     const montoAnual = data?.montoAnual ?? 48000;
     const showAnualCard = data?.showPagoAnual ?? false;
 
@@ -237,30 +256,35 @@ export default function MatriculaStatus() {
                         </div>
                         <div className="flex items-center gap-8 w-full md:w-auto">
                             <div className="text-left md:text-right">
-                                <p className="text-[11px] font-bold text-red-800/40 dark:text-red-400/40 uppercase tracking-widest mb-1">Total a Pagar</p>
-                                <p className="text-3xl font-black text-red-600 dark:text-red-400">${totalDeuda.toLocaleString()}</p>
-                                {data?.deudaComprobantes && data.deudaComprobantes.length > 0 && (
+                                <p className="text-[11px] font-bold text-red-800/40 dark:text-red-400/40 uppercase tracking-widest mb-1">
+                                    {esSeleccionParcial ? "A pagar (selección)" : "Total a Pagar"}
+                                </p>
+                                <p className="text-3xl font-black text-red-600 dark:text-red-400">${totalSeleccionado.toLocaleString()}</p>
+                                {esSeleccionParcial && (
+                                    <p className="text-[11px] text-red-700/50 dark:text-red-400/50">de ${totalDeuda.toLocaleString()} total</p>
+                                )}
+                                {deudaComprobantes.length > 0 && (
                                     <button type="button" onClick={() => setDeudaDetalleAbierto(true)}
                                         className="mt-1 inline-flex items-center gap-1 text-[12px] font-semibold text-red-600/70 dark:text-red-400/70 hover:text-red-700 dark:hover:text-red-300 hover:underline">
-                                        <Eye size={12} /> Ver detalle
+                                        <Eye size={12} /> {deudaComprobantes.length > 1 ? "Elegir qué pagar" : "Ver detalle"}
                                     </button>
                                 )}
                             </div>
                             {paywayModo !== "deuda" && (
                                 <div className="flex flex-col gap-2">
                                     {data?.mpDisponible && (
-                                        <MpPayButton tipo="deuda" ref={data!.deudas.map((d) => d.id).join(",")} label="Pagar con Mercado Pago"
-                                            className="w-full h-12 px-6 bg-red-600 hover:bg-red-700 text-white rounded-2xl font-bold text-sm transition-all active:scale-95 shadow-lg shadow-red-600/20 flex items-center justify-center gap-2" />
+                                        <MpPayButton tipo="deuda" ref={refSeleccionado} disabled={!haySeleccion} label="Pagar con Mercado Pago"
+                                            className="w-full h-12 px-6 bg-red-600 hover:bg-red-700 text-white rounded-2xl font-bold text-sm transition-all active:scale-95 shadow-lg shadow-red-600/20 flex items-center justify-center gap-2 disabled:opacity-50" />
                                     )}
                                     {data?.paywayDisponible?.deuda && (
-                                        <button type="button" onClick={() => { setPaywayModo("deuda"); setPaywayError(null); }}
-                                            className="w-full h-12 px-6 bg-slate-800 hover:bg-slate-700 text-white rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-2">
+                                        <button type="button" disabled={!haySeleccion} onClick={() => { setPaywayModo("deuda"); setPaywayError(null); }}
+                                            className="w-full h-12 px-6 bg-slate-800 hover:bg-slate-700 text-white rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-2 disabled:opacity-50">
                                             Pagar con tarjeta
                                         </button>
                                     )}
                                     {data?.transferenciaHabilitada?.deuda && (
-                                        <TransferenciaPayButton tipo="deuda" ref={data!.deudas.map((d) => d.id).join(",")} monto={totalDeuda} label="Pagar con transferencia"
-                                            className="w-full h-12 px-6 bg-slate-700 hover:bg-slate-600 text-white rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-2" />
+                                        <TransferenciaPayButton tipo="deuda" ref={refSeleccionado} monto={totalSeleccionado} disabled={!haySeleccion} label="Pagar con transferencia"
+                                            className="w-full h-12 px-6 bg-slate-700 hover:bg-slate-600 text-white rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-2 disabled:opacity-50" />
                                     )}
                                     {data?.boletas?.deuda && data?.boletaDescarga?.deuda !== false && (
                                         <a href={data.boletas.deuda.archivo} target="_blank" rel="noopener noreferrer"
@@ -279,10 +303,10 @@ export default function MatriculaStatus() {
                                 </button>
                                 <PaywayCardForm
                                     seccion="deuda"
-                                    onToken={(r) => pagarConPayway("deuda", data!.deudas.map((d) => d.id).join(","), r)}
+                                    onToken={(r) => pagarConPayway("deuda", refSeleccionado, r)}
                                     procesando={paywayProcesando}
                                     error={paywayError}
-                                    montoLabel={`$${totalDeuda.toLocaleString()}`}
+                                    montoLabel={`$${totalSeleccionado.toLocaleString()}`}
                                 />
                             </div>
                         )}
@@ -664,25 +688,49 @@ export default function MatriculaStatus() {
                     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 w-full max-w-md shadow-2xl"
                         onClick={e => e.stopPropagation()}>
                         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800">
-                            <p className="text-[14px] font-bold text-slate-800 dark:text-white">Detalle de la deuda</p>
+                            <div>
+                                <p className="text-[14px] font-bold text-slate-800 dark:text-white">Elegí qué pagar</p>
+                                <p className="text-[12px] text-slate-400">Podés pagar solo algunos comprobantes y dejar el resto para después.</p>
+                            </div>
                             <button onClick={() => setDeudaDetalleAbierto(false)}
-                                className="w-8 h-8 flex items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
+                                className="w-8 h-8 flex items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex-shrink-0">
                                 <X size={15} />
                             </button>
                         </div>
+                        <div className="flex items-center gap-3 px-5 py-2 border-b border-slate-50 dark:border-slate-800/60">
+                            <button type="button" onClick={() => setComprobantesSeleccionados(new Set(deudaComprobantes.map(c => c.id)))}
+                                className="text-[12px] font-semibold text-[#063f68] dark:text-blue-400 hover:underline">
+                                Seleccionar todos
+                            </button>
+                            <button type="button" onClick={() => setComprobantesSeleccionados(new Set())}
+                                className="text-[12px] font-semibold text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:underline">
+                                Ninguno
+                            </button>
+                        </div>
                         <div className="max-h-[60vh] overflow-y-auto divide-y divide-slate-50 dark:divide-slate-800">
-                            {data?.deudaComprobantes?.map((c, i) => (
-                                <div key={i} className="flex items-center justify-between px-5 py-3">
-                                    <p className="text-[13px] text-slate-600 dark:text-slate-400">
-                                        Vencimiento {new Date(c.fechaVencimiento).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "UTC" })}
-                                    </p>
-                                    <p className="text-[13px] font-bold text-slate-800 dark:text-white">${c.monto.toLocaleString("es-AR")}</p>
-                                </div>
-                            ))}
+                            {deudaComprobantes.map((c) => {
+                                const checked = comprobantesSeleccionadosSet.has(c.id);
+                                return (
+                                    <label key={c.id} className="flex items-center justify-between px-5 py-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                        <div className="flex items-center gap-3">
+                                            <input type="checkbox" checked={checked} onChange={() => toggleComprobante(c.id)}
+                                                className="w-4 h-4 rounded accent-red-600" />
+                                            <p className="text-[13px] text-slate-600 dark:text-slate-400">
+                                                Vencimiento {new Date(c.fechaVencimiento).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "UTC" })}
+                                            </p>
+                                        </div>
+                                        <p className={`text-[13px] font-bold ${checked ? "text-slate-800 dark:text-white" : "text-slate-300 dark:text-slate-600"}`}>
+                                            ${c.monto.toLocaleString("es-AR")}
+                                        </p>
+                                    </label>
+                                );
+                            })}
                         </div>
                         <div className="flex items-center justify-between px-5 py-4 border-t border-slate-100 dark:border-slate-800">
-                            <p className="text-[12px] font-bold text-slate-400 uppercase tracking-widest">Total</p>
-                            <p className="text-[15px] font-black text-red-600 dark:text-red-400">${totalDeuda.toLocaleString()}</p>
+                            <p className="text-[12px] font-bold text-slate-400 uppercase tracking-widest">
+                                {haySeleccion ? `Total seleccionado` : "Nada seleccionado"}
+                            </p>
+                            <p className="text-[15px] font-black text-red-600 dark:text-red-400">${totalSeleccionado.toLocaleString()}</p>
                         </div>
                     </div>
                 </div>,

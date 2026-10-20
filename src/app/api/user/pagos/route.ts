@@ -181,7 +181,7 @@ export async function GET() {
             prisma.deudaComprobante.findMany({
                 where: { expediente },
                 orderBy: { fechaVencimiento: "asc" },
-                select: { fechaVencimiento: true, monto: true },
+                select: { id: true, fechaVencimiento: true, monto: true },
             }),
         ]);
 

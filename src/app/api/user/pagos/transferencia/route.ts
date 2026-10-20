@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { obtenerComprobantesDeuda, parseIdsDeuda } from "@/lib/pagoDeuda";
 
 export async function POST(req: NextRequest) {
     const session = await getSession();
@@ -31,9 +32,9 @@ export async function POST(req: NextRequest) {
         if (existente) return NextResponse.json({ error: "Ya tenés el pago anual registrado" }, { status: 400 });
 
     } else if (tipo === "deuda") {
-        const ids = ref.split(",").map((id: string) => parseInt(id)).filter((id: number) => !isNaN(id));
-        const deudas = await prisma.deuda.findMany({ where: { id: { in: ids }, expediente } });
-        if (deudas.length === 0) return NextResponse.json({ error: "Deudas no encontradas" }, { status: 404 });
+        const ids = parseIdsDeuda(ref);
+        const comprobantes = await obtenerComprobantesDeuda(expediente, ids);
+        if (comprobantes.length === 0) return NextResponse.json({ error: "Comprobantes no encontrados" }, { status: 404 });
 
     } else if (tipo === "curso") {
         const inscripcion = await prisma.inscripcionCurso.findUnique({ where: { id: parseInt(ref) } });

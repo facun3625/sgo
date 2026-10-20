@@ -97,9 +97,10 @@ model Deuda {
 }
 
 // Detalle de comprobantes que componen la deuda de cada expediente (import de
-// "Ventas - Cuenta Corriente - Deudas vencidas.xlsx"). Deuda.monto sigue siendo
-// la suma total y es lo único que usa el resto del sistema (pagos, PayWay, MP);
-// esta tabla es solo para mostrar de qué se compone esa deuda.
+// "Ventas - Cuenta Corriente - Deudas vencidas.xlsx"). Es también la unidad de
+// pago parcial: el matriculado elige qué comprobantes pagar (ver
+// src/lib/pagoDeuda.ts) — al pagarse, el comprobante se borra y Deuda.monto se
+// descuenta por ese importe.
 model DeudaComprobante {
   id               Int      @id @default(autoincrement())
   expediente       String

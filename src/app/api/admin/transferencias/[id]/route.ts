@@ -3,6 +3,7 @@ import { getSession } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { crearNotificacion } from "@/lib/notificaciones";
 import { enviarInscripcionCursoConfirmada } from "@/lib/mailer";
+import { confirmarPagoComprobantes, parseIdsDeuda } from "@/lib/pagoDeuda";
 
 function isAdmin(lvl: string) { return lvl === "superadmin" || lvl === "admin"; }
 
@@ -46,15 +47,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
             "Tu transferencia de matrícula anual fue aprobada. ¡Gracias!", "pago");
 
     } else if (tipo === "deuda") {
-        const ids = ref.split(",").map((x: string) => parseInt(x)).filter((x: number) => !isNaN(x));
-        const deudas = await prisma.deuda.findMany({ where: { id: { in: ids }, expediente } });
-        const montoTotal = deudas.reduce((acc, d) => acc + d.monto, 0);
-        await prisma.$transaction([
-            prisma.deudaPagada.create({ data: { expediente, monto: montoTotal, metodoPago: "transferencia", fechaPago } }),
-            prisma.deuda.deleteMany({ where: { id: { in: ids }, expediente } }),
-        ]);
-        await crearNotificacion(expediente, "Deuda saldada",
-            "Tu transferencia fue aprobada y la deuda ha sido cancelada.", "pago");
+        const ids = parseIdsDeuda(ref);
+        const resultado = await confirmarPagoComprobantes(expediente, ids, { metodoPago: "transferencia" });
+        if (resultado) {
+            await crearNotificacion(expediente, "Deuda saldada",
+                `Tu transferencia de $${resultado.monto.toLocaleString("es-AR")} fue aprobada y acreditada.`, "pago");
+        }
 
     } else if (tipo === "curso") {
         const inscripcion = await prisma.inscripcionCurso.findUnique({

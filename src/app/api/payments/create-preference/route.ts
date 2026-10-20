@@ -3,6 +3,7 @@ import { getSession } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { getMpClients, encodeRef, TipoPago } from "@/lib/mercadopago";
 import { esMatriculadoJoven, montoConDescuento } from "@/lib/matricula";
+import { calcularMontoComprobantes, parseIdsDeuda } from "@/lib/pagoDeuda";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
 
@@ -76,12 +77,12 @@ export async function POST(req: NextRequest) {
             unitPrice = producto.precio;
 
         } else if (tipo === "deuda") {
-            const ids = ref.split(",").map((id) => parseInt(id)).filter((id) => !isNaN(id));
-            if (ids.length === 0) return NextResponse.json({ error: "Sin deudas especificadas" }, { status: 400 });
-            const deudas = await prisma.deuda.findMany({ where: { id: { in: ids }, expediente } });
-            if (deudas.length === 0) return NextResponse.json({ error: "Deudas no encontradas" }, { status: 404 });
-            title = `Deuda pendiente — ${deudas.length} concepto${deudas.length > 1 ? "s" : ""}`;
-            unitPrice = deudas.reduce((acc, d) => acc + d.monto, 0);
+            const ids = parseIdsDeuda(ref);
+            if (ids.length === 0) return NextResponse.json({ error: "Sin comprobantes especificados" }, { status: 400 });
+            const { comprobantes, monto } = await calcularMontoComprobantes(expediente, ids);
+            if (comprobantes.length === 0) return NextResponse.json({ error: "Comprobantes no encontrados" }, { status: 404 });
+            title = `Deuda pendiente — ${comprobantes.length} comprobante${comprobantes.length > 1 ? "s" : ""}`;
+            unitPrice = monto;
 
         } else if (tipo === "rehab_costo") {
             const solicitud = await prisma.solicitudRehabilitacion.findUnique({ where: { id: parseInt(ref) } });

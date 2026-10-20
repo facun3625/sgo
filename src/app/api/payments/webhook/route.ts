@@ -3,6 +3,7 @@ import prisma from "@/lib/prisma";
 import { getMpClients, decodeRef } from "@/lib/mercadopago";
 import { crearNotificacion } from "@/lib/notificaciones";
 import { enviarInscripcionCursoConfirmada } from "@/lib/mailer";
+import { confirmarPagoComprobantes, parseIdsDeuda } from "@/lib/pagoDeuda";
 
 export async function POST(req: NextRequest) {
     try {
@@ -101,21 +102,13 @@ export async function POST(req: NextRequest) {
             }
 
         } else if (tipo === "deuda") {
-            const ids = ref.split(",").map((id) => parseInt(id)).filter((id) => !isNaN(id));
-            if (ids.length > 0) {
-                const deudas = await prisma.deuda.findMany({ where: { id: { in: ids }, expediente } });
-                const montoTotal = deudas.reduce((acc, d) => acc + d.monto, 0);
-
-                await prisma.$transaction([
-                    prisma.deudaPagada.create({
-                        data: { expediente, monto: montoTotal, mpPaymentId, metodoPago: "mercadopago", fechaPago },
-                    }),
-                    prisma.deuda.deleteMany({ where: { id: { in: ids }, expediente } }),
-                ]);
+            const ids = parseIdsDeuda(ref);
+            const resultado = await confirmarPagoComprobantes(expediente, ids, { metodoPago: "mercadopago", mpPaymentId });
+            if (resultado) {
                 await crearNotificacion(
                     expediente,
                     "Deuda saldada",
-                    "Tu pago fue acreditado y la deuda ha sido cancelada. ¡Gracias!",
+                    `Tu pago de $${resultado.monto.toLocaleString("es-AR")} fue acreditado. ¡Gracias!`,
                     "pago"
                 );
             }

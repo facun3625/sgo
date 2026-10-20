@@ -10,10 +10,11 @@ interface Props {
     monto: number;
     label?: string;
     className?: string;
+    disabled?: boolean;
     onSuccess?: () => void;
 }
 
-export default function TransferenciaPayButton({ tipo, ref: pref, monto, label = "Pagar con transferencia", className, onSuccess }: Props) {
+export default function TransferenciaPayButton({ tipo, ref: pref, monto, label = "Pagar con transferencia", className, disabled, onSuccess }: Props) {
     const [open, setOpen] = useState(false);
     const [cbu, setCbu] = useState<{ cbu: string; alias: string } | null>(null);
     const [loadingInfo, setLoadingInfo] = useState(false);
@@ -73,7 +74,7 @@ export default function TransferenciaPayButton({ tipo, ref: pref, monto, label =
 
     return (
         <div className="space-y-1.5">
-            <button onClick={abrir}
+            <button onClick={abrir} disabled={disabled}
                 className={className ?? "flex items-center justify-center gap-2 w-full h-11 rounded-xl bg-slate-700 hover:bg-slate-600 text-white text-[13px] font-bold disabled:opacity-50 transition-all"}>
                 <Landmark size={15} />
                 {label}
