@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { autorizarPagoPayway, marcaSoportadaPayway, paywayDisponibleParaSeccion } from "@/lib/payway";
+import { autorizarPagoPayway, construirSiteTransactionId, marcaSoportadaPayway, paywayDisponibleParaSeccion } from "@/lib/payway";
 import { enviarInscripcionCursoConfirmada } from "@/lib/mailer";
 
 // Cobro con tarjeta (Payway) para inscripciones de invitados — sin sesión.
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
 
     try {
         const resultado = await autorizarPagoPayway({
-            siteTransactionId: `curso_${inscripcion.id}_${Date.now()}`,
+            siteTransactionId: construirSiteTransactionId("curso", inscripcion.id, inscripcion.curso.titulo),
             token,
             marca,
             bin,

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { autorizarPagoPayway, marcaSoportadaPayway, paywayDisponibleParaSeccion, PaywaySeccion } from "@/lib/payway";
+import { autorizarPagoPayway, construirSiteTransactionId, marcaSoportadaPayway, paywayDisponibleParaSeccion, PaywaySeccion } from "@/lib/payway";
 import { esMatriculadoJoven, montoConDescuento } from "@/lib/matricula";
 import { crearNotificacion } from "@/lib/notificaciones";
 
@@ -105,7 +105,7 @@ export async function POST(req: NextRequest) {
 
     try {
         const resultado = await autorizarPagoPayway({
-            siteTransactionId: `${tipo}_${expediente}_${Date.now()}`,
+            siteTransactionId: construirSiteTransactionId(tipo, expediente, descripcion),
             token,
             marca,
             bin,

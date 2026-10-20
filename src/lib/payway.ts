@@ -99,6 +99,26 @@ function sinAcentos(s: string): string {
     return s.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/ñ/gi, m => (m === "ñ" ? "n" : "N"));
 }
 
+// El "Id operación" que se ve en el export de Payway es, tal cual, el
+// site_transaction_id que mandamos nosotros al cobrar — no hay forma de
+// cambiarlo retroactivamente para pagos ya hechos, pero si lo armamos legible
+// de acá en adelante, el export sirve para identificar el pago sin cruzar con
+// la base. Se mantiene tipo + id técnico al principio (sigue siendo única y
+// parseable) y se agrega una descripción corta sanitizada (sin espacios/acentos,
+// no hay doc oficial de un límite de longitud para este campo, así que se
+// recorta conservador).
+function slugPayway(texto: string, maxLen = 30): string {
+    return sinAcentos(texto)
+        .replace(/[^a-zA-Z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+        .slice(0, maxLen);
+}
+
+export function construirSiteTransactionId(tipo: string, idRef: string | number, descripcion: string): string {
+    const slug = slugPayway(descripcion);
+    return `${tipo}_${idRef}_${slug}_${Date.now()}`;
+}
+
 // Cybersource exige el código de provincia de 1 letra (no el nombre) en
 // bill_to/ship_to.state. El formulario de pago manda uno de los nombres exactos
 // de PROVINCIAS_AR (es un <select>, no texto libre), así que esto siempre matchea
