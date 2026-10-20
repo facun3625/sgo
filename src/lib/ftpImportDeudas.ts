@@ -17,6 +17,11 @@ const LOCK_DIR = path.join(DIR, ".watcher.lock");
 const EXTENSIONES_VALIDAS = [".xlsx", ".xls", ".csv"];
 const EDAD_MINIMA_MS = 60_000;
 const LOCK_OBSOLETO_MS = 2 * 60 * 60 * 1000;
+// Si matriculación sube el archivo varias veces por día (no solo una vez al
+// mes), procesados/ puede acumular cientos de archivos — se limpian solos los
+// que ya pasaron esta ventana. errores/ no se toca: esos necesitan que
+// alguien los revise antes de que desaparezcan.
+const RETENCION_PROCESADOS_MS = 30 * 24 * 60 * 60 * 1000;
 
 type ArchivoPendiente = {
     ruta: string;
@@ -66,6 +71,31 @@ function nombreArchivado(nombreOriginal: string) {
 function nombreOriginalDeReclamado(nombre: string) {
     const partes = nombre.split("__");
     return partes.length >= 3 ? partes.slice(2).join("__") : nombre;
+}
+
+// Recupera la fecha de archivado desde el prefijo que le puso nombreArchivado()
+// (ej. "2026-10-20T16-41-49-352Z__<uuid>__original.xlsx") — así la retención
+// depende de cuándo se procesó, no del mtime del archivo (que puede arrastrar
+// la fecha original de subida tras el rename).
+function fechaDeArchivado(nombre: string): number | null {
+    const m = nombre.match(/^(\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z)__/);
+    if (!m) return null;
+    const iso = m[1].replace(/T(\d{2})-(\d{2})-(\d{2})-(\d{3})Z$/, "T$1:$2:$3.$4Z");
+    const t = Date.parse(iso);
+    return isNaN(t) ? null : t;
+}
+
+async function limpiarProcesadosViejos(): Promise<void> {
+    const entries = await fs.readdir(PROCESADOS_DIR, { withFileTypes: true }).catch(() => []);
+    const limite = Date.now() - RETENCION_PROCESADOS_MS;
+    for (const entry of entries) {
+        if (!entry.isFile()) continue;
+        const fecha = fechaDeArchivado(entry.name);
+        if (fecha !== null && fecha < limite) {
+            await fs.unlink(path.join(PROCESADOS_DIR, entry.name))
+                .catch(err => console.error(`[ftp-import] No se pudo borrar "${entry.name}" de procesados:`, err));
+        }
+    }
 }
 
 async function procesarArchivo(rutaReclamada: string, nombreOriginal: string) {
@@ -212,6 +242,7 @@ export async function chequearFtpDeudas() {
             }
             await procesarArchivo(rutaReclamada, archivo.nombreOriginal);
         }
+        await limpiarProcesadosViejos();
     } finally {
         await fs.rm(LOCK_DIR, { recursive: true, force: true });
     }
