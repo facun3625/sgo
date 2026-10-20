@@ -70,9 +70,37 @@ function getSubzona(row: Record<string, string>): string | null {
     return v.trim() || null;
 }
 
+export interface PosibleRecobro {
+    expediente: string;
+    monto: number;
+    fechaPago: Date;
+    metodoPago: string;
+}
+
 export type ResultadoImportDeudas =
-    | { ok: true; actualizados: number; comprobantes: number }
+    | { ok: true; actualizados: number; comprobantes: number; posiblesRecobros: PosibleRecobro[] }
     | { ok: false; error: string };
+
+// Ventana para detectar "posibles recobros": si el archivo del mes vuelve a
+// cargar deuda para un expediente que ya tiene un DeudaPagada reciente (de
+// cualquier canal — MP, Payway, transferencia, sucursal, Banelco), es señal de
+// que el sistema contable de origen todavía no reflejó ese pago cuando se
+// generó el archivo. No bloquea el import (sigue siendo la fuente de verdad
+// del mes), solo se lo señala a quien lo está cargando para que lo revise.
+const DIAS_VENTANA_RECOBRO = 35;
+
+async function detectarPosiblesRecobros(expedientes: string[]): Promise<PosibleRecobro[]> {
+    if (expedientes.length === 0) return [];
+    const desde = new Date(Date.now() - DIAS_VENTANA_RECOBRO * 24 * 60 * 60 * 1000);
+    const pagos = await prisma.deudaPagada.findMany({
+        where: { expediente: { in: expedientes }, fechaPago: { gte: desde } },
+        orderBy: { fechaPago: "desc" },
+        select: { expediente: true, monto: true, fechaPago: true, metodoPago: true },
+    });
+    const porExpediente = new Map<string, PosibleRecobro>();
+    for (const p of pagos) if (!porExpediente.has(p.expediente)) porExpediente.set(p.expediente, p);
+    return [...porExpediente.values()];
+}
 
 // Reemplazo total (no incremental): borra todas las deudas vigentes y las vuelve a
 // cargar desde el archivo — mismo comportamiento sea manual o automático, a propósito
@@ -134,5 +162,7 @@ export async function procesarRegistrosDeudas(registros: Record<string, string>[
         }
     }, { maxWait: 30_000, timeout: 120_000 });
 
-    return { ok: true, actualizados: data.length, comprobantes: comprobantes.length };
+    const posiblesRecobros = await detectarPosiblesRecobros(data.map(d => d.expediente));
+
+    return { ok: true, actualizados: data.length, comprobantes: comprobantes.length, posiblesRecobros };
 }

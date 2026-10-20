@@ -82,11 +82,27 @@ async function procesarArchivo(rutaReclamada: string, nombreOriginal: string) {
         datosAplicados = true;
 
         await fs.rename(rutaReclamada, path.join(PROCESADOS_DIR, nombreArchivado(nombreOriginal)));
+
+        const { posiblesRecobros } = resultado;
+        const avisoRecobros = posiblesRecobros.length > 0
+            ? ` ⚠ ${posiblesRecobros.length} expediente${posiblesRecobros.length > 1 ? "s" : ""} con un pago reciente en SGO vuelve${posiblesRecobros.length > 1 ? "n" : ""} a aparecer con deuda — revisar si el sistema contable ya reflejó esos pagos.`
+            : "";
         await registrarLog(
             nombreOriginal, "exitoso", resultado.actualizados,
-            `${resultado.actualizados} expedientes actualizados (${resultado.comprobantes} comprobantes).`
+            `${resultado.actualizados} expedientes actualizados (${resultado.comprobantes} comprobantes).${avisoRecobros}`
         );
         console.log(`[ftp-import] "${nombreOriginal}" procesado: ${resultado.actualizados} expedientes.`);
+
+        if (posiblesRecobros.length > 0) {
+            const detalle = posiblesRecobros.slice(0, 15)
+                .map(r => `Exp. ${r.expediente} ($${r.monto.toLocaleString("es-AR")} vía ${r.metodoPago}, ${r.fechaPago.toLocaleDateString("es-AR")})`)
+                .join("; ");
+            await notificarAdmins(
+                "Revisar: posibles deudas recargadas en el import automático",
+                `El archivo "${nombreOriginal}" volvió a cargar deuda para ${posiblesRecobros.length} expediente${posiblesRecobros.length > 1 ? "s" : ""} que ya registra${posiblesRecobros.length > 1 ? "n" : ""} un pago reciente en SGO: ${detalle}${posiblesRecobros.length > 15 ? "; ..." : ""}. Puede ser que el sistema contable todavía no haya reflejado esos pagos.`,
+                "admin_import"
+            ).catch(err => console.error("[ftp-import] No se pudo notificar posibles recobros:", err));
+        }
     } catch (err) {
         const detalle = err instanceof Error ? err.message : "Error desconocido";
         const mensaje = datosAplicados

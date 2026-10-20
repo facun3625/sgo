@@ -374,7 +374,17 @@ export default function ImportarPage() {
                 const detalleComprobantes = finTipo === "deudas" && typeof data.comprobantes === "number"
                     ? ` (${data.comprobantes} comprobante${data.comprobantes !== 1 ? "s" : ""})`
                     : "";
-                setFinResultado({ tipo: "success", mensaje: `${data.actualizados} registro${data.actualizados !== 1 ? "s" : ""} actualizado${data.actualizados !== 1 ? "s" : ""} en ${FINANCIERO_CONFIG[finTipo].label}${detalleComprobantes}.` });
+                const posiblesRecobros: { expediente: string; monto: number; fechaPago: string; metodoPago: string }[] = data.posiblesRecobros ?? [];
+                setFinResultado({
+                    tipo: posiblesRecobros.length > 0 ? "warning" : "success",
+                    mensaje: `${data.actualizados} registro${data.actualizados !== 1 ? "s" : ""} actualizado${data.actualizados !== 1 ? "s" : ""} en ${FINANCIERO_CONFIG[finTipo].label}${detalleComprobantes}.`,
+                    detalles: posiblesRecobros.length > 0
+                        ? [
+                            `⚠ ${posiblesRecobros.length} expediente${posiblesRecobros.length > 1 ? "s" : ""} con un pago reciente en SGO vuelve${posiblesRecobros.length > 1 ? "n" : ""} a aparecer con deuda en este archivo — revisá si el sistema contable ya reflejó esos pagos:`,
+                            ...posiblesRecobros.map(r => `Exp. ${r.expediente}: pagó $${r.monto.toLocaleString("es-AR")} vía ${r.metodoPago} el ${new Date(r.fechaPago).toLocaleDateString("es-AR")}`),
+                        ]
+                        : undefined,
+                });
                 setFinRegistros([]); if (finFileRef.current) finFileRef.current.value = "";
             } else {
                 setFinResultado({ tipo: "error", mensaje: data.error ?? "Error al importar" });

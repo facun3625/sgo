@@ -32,7 +32,11 @@ export async function POST(req: NextRequest) {
     if (tipo === "deudas") {
         const resultado = await procesarRegistrosDeudas(registros);
         if (!resultado.ok) return NextResponse.json({ error: resultado.error }, { status: 400 });
-        return NextResponse.json({ actualizados: resultado.actualizados, comprobantes: resultado.comprobantes });
+        return NextResponse.json({
+            actualizados: resultado.actualizados,
+            comprobantes: resultado.comprobantes,
+            posiblesRecobros: resultado.posiblesRecobros,
+        });
     }
 
     if (tipo === "pagoAnual") {
