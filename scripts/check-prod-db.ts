@@ -6,8 +6,26 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client";
 import * as dotenv from "dotenv";
 
+// .env.production (commiteado a git) es solo la PLANTILLA, con placeholders
+// literales ("USER:PASSWORD@HOST") — los valores reales de producción van en
+// .env.production.local (gitignored, convención propia de Next.js), que es
+// el que realmente lee la app corriendo bajo pm2. Se intenta ese primero.
+if (!process.env.DATABASE_URL) {
+    dotenv.config({ path: ".env.production.local" });
+}
 if (!process.env.DATABASE_URL) {
     dotenv.config({ path: ".env.production" });
+}
+
+if (/USER:PASSWORD@HOST/.test(process.env.DATABASE_URL ?? "")) {
+    console.error(
+        "❌ DATABASE_URL es la plantilla sin completar (USER:PASSWORD@HOST), no la real.\n" +
+        "   Este script leyó .env.production.local o .env.production buscando en el directorio\n" +
+        "   actual — si la app corre con las credenciales en otro archivo o inyectadas por otra\n" +
+        "   vía (pm2 env, systemd, etc.), corré el script pasando la URL real a mano:\n" +
+        "   DATABASE_URL=\"postgresql://...\" npx tsx scripts/check-prod-db.ts"
+    );
+    process.exit(1);
 }
 
 const prisma = new PrismaClient({ adapter: new PrismaPg(new Pool({ connectionString: process.env.DATABASE_URL })) });
