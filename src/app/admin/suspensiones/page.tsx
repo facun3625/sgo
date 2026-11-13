@@ -547,15 +547,21 @@ export default function SuspensionesPage() {
     return (
         <div className="p-6 md:p-10 space-y-6">
 
-            {/* Modal preview imagen */}
+            {/* Modal preview de adjunto — puede ser imagen o PDF (el usuario puede
+                subir cualquiera de los dos para estos campos). Un <img> nunca puede
+                renderizar un PDF en ningún navegador, por eso el chequeo de extensión. */}
             {previewUrl && (
                 <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setPreviewUrl(null)}>
-                    <div className="relative max-w-3xl max-h-[90vh] w-full" onClick={e => e.stopPropagation()}>
+                    <div className={`relative w-full ${previewUrl.toLowerCase().endsWith(".pdf") ? "max-w-4xl h-[90vh]" : "max-w-3xl max-h-[90vh]"}`} onClick={e => e.stopPropagation()}>
                         <button onClick={() => setPreviewUrl(null)}
                             className="absolute -top-10 right-0 text-white/70 hover:text-white flex items-center gap-1.5 text-[13px]">
                             <X size={16} /> Cerrar
                         </button>
-                        <img src={previewUrl} alt="Documento" className="w-full h-auto max-h-[85vh] object-contain rounded-xl" />
+                        {previewUrl.toLowerCase().endsWith(".pdf") ? (
+                            <iframe src={previewUrl} title="Documento" className="w-full h-full rounded-xl bg-white" />
+                        ) : (
+                            <img src={previewUrl} alt="Documento" className="w-full h-auto max-h-[85vh] object-contain rounded-xl" />
+                        )}
                     </div>
                 </div>
             )}
