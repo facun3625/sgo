@@ -97,6 +97,23 @@ async function main() {
     }
     console.log();
 
+    console.log("== Certificados de matriculación bloqueados (certificados_manuales) ==");
+    const bloqueados = await prisma.certificadoManual.findMany({ orderBy: { createdAt: "desc" } });
+    console.log(`  Total bloqueados: ${bloqueados.length}`);
+    if (bloqueados.length > 0) {
+        const datos = await prisma.dato.findMany({
+            where: { expediente: { in: bloqueados.map(b => b.expediente) } },
+            select: { expediente: true, apellido: true, nombre: true },
+        });
+        const mapNombre = new Map(datos.map(d => [d.expediente, `${d.apellido}, ${d.nombre}`]));
+        for (const b of bloqueados.slice(0, 50)) {
+            console.log(`  - exp. ${b.expediente} (${mapNombre.get(b.expediente) ?? "sin Dato"}) — bloqueado el ${b.createdAt.toLocaleDateString("es-AR")}`);
+        }
+        if (bloqueados.length > 50) console.log(`  ... y ${bloqueados.length - 50} más`);
+        console.log("  ⚠ No guarda motivo ni quién lo bloqueó — si alguno de estos no debería estar acá, sacarlo desde /admin/certificados-manuales.");
+    }
+    console.log();
+
     console.log("== Deudas vigentes (sanity check Deuda vs. DeudaComprobante) ==");
     const [totalDeudas, totalComprobantes] = await Promise.all([
         prisma.deuda.aggregate({ _sum: { monto: true }, _count: true }),
