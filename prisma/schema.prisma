@@ -604,11 +604,17 @@ model RepositorioCategoria {
 }
 
 model CambioDatos {
-  id         Int      @id @default(autoincrement())
-  expediente String
-  campos     Json
-  leido      Boolean  @default(false)
-  createdAt  DateTime @default(now())
+  id               Int       @id @default(autoincrement())
+  expediente       String
+  campos           Json
+  leido            Boolean   @default(false)
+  createdAt        DateTime  @default(now())
+  // Export diario a Excel para el sistema externo (Catastro) — ver
+  // src/lib/exportarModificacionesDatos.ts. Una vez incluido en un archivo,
+  // nunca se vuelve a exportar aunque el archivo se regenere.
+  exportado        Boolean   @default(false)
+  exportadoEn      DateTime? @map("exportado_en")
+  exportadoArchivo String?   @map("exportado_archivo")
 
   @@map("cambios_datos")
 }

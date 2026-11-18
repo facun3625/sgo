@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { UserCheck, X, Circle, CheckCircle2, ArrowLeftRight, Download, ChevronLeft, ChevronRight, CheckSquare, Square } from "lucide-react";
+import { UserCheck, X, Circle, CheckCircle2, ArrowLeftRight, Download, ChevronLeft, ChevronRight, CheckSquare, Square, FileSpreadsheet, Clock } from "lucide-react";
 import * as XLSX from "xlsx";
 
 interface CamposDiff {
@@ -14,6 +14,9 @@ interface CambioDatos {
     campos: CamposDiff;
     leido: boolean;
     createdAt: string;
+    exportado: boolean;
+    exportadoEn: string | null;
+    exportadoArchivo: string | null;
     usuario: { nombre: string; apellido: string; expediente: string } | null;
 }
 
@@ -51,6 +54,8 @@ export default function CambiosDatosPage() {
     const [total, setTotal] = useState(0);
     const [sinLeer, setSinLeer] = useState(0);
     const [checkedIds, setCheckedIds] = useState<Set<number>>(new Set());
+    const [exportando, setExportando] = useState(false);
+    const [mensajeExport, setMensajeExport] = useState<string | null>(null);
 
     const fetchCambios = useCallback(async (p = page, filtro = tab) => {
         setLoading(true);
@@ -111,6 +116,26 @@ export default function CambiosDatosPage() {
         setSelected(null);
     };
 
+    const generarExportCatastro = async () => {
+        setExportando(true);
+        setMensajeExport(null);
+        try {
+            const res = await fetch("/api/admin/cambios-datos/exportar", { method: "POST" });
+            const json = await res.json();
+            if (!res.ok) throw new Error(json.error || "Error desconocido");
+            setMensajeExport(
+                json.generado
+                    ? `Generado "${json.archivo}" con ${json.filas} expediente${json.filas !== 1 ? "s" : ""}.`
+                    : "No había cambios pendientes de exportar."
+            );
+            fetchCambios(page, tab);
+        } catch (err) {
+            setMensajeExport(`Error: ${err instanceof Error ? err.message : "no se pudo generar el export"}`);
+        } finally {
+            setExportando(false);
+        }
+    };
+
     return (
         <div className="p-6 md:p-8 space-y-6 animate-fade-in">
             {/* Header */}
@@ -123,6 +148,20 @@ export default function CambiosDatosPage() {
                         <h1 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">Modificaciones de Datos</h1>
                         <p className="text-sm text-slate-500 dark:text-slate-400">Historial de cambios en datos personales de matriculados</p>
                     </div>
+                </div>
+                <div className="flex flex-col items-end gap-1.5">
+                    <button onClick={generarExportCatastro} disabled={exportando}
+                        className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#063f68] text-white text-[12px] font-bold hover:bg-[#0a4d7a] disabled:opacity-50 transition-all">
+                        <FileSpreadsheet size={14} /> {exportando ? "Generando..." : "Generar Excel para Catastro"}
+                    </button>
+                    <p className="text-[10px] text-slate-400 flex items-center gap-1">
+                        <Clock size={10} /> Se corre solo, L-V 7:30 — este botón fuerza una corrida extra
+                    </p>
+                    {mensajeExport && (
+                        <p className={`text-[11px] font-semibold ${mensajeExport.startsWith("Error") ? "text-rose-500" : "text-emerald-600 dark:text-emerald-400"}`}>
+                            {mensajeExport}
+                        </p>
+                    )}
                 </div>
             </div>
 
@@ -196,18 +235,19 @@ export default function CambiosDatosPage() {
                     ) : (
                         <div>
                             {/* Header tabla */}
-                            <div className="grid grid-cols-[auto_1fr_auto_auto] items-center px-5 py-3 border-b border-slate-100 dark:border-slate-800 gap-3">
+                            <div className="grid grid-cols-[auto_1fr_auto_auto_auto] items-center px-5 py-3 border-b border-slate-100 dark:border-slate-800 gap-3">
                                 <button onClick={toggleTodos} className="text-slate-400 hover:text-violet-500 transition-colors">
                                     {todosChecked ? <CheckSquare size={16} className="text-violet-500" /> : <Square size={16} />}
                                 </button>
                                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Usuario</span>
                                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Campos</span>
                                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Fecha</span>
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Catastro</span>
                             </div>
 
                             {cambios.map(c => (
                                 <div key={c.id}
-                                    className={`grid grid-cols-[auto_1fr_auto_auto] items-center px-5 py-4 border-b border-slate-50 dark:border-slate-800/60 last:border-0 gap-3 transition-colors ${selected?.id === c.id ? "bg-violet-50 dark:bg-violet-900/10" : "hover:bg-slate-50 dark:hover:bg-slate-800/30"}`}>
+                                    className={`grid grid-cols-[auto_1fr_auto_auto_auto] items-center px-5 py-4 border-b border-slate-50 dark:border-slate-800/60 last:border-0 gap-3 transition-colors ${selected?.id === c.id ? "bg-violet-50 dark:bg-violet-900/10" : "hover:bg-slate-50 dark:hover:bg-slate-800/30"}`}>
                                     <button onClick={e => { e.stopPropagation(); toggleCheck(c.id); }} className="text-slate-300 hover:text-violet-500 transition-colors shrink-0">
                                         {checkedIds.has(c.id) ? <CheckSquare size={16} className="text-violet-500" /> : <Square size={16} />}
                                     </button>
@@ -227,6 +267,13 @@ export default function CambiosDatosPage() {
                                     </button>
                                     <button onClick={() => handleSelect(c)}>
                                         <span className="text-[11px] text-slate-400">{timeAgo(c.createdAt)}</span>
+                                    </button>
+                                    <button onClick={() => handleSelect(c)} title={c.exportado ? `Exportado en "${c.exportadoArchivo}"` : "Pendiente de exportar"}>
+                                        {c.exportado ? (
+                                            <FileSpreadsheet size={15} className="text-emerald-500" />
+                                        ) : (
+                                            <Clock size={15} className="text-amber-400" />
+                                        )}
                                     </button>
                                 </div>
                             ))}
@@ -259,7 +306,10 @@ export default function CambiosDatosPage() {
                                 <p className="text-[13px] font-black text-slate-900 dark:text-white">
                                     {selected.usuario ? `${selected.usuario.apellido}, ${selected.usuario.nombre}` : `Mat. ${selected.expediente}`}
                                 </p>
-                                <p className="text-[11px] text-slate-400">Mat. {selected.expediente} · {timeAgo(selected.createdAt)}</p>
+                                <p className="text-[11px] text-slate-400">
+                                    Mat. {selected.expediente} · {timeAgo(selected.createdAt)}
+                                    {selected.exportado ? ` · Exportado en "${selected.exportadoArchivo}"` : " · Pendiente de exportar a Catastro"}
+                                </p>
                             </div>
                             <div className="flex items-center gap-2">
                                 {selected.leido ? (

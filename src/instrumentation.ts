@@ -22,4 +22,16 @@ export async function register() {
         );
     tickFtpDeudas();
     setInterval(tickFtpDeudas, 45 * 60 * 1000);
+
+    // Export diario a Excel de las modificaciones de datos pendientes, para
+    // que Catastro lo levante por SFTP (ver src/lib/exportarModificacionesDatos.ts).
+    // Corre lunes a viernes a las 7:30 AR — el chequeo cada 5 min solo dispara
+    // la corrida real dentro de esa ventana, una vez por día.
+    const { chequearExportacionProgramada } = await import("@/lib/exportarModificacionesDatos");
+    const tickExportModificaciones = () =>
+        chequearExportacionProgramada().catch(err =>
+            console.error("[startup] Error chequeando export de modificaciones de datos:", err)
+        );
+    tickExportModificaciones();
+    setInterval(tickExportModificaciones, 5 * 60 * 1000);
 }
