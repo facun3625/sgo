@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { esCuitValido } from "@/lib/cuit";
 
 const fieldLabels: Record<string, string> = {
     cuil: "CUIL",
@@ -43,6 +44,31 @@ export async function GET() {
     }
 }
 
+// Si se modifica el domicilio (real o legal), localidad y código postal de
+// ese mismo lado pasan a ser obligatorios — para que Tango no reciba una
+// dirección nueva sin saber a qué CP/localidad corresponde.
+function errorDomicilioIncompleto(
+    updateData: Record<string, unknown>,
+    datoActual: Record<string, unknown> | null,
+    lado: "Legal" | "Real"
+): string | null {
+    const domicilioKey = `domicilio${lado}`;
+    if (!(domicilioKey in updateData)) return null;
+
+    const nuevoDomicilio = String(updateData[domicilioKey] ?? "").trim();
+    const domicilioAnterior = String(datoActual?.[domicilioKey] ?? "").trim();
+    if (!nuevoDomicilio || nuevoDomicilio === domicilioAnterior) return null;
+
+    const postalKey = `postal${lado}`;
+    const localidadKey = `localidad${lado}`;
+    const postalFinal = String((postalKey in updateData ? updateData[postalKey] : datoActual?.[postalKey]) ?? "").trim();
+    const localidadFinal = String((localidadKey in updateData ? updateData[localidadKey] : datoActual?.[localidadKey]) ?? "").trim();
+    if (!postalFinal || !localidadFinal) {
+        return `Si modificás el domicilio ${lado === "Legal" ? "legal" : "real"}, completá también la localidad y el código postal correspondientes.`;
+    }
+    return null;
+}
+
 export async function PATCH(request: Request) {
     try {
         const session = await getSession();
@@ -69,6 +95,17 @@ export async function PATCH(request: Request) {
         // cuil: se puede establecer solo si actualmente está vacío
         if ("cuil" in updateData && datoActual?.cuil) {
             delete updateData.cuil;
+        }
+
+        if ("cuil" in updateData && !esCuitValido(String(updateData.cuil ?? ""))) {
+            return NextResponse.json({ error: "El CUIL ingresado no es válido. Verificá el número e intentá de nuevo." }, { status: 400 });
+        }
+
+        const errorDomicilio =
+            errorDomicilioIncompleto(updateData, datoActual, "Legal") ??
+            errorDomicilioIncompleto(updateData, datoActual, "Real");
+        if (errorDomicilio) {
+            return NextResponse.json({ error: errorDomicilio }, { status: 400 });
         }
 
         const updated = await prisma.dato.updateMany({

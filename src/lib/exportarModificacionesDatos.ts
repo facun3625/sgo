@@ -3,6 +3,7 @@ import path from "path";
 import * as XLSX from "xlsx";
 import prisma from "@/lib/prisma";
 import { notificarAdmins } from "@/lib/notificaciones";
+import { formatearCuit, esCuitValido } from "@/lib/cuit";
 
 // Carpeta que expone el mismo usuario SFTP "boletas" (chroot en
 // public/uploads/, ver docs/troubleshooting-ftp-boletas.md) — acá el sistema
@@ -37,14 +38,6 @@ function filaVacia(): Fila {
 //     porque así está nombrado en la plantilla de Tango.
 //   - Celular (real/legal) y provincia real no tienen columna destino: no se
 //     exportan.
-// El CUIL es texto libre que carga cada matriculado — muchos lo escriben
-// sin guiones. Tango lo necesita siempre como NN-NNNNNNNN-N.
-function formatearCuit(valor: string): string {
-    const digitos = valor.replace(/\D/g, "");
-    if (digitos.length !== 11) return valor;
-    return `${digitos.slice(0, 2)}-${digitos.slice(2, 10)}-${digitos.slice(10)}`;
-}
-
 function construirFila(expediente: string, cod: string, apellido: string, nombre: string, campos: CamposAcumulados): Fila {
     const fila = filaVacia();
     fila.EXPEDIENTE = expediente;
@@ -53,7 +46,14 @@ function construirFila(expediente: string, cod: string, apellido: string, nombre
 
     const valor = (clave: string) => campos[clave]?.nuevo ?? "";
 
-    if (campos.cuil) fila["CUIT CATASTRO"] = formatearCuit(valor("cuil"));
+    if (campos.cuil) {
+        const cuil = valor("cuil");
+        // Un CUIL inválido (ya sea por los datos originales o un bug previo
+        // de formato) se manda vacío en vez de con basura — mejor que Tango
+        // no reciba nada a que reciba un dato que no cierra el dígito
+        // verificador.
+        fila["CUIT CATASTRO"] = esCuitValido(cuil) ? formatearCuit(cuil) : "";
+    }
     if (campos.domicilioReal) fila.Domicilio = valor("domicilioReal");
     if (campos.postalReal) fila["Código postal"] = valor("postalReal");
     if (campos.localidadReal) fila.Localidad = valor("localidadReal");

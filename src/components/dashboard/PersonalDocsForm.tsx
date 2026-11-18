@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { esCuitValido } from "@/lib/cuit";
 import {
     User,
     Home,
@@ -89,10 +90,29 @@ export default function PersonalDocsForm() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!savedData?.cuil && !formData?.cuil?.trim()) {
+        if (!formData) return;
+
+        if (!savedData?.cuil && !formData.cuil?.trim()) {
             setMessage({ type: "error", text: "El CUIL es obligatorio para continuar" });
             return;
         }
+        if (!savedData?.cuil && formData.cuil && !esCuitValido(formData.cuil)) {
+            setMessage({ type: "error", text: "El CUIL ingresado no es válido. Verificá el número e intentá de nuevo." });
+            return;
+        }
+
+        for (const [lado, label] of [["Legal", "legal"], ["Real", "real"]] as const) {
+            const domicilioKey = `domicilio${lado}` as const;
+            const postalKey = `postal${lado}` as const;
+            const localidadKey = `localidad${lado}` as const;
+            const nuevo = (formData[domicilioKey] ?? "").trim();
+            const anterior = (savedData?.[domicilioKey] ?? "").trim();
+            if (nuevo && nuevo !== anterior && (!formData[postalKey]?.trim() || !formData[localidadKey]?.trim())) {
+                setMessage({ type: "error", text: `Si modificás el domicilio ${label}, completá también la localidad y el código postal correspondientes.` });
+                return;
+            }
+        }
+
         setSaving(true);
         setMessage(null);
 
