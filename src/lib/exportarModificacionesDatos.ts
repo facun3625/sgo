@@ -37,6 +37,14 @@ function filaVacia(): Fila {
 //     porque así está nombrado en la plantilla de Tango.
 //   - Celular (real/legal) y provincia real no tienen columna destino: no se
 //     exportan.
+// El CUIL es texto libre que carga cada matriculado — muchos lo escriben
+// sin guiones. Tango lo necesita siempre como NN-NNNNNNNN-N.
+function formatearCuit(valor: string): string {
+    const digitos = valor.replace(/\D/g, "");
+    if (digitos.length !== 11) return valor;
+    return `${digitos.slice(0, 2)}-${digitos.slice(2, 10)}-${digitos.slice(10)}`;
+}
+
 function construirFila(expediente: string, cod: string, apellido: string, nombre: string, campos: CamposAcumulados): Fila {
     const fila = filaVacia();
     fila.EXPEDIENTE = expediente;
@@ -45,7 +53,7 @@ function construirFila(expediente: string, cod: string, apellido: string, nombre
 
     const valor = (clave: string) => campos[clave]?.nuevo ?? "";
 
-    if (campos.cuil) fila["CUIT CATASTRO"] = valor("cuil");
+    if (campos.cuil) fila["CUIT CATASTRO"] = formatearCuit(valor("cuil"));
     if (campos.domicilioReal) fila.Domicilio = valor("domicilioReal");
     if (campos.postalReal) fila["Código postal"] = valor("postalReal");
     if (campos.localidadReal) fila.Localidad = valor("localidadReal");
