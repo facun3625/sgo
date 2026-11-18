@@ -73,6 +73,13 @@ function construirFila(expediente: string, cod: string, apellido: string, nombre
         fila["Teléfono 1 legal"] = valor("telefonosLegal");
     }
 
+    // Tango pide todo en mayúsculas, salvo el correo (se mantiene en
+    // minúsculas, convención usual para emails).
+    for (const col of COLUMNAS) {
+        if (col === "Correo electrónico") continue;
+        fila[col] = fila[col].toUpperCase();
+    }
+
     return fila;
 }
 
