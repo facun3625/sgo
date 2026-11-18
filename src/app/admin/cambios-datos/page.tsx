@@ -116,7 +116,7 @@ export default function CambiosDatosPage() {
         setSelected(null);
     };
 
-    const generarExportCatastro = async () => {
+    const generarExportTango = async () => {
         setExportando(true);
         setMensajeExport(null);
         try {
@@ -150,9 +150,9 @@ export default function CambiosDatosPage() {
                     </div>
                 </div>
                 <div className="flex flex-col items-end gap-1.5">
-                    <button onClick={generarExportCatastro} disabled={exportando}
+                    <button onClick={generarExportTango} disabled={exportando}
                         className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#063f68] text-white text-[12px] font-bold hover:bg-[#0a4d7a] disabled:opacity-50 transition-all">
-                        <FileSpreadsheet size={14} /> {exportando ? "Generando..." : "Generar Excel para Catastro"}
+                        <FileSpreadsheet size={14} /> {exportando ? "Generando..." : "Generar Excel para Tango"}
                     </button>
                     <p className="text-[10px] text-slate-400 flex items-center gap-1">
                         <Clock size={10} /> Se corre solo, L-V 7:30 — este botón fuerza una corrida extra
@@ -242,7 +242,7 @@ export default function CambiosDatosPage() {
                                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Usuario</span>
                                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Campos</span>
                                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Fecha</span>
-                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Catastro</span>
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tango</span>
                             </div>
 
                             {cambios.map(c => (
@@ -308,7 +308,7 @@ export default function CambiosDatosPage() {
                                 </p>
                                 <p className="text-[11px] text-slate-400">
                                     Mat. {selected.expediente} · {timeAgo(selected.createdAt)}
-                                    {selected.exportado ? ` · Exportado en "${selected.exportadoArchivo}"` : " · Pendiente de exportar a Catastro"}
+                                    {selected.exportado ? ` · Exportado en "${selected.exportadoArchivo}"` : " · Pendiente de exportar a Tango"}
                                 </p>
                             </div>
                             <div className="flex items-center gap-2">

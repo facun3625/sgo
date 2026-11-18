@@ -24,7 +24,7 @@ export async function register() {
     setInterval(tickFtpDeudas, 45 * 60 * 1000);
 
     // Export diario a Excel de las modificaciones de datos pendientes, para
-    // que Catastro lo levante por SFTP (ver src/lib/exportarModificacionesDatos.ts).
+    // que Tango lo levante por SFTP (ver src/lib/exportarModificacionesDatos.ts).
     // Corre lunes a viernes a las 7:30 AR — el chequeo cada 5 min solo dispara
     // la corrida real dentro de esa ventana, una vez por día.
     const { chequearExportacionProgramada } = await import("@/lib/exportarModificacionesDatos");

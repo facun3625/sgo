@@ -6,12 +6,12 @@ import { notificarAdmins } from "@/lib/notificaciones";
 
 // Carpeta que expone el mismo usuario SFTP "boletas" (chroot en
 // public/uploads/, ver docs/troubleshooting-ftp-boletas.md) — acá el sistema
-// externo (Catastro) viene a buscar el Excel, no hace falta tocar sshd_config
+// externo (Tango) viene a buscar el Excel, no hace falta tocar sshd_config
 // ni chown: alcanza con que la carpeta y los archivos sean legibles por
 // "otros", igual que necesita nginx para servir uploads/.
 const DIR = path.join(process.cwd(), "public/uploads/exportar/modificaciones-datos");
 
-// Orden y texto exacto de columnas pedido por Catastro — incluye los typos
+// Orden y texto exacto de columnas pedido por Tango — incluye los typos
 // tal cual vienen en su propia plantilla ("Código posta legall", "INSCRIPCION"
 // sin tilde). No "corregir": el sistema que lo recibe matchea por texto literal.
 const COLUMNAS = [
@@ -34,7 +34,7 @@ function filaVacia(): Fila {
 // Reglas acordadas con el Colegio (no inferidas del Excel de ejemplo):
 //   - Email: si cambiaron real y legal y quedaron distintos, gana el legal.
 //   - Domicilio/Teléfono legal se duplican en sus dos columnas de destino,
-//     porque así está nombrado en la plantilla de Catastro.
+//     porque así está nombrado en la plantilla de Tango.
 //   - Celular (real/legal) y provincia real no tienen columna destino: no se
 //     exportan.
 function construirFila(expediente: string, cod: string, apellido: string, nombre: string, campos: CamposAcumulados): Fila {
@@ -195,7 +195,7 @@ export async function chequearExportacionProgramada() {
         }).catch(() => {});
         await notificarAdmins(
             "Error al exportar modificaciones de datos",
-            `No se pudo generar el Excel diario para Catastro: ${detalle}. Podés reintentarlo a mano desde Modificaciones de Datos.`,
+            `No se pudo generar el Excel diario para Tango: ${detalle}. Podés reintentarlo a mano desde Modificaciones de Datos.`,
             "admin_import"
         ).catch(err2 => console.error("[export-modificaciones] No se pudo notificar a los admins:", err2));
         return;
